@@ -1,0 +1,55 @@
+backend:
+  name: github
+  repo: YOUR_ORG/YOUR_REPO
+  branch: main
+  # Use repo for private repositories
+  auth_scope: public_repo
+  base_url: https://github.com
+  api_root: https://api.github.com
+
+local_backend: true
+
+media_folder: "static/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "notes"
+    label: "Notes"
+    folder: "notes"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "tasks"
+    label: "Tasks"
+    folder: "tasks"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      -
+        label: "Status"
+        name: "status"
+        widget: "select"
+        options: ["todo", "in_progress", "done"]
+        default: "todo"
+      -
+        label: "Priority"
+        name: "priority"
+        widget: "number"
+        value_type: "int"
+        required: false
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "reports"
+    label: "Reports"
+    folder: "reports"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
