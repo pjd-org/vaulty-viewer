@@ -925,3 +925,179 @@ img {
     font-size: 2.5rem;
   }
 }
+
+/* ============================================================================
+   COD Form Styles
+   ============================================================================ */
+
+.cod-form {
+  padding: 20px 24px;
+}
+
+.cod-form__header {
+  margin-bottom: 24px;
+}
+
+.cod-form__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cod-text);
+  margin: 0 0 4px 0;
+}
+
+.cod-form__subtitle {
+  font-size: 0.75rem;
+  color: var(--cod-text-muted);
+}
+
+.cod-form__field {
+  margin-bottom: 20px;
+}
+
+.cod-form__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--cod-text);
+  margin-bottom: 8px;
+}
+
+.cod-form__value {
+  font-weight: 600;
+  color: var(--cod-glow-cyan);
+}
+
+.cod-form__slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--cod-surface-2);
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.cod-form__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cod-glow-cyan), var(--cod-glow-purple));
+  cursor: pointer;
+  box-shadow: 0 0 12px var(--cod-glow-cyan);
+  transition: transform 0.2s ease;
+}
+
+.cod-form__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.cod-form__slider--stress::-webkit-slider-thumb {
+  background: linear-gradient(135deg, var(--cod-glow-orange), var(--cod-glow-red));
+  box-shadow: 0 0 12px var(--cod-glow-orange);
+}
+
+.cod-form__hints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--cod-text-muted);
+  margin-top: 4px;
+}
+
+.cod-form__button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.cod-form__toggle {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--cod-border);
+  background: var(--cod-surface);
+  color: var(--cod-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.cod-form__toggle:hover {
+  background: var(--cod-surface-2);
+  color: var(--cod-text);
+}
+
+.cod-form__toggle--active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(139, 92, 246, 0.15));
+  border-color: var(--cod-glow-cyan);
+  color: var(--cod-text);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+}
+
+.cod-form__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cod-border);
+}
+
+/* Button variants */
+.cod-button--primary {
+  flex: 1;
+  background: linear-gradient(135deg, var(--cod-glow-cyan), var(--cod-glow-purple));
+  color: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.cod-button--primary:hover {
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.cod-button--secondary {
+  flex: 1;
+  background: var(--cod-surface);
+  color: var(--cod-text-muted);
+}
+
+.cod-button--small {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.cod-button--success {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--cod-glow-green);
+  border-color: var(--cod-glow-green);
+}
+
+.cod-button--success:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.cod-button--danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--cod-glow-red);
+  border-color: var(--cod-glow-red);
+}
+
+.cod-button--danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* Section header with actions */
+.cod-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cod-section__actions {
+  display: flex;
+  gap: 8px;
+}

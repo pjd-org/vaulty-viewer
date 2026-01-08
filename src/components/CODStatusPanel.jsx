@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useCODStatus from "../hooks/useCODStatus";
+import HumanStateForm from "./HumanStateForm";
 
 // ============================================================================
 // Sub-components - Raycast Wrapped Style
@@ -62,7 +63,7 @@ function ProgressBar({ value, max = 100, color = "accent", label, showValue = tr
 /**
  * Human state section with vitals
  */
-function HumanStateSection({ state }) {
+function HumanStateSection({ state, onEdit }) {
   const focusLabel = state.focusCapacity === "high" ? "High" :
                      state.focusCapacity === "med" ? "Med" : "Low";
 
@@ -70,6 +71,13 @@ function HumanStateSection({ state }) {
     <div className="cod-section">
       <div className="cod-section__header">
         <span className="cod-section__title">Human State</span>
+        <button
+          className="cod-button cod-button--small"
+          onClick={onEdit}
+          title="Update Human State"
+        >
+          ✏️ Check-in
+        </button>
       </div>
       <div className="cod-vitals">
         <ProgressBar
@@ -105,7 +113,7 @@ function HumanStateSection({ state }) {
 /**
  * Active session section
  */
-function SessionSection({ session }) {
+function SessionSection({ session, onEnd, onAbort }) {
   const startTime = new Date(session.startedAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -123,9 +131,29 @@ function SessionSection({ session }) {
     <div className="cod-section">
       <div className="cod-section__header">
         <span className="cod-section__title">Active Session</span>
-        <span className="cod-section__meta">
-          {startTime} • {session.budgetMin} min budget
-        </span>
+        <div className="cod-section__actions">
+          {onEnd && (
+            <button
+              className="cod-button cod-button--small cod-button--success"
+              onClick={onEnd}
+              title="Complete Session"
+            >
+              ✓ Done
+            </button>
+          )}
+          {onAbort && (
+            <button
+              className="cod-button cod-button--small cod-button--danger"
+              onClick={onAbort}
+              title="Abort Session"
+            >
+              ✕ Abort
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="cod-section__meta">
+        {startTime} • {session.budgetMin} min budget
       </div>
       
       {/* Big progress stat */}
@@ -187,12 +215,57 @@ function WarningsSection({ warnings }) {
  */
 export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }) {
   const [collapsed, setCollapsed] = useState(initialCollapsed);
-  const { validation, humanState, session, warnings, loading, error, refresh } = useCODStatus(staticData);
+  const [showForm, setShowForm] = useState(false);
+  const {
+    validation,
+    humanState,
+    session,
+    warnings,
+    loading,
+    updating,
+    error,
+    refresh,
+    updateHumanState,
+    endSession,
+  } = useCODStatus(staticData);
 
   const handleToggle = () => setCollapsed(!collapsed);
 
+  const handleUpdateHumanState = async (formData) => {
+    const result = await updateHumanState(formData);
+    if (result.success) {
+      setShowForm(false);
+    }
+  };
+
+  const handleEndSession = async () => {
+    if (session?.id && window.confirm("End current session?")) {
+      await endSession(session.id, "completed");
+    }
+  };
+
+  const handleAbortSession = async () => {
+    if (session?.id && window.confirm("Abort current session?")) {
+      await endSession(session.id, "aborted");
+    }
+  };
+
   if (collapsed) {
     return <CODStatusBadge status={validation.status} onClick={handleToggle} />;
+  }
+
+  // Show form mode
+  if (showForm) {
+    return (
+      <div className="cod-panel">
+        <HumanStateForm
+          currentState={humanState}
+          onSubmit={handleUpdateHumanState}
+          onCancel={() => setShowForm(false)}
+          loading={updating}
+        />
+      </div>
+    );
   }
 
   return (
@@ -203,10 +276,10 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
           <button
             className="cod-button cod-button--icon"
             onClick={refresh}
-            disabled={loading}
+            disabled={loading || updating}
             title="Refresh"
           >
-            {loading ? "···" : "↻"}
+            {loading || updating ? "···" : "↻"}
           </button>
           <button
             className="cod-button cod-button--icon"
@@ -233,10 +306,16 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
       {warnings.length > 0 && <WarningsSection warnings={warnings} />}
 
       {/* Human State */}
-      <HumanStateSection state={humanState} />
+      <HumanStateSection state={humanState} onEdit={() => setShowForm(true)} />
 
       {/* Active Session */}
-      {session && <SessionSection session={session} />}
+      {session && (
+        <SessionSection
+          session={session}
+          onEnd={handleEndSession}
+          onAbort={handleAbortSession}
+        />
+      )}
     </div>
   );
 }

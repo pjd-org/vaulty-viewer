@@ -106,21 +106,23 @@ export function useCODStatus(staticData = null) {
   });
 
   const [loading, setLoading] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async () => {
-    // Use configured API URL or default to same-origin (empty string works with relative paths)
-    const apiUrl =
-      typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
+  // Get API URL helper
+  const getApiUrl = useCallback(() => {
+    return typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
+  }, []);
 
-    // Skip if running on server (SSR/SSG)
+  const refresh = useCallback(async () => {
+    const apiUrl = getApiUrl();
     if (apiUrl === null) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/api/cod/status`);
+      const response = await fetch(`${apiUrl}/api/v1/cod/status`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
@@ -140,15 +142,121 @@ export function useCODStatus(staticData = null) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getApiUrl]);
+
+  /**
+   * Update human state via API
+   */
+  const updateHumanState = useCallback(
+    async (newState) => {
+      const apiUrl = getApiUrl();
+      if (apiUrl === null)
+        return { success: false, error: 'API not available' };
+
+      setUpdating(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/cod/human-state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newState),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        // Refresh to get updated state
+        await refresh();
+        return { success: true };
+      } catch (err) {
+        setError(err.message);
+        return { success: false, error: err.message };
+      } finally {
+        setUpdating(false);
+      }
+    },
+    [getApiUrl, refresh]
+  );
+
+  /**
+   * Start a new work session
+   */
+  const startSession = useCallback(
+    async ({ taskIds = [], budgetMin = 60 } = {}) => {
+      const apiUrl = getApiUrl();
+      if (apiUrl === null)
+        return { success: false, error: 'API not available' };
+
+      setUpdating(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/cod/session/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskIds, budgetMin }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        await refresh();
+        return { success: true, session: result };
+      } catch (err) {
+        setError(err.message);
+        return { success: false, error: err.message };
+      } finally {
+        setUpdating(false);
+      }
+    },
+    [getApiUrl, refresh]
+  );
+
+  /**
+   * End current session
+   */
+  const endSession = useCallback(
+    async (sessionId, status = 'completed') => {
+      const apiUrl = getApiUrl();
+      if (apiUrl === null)
+        return { success: false, error: 'API not available' };
+
+      setUpdating(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/cod/session/end`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, status }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        await refresh();
+        return { success: true };
+      } catch (err) {
+        setError(err.message);
+        return { success: false, error: err.message };
+      } finally {
+        setUpdating(false);
+      }
+    },
+    [getApiUrl, refresh]
+  );
 
   // Poll for updates when API available
   useEffect(() => {
-    // Use configured API URL or default to same-origin
-    const apiUrl =
-      typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
-
-    // Skip if running on server (SSR/SSG)
+    const apiUrl = getApiUrl();
     if (apiUrl === null) return;
 
     // Initial fetch
@@ -157,9 +265,18 @@ export function useCODStatus(staticData = null) {
     // Poll every 60 seconds
     const interval = setInterval(refresh, 60000);
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [getApiUrl, refresh]);
 
-  return { ...data, loading, error, refresh };
+  return {
+    ...data,
+    loading,
+    updating,
+    error,
+    refresh,
+    updateHumanState,
+    startSession,
+    endSession,
+  };
 }
 
 export default useCODStatus;
