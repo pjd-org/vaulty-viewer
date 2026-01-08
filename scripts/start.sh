@@ -2,7 +2,7 @@
 
 set -e
 
-PORT="${PORT:-8000}"
+PORT="${PORT:-4400}"
 VAULT_CONTENT_PATH="${VAULT_CONTENT_PATH:-${VAULT_PATH:-/vault}}"
 
 # Runtime-injected config for the static app to read.
@@ -17,11 +17,6 @@ cat > "${CONFIG_PATH}" <<EOF
 }
 EOF
 
-# Ensure nginx listens on the desired PORT. default.conf listens on 8000; if PORT differs, patch it.
-if [ "${PORT}" != "8000" ]; then
-  echo "[viewer] Patching nginx listen port to ${PORT}" >&2
-  sed -i "s/listen 8000;/listen ${PORT};/" /etc/nginx/conf.d/default.conf
-fi
-
+# Nginx config is set at build time to listen on 4400. Skip patching.
 echo "[viewer] Serving static site via nginx on 0.0.0.0:${PORT}" >&2
 exec nginx -g 'daemon off;'

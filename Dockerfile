@@ -21,19 +21,26 @@ WORKDIR /app
 
 ENV GATSBY_TELEMETRY_DISABLED=1
 ENV VAULT_CONTENT_PATH=/vault
-ENV PORT=8000
+ENV PORT=4400
 
 # Copy built static site
 COPY --from=build /app/public /usr/share/nginx/html
+
+# Ensure config.json can be written at runtime, nginx cache/pid/logs dirs are writable
+RUN touch /usr/share/nginx/html/config.json && chmod 666 /usr/share/nginx/html/config.json && \
+  mkdir -p /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp /var/cache/nginx/fastcgi_temp /var/cache/nginx/uwsgi_temp /var/cache/nginx/scgi_temp && \
+  chmod -R 777 /var/cache/nginx && \
+  touch /run/nginx.pid && chmod 666 /run/nginx.pid && \
+  chmod -R 777 /var/log/nginx
 
 # Copy runtime scripts for env injection
 COPY --from=build /app/scripts /app/scripts
 RUN chmod +x /app/scripts/start.sh
 
-# Nginx config: listen on 8000 and support SPA-style routing fallback
+# Nginx config: listen on 4400 and support SPA-style routing fallback
 RUN printf '%s\n' \
   'server {' \
-  '  listen 8000;' \
+  '  listen 4400;' \
   '  server_name _;' \
   '  root /usr/share/nginx/html;' \
   '  index index.html;' \
@@ -50,6 +57,6 @@ RUN printf '%s\n' \
   '}' \
   > /etc/nginx/conf.d/default.conf
 
-EXPOSE 8000
+EXPOSE 4400
 
 CMD ["/app/scripts/start.sh"]
