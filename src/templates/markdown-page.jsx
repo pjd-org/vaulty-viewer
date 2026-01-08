@@ -1,9 +1,20 @@
 import React from 'react';
-import { graphql, Link } from 'gatsby';
+import { Link } from 'gatsby';
 import CODStatusPanel from '../components/CODStatusPanel';
 
-const MarkdownPage = ({ data }) => {
-  const { markdownRemark } = data;
+const MarkdownPage = ({ pageContext }) => {
+  const markdownRemark = {
+    html: pageContext.html,
+    fields: {
+      collection: pageContext.collection,
+      slug: pageContext.slug,
+    },
+    frontmatter: {
+      title: pageContext.title,
+      tags: pageContext.tags,
+    },
+  };
+
   const title = markdownRemark.frontmatter?.title || 'Untitled';
   const rawTags = markdownRemark.frontmatter?.tags;
   const tags = Array.isArray(rawTags) ? rawTags : rawTags ? [rawTags] : [];
@@ -36,21 +47,5 @@ const MarkdownPage = ({ data }) => {
     </main>
   );
 };
-
-export const query = graphql`
-  query MarkdownPage($id: String!) {
-    markdownRemark(id: { eq: $id }) {
-      html
-      fields {
-        collection
-        slug
-      }
-      frontmatter {
-        title
-        tags
-      }
-    }
-  }
-`;
 
 export default MarkdownPage;

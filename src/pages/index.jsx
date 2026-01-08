@@ -153,7 +153,7 @@ const IndexPage = ({ data }) => {
 
 export const query = graphql`
   {
-    allMarkdownRemark(sort: { fields: [frontmatter___title], order: ASC }) {
+    allMarkdownRemark(sort: { frontmatter: { title: ASC } }) {
       nodes {
         id
         excerpt(pruneLength: 140)

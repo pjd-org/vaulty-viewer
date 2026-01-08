@@ -118,8 +118,14 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       allMarkdownRemark {
         nodes {
           id
+          html
           fields {
             slug
+            collection
+          }
+          frontmatter {
+            title
+            tags
           }
         }
       }
@@ -140,6 +146,11 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       component: template,
       context: {
         id: node.id,
+        html: node.html,
+        slug: node.fields.slug,
+        collection: node.fields.collection,
+        title: node.frontmatter?.title,
+        tags: node.frontmatter?.tags || [],
       },
     });
   });

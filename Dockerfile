@@ -1,16 +1,55 @@
-FROM node:20-alpine
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV CI=1
 ENV GATSBY_TELEMETRY_DISABLED=1
 ENV VAULT_CONTENT_PATH=/vault
 
+# Viewer is standalone - use npm for flat node_modules (Gatsby CLI requires it)
+# Build context is apps/viewer only
 COPY package.json ./
-RUN corepack enable && pnpm install
+RUN npm install --include=dev
 
 COPY . .
+RUN ./node_modules/.bin/gatsby build
+
+# Runtime: serve static Gatsby build with nginx + start-time env injection
+FROM nginx:1.27-alpine
+
+WORKDIR /app
+
+ENV GATSBY_TELEMETRY_DISABLED=1
+ENV VAULT_CONTENT_PATH=/vault
+ENV PORT=8000
+
+# Copy built static site
+COPY --from=build /app/public /usr/share/nginx/html
+
+# Copy runtime scripts for env injection
+COPY --from=build /app/scripts /app/scripts
+RUN chmod +x /app/scripts/start.sh
+
+# Nginx config: listen on 8000 and support SPA-style routing fallback
+RUN printf '%s\n' \
+  'server {' \
+  '  listen 8000;' \
+  '  server_name _;' \
+  '  root /usr/share/nginx/html;' \
+  '  index index.html;' \
+  '' \
+  '  location ~* \\.(?:css|js|mjs|map|json|png|jpg|jpeg|gif|svg|webp|ico|woff2?|ttf|eot)$ {' \
+  '    expires 30d;' \
+  '    add_header Cache-Control "public, max-age=2592000, immutable";' \
+  '    try_files $uri =404;' \
+  '  }' \
+  '' \
+  '  location / {' \
+  '    try_files $uri $uri/ /index.html;' \
+  '  }' \
+  '}' \
+  > /etc/nginx/conf.d/default.conf
 
 EXPOSE 8000
 
-CMD ["./scripts/start.sh"]
+CMD ["/app/scripts/start.sh"]
