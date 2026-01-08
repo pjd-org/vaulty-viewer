@@ -109,8 +109,12 @@ export function useCODStatus(staticData = null) {
   const [error, setError] = useState(null);
 
   const refresh = useCallback(async () => {
-    const apiUrl = typeof window !== 'undefined' ? window.TASKER_API_URL : null;
-    if (!apiUrl) return;
+    // Use configured API URL or default to same-origin (empty string works with relative paths)
+    const apiUrl =
+      typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
+
+    // Skip if running on server (SSR/SSG)
+    if (apiUrl === null) return;
 
     setLoading(true);
     setError(null);
@@ -140,8 +144,12 @@ export function useCODStatus(staticData = null) {
 
   // Poll for updates when API available
   useEffect(() => {
-    const apiUrl = typeof window !== 'undefined' ? window.TASKER_API_URL : null;
-    if (!apiUrl) return;
+    // Use configured API URL or default to same-origin
+    const apiUrl =
+      typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
+
+    // Skip if running on server (SSR/SSG)
+    if (apiUrl === null) return;
 
     // Initial fetch
     refresh();
