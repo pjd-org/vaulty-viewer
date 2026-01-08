@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
+import CODStatusPanel from "../components/CODStatusPanel";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -69,6 +70,7 @@ const IndexPage = ({ data }) => {
 
   return (
     <main className="page">
+      <CODStatusPanel />
       <header className="hero">
         <div className="hero__content">
           <p className="eyebrow">Vaulty Viewer</p>

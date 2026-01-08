@@ -1,14 +1,14 @@
-const path = require("path");
+const path = require('path');
 
 const IGNORED_DIRS = new Set([
-  "_system",
-  "templates",
-  ".obsidian",
-  ".vault",
-  ".git",
+  '_system',
+  'templates',
+  '.obsidian',
+  '.vault',
+  '.git',
 ]);
 
-const normalizePath = (value) => value.split(path.sep).join("/");
+const normalizePath = (value) => value.split(path.sep).join('/');
 
 const shouldIgnore = (relativePath) => {
   if (!relativePath) {
@@ -16,7 +16,7 @@ const shouldIgnore = (relativePath) => {
   }
 
   const normalized = normalizePath(relativePath);
-  const segments = normalized.split("/");
+  const segments = normalized.split('/');
   const fileName = segments[segments.length - 1].toLowerCase();
 
   if (segments.length === 1) {
@@ -27,15 +27,15 @@ const shouldIgnore = (relativePath) => {
     return true;
   }
 
-  if (segments.some((segment) => segment.startsWith(".vault-"))) {
+  if (segments.some((segment) => segment.startsWith('.vault-'))) {
     return true;
   }
 
-  if (fileName.startsWith("config.")) {
+  if (fileName.startsWith('config.')) {
     return true;
   }
 
-  if (fileName.includes(".config.")) {
+  if (fileName.includes('.config.')) {
     return true;
   }
 
@@ -45,52 +45,73 @@ const shouldIgnore = (relativePath) => {
 const buildSlug = (relativePath) => {
   const normalized = normalizePath(relativePath);
   const parsed = path.posix.parse(normalized);
-  const segments = normalized.split("/");
+  const segments = normalized.split('/');
 
   const slugParts =
     segments.length > 1
       ? segments.slice(0, -1).concat(parsed.name)
       : [parsed.name];
 
-  if (slugParts.length === 0 || slugParts[0] === "") {
-    return "/untitled/";
+  if (slugParts.length === 0 || slugParts[0] === '') {
+    return '/untitled/';
   }
 
-  return `/${slugParts.join("/")}/`;
+  return `/${slugParts.join('/')}/`;
 };
 
 exports.onCreateNode = ({ node, getNode, actions }) => {
-  if (node.internal.type !== "MarkdownRemark") {
+  if (node.internal.type !== 'MarkdownRemark') {
     return;
   }
 
   const fileNode = getNode(node.parent);
-  const relativePath = fileNode?.relativePath || "";
+  const relativePath = fileNode?.relativePath || '';
 
   if (shouldIgnore(relativePath)) {
     return;
   }
 
   const normalized = normalizePath(relativePath);
-  const segments = normalized.split("/");
-  const collection = segments.length > 1 ? segments[0] : "root";
+  const segments = normalized.split('/');
+  const collection = segments.length > 1 ? segments[0] : 'root';
   const slug = buildSlug(relativePath);
 
   actions.createNodeField({
     node,
-    name: "collection",
+    name: 'collection',
     value: collection,
   });
   actions.createNodeField({
     node,
-    name: "slug",
+    name: 'slug',
     value: slug,
   });
 };
 
+// Explicitly define schema to prevent errors when fields are missing
+exports.createSchemaCustomization = ({ actions }) => {
+  const { createTypes } = actions;
+  createTypes(`
+    type MarkdownRemarkFields {
+      slug: String
+      collection: String
+    }
+    type MarkdownRemarkFrontmatter {
+      title: String
+      tags: [String]
+    }
+    type MarkdownRemark implements Node {
+      fields: MarkdownRemarkFields
+      frontmatter: MarkdownRemarkFrontmatter
+      html: String
+      excerpt: String
+    }
+  `);
+};
+
 exports.createPages = async ({ graphql, actions, reporter }) => {
   const { createPage } = actions;
-  const template = path.resolve("./src/templates/markdown-page.jsx");
+  const template = path.resolve('./src/templates/markdown-page.jsx');
 
   const result = await graphql(`
     {
@@ -106,7 +127,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   `);
 
   if (result.errors) {
-    reporter.panicOnBuild("Error loading markdown content", result.errors);
+    reporter.panicOnBuild('Error loading markdown content', result.errors);
     return;
   }
 
