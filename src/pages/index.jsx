@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import CODStatusPanel from "../components/CODStatusPanel";
 
@@ -9,11 +9,76 @@ const formatLabel = (value) =>
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+const getApiUrl = () => {
+  if (typeof window !== "undefined" && window.TASKER_API_URL) {
+    return window.TASKER_API_URL;
+  }
+  return "";
+};
+
 const IndexPage = ({ data }) => {
   const [query, setQuery] = useState("");
   const [activeCollection, setActiveCollection] = useState("all");
+  const [apiNotes, setApiNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const items = data.allMarkdownRemark.nodes
+  // Derive collection from path
+  const deriveCollection = (path) => {
+    const parts = path.split("/");
+    if (parts.length > 1) {
+      const folder = parts[0].toLowerCase();
+      if (folder === "tasks") return "tasks";
+      if (folder === "goals") return "goals";
+      if (folder === "notes") return "notes";
+      if (folder === "projects") return "projects";
+      if (folder === "specs") return "specs";
+      if (folder === "knowledge") return "knowledge";
+      return folder;
+    }
+    return "notes";
+  };
+
+  // Fetch notes from API at runtime
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const apiUrl = getApiUrl();
+      if (!apiUrl) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/notes`);
+        if (response.ok) {
+          const result = await response.json();
+          // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
+          const notePaths = result.structuredContent?.notes || result.notes || [];
+          if (notePaths.length > 0) {
+            setApiNotes(notePaths.map((path, idx) => {
+              const pathStr = typeof path === "string" ? path : (path.path || "");
+              const title = pathStr.split("/").pop()?.replace(".md", "") || "Untitled";
+              return {
+                id: `api-${idx}`,
+                title: formatLabel(title),
+                excerpt: "",
+                slug: `/${pathStr.replace(".md", "")}`,
+                collection: deriveCollection(pathStr),
+              };
+            }));
+          }
+        }
+      } catch (err) {
+        console.error("[viewer] Failed to fetch notes from API:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNotes();
+  }, []);
+
+  // Combine Gatsby static data with API data
+  const gatsbyItems = (data?.allMarkdownRemark?.nodes || [])
     .filter((node) => node.fields?.slug && node.fields?.collection !== "root")
     .map((node) => {
       const slug = node.fields?.slug || "";
@@ -26,6 +91,9 @@ const IndexPage = ({ data }) => {
         collection: node.fields?.collection || "notes",
       };
     });
+
+  // Use API data if Gatsby has no items, otherwise merge
+  const items = gatsbyItems.length > 0 ? gatsbyItems : apiNotes;
 
   const counts = items.reduce(
     (acc, item) => {

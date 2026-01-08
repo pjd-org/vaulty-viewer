@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV CI=1
 ENV GATSBY_TELEMETRY_DISABLED=1
-ENV VAULT_CONTENT_PATH=/vault
+ENV VAULT_CONTENT_PATH=/app/content
 
 # Viewer is standalone - use npm for flat node_modules (Gatsby CLI requires it)
 # Build context is apps/viewer only
@@ -12,6 +12,15 @@ COPY package.json ./
 RUN npm install --include=dev
 
 COPY . .
+
+# Create a placeholder content directory for builds without vault
+# The actual vault content will be mounted at runtime
+RUN mkdir -p /app/content && \
+  echo '---' > /app/content/.placeholder.md && \
+  echo 'title: Placeholder' >> /app/content/.placeholder.md && \
+  echo '---' >> /app/content/.placeholder.md && \
+  echo 'This is a placeholder. Vault content will be loaded at runtime via API.' >> /app/content/.placeholder.md
+
 RUN ./node_modules/.bin/gatsby build
 
 # Runtime: serve static Gatsby build with nginx + start-time env injection
