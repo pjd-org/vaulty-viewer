@@ -167,6 +167,9 @@ const IndexPage = ({ data }) => {
             <Link to="/avatar" className="quick-link">
               🧙 Avatar Dashboard
             </Link>
+            <Link to="/goals" className="quick-link">
+              🎯 Goal Progress
+            </Link>
           </div>
         </div>
       </header>
