@@ -163,6 +163,11 @@ const IndexPage = ({ data }) => {
               <div className="stat__value">{rootCount}</div>
             </div>
           </div>
+          <div className="quick-links">
+            <Link to="/avatar" className="quick-link">
+              🧙 Avatar Dashboard
+            </Link>
+          </div>
         </div>
       </header>
 
