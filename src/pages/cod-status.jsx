@@ -3,19 +3,22 @@ import { Link } from "gatsby";
 import CODStatusPanel from "../components/CODStatusPanel";
 
 /**
- * Full-page COD Status view
+ * Full-page COD Status view - Raycast Wrapped Style
  * Shows expanded panel with all sections visible
  */
 const CODStatusPage = () => {
   return (
-    <main className="page cod-status-page">
-      <header className="detail__header">
+    <main className="page cod-status-page" style={{
+      background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0d12 50%, #0f0a14 100%)',
+      minHeight: '100vh'
+    }}>
+      <header className="detail__header" style={{ paddingBottom: '24px' }}>
         <Link to="/" className="back-link">
-          {"<- Back to vault"}
+          ← Back to vault
         </Link>
         <h1>COD Status</h1>
         <p className="lede">
-          Cognitive Operating Discipline — Real-time validation, human state, and session tracking.
+          Your cognitive operating discipline dashboard — real-time validation, human state, and session tracking.
         </p>
       </header>
 
@@ -39,9 +42,9 @@ const CODStatusPage = () => {
 
         <h3>Validation States</h3>
         <ul>
-          <li><strong>✅ PASS:</strong> All systems nominal, proceed with planned work</li>
-          <li><strong>⚠️ WARN:</strong> Degraded state detected, consider lighter tasks</li>
-          <li><strong>❌ FAIL:</strong> Blocking condition, session should not start</li>
+          <li><strong>✓ PASS:</strong> All systems nominal, proceed with planned work</li>
+          <li><strong>⚡ WARN:</strong> Degraded state detected, consider lighter tasks</li>
+          <li><strong>✕ FAIL:</strong> Blocking condition, session should not start</li>
         </ul>
 
         <h3>HARD_STOP Guardrail</h3>

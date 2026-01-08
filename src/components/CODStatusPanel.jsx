@@ -2,66 +2,59 @@ import React, { useState } from "react";
 import useCODStatus from "../hooks/useCODStatus";
 
 // ============================================================================
-// Sub-components
+// Sub-components - Raycast Wrapped Style
 // ============================================================================
 
 /**
  * Status badge for collapsed view
  */
 function CODStatusBadge({ status, onClick }) {
-  const emoji = status === "PASS" ? "✅" : status === "WARN" ? "⚠️" : "❌";
   const className = `cod-badge cod-badge--${status.toLowerCase()}`;
+  const label = status === "PASS" ? "✓ PASS" : status === "WARN" ? "⚡ WARN" : "✕ FAIL";
 
   return (
     <button className={className} onClick={onClick} title="Expand COD Status">
-      {emoji} COD
+      {label}
     </button>
   );
 }
 
 /**
- * Progress bar component
+ * Validation card with glow effect
  */
-function ProgressBar({ value, max = 100, color = "accent", label }) {
+function ValidationCard({ validation }) {
+  const statusClass = validation.status.toLowerCase();
+  const icon = validation.status === "PASS" ? "✓" : validation.status === "WARN" ? "⚡" : "✕";
+  const timeAgo = validation.lastChecked
+    ? formatTimeAgo(new Date(validation.lastChecked))
+    : "—";
+
+  return (
+    <div className={`cod-validation-card cod-validation-card--${statusClass}`}>
+      <div className="cod-validation-card__icon">{icon}</div>
+      <div className="cod-validation-card__status">{validation.status}</div>
+      <div className="cod-section__footer">Checked {timeAgo}</div>
+    </div>
+  );
+}
+
+/**
+ * Progress bar component - bar chart style
+ */
+function ProgressBar({ value, max = 100, color = "accent", label, showValue = true }) {
   const percent = Math.min(100, Math.max(0, (value / max) * 100));
   return (
     <div className="cod-progress">
-      <div className="cod-progress__label">{label}</div>
+      <div className="cod-progress__header">
+        <span className="cod-progress__label">{label}</span>
+        {showValue && <span className="cod-progress__value">{Math.round(value)}%</span>}
+      </div>
       <div className="cod-progress__track">
         <div
           className={`cod-progress__fill cod-progress__fill--${color}`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="cod-progress__value">{Math.round(value)}%</div>
-    </div>
-  );
-}
-
-/**
- * Validation section
- */
-function ValidationSection({ validation }) {
-  const emoji = validation.status === "PASS" ? "✅" : validation.status === "WARN" ? "⚠️" : "❌";
-  const timeAgo = validation.lastChecked
-    ? formatTimeAgo(new Date(validation.lastChecked))
-    : "never";
-
-  return (
-    <div className="cod-section">
-      <div className="cod-section__header">
-        <span className="cod-section__title">
-          {emoji} COD Validation: {validation.status}
-        </span>
-      </div>
-      {validation.warnings.length > 0 && (
-        <ul className="cod-warning-list">
-          {validation.warnings.map((warning, i) => (
-            <li key={i} className="cod-warning-item">• {warning}</li>
-          ))}
-        </ul>
-      )}
-      <div className="cod-section__footer">Last checked: {timeAgo}</div>
     </div>
   );
 }
@@ -72,14 +65,11 @@ function ValidationSection({ validation }) {
 function HumanStateSection({ state }) {
   const focusLabel = state.focusCapacity === "high" ? "High" :
                      state.focusCapacity === "med" ? "Med" : "Low";
-  const sourceTime = state.timestamp
-    ? new Date(state.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : "--:--";
 
   return (
     <div className="cod-section">
       <div className="cod-section__header">
-        <span className="cod-section__title">Human State ({state.source || "snapshot"} {sourceTime})</span>
+        <span className="cod-section__title">Human State</span>
       </div>
       <div className="cod-vitals">
         <ProgressBar
@@ -87,25 +77,24 @@ function HumanStateSection({ state }) {
           label="⚡ Energy"
           color={state.energy < 40 ? "danger" : state.energy < 60 ? "warning" : "success"}
         />
+        <ProgressBar
+          value={100 - state.stress}
+          label="🧘 Calm"
+          color={state.stress > 70 ? "danger" : state.stress > 50 ? "warning" : "success"}
+        />
+        <ProgressBar
+          value={Math.max(0, 100 - state.sleepDebt * 20)}
+          label="😴 Rest"
+          color={state.sleepDebt > 2 ? "danger" : state.sleepDebt > 1 ? "warning" : "success"}
+        />
         <div className="cod-vital-row">
-          <span className="cod-vital-label">🎯 Focus</span>
+          <span className="cod-vital-label">🎯 Focus Capacity</span>
           <span className={`cod-vital-value cod-vital-value--${state.focusCapacity}`}>
             {focusLabel}
           </span>
         </div>
-        <ProgressBar
-          value={state.stress}
-          label="😰 Stress"
-          color={state.stress > 70 ? "danger" : state.stress > 50 ? "warning" : "success"}
-        />
-        <ProgressBar
-          value={state.sleepDebt * 10} // Scale hours to percentage (10h = 100%)
-          max={100}
-          label="😴 Sleep Debt"
-          color={state.sleepDebt > 2 ? "danger" : state.sleepDebt > 1 ? "warning" : "success"}
-        />
         <div className="cod-vital-row">
-          <span className="cod-vital-label">⏱️ Time Available</span>
+          <span className="cod-vital-label">⏱️ Time Budget</span>
           <span className="cod-vital-value">{state.timeAvailableMin} min</span>
         </div>
       </div>
@@ -133,26 +122,37 @@ function SessionSection({ session }) {
   return (
     <div className="cod-section">
       <div className="cod-section__header">
-        <span className="cod-section__title">🎯 Active Session</span>
+        <span className="cod-section__title">Active Session</span>
         <span className="cod-section__meta">
-          Started: {startTime} | Budget: {session.budgetMin} min
+          {startTime} • {session.budgetMin} min budget
         </span>
       </div>
+      
+      {/* Big progress stat */}
+      <div className="cod-stat-big">
+        <div className="cod-stat-big__value">{progressPercent}%</div>
+        <div className="cod-stat-big__label">Session Progress</div>
+      </div>
+
       {session.tasks && session.tasks.length > 0 && (
         <ul className="cod-task-list">
           {session.tasks.map((task, i) => {
-            const icon = task.status === "done" ? "✅" :
-                         task.status === "in_progress" ? "🔄" : "⬜";
+            const icon = task.status === "done" ? "✓" :
+                         task.status === "in_progress" ? "◐" : "○";
             return (
               <li key={i} className={`cod-task-item cod-task-item--${task.status}`}>
-                {icon} {task.title} {task.estimatedMin && `(${task.estimatedMin} min)`}
+                <span className="cod-task-item__icon">{icon}</span>
+                <span className="cod-task-item__title">{task.title}</span>
+                {task.estimatedMin && (
+                  <span className="cod-task-item__time">{task.estimatedMin}m</span>
+                )}
               </li>
             );
           })}
         </ul>
       )}
       <div className="cod-section__footer">
-        Progress: {progressPercent}% | ~{remaining} min remaining
+        {remaining} min remaining • {completedTasks}/{totalTasks} tasks
       </div>
     </div>
   );
@@ -167,11 +167,11 @@ function WarningsSection({ warnings }) {
   return (
     <div className="cod-section cod-section--warnings">
       <div className="cod-section__header">
-        <span className="cod-section__title">🚨 Active Warnings</span>
+        <span className="cod-section__title">⚠️ Warnings</span>
       </div>
       <ul className="cod-warning-list">
         {warnings.map((warning, i) => (
-          <li key={i} className="cod-warning-item">• {warning}</li>
+          <li key={i} className="cod-warning-item">{warning}</li>
         ))}
       </ul>
     </div>
@@ -183,7 +183,7 @@ function WarningsSection({ warnings }) {
 // ============================================================================
 
 /**
- * COD Status Panel - displays Cognitive Operating Discipline state
+ * COD Status Panel - Raycast Wrapped Style
  */
 export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }) {
   const [collapsed, setCollapsed] = useState(initialCollapsed);
@@ -198,7 +198,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
   return (
     <div className="cod-panel">
       <div className="cod-panel__header">
-        <h2 className="cod-panel__title">COD Status</h2>
+        <h2 className="cod-panel__title">Cognitive Operating Discipline</h2>
         <div className="cod-panel__actions">
           <button
             className="cod-button cod-button--icon"
@@ -206,28 +206,37 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
             disabled={loading}
             title="Refresh"
           >
-            {loading ? "⏳" : "🔄"}
+            {loading ? "···" : "↻"}
           </button>
           <button
             className="cod-button cod-button--icon"
             onClick={handleToggle}
             title="Collapse"
           >
-            ➖
+            ✕
           </button>
         </div>
       </div>
 
       {error && (
         <div className="cod-error">
-          ⚠️ API Error: {error}
+          Connection error: {error}
         </div>
       )}
 
-      <ValidationSection validation={validation} />
-      <HumanStateSection state={humanState} />
-      {session && <SessionSection session={session} />}
+      {/* Validation Card */}
+      <div className="cod-section">
+        <ValidationCard validation={validation} />
+      </div>
+
+      {/* Warnings (if any) */}
       {warnings.length > 0 && <WarningsSection warnings={warnings} />}
+
+      {/* Human State */}
+      <HumanStateSection state={humanState} />
+
+      {/* Active Session */}
+      {session && <SessionSection session={session} />}
     </div>
   );
 }
