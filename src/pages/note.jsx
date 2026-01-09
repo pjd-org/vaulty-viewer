@@ -4,6 +4,9 @@ import CODStatusPanel from '../components/CODStatusPanel';
 import Navbar from '../components/Navbar';
 
 const getApiUrl = () => {
+  if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
+    return process.env.GATSBY_TASKER_API_URL;
+  }
   if (typeof window !== 'undefined' && window.TASKER_API_URL) {
     return window.TASKER_API_URL;
   }

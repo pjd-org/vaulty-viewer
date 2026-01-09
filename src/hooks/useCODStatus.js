@@ -111,6 +111,9 @@ export function useCODStatus(staticData = null) {
 
   // Get API URL helper
   const getApiUrl = useCallback(() => {
+    if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
+      return process.env.GATSBY_TASKER_API_URL;
+    }
     return typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
   }, []);
 
