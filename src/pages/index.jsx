@@ -13,6 +13,7 @@ const getApiUrl = () => {
   if (typeof window !== "undefined" && window.TASKER_API_URL) {
     return window.TASKER_API_URL;
   }
+  // Default to relative path - works with proxy
   return "";
 };
 
@@ -42,10 +43,6 @@ const IndexPage = ({ data }) => {
   useEffect(() => {
     const fetchNotes = async () => {
       const apiUrl = getApiUrl();
-      if (!apiUrl) {
-        setLoading(false);
-        return;
-      }
       
       try {
         const response = await fetch(`${apiUrl}/api/v1/notes`);
@@ -61,7 +58,7 @@ const IndexPage = ({ data }) => {
                 id: `api-${idx}`,
                 title: formatLabel(title),
                 excerpt: "",
-                slug: `/${pathStr.replace(".md", "")}`,
+                slug: `/note?p=${encodeURIComponent(pathStr.replace(".md", ""))}`,
                 collection: deriveCollection(pathStr),
               };
             }));
@@ -83,11 +80,13 @@ const IndexPage = ({ data }) => {
     .map((node) => {
       const slug = node.fields?.slug || "";
       const titleFallback = slug.split("/").filter(Boolean).slice(-1)[0];
+      // Convert static slug to query string format for dynamic note page
+      const notePath = slug.replace(/^\//, '').replace(/\/$/, '');
       return {
         id: node.id,
         title: node.frontmatter?.title || titleFallback || "Untitled",
         excerpt: node.excerpt || "",
-        slug,
+        slug: `/note?p=${encodeURIComponent(notePath)}`,
         collection: node.fields?.collection || "notes",
       };
     });
