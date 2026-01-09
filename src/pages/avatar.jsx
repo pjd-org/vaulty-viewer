@@ -52,6 +52,7 @@ export default function AvatarPage() {
     currentXp,
     xpToNext,
     xpProgress,
+    apiStatus,
   } = useAvatar();
 
   return (
@@ -116,17 +117,32 @@ export default function AvatarPage() {
 
             {/* Quick Actions */}
             <div className="avatar-actions">
-              <a href="/" className="avatar-action avatar-action--primary">
+              <a href="/" className="avatar-action avatar-action--primary" title="Tasker powered task list">
                 <span className="avatar-action__icon">📋</span>
-                <span className="avatar-action__label">View Tasks</span>
+                <span className="avatar-action__label">
+                  View Tasks
+                  <span className={`api-badge api-badge--${apiStatus}`}>
+                    {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+                  </span>
+                </span>
               </a>
-              <a href="/goals" className="avatar-action">
+              <a href="/goals" className="avatar-action" title="Goals from Tasker API">
                 <span className="avatar-action__icon">🎯</span>
                 <span className="avatar-action__label">Goals</span>
               </a>
-              <button onClick={refresh} className="avatar-action">
+              <button
+                onClick={refresh}
+                className="avatar-action"
+                disabled={loading}
+                title={apiStatus === "online" ? "Refresh from Tasker API" : "API unreachable, retry"}
+              >
                 <span className="avatar-action__icon">🔄</span>
-                <span className="avatar-action__label">Sync Vitals</span>
+                <span className="avatar-action__label">
+                  {loading ? "Syncing..." : "Sync Vitals"}
+                  <span className={`api-badge api-badge--${apiStatus}`}>
+                    {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+                  </span>
+                </span>
               </button>
             </div>
           </div>

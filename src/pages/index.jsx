@@ -25,6 +25,7 @@ const IndexPage = ({ data }) => {
   const [taskStats, setTaskStats] = useState({ total: 0, todo: 0, completed: 0, highPriority: 0 });
   const [goalsCount, setGoalsCount] = useState(0);
   const [taskData, setTaskData] = useState({}); // Map of path -> task frontmatter
+  const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | unknown
 
   // Derive collection from path
   const deriveCollection = (path) => {
@@ -112,10 +113,12 @@ const IndexPage = ({ data }) => {
             // Count goals from notes
             const goalNotes = processedNotes.filter(n => n.collection === 'goals');
             setGoalsCount(goalNotes.length);
+            setApiStatus("online");
           }
         }
       } catch (err) {
         console.error("[viewer] Failed to fetch notes from API:", err);
+        setApiStatus("offline");
       } finally {
         setLoading(false);
       }
@@ -142,9 +145,11 @@ const IndexPage = ({ data }) => {
             }
           });
           setTaskData(taskMap);
+          setApiStatus("online");
         }
       } catch (err) {
         console.error("[viewer] Failed to fetch tasks from API:", err);
+        setApiStatus("offline");
       }
     };
     
@@ -263,11 +268,24 @@ const IndexPage = ({ data }) => {
             </div>
           </div>
           <div className="quick-links">
-            <Link to="/avatar" className="quick-link">
-              🧙 Avatar Dashboard
+            <Link to="/" className="quick-link quick-link--primary" title={apiStatus === "online" ? "Powered by Tasker API" : "Falling back to static content"}>
+              <span className="quick-link__icon">📋</span>
+              <span className="quick-link__label">
+                View Tasks ({taskStats.todo || 0} active{taskStats.highPriority ? `, ${taskStats.highPriority} high` : ""})
+              </span>
+              <span className={`api-badge api-badge--${apiStatus}`}>
+                {apiStatus === "online" ? "API online" : apiStatus === "offline" ? "API offline" : "API"}
+              </span>
             </Link>
-            <Link to="/goals" className="quick-link">
-              🎯 Goal Progress
+            <Link to="/goals" className="quick-link" title="Goals via Tasker API">
+              <span className="quick-link__icon">🎯</span>
+              <span className="quick-link__label">
+                Goals ({goalsCount || 0})
+              </span>
+            </Link>
+            <Link to="/avatar" className="quick-link" title="Avatar dashboard and vitals">
+              <span className="quick-link__icon">🧙</span>
+              <span className="quick-link__label">Avatar Dashboard</span>
             </Link>
           </div>
         </div>

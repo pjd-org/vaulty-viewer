@@ -60,6 +60,7 @@ export function useAvatar() {
   const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | loading | unknown
 
   const getApiUrl = useCallback(() => {
     return typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
@@ -67,10 +68,15 @@ export function useAvatar() {
 
   const refresh = useCallback(async () => {
     const apiUrl = getApiUrl();
-    if (apiUrl === null) return;
+    if (apiUrl === null) {
+      setLoading(false);
+      setApiStatus("offline");
+      return;
+    }
 
     setLoading(true);
     setError(null);
+    setApiStatus("loading");
 
     try {
       // Fetch avatar state, session stats, and tasks in parallel
@@ -154,8 +160,10 @@ export function useAvatar() {
         flags: state.flags || DEFAULT_AVATAR.flags,
         updated: state.updated || null,
       });
+      setApiStatus("online");
     } catch (err) {
       setError(err.message);
+      setApiStatus("offline");
     } finally {
       setLoading(false);
     }
@@ -179,6 +187,7 @@ export function useAvatar() {
     loading,
     error,
     refresh,
+    apiStatus,
     // Derived values
     level,
     currentXp,
