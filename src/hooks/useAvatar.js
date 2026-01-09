@@ -73,15 +73,81 @@ export function useAvatar() {
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/api/v1/cod/avatar`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const result = await response.json();
+      // Fetch avatar state, session stats, and tasks in parallel
+      const [avatarRes, sessionStatsRes, tasksRes] = await Promise.all([
+        fetch(`${apiUrl}/api/v1/cod/avatar`),
+        fetch(`${apiUrl}/api/v1/sessions/stats`).catch(() => null),
+        fetch(`${apiUrl}/api/v1/tasks`).catch(() => null),
+      ]);
 
-      const state = result?.structuredContent?.state || result?.state || {};
+      if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
+      const avatarResult = await avatarRes.json();
+      const state =
+        avatarResult?.structuredContent?.state || avatarResult?.state || {};
+
+      // Get session stats
+      let sessionStats = {
+        completedSessions: 0,
+        totalSessions: 0,
+        activeSessions: 0,
+      };
+      if (sessionStatsRes?.ok) {
+        const sessionData = await sessionStatsRes.json();
+        sessionStats =
+          sessionData?.structuredContent || sessionData || sessionStats;
+      }
+
+      // Compute task stats from tasks
+      let tasksCompletedToday = 0;
+      let tasksCompletedThisWeek = 0;
+      let totalCompleted = 0;
+
+      if (tasksRes?.ok) {
+        const tasksData = await tasksRes.json();
+        const tasks = tasksData?.structuredContent?.tasks || [];
+
+        const now = new Date();
+        const todayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const weekStart = new Date(todayStart);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
+
+        tasks.forEach((task) => {
+          if (task.status === 'completed') {
+            totalCompleted++;
+            // Check completion date if available
+            const completedDate = task.frontmatter?.completed || task.completed;
+            if (completedDate) {
+              const taskDate = new Date(completedDate);
+              if (taskDate >= todayStart) tasksCompletedToday++;
+              if (taskDate >= weekStart) tasksCompletedThisWeek++;
+            }
+          }
+        });
+      }
+
+      // Merge real stats into vitals
+      const vitals = {
+        ...(state.vitals || DEFAULT_AVATAR.vitals),
+        tasksCompletedToday:
+          tasksCompletedToday || state.vitals?.tasksCompletedToday || 0,
+        tasksCompletedThisWeek:
+          tasksCompletedThisWeek || state.vitals?.tasksCompletedThisWeek || 0,
+        sessionsCompletedThisWeek:
+          sessionStats.completedSessions ||
+          state.vitals?.sessionsCompletedThisWeek ||
+          0,
+        totalTasksCompleted: totalCompleted,
+        totalSessions: sessionStats.totalSessions || 0,
+        activeSessions: sessionStats.activeSessions || 0,
+      };
 
       setAvatar({
         profile: state.profile || DEFAULT_AVATAR.profile,
-        vitals: state.vitals || DEFAULT_AVATAR.vitals,
+        vitals,
         progression: state.progression || DEFAULT_AVATAR.progression,
         capacity: state.capacity || DEFAULT_AVATAR.capacity,
         knowledge: state.knowledge || DEFAULT_AVATAR.knowledge,

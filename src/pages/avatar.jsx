@@ -113,6 +113,22 @@ export default function AvatarPage() {
                 </button>
               </div>
             )}
+
+            {/* Quick Actions */}
+            <div className="avatar-actions">
+              <a href="/" className="avatar-action avatar-action--primary">
+                <span className="avatar-action__icon">📋</span>
+                <span className="avatar-action__label">View Tasks</span>
+              </a>
+              <a href="/goals" className="avatar-action">
+                <span className="avatar-action__icon">🎯</span>
+                <span className="avatar-action__label">Goals</span>
+              </a>
+              <button onClick={refresh} className="avatar-action">
+                <span className="avatar-action__icon">🔄</span>
+                <span className="avatar-action__label">Sync Vitals</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

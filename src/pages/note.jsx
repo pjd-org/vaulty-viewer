@@ -203,11 +203,6 @@ const NotePage = ({ location }) => {
     window.open(obsidianUrl, '_blank');
   };
 
-  const handleEditNote = () => {
-    // Open in Decap CMS admin if available
-    window.open(`/admin/#/collections/vault/entries/${notePath}`, '_blank');
-  };
-
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/note?p=${encodeURIComponent(notePath)}`;
     if (navigator.share) {
@@ -366,39 +361,21 @@ const NotePage = ({ location }) => {
             onClick={handleShare}
           />
           <ActionButton
-            icon="📝"
-            label="Edit"
-            onClick={handleEditNote}
-          />
-          <ActionButton
-            icon="💎"
+            icon="�"
             label="Open in Obsidian"
             onClick={handleOpenInObsidian}
             variant="accent"
           />
         </div>
         
-        {/* Task-specific actions */}
-        {isTask && (
+        {/* Task-specific actions - only show if spec exists */}
+        {isTask && note.frontmatter?.spec_path && (
           <div className="note-actions__group note-actions__group--task">
-            {note.frontmatter?.status !== 'completed' && (
-              <ActionButton
-                icon="✅"
-                label="Mark Complete"
-                variant="success"
-                onClick={() => {
-                  // This would call the API to update task status
-                  alert('Task completion via API - coming soon!');
-                }}
-              />
-            )}
-            {note.frontmatter?.spec_path && (
-              <ActionButton
-                icon="📖"
-                label="View Spec"
-                onClick={() => navigate(`/note?p=${note.frontmatter.spec_path.replace('.md', '')}`)}
-              />
-            )}
+            <ActionButton
+              icon="📖"
+              label="View Spec"
+              onClick={() => navigate(`/note?p=${note.frontmatter.spec_path.replace('.md', '')}`)}
+            />
           </div>
         )}
       </div>

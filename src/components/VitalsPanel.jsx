@@ -86,10 +86,31 @@ export function VitalsPanel({ vitals }) {
           <span className="avatar-stat__label">This Week</span>
         </div>
         <div className="avatar-stat">
-          <span className="avatar-stat__value">{vitals.sessionsCompletedThisWeek || 0}</span>
+          <span className="avatar-stat__value">{vitals.sessionsCompletedThisWeek || vitals.activeSessions || 0}</span>
           <span className="avatar-stat__label">Sessions</span>
         </div>
       </div>
+
+      {/* Additional Stats Row */}
+      {(vitals.totalTasksCompleted > 0 || vitals.totalSessions > 0) && (
+        <>
+          <div className="avatar-section__divider" />
+          <div className="avatar-stats-row avatar-stats-row--secondary">
+            <div className="avatar-stat avatar-stat--small">
+              <span className="avatar-stat__value">{vitals.totalTasksCompleted || 0}</span>
+              <span className="avatar-stat__label">Total Completed</span>
+            </div>
+            <div className="avatar-stat avatar-stat--small">
+              <span className="avatar-stat__value">{vitals.totalSessions || 0}</span>
+              <span className="avatar-stat__label">Total Sessions</span>
+            </div>
+            <div className="avatar-stat avatar-stat--small">
+              <span className="avatar-stat__value">{vitals.activeSessions || 0}</span>
+              <span className="avatar-stat__label">Active</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {vitals.needs && (
         <>
