@@ -5,6 +5,17 @@ set -e
 PORT="${PORT:-4400}"
 VAULT_CONTENT_PATH="${VAULT_CONTENT_PATH:-${VAULT_PATH:-/vault}}"
 TASKER_API_URL="${TASKER_API_URL:-}"
+# API_PROXY_URL: backend URL for nginx to proxy /api/ requests
+# Default to localhost:4300 for same-pod deployments
+API_PROXY_URL="${API_PROXY_URL:-http://127.0.0.1:4300}"
+
+# Configure nginx to proxy API requests to the correct backend
+NGINX_CONF="/etc/nginx/conf.d/default.conf"
+NGINX_TEMPLATE="/etc/nginx/conf.d/default.conf.template"
+if [ -f "$NGINX_TEMPLATE" ]; then
+  echo "[viewer] Configuring nginx API proxy to ${API_PROXY_URL}" >&2
+  sed "s|__API_PROXY_URL__|${API_PROXY_URL}|g" "$NGINX_TEMPLATE" > "$NGINX_CONF"
+fi
 
 # Runtime-injected config for the static app to read.
 # The viewer app should fetch /config.json (or load it during bootstrap).

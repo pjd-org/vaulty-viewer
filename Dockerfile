@@ -46,7 +46,8 @@ RUN touch /usr/share/nginx/html/config.json && chmod 666 /usr/share/nginx/html/c
 COPY --from=build /app/scripts /app/scripts
 RUN chmod +x /app/scripts/start.sh
 
-# Nginx config: listen on 4400, proxy API to backend, and support SPA-style routing
+# Create nginx config template (API_PROXY_URL will be substituted at runtime)
+# Default: http://127.0.0.1:4300 for local pod, override with API_PROXY_URL env var
 RUN printf '%s\n' \
   'server {' \
   '  listen 4400;' \
@@ -54,9 +55,9 @@ RUN printf '%s\n' \
   '  root /usr/share/nginx/html;' \
   '  index index.html;' \
   '' \
-  '  # Proxy API requests to backend API service (in same pod at localhost:4300)' \
+  '  # Proxy API requests to backend API service' \
   '  location /api/ {' \
-  '    proxy_pass http://127.0.0.1:4300;' \
+  '    proxy_pass __API_PROXY_URL__;' \
   '    proxy_http_version 1.1;' \
   '    proxy_set_header Host $host;' \
   '    proxy_set_header X-Real-IP $remote_addr;' \
@@ -74,7 +75,8 @@ RUN printf '%s\n' \
   '    try_files $uri $uri/ /index.html;' \
   '  }' \
   '}' \
-  > /etc/nginx/conf.d/default.conf
+  > /etc/nginx/conf.d/default.conf.template && \
+  cp /etc/nginx/conf.d/default.conf.template /etc/nginx/conf.d/default.conf
 
 EXPOSE 4400
 
