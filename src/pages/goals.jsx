@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGoals } from '../hooks/useGoals';
 import GoalCard from '../components/GoalCard';
+import Navbar from '../components/Navbar';
 
 /**
  * Filter tabs for goal status
@@ -110,6 +111,7 @@ export default function GoalsPage() {
 
   return (
     <main className="page goals-page">
+      <Navbar apiStatus={apiStatus} />
       <nav className="breadcrumb">
         <a href="/" className="back-link">← Home</a>
       </nav>

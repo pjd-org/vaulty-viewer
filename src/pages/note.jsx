@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, navigate } from 'gatsby';
 import CODStatusPanel from '../components/CODStatusPanel';
+import Navbar from '../components/Navbar';
 
 const getApiUrl = () => {
   if (typeof window !== 'undefined' && window.TASKER_API_URL) {
@@ -362,6 +363,7 @@ const NotePage = ({ location }) => {
 
   return (
     <main className={`page page--detail note-page ${isTask ? 'note-page--task' : ''} ${isGoal ? 'note-page--goal' : ''}`}>
+      <Navbar />
       <CODStatusPanel />
       
       {/* Breadcrumb navigation */}

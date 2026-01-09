@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useCODStatus from "../hooks/useCODStatus";
 import HumanStateForm from "./HumanStateForm";
+import { navigate } from "gatsby";
 
 // ============================================================================
 // Sub-components - Raycast Wrapped Style
@@ -226,8 +227,10 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     error,
     refresh,
     updateHumanState,
+    startSession,
     endSession,
   } = useCODStatus(staticData);
+  const [sessionStarting, setSessionStarting] = useState(false);
 
   const handleToggle = () => setCollapsed(!collapsed);
 
@@ -247,6 +250,16 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
   const handleAbortSession = async () => {
     if (session?.id && window.confirm("Abort current session?")) {
       await endSession(session.id, "aborted");
+    }
+  };
+
+  const handleQuickSession = async (budgetMin) => {
+    setSessionStarting(true);
+    try {
+      await startSession({ budgetMin });
+      await refresh();
+    } finally {
+      setSessionStarting(false);
     }
   };
 
@@ -289,6 +302,36 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
             ✕
           </button>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="cod-quick-actions">
+        <button
+          className="cod-button cod-button--pill"
+          onClick={() => handleQuickSession(50)}
+          disabled={loading || updating || sessionStarting}
+        >
+          🚀 Start 50m Focus
+        </button>
+        <button
+          className="cod-button cod-button--pill"
+          onClick={() => handleQuickSession(25)}
+          disabled={loading || updating || sessionStarting}
+        >
+          ⏱️ Start 25m Sprint
+        </button>
+        <button
+          className="cod-button cod-button--pill"
+          onClick={() => setShowForm(true)}
+        >
+          ✏️ Check-in
+        </button>
+        <button
+          className="cod-button cod-button--pill cod-button--ghost"
+          onClick={() => navigate("/")}
+        >
+          📋 Open Tasks
+        </button>
       </div>
 
       {error && (

@@ -3,6 +3,7 @@ import useAvatar from "../hooks/useAvatar";
 import VitalsPanel from "../components/VitalsPanel";
 import ProgressionPanel from "../components/ProgressionPanel";
 import { KnowledgePanel, CapacityPanel } from "../components/KnowledgePanel";
+import Navbar from "../components/Navbar";
 import "../styles.css";
 
 /**
@@ -58,6 +59,7 @@ export default function AvatarPage() {
   return (
     <div className="avatar-page">
       <div className="page">
+        <Navbar apiStatus={apiStatus} />
         <nav className="breadcrumb">
           <a href="/" className="back-link">← Home</a>
         </nav>

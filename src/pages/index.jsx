@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import CODStatusPanel from "../components/CODStatusPanel";
+import Navbar from "../components/Navbar";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -220,6 +221,7 @@ const IndexPage = ({ data }) => {
 
   return (
     <main className="page">
+      <Navbar apiStatus={apiStatus} />
       <CODStatusPanel />
       <header className="hero">
         <div className="hero__content">
