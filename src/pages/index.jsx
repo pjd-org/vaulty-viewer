@@ -39,6 +39,46 @@ const IndexPage = ({ data }) => {
     return "notes";
   };
 
+  // Check if a path should be ignored (system files/folders)
+  const shouldIgnorePath = (pathStr) => {
+    if (!pathStr) return true;
+    
+    const lowerPath = pathStr.toLowerCase();
+    const parts = pathStr.split("/");
+    const fileName = parts[parts.length - 1];
+    
+    // Ignore system folders
+    const ignoredFolders = [
+      "_system", "_trash", "_log", "_archive",
+      "templates", ".obsidian", ".vault", ".git",
+      "archive", ".vault-", "node_modules", ".cache",
+      "core", "interests", "dashboards", "logs"
+    ];
+    
+    if (parts.some(part => 
+      ignoredFolders.some(ignored => part.toLowerCase().startsWith(ignored))
+    )) {
+      return true;
+    }
+    
+    // Ignore config files
+    if (fileName.startsWith("config.") || fileName.includes(".config.")) {
+      return true;
+    }
+    
+    // Ignore hidden files
+    if (fileName.startsWith(".")) {
+      return true;
+    }
+    
+    // Ignore system prefixed files
+    if (fileName.startsWith("_")) {
+      return true;
+    }
+    
+    return false;
+  };
+
   // Fetch notes from API at runtime
   useEffect(() => {
     const fetchNotes = async () => {
@@ -51,17 +91,20 @@ const IndexPage = ({ data }) => {
           // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
           const notePaths = result.structuredContent?.notes || result.notes || [];
           if (notePaths.length > 0) {
-            setApiNotes(notePaths.map((path, idx) => {
-              const pathStr = typeof path === "string" ? path : (path.path || "");
-              const title = pathStr.split("/").pop()?.replace(".md", "") || "Untitled";
-              return {
-                id: `api-${idx}`,
-                title: formatLabel(title),
-                excerpt: "",
-                slug: `/note?p=${encodeURIComponent(pathStr.replace(".md", ""))}`,
-                collection: deriveCollection(pathStr),
-              };
-            }));
+            setApiNotes(notePaths
+              .map((path) => (typeof path === "string" ? path : (path.path || "")))
+              .filter((pathStr) => !shouldIgnorePath(pathStr))
+              .map((pathStr, idx) => {
+                const title = pathStr.split("/").pop()?.replace(".md", "") || "Untitled";
+                return {
+                  id: `api-${idx}`,
+                  title: formatLabel(title),
+                  excerpt: "",
+                  slug: `/note?p=${encodeURIComponent(pathStr.replace(".md", ""))}`,
+                  collection: deriveCollection(pathStr),
+                };
+              })
+            );
           }
         }
       } catch (err) {

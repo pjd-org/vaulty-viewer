@@ -46,13 +46,23 @@ RUN touch /usr/share/nginx/html/config.json && chmod 666 /usr/share/nginx/html/c
 COPY --from=build /app/scripts /app/scripts
 RUN chmod +x /app/scripts/start.sh
 
-# Nginx config: listen on 4400 and support SPA-style routing fallback
+# Nginx config: listen on 4400, proxy API to backend, and support SPA-style routing
 RUN printf '%s\n' \
   'server {' \
   '  listen 4400;' \
   '  server_name _;' \
   '  root /usr/share/nginx/html;' \
   '  index index.html;' \
+  '' \
+  '  # Proxy API requests to backend API service (in same pod at localhost:4300)' \
+  '  location /api/ {' \
+  '    proxy_pass http://127.0.0.1:4300;' \
+  '    proxy_http_version 1.1;' \
+  '    proxy_set_header Host $host;' \
+  '    proxy_set_header X-Real-IP $remote_addr;' \
+  '    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' \
+  '    proxy_set_header X-Forwarded-Proto $scheme;' \
+  '  }' \
   '' \
   '  location ~* \\.(?:css|js|mjs|map|json|png|jpg|jpeg|gif|svg|webp|ico|woff2?|ttf|eot)$ {' \
   '    expires 30d;' \
