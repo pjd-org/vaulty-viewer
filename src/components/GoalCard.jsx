@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import getApiBase from '../utils/api';
 
 /**
  * Status badge component
@@ -101,19 +102,12 @@ export function GoalCard({ goal }) {
   const hasTasks = Array.isArray(tasks) && tasks.length > 0;
   const firstTaskPath = hasTasks && tasks.find((t) => t.path)?.path;
 
-  const getApiUrl = () => {
-    if (typeof window !== 'undefined' && window.TASKER_API_URL) {
-      return window.TASKER_API_URL;
-    }
-    return '';
-  };
-
   const submitReview = async (decision = 'approve') => {
     if (!firstTaskPath) return;
     setReviewBusy(true);
     setReviewMsg(null);
     try {
-      const apiUrl = getApiUrl();
+      const apiUrl = getApiBase();
       const body = {
         path: firstTaskPath,
         addHistoryNote: `Goal review (${decision}) for ${goal.id}`,

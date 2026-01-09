@@ -1,16 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import getApiBase from '../utils/api';
 
 /**
  * Get API URL from window config or default to relative path
  */
 const getApiUrl = () => {
-  if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
-    return process.env.GATSBY_TASKER_API_URL;
-  }
-  if (typeof window !== 'undefined' && window.TASKER_API_URL) {
-    return window.TASKER_API_URL;
-  }
-  return '';
+  return getApiBase();
 };
 
 /**

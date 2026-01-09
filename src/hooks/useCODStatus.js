@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import getApiBase from '../utils/api';
 
 /**
  * Default/mock COD status for static builds or when API unavailable
@@ -111,10 +112,8 @@ export function useCODStatus(staticData = null) {
 
   // Get API URL helper
   const getApiUrl = useCallback(() => {
-    if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
-      return process.env.GATSBY_TASKER_API_URL;
-    }
-    return typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
+    const url = getApiBase();
+    return url === '' ? '' : url;
   }, []);
 
   const refresh = useCallback(async () => {

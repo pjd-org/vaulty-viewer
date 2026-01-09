@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import CODStatusPanel from "../components/CODStatusPanel";
 import Navbar from "../components/Navbar";
+import getApiBase from "../utils/api";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -10,16 +11,7 @@ const formatLabel = (value) =>
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-const getApiUrl = () => {
-  if (typeof process !== "undefined" && process.env.GATSBY_TASKER_API_URL) {
-    return process.env.GATSBY_TASKER_API_URL;
-  }
-  if (typeof window !== "undefined" && window.TASKER_API_URL) {
-    return window.TASKER_API_URL;
-  }
-  // Default to relative path - works with proxy
-  return "";
-};
+const getApiUrl = getApiBase;
 
 const IndexPage = ({ data }) => {
   const [query, setQuery] = useState("");

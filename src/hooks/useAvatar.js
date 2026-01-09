@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import getApiBase from '../utils/api';
 
 /**
  * Default avatar state when API unavailable
@@ -62,12 +63,7 @@ export function useAvatar() {
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | loading | unknown
 
-  const getApiUrl = useCallback(() => {
-    if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
-      return process.env.GATSBY_TASKER_API_URL;
-    }
-    return typeof window !== 'undefined' ? window.TASKER_API_URL || '' : null;
-  }, []);
+  const getApiUrl = useCallback(() => getApiBase() || null, []);
 
   const refresh = useCallback(async () => {
     const apiUrl = getApiUrl();

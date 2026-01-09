@@ -2,16 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link, navigate } from 'gatsby';
 import CODStatusPanel from '../components/CODStatusPanel';
 import Navbar from '../components/Navbar';
+import getApiBase from '../utils/api';
 
-const getApiUrl = () => {
-  if (typeof process !== 'undefined' && process.env.GATSBY_TASKER_API_URL) {
-    return process.env.GATSBY_TASKER_API_URL;
-  }
-  if (typeof window !== 'undefined' && window.TASKER_API_URL) {
-    return window.TASKER_API_URL;
-  }
-  return '';
-};
+const getApiUrl = getApiBase;
 
 const formatLabel = (value) =>
   value
