@@ -84,6 +84,8 @@ function formatDate(isoString) {
  */
 export function GoalCard({ goal }) {
   const [expanded, setExpanded] = useState(false);
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState(null);
   
   const { 
     title, 
@@ -95,6 +97,47 @@ export function GoalCard({ goal }) {
     eta,
     priority,
   } = goal;
+  const goalNotePath = `/note?p=${encodeURIComponent(`goals/${goal.id}`)}`;
+  const hasTasks = Array.isArray(tasks) && tasks.length > 0;
+  const firstTaskPath = hasTasks && tasks.find((t) => t.path)?.path;
+
+  const getApiUrl = () => {
+    if (typeof window !== 'undefined' && window.TASKER_API_URL) {
+      return window.TASKER_API_URL;
+    }
+    return '';
+  };
+
+  const submitReview = async (decision = 'approve') => {
+    if (!firstTaskPath) return;
+    setReviewBusy(true);
+    setReviewMsg(null);
+    try {
+      const apiUrl = getApiUrl();
+      const body = {
+        path: firstTaskPath,
+        addHistoryNote: `Goal review (${decision}) for ${goal.id}`,
+        frontmatterPatch: {
+          review_status: decision,
+          review_updated: new Date().toISOString(),
+        },
+      };
+      const res = await fetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      setReviewMsg('Review sent to Tasker API');
+    } catch (err) {
+      setReviewMsg(`Review failed: ${err.message}`);
+    } finally {
+      setReviewBusy(false);
+    }
+  };
   
   return (
     <div className={`goal-card goal-card--${status}`}>
@@ -140,6 +183,34 @@ export function GoalCard({ goal }) {
       
       {expanded && (
         <div className="goal-card__details">
+          <div className="goal-card__actions">
+            <a href={goalNotePath} className="goal-card__link">Open goal note</a>
+            {firstTaskPath && (
+              <a
+                href={`/note?p=${encodeURIComponent(firstTaskPath.replace(/\.md$/, ''))}`}
+                className="goal-card__link"
+              >
+                View task
+              </a>
+            )}
+            <div className="goal-card__review">
+              <button
+                className="goal-card__review-btn"
+                onClick={() => submitReview('approve')}
+                disabled={reviewBusy || !firstTaskPath}
+              >
+                ✅ Approve
+              </button>
+              <button
+                className="goal-card__review-btn goal-card__review-btn--warn"
+                onClick={() => submitReview('needs_changes')}
+                disabled={reviewBusy || !firstTaskPath}
+              >
+                ✋ Needs changes
+              </button>
+              {reviewMsg && <span className="goal-card__review-msg">{reviewMsg}</span>}
+            </div>
+          </div>
           <div className="goal-card__effort">
             <span>Effort: {stats.completedEffort}/{stats.totalEffort} completed</span>
             {stats.blocked > 0 && (

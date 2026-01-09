@@ -40,13 +40,21 @@ export function useGoals() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [apiStatus, setApiStatus] = useState('unknown'); // online | offline | unknown
+  const [updatedAt, setUpdatedAt] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
+    setApiStatus('unknown');
 
     try {
       const apiUrl = getApiUrl();
+      if (apiUrl === null) {
+        setApiStatus('offline');
+        setLoading(false);
+        return;
+      }
 
       // Fetch all tasks (both todo and completed for progress calculation)
       const tasksRes = await fetch(`${apiUrl}/api/v1/tasks?status=all`);
@@ -55,9 +63,12 @@ export function useGoals() {
 
       const taskList = tasksData.structuredContent?.tasks || [];
       setTasks(taskList);
+      setApiStatus('online');
+      setUpdatedAt(new Date().toISOString());
     } catch (err) {
       console.error('[useGoals] Error:', err);
       setError(err.message);
+      setApiStatus('offline');
     } finally {
       setLoading(false);
     }
@@ -186,6 +197,8 @@ export function useGoals() {
     goals,
     loading,
     error,
+    apiStatus,
+    updatedAt,
     refresh: fetchData,
   };
 }

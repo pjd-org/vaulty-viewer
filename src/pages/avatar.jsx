@@ -64,7 +64,12 @@ export default function AvatarPage() {
 
         <header className="page-header">
           <h1>Avatar Dashboard</h1>
-          <p className="lede">Your gamified productivity profile</p>
+          <p className="lede">
+            Your gamified productivity profile
+            <span className={`api-badge api-badge--${apiStatus}`} style={{ marginLeft: 8 }}>
+              {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+            </span>
+          </p>
         </header>
 
         {error && (
@@ -83,6 +88,31 @@ export default function AvatarPage() {
           <div className="avatar-dashboard">
             {/* Profile Header */}
             <ProfileHeader profile={avatar.profile} flags={avatar.flags} />
+
+            {/* Snapshot stats */}
+            <div className="stats">
+              <div className="stat" data-type="tasks">
+                <div className="stat__icon">📋</div>
+                <div className="stat__content">
+                  <div className="stat__value">{avatar.vitals?.tasksCompletedToday || 0}</div>
+                  <div className="stat__label">Tasks done today</div>
+                </div>
+              </div>
+              <div className="stat" data-type="sessions">
+                <div className="stat__icon">⏱</div>
+                <div className="stat__content">
+                  <div className="stat__value">{avatar.vitals?.sessionsCompletedThisWeek || 0}</div>
+                  <div className="stat__label">Sessions this week</div>
+                </div>
+              </div>
+              <div className="stat" data-type="focus">
+                <div className="stat__icon">⚡</div>
+                <div className="stat__content">
+                  <div className="stat__value">{avatar.vitals?.energy ?? 0}%</div>
+                  <div className="stat__label">Energy now</div>
+                </div>
+              </div>
+            </div>
 
             {/* Main Grid */}
             <div className="avatar-grid">
@@ -120,15 +150,19 @@ export default function AvatarPage() {
               <a href="/" className="avatar-action avatar-action--primary" title="Tasker powered task list">
                 <span className="avatar-action__icon">📋</span>
                 <span className="avatar-action__label">
-                  View Tasks
+                  Open Tasks
                   <span className={`api-badge api-badge--${apiStatus}`}>
                     {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
                   </span>
+                </span>
+                <span className="avatar-action__meta">
+                  {avatar.vitals?.tasksCompletedToday || 0} done today
                 </span>
               </a>
               <a href="/goals" className="avatar-action" title="Goals from Tasker API">
                 <span className="avatar-action__icon">🎯</span>
                 <span className="avatar-action__label">Goals</span>
+                <span className="avatar-action__meta">Focus on outcomes</span>
               </a>
               <button
                 onClick={refresh}
@@ -142,6 +176,9 @@ export default function AvatarPage() {
                   <span className={`api-badge api-badge--${apiStatus}`}>
                     {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
                   </span>
+                </span>
+                <span className="avatar-action__meta">
+                  {avatar.vitals?.sessionsCompletedThisWeek || 0} sessions this week
                 </span>
               </button>
             </div>

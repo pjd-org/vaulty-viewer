@@ -67,7 +67,7 @@ function GoalsSummary({ goals }) {
  * Goals page component
  */
 export default function GoalsPage() {
-  const { goals, loading, error, refresh } = useGoals();
+  const { goals, loading, error, refresh, apiStatus, updatedAt } = useGoals();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('priority'); // priority, progress, eta
   
@@ -116,7 +116,26 @@ export default function GoalsPage() {
       
       <header className="page-header">
         <h1>🎯 Goal Progress</h1>
-        <p className="lede">Track progress across all your goals and linked tasks.</p>
+        <p className="lede">
+          Track progress across all your goals and linked tasks. Data refreshes from Tasker API.
+          <span className={`api-badge api-badge--${apiStatus}`} style={{ marginLeft: 8 }}>
+            {apiStatus === 'online' ? 'API online' : apiStatus === 'offline' ? 'API offline' : 'API'}
+          </span>
+        </p>
+        <div className="quick-links" style={{ marginTop: 12, paddingTop: 12 }}>
+          <a href="/" className="quick-link quick-link--primary" title="Open tasks filtered by goal tags">
+            <span className="quick-link__icon">📋</span>
+            <span className="quick-link__label">Open Tasks</span>
+          </a>
+          <a href="/avatar" className="quick-link" title="See avatar stats and goal impact">
+            <span className="quick-link__icon">🧙</span>
+            <span className="quick-link__label">Avatar Dashboard</span>
+          </a>
+          <button className="quick-link" onClick={refresh} title="Refresh from Tasker API">
+            <span className="quick-link__icon">🔄</span>
+            <span className="quick-link__label">{loading ? 'Refreshing…' : 'Refresh'}</span>
+          </button>
+        </div>
       </header>
       
       {error && (
@@ -168,7 +187,9 @@ export default function GoalsPage() {
           )}
           
           <footer className="goals-footer">
-            <span>Last updated: {new Date().toLocaleTimeString()}</span>
+            <span>
+              Last updated: {updatedAt ? new Date(updatedAt).toLocaleTimeString() : '—'}
+            </span>
             <button className="goals-refresh" onClick={refresh}>
               🔄 Refresh
             </button>

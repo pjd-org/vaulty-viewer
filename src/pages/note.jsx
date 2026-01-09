@@ -65,6 +65,10 @@ const NotePage = ({ location }) => {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const [taskData, setTaskData] = useState(null);
+  const [reviewDecision, setReviewDecision] = useState('approve');
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState(null);
 
   // Extract path from query string: /note?p=tasks/viewer-goal-progress
   const params = typeof window !== 'undefined' ? new URLSearchParams(location?.search) : null;
@@ -224,10 +228,94 @@ const NotePage = ({ location }) => {
     }
   };
 
+  const handleReviewSubmit = async () => {
+    if (!notePath) return;
+    setReviewSubmitting(true);
+    setReviewMessage(null);
+    try {
+      const apiUrl = getApiUrl();
+      const body = {
+        path: `${notePath}.md`,
+        addHistoryNote: `Review (${reviewDecision}): ${reviewComment || 'No comment provided.'}`,
+        frontmatterPatch: {
+          review_status: reviewDecision,
+          review_updated: new Date().toISOString(),
+        },
+      };
+      const res = await fetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      setReviewMessage('Review recorded via Tasker API.');
+      setReviewComment('');
+    } catch (err) {
+      setReviewMessage(`Failed to record review: ${err.message}`);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   // Determine note type for specialized UI
   const isTask = note?.frontmatter?.type === 'task' || note?.collection === 'tasks';
   const isGoal = note?.frontmatter?.type === 'goal' || note?.collection === 'goals';
   const isSpec = note?.collection === 'specs' || note?.collection === 'projects';
+
+  const renderReviewPanel = () => {
+    if (!isTask) return null;
+    return (
+      <section className="note-review">
+        <header className="note-review__header">
+          <h3>Review</h3>
+          <p>Record a review decision and optional comment back to the vault via Tasker API.</p>
+        </header>
+        <div className="note-review__controls">
+          <label className="note-review__option">
+            <input
+              type="radio"
+              name="review-decision"
+              value="approve"
+              checked={reviewDecision === 'approve'}
+              onChange={() => setReviewDecision('approve')}
+            />
+            <span>Approve</span>
+          </label>
+          <label className="note-review__option">
+            <input
+              type="radio"
+              name="review-decision"
+              value="needs_changes"
+              checked={reviewDecision === 'needs_changes'}
+              onChange={() => setReviewDecision('needs_changes')}
+            />
+            <span>Needs changes</span>
+          </label>
+        </div>
+        <textarea
+          className="note-review__comment"
+          placeholder="Add a short review comment (optional)"
+          value={reviewComment}
+          onChange={(e) => setReviewComment(e.target.value)}
+        />
+        <div className="note-review__actions">
+          <button
+            className="note-review__submit"
+            onClick={handleReviewSubmit}
+            disabled={reviewSubmitting}
+          >
+            {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+          </button>
+          {reviewMessage && (
+            <span className="note-review__message">{reviewMessage}</span>
+          )}
+        </div>
+      </section>
+    );
+  };
 
   if (loading) {
     return (
@@ -361,7 +449,7 @@ const NotePage = ({ location }) => {
             onClick={handleShare}
           />
           <ActionButton
-            icon="�"
+            icon="🗂"
             label="Open in Obsidian"
             onClick={handleOpenInObsidian}
             variant="accent"
@@ -425,6 +513,8 @@ const NotePage = ({ location }) => {
         className="note-content"
         dangerouslySetInnerHTML={{ __html: note.html }}
       />
+
+      {renderReviewPanel()}
 
       {/* Footer with related actions */}
       <footer className="note-footer">
