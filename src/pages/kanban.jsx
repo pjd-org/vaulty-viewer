@@ -2,70 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import Navbar from "../components/Navbar";
 import getApiBase from "../utils/api";
-
-const STATUS_COLUMNS = [
-  { key: "todo", label: "To Do", sort: (a, b) => (b.priority || 0) - (a.priority || 0) },
-  { key: "in-progress", label: "In Progress", sort: (a, b) => (b.priority || 0) - (a.priority || 0) },
-  { key: "blocked", label: "Blocked", sort: (a, b) => (b.createdAt || 0) - (a.createdAt || 0) },
-  { key: "completed", label: "Completed", sort: (a, b) => (b.completedAt || 0) - (a.completedAt || 0) },
-];
-
-const RECENT_COMPLETED_DAYS = 7;
-
-const toDate = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-};
-
-const normalizeTask = (task = {}) => {
-  const slugPath = task.slug ? task.slug.replace(/^\//, "").replace(/\/$/, "") : "";
-  const notePath = task.path ? task.path.replace(/\.md$/, "") : slugPath;
-  const link = notePath ? `/note?p=${encodeURIComponent(notePath)}` : "#";
-  return {
-    id: task.id || task.path || link,
-    title: task.title || task.path || "Untitled",
-    status: (task.status || "todo").toLowerCase(),
-    priority: typeof task.priority === "number" ? task.priority : 0,
-    estimatedTimeMin: task.estimatedTimeMin,
-    tags: task.tags || [],
-    goalId: task.goalId,
-    projectId: task.projectId,
-    completedAt: toDate(task.completedAt)?.getTime() || null,
-    createdAt: toDate(task.created)?.getTime() || null,
-    path: task.path,
-    link,
-  };
-};
-
-const buildColumns = (tasks, filterTag, filterProject) => {
-  const now = Date.now();
-  const cutoff = now - RECENT_COMPLETED_DAYS * 24 * 60 * 60 * 1000;
-
-  const filtered = tasks.filter((task) => {
-    if (filterTag && !(task.tags || []).includes(filterTag)) return false;
-    if (filterProject && task.projectId !== filterProject) return false;
-    return true;
-  });
-
-  return STATUS_COLUMNS.map((col) => {
-    const items = filtered
-      .filter((t) => {
-        if (col.key === "completed" && t.completedAt && t.completedAt < cutoff) {
-          return false;
-        }
-        return t.status === col.key;
-      })
-      .sort(col.sort);
-    return { ...col, items };
-  });
-};
+import { STATUS_COLUMNS, buildColumns, normalizeTask } from "./kanban-logic";
 
 export default function KanbanPage({ data }) {
   const [apiStatus, setApiStatus] = useState("unknown");
   const [apiTasks, setApiTasks] = useState([]);
   const [filterTag, setFilterTag] = useState("");
   const [filterProject, setFilterProject] = useState("");
+  const [showCompleted, setShowCompleted] = useState(true);
 
   const staticTasks = useMemo(() => {
     const nodes = data?.allMarkdownRemark?.nodes || [];
@@ -126,8 +70,8 @@ export default function KanbanPage({ data }) {
   }, [tasks]);
 
   const columns = useMemo(
-    () => buildColumns(tasks, filterTag || "", filterProject || ""),
-    [tasks, filterTag, filterProject]
+    () => buildColumns(tasks, filterTag || "", filterProject || "", showCompleted),
+    [tasks, filterTag, filterProject, showCompleted]
   );
 
   const totalByStatus = useMemo(() => {
@@ -200,6 +144,16 @@ export default function KanbanPage({ data }) {
           <span className="pill pill--ghost">⏱</span>
           <span className="muted">Estimate</span>
         </div>
+        <div className="toggle-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={showCompleted}
+              onChange={(e) => setShowCompleted(e.target.checked)}
+            />
+            Show completed
+          </label>
+        </div>
       </section>
 
       <section className="kanban">
@@ -217,11 +171,20 @@ export default function KanbanPage({ data }) {
             ) : (
               <div className="kanban__cards">
                 {col.items.map((task) => (
-                  <Link key={task.id} to={task.link} className="kanban-card">
+                  <article key={task.id} className="kanban-card" aria-label={task.title}>
                     <div className="kanban-card__header">
                       <span className="kanban-card__title">{task.title}</span>
-                      {task.priority >= 9 && (
-                        <span className="kanban-card__priority" title="High priority">
+                      {task.priority > 0 && (
+                        <span
+                          className={`kanban-card__priority ${
+                            task.priority >= 8
+                              ? "kanban-card__priority--high"
+                              : task.priority >= 5
+                              ? "kanban-card__priority--mid"
+                              : ""
+                          }`}
+                          title={`Priority ${task.priority}`}
+                        >
                           P{task.priority}
                         </span>
                       )}
@@ -253,10 +216,22 @@ export default function KanbanPage({ data }) {
                       </div>
                     )}
                     <div className="kanban-card__footer">
-                      <span className="muted">Open →</span>
-                      {isReadOnly && <span className="pill pill--ghost">read-only</span>}
+                      <Link to={task.link} className="pill pill--soft">
+                        Open →
+                      </Link>
+                      {isReadOnly ? (
+                        <a
+                          href={task.cmsSlug ? `/admin/#/collections/tasks/entries/${encodeURIComponent(task.cmsSlug)}` : "/admin/#/collections/tasks"}
+                          className="pill pill--ghost"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Edit in CMS
+                        </a>
+                      ) : (
+                        <span className="pill pill--ghost">online</span>
+                      )}
                     </div>
-                  </Link>
+                  </article>
                 ))}
               </div>
             )}

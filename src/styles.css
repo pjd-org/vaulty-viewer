@@ -4304,6 +4304,16 @@ img {
   gap: 10px;
 }
 
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-group input {
+  margin-right: 6px;
+}
+
 .pill--ghost {
   background: rgba(0, 0, 0, 0.05);
   color: var(--muted);
@@ -4386,6 +4396,16 @@ img {
   font-size: 0.85rem;
 }
 
+.kanban-card__priority--mid {
+  background: rgba(234, 179, 8, 0.18);
+  color: #92400e;
+}
+
+.kanban-card__priority--high {
+  background: rgba(239, 68, 68, 0.18);
+  color: #991b1b;
+}
+
 .kanban-card__meta,
 .kanban-card__tags {
   display: flex;
@@ -4424,6 +4444,11 @@ img {
   align-items: center;
   justify-content: space-between;
   color: var(--muted);
+}
+
+.pill--soft {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
 }
 
 .muted {

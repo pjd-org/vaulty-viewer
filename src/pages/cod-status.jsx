@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "gatsby";
 import CODStatusPanel from "../components/CODStatusPanel";
+import { codPageStyle } from "./cod-status-logic";
 
 /**
  * Full-page COD Status view - Raycast Wrapped Style
@@ -8,10 +9,7 @@ import CODStatusPanel from "../components/CODStatusPanel";
  */
 const CODStatusPage = () => {
   return (
-    <main className="page cod-status-page" style={{
-      background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0d12 50%, #0f0a14 100%)',
-      minHeight: '100vh'
-    }}>
+    <main className="page cod-status-page" style={codPageStyle()}>
       <header className="detail__header" style={{ paddingBottom: '24px' }}>
         <Link to="/" className="back-link">
           ← Back to vault

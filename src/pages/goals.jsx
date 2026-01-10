@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGoals } from '../hooks/useGoals';
 import GoalCard from '../components/GoalCard';
 import Navbar from '../components/Navbar';
+import { computeCounts, filterGoals, sortGoals, computeSummary } from './goals-logic';
 
 /**
  * Filter tabs for goal status
@@ -34,13 +35,7 @@ function FilterTabs({ filter, setFilter, counts }) {
  * Summary stats panel
  */
 function GoalsSummary({ goals }) {
-  const totalTasks = goals.reduce((sum, g) => sum + g.stats.total, 0);
-  const completedTasks = goals.reduce((sum, g) => sum + g.stats.completed, 0);
-  const totalEffort = goals.reduce((sum, g) => sum + g.stats.totalEffort, 0);
-  const completedEffort = goals.reduce((sum, g) => sum + g.stats.completedEffort, 0);
-  const overallProgress = totalEffort > 0 
-    ? Math.round((completedEffort / totalEffort) * 100) 
-    : 0;
+  const { totalTasks, completedTasks, totalEffort, completedEffort, overallProgress } = computeSummary(goals);
   
   return (
     <div className="goals-summary">
@@ -73,41 +68,13 @@ export default function GoalsPage() {
   const [sortBy, setSortBy] = useState('priority'); // priority, progress, eta
   
   // Calculate filter counts
-  const counts = {
-    all: goals.length,
-    active: goals.filter(g => g.status !== 'completed').length,
-    atRisk: goals.filter(g => ['at-risk', 'behind', 'blocked'].includes(g.status)).length,
-    completed: goals.filter(g => g.status === 'completed').length,
-  };
+  const counts = computeCounts(goals);
   
   // Apply filter
-  const filteredGoals = goals.filter(goal => {
-    switch (filter) {
-      case 'active':
-        return goal.status !== 'completed';
-      case 'at-risk':
-        return ['at-risk', 'behind', 'blocked'].includes(goal.status);
-      case 'completed':
-        return goal.status === 'completed';
-      default:
-        return true;
-    }
-  });
+  const filteredGoals = filterGoals(goals, filter);
   
   // Apply sort
-  const sortedGoals = [...filteredGoals].sort((a, b) => {
-    switch (sortBy) {
-      case 'progress':
-        return b.progress - a.progress;
-      case 'eta':
-        if (!a.eta && !b.eta) return 0;
-        if (!a.eta) return 1;
-        if (!b.eta) return -1;
-        return new Date(a.eta) - new Date(b.eta);
-      default: // priority
-        return b.priority - a.priority;
-    }
-  });
+  const sortedGoals = sortGoals(filteredGoals, sortBy);
 
   return (
     <main className="page goals-page">

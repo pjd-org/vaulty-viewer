@@ -5,6 +5,7 @@ import ProgressionPanel from "../components/ProgressionPanel";
 import { KnowledgePanel, CapacityPanel } from "../components/KnowledgePanel";
 import Navbar from "../components/Navbar";
 import "../styles.css";
+import { apiBadgeText, computeSnapshotStats } from "./avatar-logic";
 
 /**
  * Profile Header - shows avatar name, title, and archetype
@@ -55,6 +56,7 @@ export default function AvatarPage() {
     xpProgress,
     apiStatus,
   } = useAvatar();
+  const snapshot = computeSnapshotStats(avatar);
 
   return (
     <div className="avatar-page">
@@ -69,7 +71,7 @@ export default function AvatarPage() {
           <p className="lede">
             Your gamified productivity profile
             <span className={`api-badge api-badge--${apiStatus}`} style={{ marginLeft: 8 }}>
-              {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+              {apiBadgeText(apiStatus)}
             </span>
           </p>
         </header>
@@ -96,21 +98,21 @@ export default function AvatarPage() {
               <div className="stat" data-type="tasks">
                 <div className="stat__icon">📋</div>
                 <div className="stat__content">
-                  <div className="stat__value">{avatar.vitals?.tasksCompletedToday || 0}</div>
+                  <div className="stat__value">{snapshot.tasksToday}</div>
                   <div className="stat__label">Tasks done today</div>
                 </div>
               </div>
               <div className="stat" data-type="sessions">
                 <div className="stat__icon">⏱</div>
                 <div className="stat__content">
-                  <div className="stat__value">{avatar.vitals?.sessionsCompletedThisWeek || 0}</div>
+                  <div className="stat__value">{snapshot.sessionsThisWeek}</div>
                   <div className="stat__label">Sessions this week</div>
                 </div>
               </div>
               <div className="stat" data-type="focus">
                 <div className="stat__icon">⚡</div>
                 <div className="stat__content">
-                  <div className="stat__value">{avatar.vitals?.energy ?? 0}%</div>
+                  <div className="stat__value">{snapshot.energy}%</div>
                   <div className="stat__label">Energy now</div>
                 </div>
               </div>
@@ -154,11 +156,11 @@ export default function AvatarPage() {
                 <span className="avatar-action__label">
                   Open Tasks
                   <span className={`api-badge api-badge--${apiStatus}`}>
-                    {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+                    {apiBadgeText(apiStatus)}
                   </span>
                 </span>
                 <span className="avatar-action__meta">
-                  {avatar.vitals?.tasksCompletedToday || 0} done today
+                  {snapshot.tasksToday} done today
                 </span>
               </a>
               <a href="/goals" className="avatar-action" title="Goals from Tasker API">
@@ -176,11 +178,11 @@ export default function AvatarPage() {
                 <span className="avatar-action__label">
                   {loading ? "Syncing..." : "Sync Vitals"}
                   <span className={`api-badge api-badge--${apiStatus}`}>
-                    {apiStatus === "online" ? "API online" : apiStatus === "loading" ? "Syncing" : "API offline"}
+                    {apiBadgeText(apiStatus)}
                   </span>
                 </span>
                 <span className="avatar-action__meta">
-                  {avatar.vitals?.sessionsCompletedThisWeek || 0} sessions this week
+                  {snapshot.sessionsThisWeek} sessions this week
                 </span>
               </button>
             </div>
