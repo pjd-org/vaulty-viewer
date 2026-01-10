@@ -99,6 +99,14 @@ exports.createSchemaCustomization = ({ actions }) => {
     type MarkdownRemarkFrontmatter {
       title: String
       tags: [String]
+      status: String
+      priority: Int
+      estimatedTimeMin: Int
+      effortScore: Int
+      focusCost: Int
+      goalId: String
+      projectId: String
+      completedAt: Date @dateformat
     }
     type MarkdownRemark implements Node {
       fields: MarkdownRemarkFields

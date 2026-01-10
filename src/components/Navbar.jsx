@@ -24,6 +24,9 @@ export default function Navbar({ apiStatus = "unknown" }) {
         <Link to="/" activeClassName="navbar__link--active">
           Home
         </Link>
+        <Link to="/kanban" activeClassName="navbar__link--active">
+          Kanban
+        </Link>
         <Link to="/avatar" activeClassName="navbar__link--active">
           Avatar
         </Link>
