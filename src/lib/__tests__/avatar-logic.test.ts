@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiBadgeText, computeSnapshotStats } from "./avatar-logic";
+import { apiBadgeText, computeSnapshotStats } from "../avatar-logic";
 
 describe("apiBadgeText", () => {
   it("returns friendly badge labels", () => {

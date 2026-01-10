@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codPageStyle } from "./cod-status-logic";
+import { codPageStyle } from "../cod-status-logic";
 
 describe("codPageStyle", () => {
   it("returns gradient background and full height", () => {

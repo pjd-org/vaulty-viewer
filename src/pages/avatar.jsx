@@ -5,7 +5,7 @@ import ProgressionPanel from "../components/ProgressionPanel";
 import { KnowledgePanel, CapacityPanel } from "../components/KnowledgePanel";
 import Navbar from "../components/Navbar";
 import "../styles.css";
-import { apiBadgeText, computeSnapshotStats } from "./avatar-logic";
+import { apiBadgeText, computeSnapshotStats } from "../lib/avatar-logic";
 
 /**
  * Profile Header - shows avatar name, title, and archetype

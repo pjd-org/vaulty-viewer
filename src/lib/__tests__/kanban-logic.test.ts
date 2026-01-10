@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { buildColumns, normalizeTask, STATUS_COLUMNS } from "./kanban-logic";
+import { buildColumns, normalizeTask, STATUS_COLUMNS } from "../kanban-logic";
 
 const NOW = new Date("2024-01-08T12:00:00Z").getTime();
 

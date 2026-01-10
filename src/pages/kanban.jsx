@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import Navbar from "../components/Navbar";
 import getApiBase from "../utils/api";
-import { STATUS_COLUMNS, buildColumns, normalizeTask } from "./kanban-logic";
+import { STATUS_COLUMNS, buildColumns, normalizeTask } from "../lib/kanban-logic";
 
 export default function KanbanPage({ data }) {
   const [apiStatus, setApiStatus] = useState("unknown");

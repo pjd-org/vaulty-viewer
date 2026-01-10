@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeCounts, filterGoals, sortGoals, computeSummary, type Goal } from "./goals-logic";
+import { computeCounts, filterGoals, sortGoals, computeSummary, type Goal } from "../goals-logic";
 
 const sampleGoals: Goal[] = [
   {

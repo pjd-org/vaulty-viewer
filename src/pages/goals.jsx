@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGoals } from '../hooks/useGoals';
 import GoalCard from '../components/GoalCard';
 import Navbar from '../components/Navbar';
-import { computeCounts, filterGoals, sortGoals, computeSummary } from './goals-logic';
+import { computeCounts, filterGoals, sortGoals, computeSummary } from '../lib/goals-logic';
 
 /**
  * Filter tabs for goal status
