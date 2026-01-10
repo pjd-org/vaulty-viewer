@@ -5,7 +5,8 @@ import getApiBase from '../utils/api';
  * Get API URL from window config or default to relative path
  */
 const getApiUrl = () => {
-  return getApiBase();
+  const base = getApiBase();
+  return base === null || base === undefined ? null : base; // allow empty string for same-origin
 };
 
 /**
@@ -59,7 +60,10 @@ export function useGoals() {
       if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
       const tasksData = await tasksRes.json();
 
-      const taskList = tasksData.structuredContent?.tasks || [];
+      const taskList =
+        tasksData.structuredContent?.tasks ||
+        tasksData.tasks ||
+        [];
       setTasks(taskList);
       setApiStatus('online');
       setUpdatedAt(new Date().toISOString());

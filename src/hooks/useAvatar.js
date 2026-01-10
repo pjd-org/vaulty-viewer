@@ -63,7 +63,11 @@ export function useAvatar() {
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | loading | unknown
 
-  const getApiUrl = useCallback(() => getApiBase() || null, []);
+  // Allow empty string to mean "same origin /api"
+  const getApiUrl = useCallback(() => {
+    const base = getApiBase();
+    return base === null || base === undefined ? null : base;
+  }, []);
 
   const refresh = useCallback(async () => {
     const apiUrl = getApiUrl();
@@ -87,8 +91,8 @@ export function useAvatar() {
 
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
       const avatarResult = await avatarRes.json();
-      const state =
-        avatarResult?.structuredContent?.state || avatarResult?.state || {};
+      const avatarPayload = avatarResult?.structuredContent ?? avatarResult ?? {};
+      const state = avatarPayload.state || avatarPayload || {};
 
       // Get session stats
       let sessionStats = {
@@ -109,7 +113,10 @@ export function useAvatar() {
 
       if (tasksRes?.ok) {
         const tasksData = await tasksRes.json();
-        const tasks = tasksData?.structuredContent?.tasks || [];
+        const tasks =
+          tasksData?.structuredContent?.tasks ||
+          tasksData?.tasks ||
+          [];
 
         const now = new Date();
         const todayStart = new Date(
@@ -124,7 +131,11 @@ export function useAvatar() {
           if (task.status === 'completed') {
             totalCompleted++;
             // Check completion date if available
-            const completedDate = task.frontmatter?.completed || task.completed;
+            const completedDate =
+              task.completedAt ||
+              task.frontmatter?.completedAt ||
+              task.frontmatter?.completed ||
+              task.completed;
             if (completedDate) {
               const taskDate = new Date(completedDate);
               if (taskDate >= todayStart) tasksCompletedToday++;

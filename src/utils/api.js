@@ -16,12 +16,17 @@ export function getApiBase() {
   if (typeof window !== "undefined") {
     if (window.TASKER_API_URL) return strip(window.TASKER_API_URL);
     if (window.VIEWER_CONFIG?.apiUrl) return strip(window.VIEWER_CONFIG.apiUrl);
-    // Fallback: assume local API on 4200 when running viewer locally
-    const origin = window.location?.origin;
-    if (origin && (origin.includes("localhost") || origin.includes("127.0.0.1"))) {
-      return `${origin.replace(/:\d+$/, "")}:4200`;
+    const { hostname, port } = window.location || {};
+    // Dev fallback: when running Gatsby dev/serve on localhost without proxy, point at API port 4300.
+    if (hostname && hostname.match(/^(localhost|127\.0\.0\.1)$/)) {
+      if (port === "8000" || port === "8080" || port === "3000") {
+        return "http://localhost:4300";
+      }
     }
+    // Pod/production: use same-origin /api via proxy
+    return "";
   }
+  // Default: same-origin relative
   return "";
 }
 
