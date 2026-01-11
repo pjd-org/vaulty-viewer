@@ -304,34 +304,59 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Status-aware CTA */}
       <div className="cod-quick-actions">
-        <button
-          className="cod-button cod-button--pill"
-          onClick={() => handleQuickSession(50)}
-          disabled={loading || updating || sessionStarting}
-        >
-          🚀 Start 50m Focus
-        </button>
-        <button
-          className="cod-button cod-button--pill"
-          onClick={() => handleQuickSession(25)}
-          disabled={loading || updating || sessionStarting}
-        >
-          ⏱️ Start 25m Sprint
-        </button>
-        <button
-          className="cod-button cod-button--pill"
-          onClick={() => setShowForm(true)}
-        >
-          ✏️ Check-in
-        </button>
-        <button
-          className="cod-button cod-button--pill cod-button--ghost"
-          onClick={() => navigate("/")}
-        >
-          📋 Open Tasks
-        </button>
+        <div className="cod-quick-actions__copy">
+          <div className="cod-quick-actions__title">
+            {validation.status === "PASS"
+              ? "Ready to work"
+              : validation.status === "WARN"
+              ? "Go light and short"
+              : validation.status === "FAIL"
+              ? "Guardrail active"
+              : "COD status unknown"}
+          </div>
+          <div className="cod-quick-actions__desc">
+            {validation.status === "PASS" &&
+              "Plan a short focus block based on current state."}
+            {validation.status === "WARN" &&
+              "Degraded state detected; keep it to a small sprint and update your vitals."}
+            {validation.status === "FAIL" &&
+              "HARD_STOP or low state. Do a quick check-in or rest."}
+            {validation.status === "UNKNOWN" &&
+              "Refresh or check-in to update COD status."}
+          </div>
+        </div>
+        <div className="cod-quick-actions__buttons">
+          <button
+            className="cod-button cod-button--pill"
+            onClick={() => handleQuickSession(25)}
+            disabled={
+              loading || updating || sessionStarting || validation.status === "FAIL"
+            }
+            title={
+              validation.status === "FAIL"
+                ? "Guardrail active; respect HARD_STOP"
+                : "Start a 25m sprint"
+            }
+          >
+            ⏱️ Start 25m Sprint
+          </button>
+          <button
+            className="cod-button cod-button--pill"
+            onClick={() => setShowForm(true)}
+            disabled={loading || updating}
+            title="Update human state"
+          >
+            ✏️ Check-in
+          </button>
+          <button
+            className="cod-button cod-button--pill cod-button--ghost"
+            onClick={() => navigate("/")}
+          >
+            📋 Open Tasks
+          </button>
+        </div>
       </div>
 
       {error && (
