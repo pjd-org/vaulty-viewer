@@ -7,9 +7,23 @@ import Navbar from "../components/Navbar";
 import "../styles.css";
 import { apiBadgeText, computeSnapshotStats } from "../lib/avatar-logic";
 
+function formatMoney(money) {
+  if (money === undefined || money === null) return "—";
+  if (typeof money === "number") return money;
+  if (typeof money === "object") {
+    const cur = money.default_currency || money.defaultCurrency;
+    if (cur && money.balances && typeof money.balances[cur] !== "undefined") {
+      return `${cur} ${money.balances[cur]}`;
+    }
+    const first = money.balances && Object.entries(money.balances)[0];
+    if (first) return `${first[0]} ${first[1]}`;
+  }
+  return "—";
+}
+
 function MoneyCard({ vitals }) {
   const items = [
-    { label: "Balance", value: vitals.money ?? "—", icon: "💰" },
+    { label: "Balance", value: formatMoney(vitals.money), icon: "💰" },
     { label: "Notoriety", value: vitals.notoriety ?? "—", icon: "⭐" },
     { label: "Health", value: vitals.health ?? "—", icon: "❤️" },
   ];

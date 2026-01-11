@@ -1,5 +1,19 @@
 import React from "react";
 
+function formatMoney(money) {
+  if (money === undefined || money === null) return "—";
+  if (typeof money === "number") return money;
+  if (typeof money === "object") {
+    const cur = money.default_currency || money.defaultCurrency;
+    if (cur && money.balances && typeof money.balances[cur] !== "undefined") {
+      return `${cur} ${money.balances[cur]}`;
+    }
+    const first = money.balances && Object.entries(money.balances)[0];
+    if (first) return `${first[0]} ${first[1]}`;
+  }
+  return "—";
+}
+
 /**
  * Progress bar for vitals with color thresholds
  */
@@ -91,7 +105,7 @@ export function VitalsPanel({ vitals }) {
         </div>
         {vitals.money !== undefined && (
           <div className="avatar-stat">
-            <span className="avatar-stat__value">{vitals.money}</span>
+            <span className="avatar-stat__value">{formatMoney(vitals.money)}</span>
             <span className="avatar-stat__label">Money</span>
           </div>
         )}
