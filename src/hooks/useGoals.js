@@ -82,16 +82,23 @@ export function useGoals() {
 
   // Group tasks by goalId and compute progress
   const goals = useMemo(() => {
-    // Find unique goalIds
-    const goalIds = [
-      ...new Set(tasks.filter((t) => t.goalId).map((t) => t.goalId)),
-    ];
+    // Find unique goalIds from explicit field or goal:* tags
+    const goalIdSet = new Set();
+    tasks.forEach((t) => {
+      if (t.goalId) goalIdSet.add(t.goalId);
+      (t.tags || [])
+        .filter((tag) => tag.startsWith('goal:'))
+        .forEach((tag) => goalIdSet.add(tag.replace(/^goal:/, '')));
+    });
+    const goalIds = Array.from(goalIdSet);
 
     return goalIds
       .map((goalId) => {
-        // Get all tasks for this goal (exclude archived)
+        // Get all tasks for this goal (include archived/completed to show true progression)
         const goalTasks = tasks.filter(
-          (t) => t.goalId === goalId && !t.path?.includes('/archive/')
+          (t) =>
+            t.goalId === goalId ||
+            (t.tags || []).some((tag) => tag === `goal:${goalId}`)
         );
 
         const completedTasks = goalTasks.filter(
@@ -123,8 +130,9 @@ export function useGoals() {
             ? Math.round((completedTasks.length / goalTasks.length) * 100)
             : 0;
 
-        // Use effort-based progress as primary
-        const progress = progressByEffort;
+        // Use effort-based progress when available, otherwise fall back to count-based
+        const progress =
+          totalEffort > 0 ? progressByEffort : progressByCount;
 
         // Extract goal metadata from tags (goal:rent-stability-pantin -> Rent Stability Pantin)
         const title = goalId
