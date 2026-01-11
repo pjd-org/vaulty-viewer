@@ -21,12 +21,18 @@ const DEFAULT_STATUS = {
   },
   session: null,
   warnings: [],
+  avatarVitals: {
+    money: { default_currency: '', balances: {}, forms: {} },
+    notoriety: 0,
+    health: 0,
+    healthTrend: null,
+  },
 };
 
 /**
  * Compute validation status from human state
  */
-function computeValidation(humanState, session) {
+function computeValidation(humanState, session, avatarVitals = {}) {
   const warnings = [];
 
   if (humanState) {
@@ -56,6 +62,11 @@ function computeValidation(humanState, session) {
     }
   }
 
+  // Avatar health guardrail
+  if (avatarVitals.health !== undefined && avatarVitals.health < 40) {
+    warnings.push(`Health low (${Math.round(avatarVitals.health)}%)`);
+  }
+
   // HARD_STOP check (after 23:00)
   const now = new Date();
   const hour = now.getHours();
@@ -79,12 +90,19 @@ function computeValidation(humanState, session) {
   let status = 'PASS';
   if (warnings.length > 0) {
     // Check for blocking conditions
-    const hasBlocking = warnings.some(
-      (w) =>
-        w.includes('HARD_STOP window active') ||
-        w.includes('overtime') ||
-        (w.includes('energy') && parseInt(w.match(/\d+/)?.[0] || '100') < 20)
-    );
+    const hasBlocking = warnings.some((w) => {
+      if (w.includes('HARD_STOP window active')) return true;
+      if (w.includes('overtime')) return true;
+      if (w.includes('energy')) {
+        const val = parseInt(w.match(/\d+/)?.[0] || '100');
+        if (val < 20) return true;
+      }
+      if (w.includes('Health')) {
+        const val = parseInt(w.match(/\d+/)?.[0] || '100');
+        if (val < 25) return true;
+      }
+      return false;
+    });
     status = hasBlocking ? 'FAIL' : 'WARN';
   }
 
@@ -101,7 +119,13 @@ export function useCODStatus(staticData = null) {
       const humanState = staticData.humanStateJson || DEFAULT_STATUS.humanState;
       const session = staticData.activeSessionJson || null;
       const validation = computeValidation(humanState, session);
-      return { validation, humanState, session, warnings: validation.warnings };
+      return {
+        validation,
+        humanState,
+        session,
+        warnings: validation.warnings,
+        avatarVitals: DEFAULT_STATUS.avatarVitals,
+      };
     }
     return DEFAULT_STATUS;
   });
@@ -130,13 +154,39 @@ export function useCODStatus(staticData = null) {
 
       const humanState = result.humanState || DEFAULT_STATUS.humanState;
       const session = result.session || null;
-      const validation = computeValidation(humanState, session);
+
+      // Try to load avatar vitals (money / notoriety / health)
+      let avatarVitals = DEFAULT_STATUS.avatarVitals;
+      try {
+        const avatarRes = await fetch(`${apiUrl}/api/v1/cod/avatar`);
+        if (avatarRes.ok) {
+          const avatarJson = await avatarRes.json();
+          const vitals =
+            avatarJson?.structuredContent?.vitals || avatarJson?.vitals;
+          if (vitals) {
+            avatarVitals = {
+              money: vitals.money ?? avatarVitals.money,
+              notoriety: vitals.notoriety ?? avatarVitals.notoriety,
+              health: vitals.health ?? avatarVitals.health,
+              healthTrend:
+                avatarJson?.structuredContent?.trends?.vitals7d?.health ??
+                avatarVitals.healthTrend ??
+                null,
+            };
+          }
+        }
+      } catch {
+        // ignore avatar errors; keep defaults
+      }
+
+      const validation = computeValidation(humanState, session, avatarVitals);
 
       setData({
         validation,
         humanState,
         session,
         warnings: validation.warnings,
+        avatarVitals,
       });
     } catch (err) {
       setError(err.message);

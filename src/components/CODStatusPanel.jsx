@@ -222,6 +222,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     humanState,
     session,
     warnings,
+    avatarVitals = {},
     loading,
     updating,
     error,
@@ -325,6 +326,11 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
               "HARD_STOP or low state. Do a quick check-in or rest."}
             {validation.status === "UNKNOWN" &&
               "Refresh or check-in to update COD status."}
+            {error && (
+              <span className="cod-quick-actions__inline-error">
+                API issue: {error}
+              </span>
+            )}
           </div>
         </div>
         <div className="cod-quick-actions__buttons">
@@ -361,13 +367,62 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
       {error && (
         <div className="cod-error">
-          Connection error: {error}
+          <div className="cod-error__title">API connection issue</div>
+          <div className="cod-error__body">{error}</div>
+          <div className="cod-error__actions">
+            <button
+              className="cod-button cod-button--pill cod-button--ghost"
+              onClick={refresh}
+              disabled={loading || updating}
+            >
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
       {/* Validation Card */}
       <div className="cod-section">
         <ValidationCard validation={validation} />
+      </div>
+
+      {/* Real-world stats */}
+      <div className="cod-section cod-section--stats">
+        <div className="cod-stats-row">
+          <div className="cod-stat">
+            <div className="cod-stat__label">Money</div>
+            <div className="cod-stat__value">
+              {avatarVitals.money?.default_currency
+                ? `${avatarVitals.money.default_currency} ${avatarVitals.money.balances?.[avatarVitals.money.default_currency] ?? '—'}`
+                : '—'}
+            </div>
+            {avatarVitals.money?.balances && (
+              <div className="cod-stat__sub">
+                {Object.entries(avatarVitals.money.balances).map(([cur, val]) => (
+                  <span key={cur} className="cod-chip">{cur}: {val}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="cod-stat">
+            <div className="cod-stat__label">Forms</div>
+            {avatarVitals.money?.forms ? (
+              <div className="cod-stat__sub">
+                {Object.entries(avatarVitals.money.forms).map(([form, val]) => (
+                  <span key={form} className="cod-chip">{form}: {val}</span>
+                ))}
+              </div>
+            ) : (
+              <div className="cod-stat__value">—</div>
+            )}
+          </div>
+          <div className="cod-stat">
+            <div className="cod-stat__label">Notoriety</div>
+            <div className="cod-stat__value">{avatarVitals.notoriety ?? '—'}</div>
+            <div className="cod-stat__label">Health</div>
+            <div className="cod-stat__value">{avatarVitals.health ?? '—'}</div>
+          </div>
+        </div>
       </div>
 
       {/* Warnings (if any) */}

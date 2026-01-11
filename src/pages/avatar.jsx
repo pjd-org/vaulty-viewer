@@ -7,6 +7,38 @@ import Navbar from "../components/Navbar";
 import "../styles.css";
 import { apiBadgeText, computeSnapshotStats } from "../lib/avatar-logic";
 
+function MoneyCard({ vitals }) {
+  const items = [
+    { label: "Balance", value: vitals.money ?? "—", icon: "💰" },
+    { label: "Notoriety", value: vitals.notoriety ?? "—", icon: "⭐" },
+    { label: "Health", value: vitals.health ?? "—", icon: "❤️" },
+  ];
+  return (
+    <div className="avatar-section">
+      <div className="avatar-section__header">
+        <h3 className="avatar-section__title">Real-world stats</h3>
+      </div>
+      <div className="avatar-stats-row avatar-stats-row--secondary">
+        {items.map((item) => (
+          <div key={item.label} className="avatar-stat avatar-stat--small">
+            <span className="avatar-stat__value">
+              {typeof item.value === "number" ? item.value : "—"}
+            </span>
+            <span className="avatar-stat__label">
+              {item.icon} {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="avatar-section__footer">
+        <a href="/note?p=core/avatar/Avatar" className="avatar-link">
+          Open avatar note →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Profile Header - shows avatar name, title, and archetype
  */
@@ -116,6 +148,20 @@ export default function AvatarPage() {
                   <div className="stat__label">Energy now</div>
                 </div>
               </div>
+              <div className="stat" data-type="money">
+                <div className="stat__icon">💰</div>
+                <div className="stat__content">
+                  <div className="stat__value">{snapshot.money}</div>
+                  <div className="stat__label">Money</div>
+                </div>
+              </div>
+              <div className="stat" data-type="notoriety">
+                <div className="stat__icon">⭐</div>
+                <div className="stat__content">
+                  <div className="stat__value">{snapshot.notoriety}</div>
+                  <div className="stat__label">Notoriety</div>
+                </div>
+              </div>
             </div>
 
             {/* Main Grid */}
@@ -128,6 +174,7 @@ export default function AvatarPage() {
 
               {/* Right Column - Progression & Knowledge */}
               <div className="avatar-column">
+                <MoneyCard vitals={avatar.vitals} />
                 <ProgressionPanel
                   progression={avatar.progression}
                   level={level}

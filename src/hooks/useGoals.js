@@ -82,9 +82,25 @@ export function useGoals() {
 
   // Group tasks by goalId and compute progress
   const goals = useMemo(() => {
+    // Normalize tasks: status + effort score fallback
+    const normalizedTasks = tasks.map((t) => {
+      const rawStatus = (t.status || 'todo').toLowerCase();
+      const status =
+        rawStatus === 'in_progress' ? 'in-progress' : rawStatus === 'done' ? 'completed' : rawStatus;
+      const effortScore =
+        typeof t.effortScore === 'number' && t.effortScore > 0
+          ? t.effortScore
+          : typeof t.effort === 'number' && t.effort > 0
+          ? t.effort
+          : typeof t.estimatedTimeMin === 'number' && t.estimatedTimeMin > 0
+          ? Math.max(1, Math.round(t.estimatedTimeMin / 15))
+          : 1;
+      return { ...t, status, effortScore };
+    });
+
     // Find unique goalIds from explicit field or goal:* tags
     const goalIdSet = new Set();
-    tasks.forEach((t) => {
+    normalizedTasks.forEach((t) => {
       if (t.goalId) goalIdSet.add(t.goalId);
       (t.tags || [])
         .filter((tag) => tag.startsWith('goal:'))
@@ -95,7 +111,7 @@ export function useGoals() {
     return goalIds
       .map((goalId) => {
         // Get all tasks for this goal (include archived/completed to show true progression)
-        const goalTasks = tasks.filter(
+        const goalTasks = normalizedTasks.filter(
           (t) =>
             t.goalId === goalId ||
             (t.tags || []).some((tag) => tag === `goal:${goalId}`)
@@ -111,17 +127,11 @@ export function useGoals() {
         const todoTasks = goalTasks.filter((t) => t.status === 'todo');
 
         // Calculate progress by effort (more accurate)
-        const totalEffort = goalTasks.reduce(
-          (sum, t) => sum + (t.effortScore || 1),
-          0
-        );
-        const completedEffort = completedTasks.reduce(
-          (sum, t) => sum + (t.effortScore || 1),
-          0
-        );
+        const totalEffort = goalTasks.reduce((sum, t) => sum + (t.effortScore || 1), 0);
+        const completedEffort = completedTasks.reduce((sum, t) => sum + (t.effortScore || 1), 0);
         const progressByEffort =
           totalEffort > 0
-            ? Math.round((completedEffort / totalEffort) * 100)
+            ? Math.min(100, Math.round((completedEffort / totalEffort) * 100))
             : 0;
 
         // Calculate progress by count
@@ -132,7 +142,7 @@ export function useGoals() {
 
         // Use effort-based progress when available, otherwise fall back to count-based
         const progress =
-          totalEffort > 0 ? progressByEffort : progressByCount;
+          totalEffort > 0 ? progressByEffort : Math.min(100, progressByCount);
 
         // Extract goal metadata from tags (goal:rent-stability-pantin -> Rent Stability Pantin)
         const title = goalId

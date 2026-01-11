@@ -89,6 +89,18 @@ export function VitalsPanel({ vitals }) {
           <span className="avatar-stat__value">{vitals.sessionsCompletedThisWeek || vitals.activeSessions || 0}</span>
           <span className="avatar-stat__label">Sessions</span>
         </div>
+        {vitals.money !== undefined && (
+          <div className="avatar-stat">
+            <span className="avatar-stat__value">{vitals.money}</span>
+            <span className="avatar-stat__label">Money</span>
+          </div>
+        )}
+        {vitals.notoriety !== undefined && (
+          <div className="avatar-stat">
+            <span className="avatar-stat__value">{vitals.notoriety}</span>
+            <span className="avatar-stat__label">Notoriety</span>
+          </div>
+        )}
       </div>
 
       {/* Additional Stats Row */}

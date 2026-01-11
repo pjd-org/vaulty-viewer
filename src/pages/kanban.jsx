@@ -10,6 +10,8 @@ export default function KanbanPage({ data }) {
   const [filterTag, setFilterTag] = useState("");
   const [filterProject, setFilterProject] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
+  const [mutatingTaskId, setMutatingTaskId] = useState(null);
+  const [draggingTaskId, setDraggingTaskId] = useState(null);
 
   const staticTasks = useMemo(() => {
     const nodes = data?.allMarkdownRemark?.nodes || [];
@@ -86,6 +88,74 @@ export default function KanbanPage({ data }) {
 
   const isReadOnly = apiStatus !== "online";
 
+  const updateStatus = async (task, status) => {
+    const apiBase = getApiBase();
+    if (apiBase === null || apiBase === undefined) {
+      setApiStatus("offline");
+      return;
+    }
+    if (!task.path) return;
+    if (task.status === status) return;
+    setMutatingTaskId(task.id);
+    try {
+      const res = await fetch(
+        `${apiBase}/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        }
+      );
+      if (!res.ok) {
+        setApiStatus("offline");
+        return;
+      }
+      const body = await res.json();
+      const updatedPath = body?.structuredContent?.path || task.path;
+      const updatedStatus = body?.structuredContent?.frontmatter?.status || status;
+      setApiTasks((prev) => {
+        const next = prev.length ? [...prev] : [...tasks];
+        return next.map((t) =>
+          t.path === task.path || t.id === task.id
+            ? { ...t, status: updatedStatus, path: updatedPath }
+            : t
+        );
+      });
+      setApiStatus("online");
+    } catch (err) {
+      console.warn("[kanban] status update failed", err);
+      setApiStatus("offline");
+    } finally {
+      setMutatingTaskId(null);
+      setDraggingTaskId(null);
+    }
+  };
+
+  const handleDragStart = (task) => {
+    if (isReadOnly) return;
+    setDraggingTaskId(task.id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingTaskId(null);
+  };
+
+  const handleDrop = (status) => {
+    if (isReadOnly || !draggingTaskId) return;
+    const task =
+      apiTasks.find((t) => t.id === draggingTaskId) ||
+      tasks.find((t) => t.id === draggingTaskId);
+    if (task) {
+      updateStatus(task, status);
+    }
+    setDraggingTaskId(null);
+  };
+
+  const allowDrop = (e) => {
+    if (isReadOnly) return;
+    e.preventDefault();
+  };
+
   return (
     <main className="page">
       <Navbar apiStatus={apiStatus} />
@@ -158,7 +228,13 @@ export default function KanbanPage({ data }) {
 
       <section className="kanban">
         {columns.map((col) => (
-          <div key={col.key} className="kanban__column" data-status={col.key}>
+          <div
+            key={col.key}
+            className={`kanban__column ${draggingTaskId ? "kanban__column--droppable" : ""}`}
+            data-status={col.key}
+            onDragOver={allowDrop}
+            onDrop={() => handleDrop(col.key)}
+          >
             <header className="kanban__column-header">
               <div>
                 <p className="muted">{col.label}</p>
@@ -171,7 +247,16 @@ export default function KanbanPage({ data }) {
             ) : (
               <div className="kanban__cards">
                 {col.items.map((task) => (
-                  <article key={task.id} className="kanban-card" aria-label={task.title}>
+                  <article
+                    key={task.id}
+                    className={`kanban-card ${
+                      draggingTaskId === task.id ? "kanban-card--dragging" : ""
+                    }`}
+                    aria-label={task.title}
+                    draggable={!isReadOnly}
+                    onDragStart={() => handleDragStart(task)}
+                    onDragEnd={handleDragEnd}
+                  >
                     <div className="kanban-card__header">
                       <span className="kanban-card__title">{task.title}</span>
                       {task.priority > 0 && (
@@ -210,25 +295,39 @@ export default function KanbanPage({ data }) {
                           ))}
                       </div>
                     ) : null}
-                    {task.status === "blocked" && (
-                      <div className="kanban-card__blocked">
-                        <span>🚫 Blocked</span>
-                      </div>
-                    )}
+                      {task.status === "blocked" && (
+                        <div className="kanban-card__blocked">
+                          <span>🚫 Blocked</span>
+                        </div>
+                      )}
                     <div className="kanban-card__footer">
                       <Link to={task.link} className="pill pill--soft">
                         Open →
                       </Link>
-                      {isReadOnly ? (
-                        <a
-                          href={task.cmsSlug ? `/admin/#/collections/tasks/entries/${encodeURIComponent(task.cmsSlug)}` : "/admin/#/collections/tasks"}
-                          className="pill pill--ghost"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Edit in CMS
-                        </a>
+                      {!isReadOnly && task.path ? (
+                        <div className="kanban-card__actions">
+                          {task.status !== "completed" ? (
+                            <button
+                              className="pill pill--ghost"
+                              onClick={() => updateStatus(task, "completed")}
+                              disabled={mutatingTaskId === task.id}
+                              title="Mark completed"
+                            >
+                              ✓ Complete
+                            </button>
+                          ) : (
+                            <button
+                              className="pill pill--ghost"
+                              onClick={() => updateStatus(task, "todo")}
+                              disabled={mutatingTaskId === task.id}
+                              title="Reopen task"
+                            >
+                              ↺ Reopen
+                            </button>
+                          )}
+                        </div>
                       ) : (
-                        <span className="pill pill--ghost">online</span>
+                        <span className="pill pill--ghost">read-only</span>
                       )}
                     </div>
                   </article>

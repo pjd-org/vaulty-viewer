@@ -3,6 +3,9 @@ export type AvatarData = {
     tasksCompletedToday?: number;
     sessionsCompletedThisWeek?: number;
     energy?: number;
+    money?: number;
+    notoriety?: number;
+    health?: number;
   };
 };
 
@@ -17,4 +20,7 @@ export const computeSnapshotStats = (avatar: AvatarData) => ({
   tasksToday: avatar.vitals?.tasksCompletedToday || 0,
   sessionsThisWeek: avatar.vitals?.sessionsCompletedThisWeek || 0,
   energy: avatar.vitals?.energy ?? 0,
+  money: avatar.vitals?.money ?? 0,
+  notoriety: avatar.vitals?.notoriety ?? 0,
+  health: avatar.vitals?.health ?? 0,
 });

@@ -104,6 +104,22 @@ export default function GoalsPage() {
             <span className="quick-link__icon">🔄</span>
             <span className="quick-link__label">{loading ? 'Refreshing…' : 'Refresh'}</span>
           </button>
+          <button
+            className="quick-link quick-link--primary"
+            onClick={() => setFilter('active')}
+            title="Focus on active goals"
+          >
+            <span className="quick-link__icon">🎯</span>
+            <span className="quick-link__label">Show Active</span>
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => setSortBy('progress')}
+            title="Sort by most progress"
+          >
+            <span className="quick-link__icon">📈</span>
+            <span className="quick-link__label">Sort by Progress</span>
+          </button>
         </div>
       </header>
       

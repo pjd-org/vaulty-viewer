@@ -123,7 +123,7 @@ const IndexPage = ({ data }) => {
     const fetchTasks = async () => {
       const apiUrl = getApiUrl();
       try {
-        const response = await fetch(`${apiUrl}/api/v1/tasks`);
+        const response = await fetch(`${apiUrl}/api/v1/tasks?status=all`);
         if (response.ok) {
           const result = await response.json();
           const tasks = result.structuredContent?.tasks || [];
@@ -131,7 +131,10 @@ const IndexPage = ({ data }) => {
           const todo = tasks.filter(t => t.status === 'todo').length;
           const completed = tasks.filter(t => t.status === 'completed').length;
           const highPriority = tasks.filter(t => t.priority >= 9 && t.status === 'todo').length;
-          setTaskStats({ total, todo, completed, highPriority });
+          const recurring = tasks.filter(
+            (t) => Array.isArray(t.tags) && t.tags.includes('recurring')
+          ).slice(0, 5);
+          setTaskStats({ total, todo, completed, highPriority, recurring });
           
           // Build task data map for card enhancement
           const taskMap = {};
@@ -250,6 +253,31 @@ const IndexPage = ({ data }) => {
               </div>
             </div>
           </div>
+          {taskStats.recurring && taskStats.recurring.length > 0 && (
+            <div className="hero-recurring">
+              <div className="hero-recurring__header">
+                <span className="hero-recurring__title">🔁 Recurring tasks</span>
+                <span className="hero-recurring__subtitle">
+                  Drag to plan in COD or open to edit schedule
+                </span>
+              </div>
+              <div className="hero-recurring__list">
+                {taskStats.recurring.map((t) => (
+                  <a
+                    key={t.path || t.id}
+                    className="hero-recurring__item"
+                    href={`/note?p=${encodeURIComponent((t.path || '').replace(/\.md$/, ''))}`}
+                    title={t.title}
+                  >
+                    <span className="hero-recurring__name">{t.title || t.path}</span>
+                    {t.nextRun && (
+                      <span className="hero-recurring__meta">next: {new Date(t.nextRun).toLocaleDateString()}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="stats-secondary">
             <div className="stat-mini">
               <span className="stat-mini__value">{taskStats.completed}</span>
