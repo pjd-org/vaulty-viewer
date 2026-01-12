@@ -217,6 +217,10 @@ function WarningsSection({ warnings }) {
 export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }) {
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [showForm, setShowForm] = useState(false);
+  const [profileChoice, setProfileChoice] = useState(() => {
+    if (typeof window === "undefined") return "auto";
+    return localStorage.getItem("codProfile") || "auto";
+  });
   const {
     validation,
     humanState,
@@ -230,8 +234,15 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     updateHumanState,
     startSession,
     endSession,
-  } = useCODStatus(staticData);
+  } = useCODStatus(staticData, profileChoice === "auto" ? null : profileChoice);
   const [sessionStarting, setSessionStarting] = useState(false);
+  const handleProfileChange = (value) => {
+    setProfileChoice(value);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("codProfile", value);
+    }
+    refresh();
+  };
 
   const handleToggle = () => setCollapsed(!collapsed);
 
@@ -268,6 +279,22 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     return <CODStatusBadge status={validation.status} onClick={handleToggle} />;
   }
 
+  const ProfileSwitch = () => (
+    <div className="cod-profile-switch">
+      <span className="cod-profile-switch__label">Profile</span>
+      {["auto", "basic", "adhd"].map((p) => (
+        <button
+          key={p}
+          className={`cod-chip ${profileChoice === p ? "cod-chip--active" : ""}`}
+          onClick={() => handleProfileChange(p)}
+          title="Choose COD scoring profile"
+        >
+          {p}
+        </button>
+      ))}
+    </div>
+  );
+
   // Show form mode
   if (showForm) {
     return (
@@ -287,6 +314,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
       <div className="cod-panel__header">
         <h2 className="cod-panel__title">Cognitive Operating Discipline</h2>
         <div className="cod-panel__actions">
+          <ProfileSwitch />
           <button
             className="cod-button cod-button--icon"
             onClick={refresh}

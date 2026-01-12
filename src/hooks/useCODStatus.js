@@ -113,7 +113,7 @@ function computeValidation(humanState, session, avatarVitals = {}) {
  * Hook to fetch and manage COD status
  * Uses static data from GraphQL at build time, with optional API polling for live updates
  */
-export function useCODStatus(staticData = null) {
+export function useCODStatus(staticData = null, profileOverride = null) {
   const [data, setData] = useState(() => {
     if (staticData) {
       const humanState = staticData.humanStateJson || DEFAULT_STATUS.humanState;
@@ -148,7 +148,8 @@ export function useCODStatus(staticData = null) {
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/api/v1/cod/status`);
+      const profileParam = profileOverride ? `?profile=${profileOverride}` : '';
+      const response = await fetch(`${apiUrl}/api/v1/cod/status${profileParam}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
@@ -158,7 +159,7 @@ export function useCODStatus(staticData = null) {
       // Try to load avatar vitals (money / notoriety / health)
       let avatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
-        const avatarRes = await fetch(`${apiUrl}/api/v1/cod/avatar`);
+        const avatarRes = await fetch(`${apiUrl}/api/v1/cod/avatar${profileParam}`);
         if (avatarRes.ok) {
           const avatarJson = await avatarRes.json();
           const vitals =
