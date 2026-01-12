@@ -23,6 +23,11 @@ export type NormalizedTask = {
   link: string;
 };
 
+export const isRecurringTask = (task: NormalizedTask): boolean => {
+  const tags = task.tags || [];
+  return tags.some((t) => t.toLowerCase().includes("recurring"));
+};
+
 const toDate = (value: unknown) => {
   if (!value || typeof value !== "string") return null;
   const d = new Date(value);
@@ -55,7 +60,8 @@ export const buildColumns = (
   tasks: NormalizedTask[],
   filterTag: string,
   filterProject: string,
-  showCompleted: boolean
+  showCompleted: boolean,
+  excludeRecurring: boolean = true
 ) => {
   const now = Date.now();
   const cutoff = now - RECENT_COMPLETED_DAYS * 24 * 60 * 60 * 1000;
@@ -63,6 +69,7 @@ export const buildColumns = (
   const filtered = tasks.filter((task) => {
     if (filterTag && !(task.tags || []).includes(filterTag)) return false;
     if (filterProject && task.projectId !== filterProject) return false;
+    if (excludeRecurring && isRecurringTask(task)) return false;
     return true;
   });
 
@@ -80,5 +87,20 @@ export const buildColumns = (
       })
       .sort(col.sort);
     return { ...col, items };
+  });
+};
+
+export const filterBacklog = (
+  tasks: NormalizedTask[],
+  filterTag: string,
+  filterProject: string,
+  excludeRecurring: boolean = true
+) => {
+  return tasks.filter((task) => {
+    if (task.status !== "backlog") return false;
+    if (filterTag && !(task.tags || []).includes(filterTag)) return false;
+    if (filterProject && task.projectId !== filterProject) return false;
+    if (excludeRecurring && isRecurringTask(task)) return false;
+    return true;
   });
 };

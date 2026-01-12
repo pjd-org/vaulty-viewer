@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { graphql, Link } from "gatsby";
 import Navbar from "../components/Navbar";
 import getApiBase from "../utils/api";
-import { STATUS_COLUMNS, buildColumns, normalizeTask } from "../lib/kanban-logic";
+import {
+  STATUS_COLUMNS,
+  buildColumns,
+  filterBacklog,
+  isRecurringTask,
+  normalizeTask,
+} from "../lib/kanban-logic";
 
 export default function KanbanPage({ data }) {
   const [apiStatus, setApiStatus] = useState("unknown");
@@ -72,8 +78,26 @@ export default function KanbanPage({ data }) {
   }, [tasks]);
 
   const columns = useMemo(
-    () => buildColumns(tasks, filterTag || "", filterProject || "", showCompleted),
+    () =>
+      buildColumns(
+        tasks,
+        filterTag || "",
+        filterProject || "",
+        showCompleted,
+        true // exclude recurring from board
+      ),
     [tasks, filterTag, filterProject, showCompleted]
+  );
+
+  const backlogTasks = useMemo(
+    () =>
+      filterBacklog(
+        tasks,
+        filterTag || "",
+        filterProject || "",
+        true // exclude recurring from backlog view
+      ),
+    [tasks, filterTag, filterProject]
   );
 
   const totalByStatus = useMemo(() => {
@@ -164,7 +188,7 @@ export default function KanbanPage({ data }) {
           <p className="eyebrow">Tasker Kanban</p>
           <h1>Visualize task flow</h1>
           <p className="lede">
-            Four simple columns to track work. {isReadOnly ? "API offline — read-only view." : "Drag-drop ready when API supports status updates."}
+            Four simple columns to track work. {isReadOnly ? "API offline — read-only view." : "Drag-drop ready when API supports status updates."} Recurring tasks are hidden from the board; backlog tasks are listed below.
           </p>
         </div>
         <div className="board-stats">
@@ -351,6 +375,72 @@ export default function KanbanPage({ data }) {
             )}
           </div>
         ))}
+      </section>
+
+      <section className="kanban backlog-section">
+        <header className="kanban__column-header">
+          <div>
+            <p className="muted">Backlog (non-recurring)</p>
+            <h3>{backlogTasks.length} task{backlogTasks.length === 1 ? "" : "s"}</h3>
+          </div>
+        </header>
+        {backlogTasks.length === 0 ? (
+          <div className="kanban__empty">
+            <div className="kanban__empty-icon">📥</div>
+            <div className="kanban__empty-text">No backlog tasks</div>
+            <div className="kanban__empty-hint">Backlog items will appear here</div>
+          </div>
+        ) : (
+          <div className="kanban__cards backlog-cards">
+            {backlogTasks.map((task) => (
+              <article key={task.id} className="kanban-card" aria-label={task.title}>
+                <div className="kanban-card__header">
+                  <span className="kanban-card__title">{task.title}</span>
+                  {task.priority > 0 && (
+                    <span
+                      className={`kanban-card__priority ${
+                        task.priority >= 8
+                          ? "kanban-card__priority--high"
+                          : task.priority >= 5
+                          ? "kanban-card__priority--mid"
+                          : ""
+                      }`}
+                      title={`Priority ${task.priority}`}
+                    >
+                      P{task.priority}
+                    </span>
+                  )}
+                </div>
+                <div className="kanban-card__meta">
+                  {task.estimatedTimeMin ? (
+                    <span className="chip">
+                      ⏱ {task.estimatedTimeMin >= 60 ? `${Math.round(task.estimatedTimeMin / 60)}h` : `${task.estimatedTimeMin}m`}
+                    </span>
+                  ) : null}
+                  {task.projectId && <span className="chip">🚀 {task.projectId}</span>}
+                  {task.goalId && <span className="chip">🎯 {task.goalId.replace(/-/g, " ")}</span>}
+                </div>
+                {task.tags?.length ? (
+                  <div className="kanban-card__tags">
+                    {task.tags
+                      .filter((tag) => !tag.startsWith("goal:") && tag !== "task")
+                      .slice(0, 3)
+                      .map((tag) => (
+                        <span key={tag} className="tag">
+                          #{tag}
+                        </span>
+                      ))}
+                  </div>
+                ) : null}
+                <div className="kanban-card__footer">
+                  <Link to={task.link} className="pill pill--soft">
+                    Open →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
