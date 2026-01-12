@@ -1570,6 +1570,52 @@ img {
   color: var(--cod-text-muted);
 }
 
+/* Stats grid */
+.cod-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.cod-stat-card {
+  background: var(--cod-surface);
+  border: 1px solid var(--cod-border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cod-stat-card__label {
+  font-size: 0.75rem;
+  color: var(--cod-text-muted);
+  font-weight: 500;
+}
+
+.cod-stat-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cod-text);
+}
+
+.cod-stat-card__sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cod-stat-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cod-chip--small {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+}
+
 /* Big stat display */
 .cod-stat-big {
   text-align: center;

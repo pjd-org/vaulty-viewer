@@ -416,39 +416,50 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
       {/* Real-world stats */}
       <div className="cod-section cod-section--stats">
-        <div className="cod-stats-row">
-          <div className="cod-stat">
-            <div className="cod-stat__label">Money</div>
-            <div className="cod-stat__value">
-              {avatarVitals.money?.default_currency
-                ? `${avatarVitals.money.default_currency} ${avatarVitals.money.balances?.[avatarVitals.money.default_currency] ?? '—'}`
+        <div className="cod-stats-grid">
+          {/* Money */}
+          <div className="cod-stat-card">
+            <div className="cod-stat-card__label">💰 Money</div>
+            <div className="cod-stat-card__value">
+              {avatarVitals.money?.default_currency && avatarVitals.money.balances?.[avatarVitals.money.default_currency] != null
+                ? `${avatarVitals.money.default_currency} ${avatarVitals.money.balances[avatarVitals.money.default_currency].toLocaleString()}`
                 : '—'}
             </div>
-            {avatarVitals.money?.balances && (
-              <div className="cod-stat__sub">
-                {Object.entries(avatarVitals.money.balances).map(([cur, val]) => (
-                  <span key={cur} className="cod-chip">{cur}: {val}</span>
-                ))}
+            {avatarVitals.money?.balances && Object.keys(avatarVitals.money.balances).length > 1 && (
+              <div className="cod-stat-card__sub">
+                {Object.entries(avatarVitals.money.balances)
+                  .filter(([cur]) => cur !== avatarVitals.money.default_currency)
+                  .map(([cur, val]) => (
+                    <span key={cur} className="cod-chip cod-chip--small">{cur} {val.toLocaleString()}</span>
+                  ))}
               </div>
             )}
           </div>
-          <div className="cod-stat">
-            <div className="cod-stat__label">Forms</div>
-            {avatarVitals.money?.forms ? (
-              <div className="cod-stat__sub">
+
+          {/* Forms */}
+          {avatarVitals.money?.forms && Object.keys(avatarVitals.money.forms).length > 0 && (
+            <div className="cod-stat-card">
+              <div className="cod-stat-card__label">🏦 Assets</div>
+              <div className="cod-stat-card__chips">
                 {Object.entries(avatarVitals.money.forms).map(([form, val]) => (
-                  <span key={form} className="cod-chip">{form}: {val}</span>
+                  <span key={form} className="cod-chip cod-chip--small">
+                    {form}: {typeof val === 'number' ? val.toLocaleString() : val}
+                  </span>
                 ))}
               </div>
-            ) : (
-              <div className="cod-stat__value">—</div>
-            )}
+            </div>
+          )}
+
+          {/* Notoriety */}
+          <div className="cod-stat-card">
+            <div className="cod-stat-card__label">⭐ Notoriety</div>
+            <div className="cod-stat-card__value">{avatarVitals.notoriety ?? 0}</div>
           </div>
-          <div className="cod-stat">
-            <div className="cod-stat__label">Notoriety</div>
-            <div className="cod-stat__value">{avatarVitals.notoriety ?? '—'}</div>
-            <div className="cod-stat__label">Health</div>
-            <div className="cod-stat__value">{avatarVitals.health ?? '—'}</div>
+
+          {/* Health */}
+          <div className="cod-stat-card">
+            <div className="cod-stat-card__label">❤️ Health</div>
+            <div className="cod-stat-card__value">{avatarVitals.health ?? 0}</div>
           </div>
         </div>
       </div>
