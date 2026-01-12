@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { graphql, Link } from "gatsby";
-import CODStatusPanel from "../components/CODStatusPanel";
+import CODStatusWidget from "../components/CODStatusWidget";
 import Navbar from "../components/Navbar";
 import getApiBase from "../utils/api";
+import useKeyboardShortcuts, { KeyboardShortcutsHelp } from "../hooks/useKeyboardShortcuts";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -22,6 +23,18 @@ const IndexPage = ({ data }) => {
   const [goalsCount, setGoalsCount] = useState(0);
   const [taskData, setTaskData] = useState({}); // Map of path -> task frontmatter
   const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | unknown
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Keyboard shortcuts
+  const handleSearch = useCallback(() => {
+    const searchInput = document.querySelector("#vault-search");
+    if (searchInput) searchInput.focus();
+  }, []);
+
+  useKeyboardShortcuts({
+    onSearch: handleSearch,
+    onHelp: () => setShowHelp(true),
+  });
 
   // Derive collection from path
   const deriveCollection = (path) => {
@@ -220,7 +233,7 @@ const IndexPage = ({ data }) => {
   return (
     <main className="page">
       <Navbar apiStatus={apiStatus} />
-      <CODStatusPanel />
+      <CODStatusWidget />
       <header className="hero">
         <div className="hero__content">
           <p className="eyebrow">Vaulty Viewer</p>
@@ -436,6 +449,18 @@ const IndexPage = ({ data }) => {
           })}
         </section>
       )}
+
+      {/* Keyboard shortcut hint */}
+      <button
+        className="keyboard-hint"
+        onClick={() => setShowHelp(true)}
+        title="Keyboard shortcuts"
+      >
+        <kbd>?</kbd> Shortcuts
+      </button>
+
+      {/* Keyboard shortcuts help modal */}
+      {showHelp && <KeyboardShortcutsHelp onClose={() => setShowHelp(false)} />}
     </main>
   );
 };

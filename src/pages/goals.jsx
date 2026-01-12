@@ -158,10 +158,23 @@ export default function GoalsPage() {
           
           {sortedGoals.length === 0 ? (
             <div className="goals-empty">
-              <p>No goals found matching the filter.</p>
-              {filter !== 'all' && (
-                <button onClick={() => setFilter('all')}>Show all goals</button>
-              )}
+              <div className="goals-empty__icon">🎯</div>
+              <h3 className="goals-empty__title">No goals found</h3>
+              <p className="goals-empty__text">
+                {filter !== 'all' 
+                  ? `No ${filter} goals match your criteria.` 
+                  : 'Create goals in your vault to track progress here.'}
+              </p>
+              <div className="goals-empty__actions">
+                {filter !== 'all' && (
+                  <button className="goals-empty__btn" onClick={() => setFilter('all')}>
+                    Show all goals
+                  </button>
+                )}
+                <a href="/note?p=goals" className="goals-empty__btn goals-empty__btn--primary">
+                  📂 Browse Goals Folder
+                </a>
+              </div>
             </div>
           ) : (
             <div className="goals-list">

@@ -243,7 +243,22 @@ export default function KanbanPage({ data }) {
               <span className="pill">{col.key}</span>
             </header>
             {col.items.length === 0 ? (
-              <div className="kanban__empty">No tasks yet.</div>
+              <div className="kanban__empty">
+                <div className="kanban__empty-icon">
+                  {col.key === 'todo' ? '📝' : col.key === 'in-progress' ? '🚀' : col.key === 'blocked' ? '🚧' : '🎉'}
+                </div>
+                <div className="kanban__empty-text">
+                  {col.key === 'todo' ? 'No tasks to do' : 
+                   col.key === 'in-progress' ? 'Nothing in progress' :
+                   col.key === 'blocked' ? 'No blockers — great!' : 
+                   'Complete some tasks!'}
+                </div>
+                <div className="kanban__empty-hint">
+                  {col.key === 'todo' ? 'Create a task in your vault to get started' :
+                   col.key === 'completed' ? 'Finished tasks will appear here' :
+                   'Drag tasks here or update status in vault'}
+                </div>
+              </div>
             ) : (
               <div className="kanban__cards">
                 {col.items.map((task) => (
