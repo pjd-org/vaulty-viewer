@@ -8,7 +8,7 @@ BUILD_ON_START="${BUILD_ON_START:-1}"
 
 if [ "$BUILD_ON_START" = "1" ]; then
   echo "[viewer] Building Gatsby site from ${VAULT_CONTENT_PATH}" >&2
-  npm run build
+  npx gatsby build
 fi
 
 echo "[viewer] Serving on 0.0.0.0:${PORT}" >&2
