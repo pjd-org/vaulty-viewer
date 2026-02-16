@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim
+FROM docker.io/library/node:20-bookworm-slim
 
 WORKDIR /app
 
@@ -21,4 +21,3 @@ RUN corepack enable && pnpm install --ignore-scripts=false && pnpm rebuild sharp
 EXPOSE 8000
 
 CMD ["sh", "/app/scripts/start.sh"]
-
