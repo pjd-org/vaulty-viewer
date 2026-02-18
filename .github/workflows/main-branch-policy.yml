@@ -1,0 +1,32 @@
+name: Main Branch Policy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: main-branch-policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  enforce:
+    name: Enforce main branch policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Block direct pushes to main
+        if: github.event_name == 'push'
+        run: |
+          echo "Direct pushes to main are not allowed. Use a PR from develop."
+          exit 1
+      - name: Enforce PR source branch
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "Only PRs from develop to main are allowed."
+            echo "Current head_ref: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "Main branch policy satisfied."
