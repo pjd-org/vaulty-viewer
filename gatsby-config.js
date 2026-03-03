@@ -1,31 +1,35 @@
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 const vaultPath =
   process.env.VAULT_CONTENT_PATH ||
   process.env.VAULT_PATH ||
-  path.join(__dirname, "content");
+  path.join(__dirname, 'content');
 if (!fs.existsSync(vaultPath)) {
   console.warn(`[viewer] Missing vault path: ${vaultPath}`);
 }
 
 const ignore = [
-  "/*.md",
-  "**/_system/**",
-  "**/templates/**",
-  "**/.obsidian/**",
-  "**/.vault/**",
-  "**/.vault-*/**",
-  "**/.git/**",
-  "**/config.*",
-  "**/*.config.*",
+  '/*.md',
+  '**/_system/**',
+  '**/templates/**',
+  '**/.obsidian/**',
+  '**/.vault/**',
+  '**/.vault-*/**',
+  '**/.git/**',
+  '**/config.*',
+  '**/*.config.*',
+  // Vault sync runtime artifacts — these may not exist at build time
+  '**/.sync.lock',
+  '**/.sync-status.json',
+  '**/.sync-*',
 ];
 
 const sources = [
   {
-    resolve: "gatsby-source-filesystem",
+    resolve: 'gatsby-source-filesystem',
     options: {
-      name: "vault",
+      name: 'vault',
       path: vaultPath,
       ignore,
     },
@@ -34,15 +38,15 @@ const sources = [
 
 module.exports = {
   siteMetadata: {
-    title: "Vaulty Viewer",
-    description: "Browse and edit Vaulty notes with Gatsby + Decap CMS.",
+    title: 'Vaulty Viewer',
+    description: 'Browse and edit Vaulty notes with Gatsby + Decap CMS.',
   },
   plugins: [
     ...sources,
     {
-      resolve: "gatsby-transformer-remark",
+      resolve: 'gatsby-transformer-remark',
       options: {
-        excerpt_separator: "<!-- end -->",
+        excerpt_separator: '<!-- end -->',
       },
     },
   ],
