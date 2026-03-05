@@ -25,7 +25,7 @@ if [ "$BUILD_ON_START" = "1" ]; then
   echo "[viewer] WARNING: BUILD_ON_START=1 — rebuilding Gatsby site at container start." >&2
   echo "[viewer] This is an escape hatch for dev use only. Use the pre-built image in production." >&2
   echo "[viewer] Vault content path: ${VAULT_CONTENT_PATH}" >&2
-  VAULT_CONTENT_PATH="$VAULT_CONTENT_PATH" npx gatsby build
+  VAULT_CONTENT_PATH="$VAULT_CONTENT_PATH" node_modules/.bin/gatsby build
 else
   echo "[viewer] BUILD_ON_START=0 — serving pre-built artefacts." >&2
   if [ ! -d "/app/public" ] || [ -z "$(ls -A /app/public 2>/dev/null)" ]; then
@@ -36,4 +36,4 @@ else
 fi
 
 echo "[viewer] Serving on 0.0.0.0:${PORT}" >&2
-exec npx gatsby serve -H 0.0.0.0 -p "$PORT"
+exec node_modules/.bin/gatsby serve -H 0.0.0.0 -p "$PORT"

@@ -51,6 +51,13 @@ COPY --from=builder /app/.cache ./.cache
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+# Copy source files so BUILD_ON_START=1 can rebuild against a live vault mount.
+COPY --from=builder /app/gatsby-config.mjs ./gatsby-config.mjs
+COPY --from=builder /app/gatsby-node.js ./gatsby-node.js
+COPY --from=builder /app/gatsby-browser.js ./gatsby-browser.js
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/plugins ./plugins
+COPY --from=builder /app/static ./static
 COPY scripts ./scripts
 
 EXPOSE 8000
