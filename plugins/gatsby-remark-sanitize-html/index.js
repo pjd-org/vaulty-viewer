@@ -45,48 +45,112 @@ const sanitizeHtml = require('sanitize-html');
 
 const ALLOWED_TAGS = [
   // Text structure
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'p', 'br', 'hr',
-  'ul', 'ol', 'li',
-  'dl', 'dt', 'dd',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'p',
+  'br',
+  'hr',
+  'ul',
+  'ol',
+  'li',
+  'dl',
+  'dt',
+  'dd',
   'blockquote',
   // Inline
-  'a', 'abbr', 'acronym', 'b', 'bdo', 'big', 'cite', 'code',
-  'del', 'dfn', 'em', 'i', 'ins', 'kbd', 'mark', 'q', 's',
-  'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time',
-  'tt', 'u', 'var',
+  'a',
+  'abbr',
+  'acronym',
+  'b',
+  'bdo',
+  'big',
+  'cite',
+  'code',
+  'del',
+  'dfn',
+  'em',
+  'i',
+  'ins',
+  'kbd',
+  'mark',
+  'q',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'time',
+  'tt',
+  'u',
+  'var',
   // Code blocks (remark output)
   'pre',
   // Tables
-  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
+  'caption',
   // Media (Gatsby image helpers inject these)
-  'img', 'figure', 'figcaption', 'picture', 'source',
+  'img',
+  'figure',
+  'figcaption',
+  'picture',
+  'source',
   // Details / summary (GFM)
-  'details', 'summary',
+  'details',
+  'summary',
   // Sectioning (used by some remark plugins)
-  'div', 'section', 'article', 'aside', 'header', 'footer', 'nav', 'main',
+  'div',
+  'section',
+  'article',
+  'aside',
+  'header',
+  'footer',
+  'nav',
+  'main',
 ];
 
 const ALLOWED_ATTR = {
   // Anchor
   a: ['href', 'name', 'target', 'rel', 'title', 'aria-label'],
   // Image / picture
-  img: ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading', 'decoding', 'class', 'style'],
+  img: [
+    'src',
+    'srcset',
+    'alt',
+    'title',
+    'width',
+    'height',
+    'loading',
+    'decoding',
+    'class',
+    'style',
+  ],
   source: ['src', 'srcset', 'type', 'media', 'sizes'],
   // Table cells
   th: ['scope', 'colspan', 'rowspan', 'align'],
   td: ['colspan', 'rowspan', 'align'],
   // Code blocks
-  code: ['class'],        // e.g. language-javascript
-  pre:  ['class'],
+  code: ['class'], // e.g. language-javascript
+  pre: ['class'],
   // Misc structural
-  div:     ['class', 'id', 'style', 'role', 'aria-label', 'aria-hidden'],
-  span:    ['class', 'id', 'style'],
+  div: ['class', 'id', 'style', 'role', 'aria-label', 'aria-hidden'],
+  span: ['class', 'id', 'style'],
   section: ['class', 'id', 'aria-label'],
   // Details
   details: ['open'],
   // Time
-  time:    ['datetime'],
+  time: ['datetime'],
   // All elements: allow data-* (used by gatsby-plugin-image etc.)
   '*': ['data-*', 'class', 'id'],
 };
@@ -96,15 +160,11 @@ const POLICY = {
   allowedAttributes: ALLOWED_ATTR,
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   allowedSchemesByTag: {
-    img: ['http', 'https', 'data'],   // data: URI for base64 images is safe
+    img: ['http', 'https', 'data'], // data: URI for base64 images is safe
   },
-  // Disallow all inline event handlers (onclick, onload, etc.)
-  allowedAttributes: ALLOWED_ATTR,
   // Strip (do not escape) disallowed tags so prose is not broken
   disallowedTagsMode: 'discard',
-  // Enforce safe URL schemes on href / src
-  allowVulnerableTags: false,
-  // Prevent filter bypass via nested comments
+  // Prevent filter bypass via CSS injection via style attributes
   parseStyleAttributes: false,
 };
 
