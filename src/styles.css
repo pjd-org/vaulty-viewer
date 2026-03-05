@@ -320,3 +320,20 @@ img {
     width: 100%;
   }
 }
+
+/* ── Mermaid diagrams ──────────────────────────────────────────────────────── */
+
+.mermaid {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 16px;
+}

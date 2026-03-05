@@ -1,9 +1,20 @@
-import React from "react";
-import { graphql, Link } from "gatsby";
+import React from 'react';
+import { graphql, Link } from 'gatsby';
+
+export function Head({ data }) {
+  const title = data.markdownRemark.frontmatter?.title || 'Untitled';
+  const collection = data.markdownRemark.fields?.collection || 'note';
+  return (
+    <>
+      <title>{title} — Vaulty Viewer</title>
+      <meta name="description" content={`${collection}: ${title}`} />
+    </>
+  );
+}
 
 const MarkdownPage = ({ data }) => {
   const { markdownRemark } = data;
-  const title = markdownRemark.frontmatter?.title || "Untitled";
+  const title = markdownRemark.frontmatter?.title || 'Untitled';
   const rawTags = markdownRemark.frontmatter?.tags;
   const tags = Array.isArray(rawTags) ? rawTags : rawTags ? [rawTags] : [];
 
@@ -11,7 +22,7 @@ const MarkdownPage = ({ data }) => {
     <main className="page page--detail">
       <header className="detail__header">
         <Link to="/" className="back-link">
-          {"<- Back to vault"}
+          {'<- Back to vault'}
         </Link>
         <div className="card__meta">
           <span className="pill">{markdownRemark.fields.collection}</span>

@@ -1,28 +1,40 @@
-import React, { useMemo, useState } from "react";
-import { graphql, Link } from "gatsby";
+import React, { useMemo, useState } from 'react';
+import { graphql, Link } from 'gatsby';
 
-const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
+export function Head() {
+  return (
+    <>
+      <title>Vaulty Viewer</title>
+      <meta
+        name="description"
+        content="Browse your vault notes, tasks, and reports."
+      />
+    </>
+  );
+}
+
+const PREFERRED_COLLECTIONS = ['notes', 'tasks', 'reports'];
 
 const formatLabel = (value) =>
   value
-    .replace(/[-_]+/g, " ")
+    .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 const IndexPage = ({ data }) => {
-  const [query, setQuery] = useState("");
-  const [activeCollection, setActiveCollection] = useState("all");
+  const [query, setQuery] = useState('');
+  const [activeCollection, setActiveCollection] = useState('all');
 
   const items = data.allMarkdownRemark.nodes
-    .filter((node) => node.fields?.slug && node.fields?.collection !== "root")
+    .filter((node) => node.fields?.slug && node.fields?.collection !== 'root')
     .map((node) => {
-      const slug = node.fields?.slug || "";
-      const titleFallback = slug.split("/").filter(Boolean).slice(-1)[0];
+      const slug = node.fields?.slug || '';
+      const titleFallback = slug.split('/').filter(Boolean).slice(-1)[0];
       return {
         id: node.id,
-        title: node.frontmatter?.title || titleFallback || "Untitled",
-        excerpt: node.excerpt || "",
+        title: node.frontmatter?.title || titleFallback || 'Untitled',
+        excerpt: node.excerpt || '',
         slug,
-        collection: node.fields?.collection || "notes",
+        collection: node.fields?.collection || 'notes',
       };
     });
 
@@ -35,7 +47,7 @@ const IndexPage = ({ data }) => {
     { all: 0 }
   );
 
-  const collectionKeys = Object.keys(counts).filter((key) => key !== "all");
+  const collectionKeys = Object.keys(counts).filter((key) => key !== 'all');
   const ordered = PREFERRED_COLLECTIONS.filter((key) =>
     collectionKeys.includes(key)
   );
@@ -43,7 +55,7 @@ const IndexPage = ({ data }) => {
     .filter((key) => !PREFERRED_COLLECTIONS.includes(key))
     .sort();
   const collections = [
-    { key: "all", label: "All" },
+    { key: 'all', label: 'All' },
     ...ordered.map((key) => ({ key, label: formatLabel(key) })),
     ...extra.map((key) => ({ key, label: formatLabel(key) })),
   ];
@@ -53,7 +65,7 @@ const IndexPage = ({ data }) => {
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return items.filter((item) => {
-      if (activeCollection !== "all" && item.collection !== activeCollection) {
+      if (activeCollection !== 'all' && item.collection !== activeCollection) {
         return false;
       }
       if (!needle) {
@@ -74,8 +86,8 @@ const IndexPage = ({ data }) => {
           <p className="eyebrow">Vaulty Viewer</p>
           <h1>Vault notes, stories, and tasks in one pulse.</h1>
           <p className="lede">
-            A lightweight Gatsby reader wired to your vault volume, plus a
-            Decap CMS editor for quick markdown updates.
+            A lightweight Gatsby reader wired to your vault volume, plus a Decap
+            CMS editor for quick markdown updates.
           </p>
         </div>
         <div className="hero__panel">
@@ -134,7 +146,7 @@ const IndexPage = ({ data }) => {
               to={item.slug}
               className="card"
               data-collection={item.collection}
-              style={{ "--delay": `${index * 0.04}s` }}
+              style={{ '--delay': `${index * 0.04}s` }}
             >
               <div className="card__meta">
                 <span className="pill">{item.collection}</span>
@@ -151,7 +163,7 @@ const IndexPage = ({ data }) => {
 
 export const query = graphql`
   {
-    allMarkdownRemark(sort: { fields: [frontmatter___title], order: ASC }) {
+    allMarkdownRemark(sort: { frontmatter: { title: ASC } }) {
       nodes {
         id
         excerpt(pruneLength: 140)
