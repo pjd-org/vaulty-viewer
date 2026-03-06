@@ -1,27 +1,31 @@
+/* Design-system tokens — single source of truth */
+@import '@vault/ui/tokens.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;700&display=swap');
 
+/* Short-name aliases — map legacy viewer vars to --vault-* tokens.
+   All values come from tokens.css; nothing is hard-coded here. */
 :root {
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --surface-3: #ebebef;
-  --ink: #1a1a1f;
-  --muted: #64748b;
-  --accent: #6366f1;
-  --accent-2: #8b5cf6;
-  --accent-3: #22c55e;
-  --shadow: 0 8px 32px rgba(26, 26, 26, 0.08);
-  --shadow-lg: 0 24px 48px rgba(26, 26, 26, 0.12);
-  --radius: 20px;
-  --glow: rgba(99, 102, 241, 0.08);
-  /* Shared primitives */
-  --radius-pill: 999px;
-  --radius-sm: 8px;
-  --border-subtle: rgba(0, 0, 0, 0.07);
-  --border-faint: rgba(0, 0, 0, 0.05);
-  --border-soft: rgba(0, 0, 0, 0.12);
-  --font-xs: 0.72rem;
-  --font-sm: 0.82rem;
+  --bg:           var(--vault-bg);
+  --surface:      var(--vault-surface);
+  --surface-2:    var(--vault-surface-2);
+  --surface-3:    var(--vault-surface-3);
+  --ink:          var(--vault-ink);
+  --muted:        var(--vault-muted);
+  --accent:       var(--vault-accent);
+  --accent-2:     var(--vault-accent-2);
+  --accent-3:     var(--vault-accent-3);
+  --shadow:       var(--vault-shadow);
+  --shadow-lg:    var(--vault-shadow-lg);
+  --radius:       var(--vault-radius);
+  --glow:         var(--vault-glow);
+  --radius-pill:  var(--vault-radius-pill);
+  --radius-sm:    var(--vault-radius-sm);
+  --border-subtle: var(--vault-border-subtle);
+  --border-faint: var(--vault-border-faint);
+  --border-soft:  var(--vault-border-soft);
+  --font-xs:      var(--vault-font-xs);
+  --font-sm:      var(--vault-font-sm);
 }
 
 * {
@@ -928,17 +932,8 @@ img {
 
 /* Dark mode card adjustments */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d0d12;
-    --surface: rgba(255, 255, 255, 0.03);
-    --surface-2: rgba(255, 255, 255, 0.06);
-    --surface-3: rgba(255, 255, 255, 0.1);
-    --ink: #f0f0f5;
-    --muted: rgba(240, 240, 245, 0.6);
-    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.4);
-    --glow: rgba(99, 102, 241, 0.15);
-  }
+  /* --bg/--surface/etc. aliases automatically resolve to dark --vault-* values
+     because tokens.css already overrides them in this same media query. */
 
   body {
     background: var(--bg);
