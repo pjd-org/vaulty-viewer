@@ -19,7 +19,7 @@ function runTypeBadge(runType) {
 
 function confidenceBar(confidence) {
   if (confidence == null) return null;
-  const pct = Math.round(Number(confidence) * 100);
+  const pct = Math.min(100, Math.max(0, Math.round(Number(confidence) * 100)));
   const color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444';
   return (
     <div className="confidence">
@@ -221,9 +221,26 @@ export default function InboxPage() {
     try {
       const result = await commitRun(runId);
       const committed = result?.structuredContent?.committed ?? 0;
-      toast(
-        `Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`
-      );
+      const failed = result?.structuredContent?.failed ?? 0;
+      const rejected = result?.structuredContent?.rejected ?? 0;
+      if (failed > 0 || rejected > 0) {
+        // Some items did not commit — failed validation or rejected for low confidence.
+        // The run directory may still contain quarantined files; refresh so the user
+        // sees the current state rather than a silently vanished partial run.
+        const parts = [];
+        if (committed > 0) parts.push(`${committed} committed`);
+        if (rejected > 0) parts.push(`${rejected} rejected`);
+        if (failed > 0) parts.push(`${failed} failed`);
+        toast(
+          `Partial commit (${parts.join(', ')}) — refreshing`,
+          committed === 0
+        );
+        refresh();
+      } else {
+        toast(
+          `Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`
+        );
+      }
     } catch (err) {
       toast(err.message ?? 'Commit failed', true);
     }
@@ -231,8 +248,19 @@ export default function InboxPage() {
 
   const handleReject = async (runId) => {
     try {
-      await rejectRun(runId);
-      toast(`Rejected run ${runId}`);
+      const result = await rejectRun(runId);
+      const errors = result?.structuredContent?.errors ?? 0;
+      if (errors > 0) {
+        // At least one item could not be deleted. The run is partially rejected;
+        // refresh so the remaining items are visible rather than hiding the run.
+        toast(
+          `Partial rejection: ${errors} item${errors !== 1 ? 's' : ''} could not be removed — refreshing`,
+          true
+        );
+        refresh();
+      } else {
+        toast(`Rejected run ${runId}`);
+      }
     } catch (err) {
       toast(err.message ?? 'Reject failed', true);
     }
