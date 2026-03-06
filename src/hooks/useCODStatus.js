@@ -149,17 +149,25 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
     try {
       const profileParam = profileOverride ? `?profile=${profileOverride}` : '';
-      const response = await fetch(`${apiUrl}/api/v1/cod/status${profileParam}`);
+      const response = await fetch(
+        `${apiUrl}/api/v1/cod/status${profileParam}`
+      );
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
-      const humanState = result.humanState || DEFAULT_STATUS.humanState;
-      const session = result.session || null;
+      const humanState =
+        result.structuredContent?.humanState ||
+        result.humanState ||
+        DEFAULT_STATUS.humanState;
+      const session =
+        result.structuredContent?.session || result.session || null;
 
       // Try to load avatar vitals (money / notoriety / health)
       let avatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
-        const avatarRes = await fetch(`${apiUrl}/api/v1/cod/avatar${profileParam}`);
+        const avatarRes = await fetch(
+          `${apiUrl}/api/v1/cod/avatar${profileParam}`
+        );
         if (avatarRes.ok) {
           const avatarJson = await avatarRes.json();
           const vitals =

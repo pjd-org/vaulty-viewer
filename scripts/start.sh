@@ -4,10 +4,11 @@ set -e
 
 PORT="${PORT:-4400}"
 VAULT_CONTENT_PATH="${VAULT_CONTENT_PATH:-${VAULT_PATH:-/vault}}"
-TASKER_API_URL="${TASKER_API_URL:-}"
+VAULT_API_URL="${VAULT_API_URL:-}"
 # API_PROXY_URL: backend URL for nginx to proxy /api/ requests
-# Default to localhost:4300 for same-pod deployments
-API_PROXY_URL="${API_PROXY_URL:-http://127.0.0.1:4300}"
+# Derives from API_PORT (set by services/start.sh or .env); falls back to 4300.
+API_PORT="${API_PORT:-4300}"
+API_PROXY_URL="${API_PROXY_URL:-http://127.0.0.1:${API_PORT}}"
 
 # Configure nginx to proxy API requests to the correct backend
 NGINX_CONF="/etc/nginx/conf.d/default.conf"
@@ -25,17 +26,17 @@ echo "[viewer] Writing runtime config to ${CONFIG_PATH}" >&2
 cat > "${CONFIG_PATH}" <<EOF
 {
   "vaultContentPath": "${VAULT_CONTENT_PATH}",
-  "apiUrl": "${TASKER_API_URL}",
+  "apiUrl": "${VAULT_API_URL}",
   "generatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 EOF
 
 # Inject runtime config into index.html via a script tag
-# This sets window.TASKER_API_URL for the React app to use
+# This sets window.VAULT_API_URL for the React app to use
 INDEX_PATH="/usr/share/nginx/html/index.html"
-if [ -f "$INDEX_PATH" ] && [ -n "$TASKER_API_URL" ]; then
-  echo "[viewer] Injecting TASKER_API_URL=${TASKER_API_URL} into index.html" >&2
-  INJECT_SCRIPT="<script>window.TASKER_API_URL=\"${TASKER_API_URL}\";</script>"
+if [ -f "$INDEX_PATH" ] && [ -n "$VAULT_API_URL" ]; then
+  echo "[viewer] Injecting VAULT_API_URL=${VAULT_API_URL} into index.html" >&2
+  INJECT_SCRIPT="<script>window.VAULT_API_URL=\"${VAULT_API_URL}\";</script>"
   # Insert the script tag right after <head>
   sed -i "s|<head>|<head>${INJECT_SCRIPT}|" "$INDEX_PATH"
 fi

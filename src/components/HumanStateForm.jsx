@@ -1,17 +1,22 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from 'react';
 
 /**
  * Form to update COD Human State
  * Allows quick check-ins for energy, focus, stress, sleep, and time available
  */
-export function HumanStateForm({ currentState, onSubmit, onCancel, loading = false }) {
+export function HumanStateForm({
+  currentState,
+  onSubmit,
+  onCancel,
+  loading = false,
+}) {
   const [formData, setFormData] = useState({
-    energy: currentState?.energy ? currentState.energy / 100 : 0.5,
-    focusCapacity: currentState?.focusCapacity || "med",
-    stress: currentState?.stress ? currentState.stress / 100 : 0.3,
+    energy: currentState?.energy ?? 0.5,
+    focusCapacity: currentState?.focusCapacity || 'med',
+    stress: currentState?.stress ?? 0.3,
     sleepHours: currentState?.sleepDebt ? 8 - currentState.sleepDebt : 7,
     timeAvailableMin: currentState?.timeAvailableMin || 60,
-    source: "moment-check",
+    source: 'moment-check',
   });
 
   const handleChange = useCallback((field, value) => {
@@ -34,7 +39,9 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
       <div className="cod-form__field">
         <label className="cod-form__label">
           <span>⚡ Energy</span>
-          <span className="cod-form__value">{Math.round(formData.energy * 100)}%</span>
+          <span className="cod-form__value">
+            {Math.round(formData.energy * 100)}%
+          </span>
         </label>
         <input
           type="range"
@@ -42,7 +49,7 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
           max="1"
           step="0.05"
           value={formData.energy}
-          onChange={(e) => handleChange("energy", parseFloat(e.target.value))}
+          onChange={(e) => handleChange('energy', parseFloat(e.target.value))}
           className="cod-form__slider"
         />
         <div className="cod-form__hints">
@@ -55,14 +62,14 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
       <div className="cod-form__field">
         <label className="cod-form__label">🎯 Focus Capacity</label>
         <div className="cod-form__button-group">
-          {["low", "med", "high"].map((level) => (
+          {['low', 'med', 'high'].map((level) => (
             <button
               key={level}
               type="button"
-              className={`cod-form__toggle ${formData.focusCapacity === level ? "cod-form__toggle--active" : ""}`}
-              onClick={() => handleChange("focusCapacity", level)}
+              className={`cod-form__toggle ${formData.focusCapacity === level ? 'cod-form__toggle--active' : ''}`}
+              onClick={() => handleChange('focusCapacity', level)}
             >
-              {level === "low" ? "Low" : level === "med" ? "Medium" : "High"}
+              {level === 'low' ? 'Low' : level === 'med' ? 'Medium' : 'High'}
             </button>
           ))}
         </div>
@@ -72,7 +79,9 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
       <div className="cod-form__field">
         <label className="cod-form__label">
           <span>🧘 Stress</span>
-          <span className="cod-form__value">{Math.round(formData.stress * 100)}%</span>
+          <span className="cod-form__value">
+            {Math.round(formData.stress * 100)}%
+          </span>
         </label>
         <input
           type="range"
@@ -80,7 +89,7 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
           max="1"
           step="0.05"
           value={formData.stress}
-          onChange={(e) => handleChange("stress", parseFloat(e.target.value))}
+          onChange={(e) => handleChange('stress', parseFloat(e.target.value))}
           className="cod-form__slider cod-form__slider--stress"
         />
         <div className="cod-form__hints">
@@ -101,7 +110,9 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
           max="12"
           step="0.5"
           value={formData.sleepHours}
-          onChange={(e) => handleChange("sleepHours", parseFloat(e.target.value))}
+          onChange={(e) =>
+            handleChange('sleepHours', parseFloat(e.target.value))
+          }
           className="cod-form__slider"
         />
         <div className="cod-form__hints">
@@ -114,7 +125,9 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
       <div className="cod-form__field">
         <label className="cod-form__label">
           <span>⏱️ Time Available</span>
-          <span className="cod-form__value">{formData.timeAvailableMin} min</span>
+          <span className="cod-form__value">
+            {formData.timeAvailableMin} min
+          </span>
         </label>
         <input
           type="range"
@@ -122,7 +135,9 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
           max="480"
           step="15"
           value={formData.timeAvailableMin}
-          onChange={(e) => handleChange("timeAvailableMin", parseInt(e.target.value))}
+          onChange={(e) =>
+            handleChange('timeAvailableMin', parseInt(e.target.value))
+          }
           className="cod-form__slider"
         />
         <div className="cod-form__hints">
@@ -136,15 +151,15 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
         <label className="cod-form__label">Check-in Type</label>
         <div className="cod-form__button-group">
           {[
-            { value: "morning-check", label: "🌅 Morning" },
-            { value: "moment-check", label: "⏰ Moment" },
-            { value: "manual", label: "📝 Manual" },
+            { value: 'morning-check', label: '🌅 Morning' },
+            { value: 'moment-check', label: '⏰ Moment' },
+            { value: 'manual', label: '📝 Manual' },
           ].map(({ value, label }) => (
             <button
               key={value}
               type="button"
-              className={`cod-form__toggle ${formData.source === value ? "cod-form__toggle--active" : ""}`}
-              onClick={() => handleChange("source", value)}
+              className={`cod-form__toggle ${formData.source === value ? 'cod-form__toggle--active' : ''}`}
+              onClick={() => handleChange('source', value)}
             >
               {label}
             </button>
@@ -167,7 +182,7 @@ export function HumanStateForm({ currentState, onSubmit, onCancel, loading = fal
           className="cod-button cod-button--primary"
           disabled={loading}
         >
-          {loading ? "Saving..." : "Save Check-in"}
+          {loading ? 'Saving...' : 'Save Check-in'}
         </button>
       </div>
     </form>
