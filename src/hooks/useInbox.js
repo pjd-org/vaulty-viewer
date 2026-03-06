@@ -50,53 +50,56 @@ export function useInbox() {
     fetchInbox();
   }, [fetchInbox]);
 
-  const commitRun = useCallback(
-    async (runId) => {
-      setActionState((prev) => ({ ...prev, [runId]: 'committing' }));
-      const base = getApiBase();
-      try {
-        const res = await fetch(`${base}/api/v1/inbox/${encodeURIComponent(runId)}/commit`, {
+  const commitRun = useCallback(async (runId) => {
+    setActionState((prev) => ({ ...prev, [runId]: 'committing' }));
+    const base = getApiBase();
+    try {
+      const res = await fetch(
+        `${base}/api/v1/inbox/${encodeURIComponent(runId)}/commit`,
+        {
           method: 'POST',
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body?.message ?? `Commit failed: ${res.status}`);
         }
-        setActionState((prev) => ({ ...prev, [runId]: 'done' }));
-        // Remove committed run from list
-        setRuns((prev) => prev.filter((r) => r.runId !== runId));
-        return await res.json();
-      } catch (err) {
-        setActionState((prev) => ({ ...prev, [runId]: 'error' }));
-        throw err;
+      );
+      // Parse body before mutating state — if JSON is malformed the error
+      // is caught below and state stays consistent (never 'done' + missing run).
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.message ?? `Commit failed: ${res.status}`);
       }
-    },
-    []
-  );
+      setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+      // Remove committed run from list
+      setRuns((prev) => prev.filter((r) => r.runId !== runId));
+      return body;
+    } catch (err) {
+      setActionState((prev) => ({ ...prev, [runId]: 'error' }));
+      throw err;
+    }
+  }, []);
 
-  const rejectRun = useCallback(
-    async (runId) => {
-      setActionState((prev) => ({ ...prev, [runId]: 'rejecting' }));
-      const base = getApiBase();
-      try {
-        const res = await fetch(`${base}/api/v1/inbox/${encodeURIComponent(runId)}`, {
+  const rejectRun = useCallback(async (runId) => {
+    setActionState((prev) => ({ ...prev, [runId]: 'rejecting' }));
+    const base = getApiBase();
+    try {
+      const res = await fetch(
+        `${base}/api/v1/inbox/${encodeURIComponent(runId)}`,
+        {
           method: 'DELETE',
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body?.message ?? `Reject failed: ${res.status}`);
         }
-        setActionState((prev) => ({ ...prev, [runId]: 'done' }));
-        // Remove rejected run from list
-        setRuns((prev) => prev.filter((r) => r.runId !== runId));
-        return await res.json();
-      } catch (err) {
-        setActionState((prev) => ({ ...prev, [runId]: 'error' }));
-        throw err;
+      );
+      // Parse body before mutating state — same reason as commitRun above.
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.message ?? `Reject failed: ${res.status}`);
       }
-    },
-    []
-  );
+      setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+      // Remove rejected run from list
+      setRuns((prev) => prev.filter((r) => r.runId !== runId));
+      return body;
+    } catch (err) {
+      setActionState((prev) => ({ ...prev, [runId]: 'error' }));
+      throw err;
+    }
+  }, []);
 
   return {
     runs,
