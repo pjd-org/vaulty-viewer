@@ -6,21 +6,27 @@ import { useInbox } from '../hooks/useInbox';
 function runTypeBadge(runType) {
   const map = {
     signals_infer: { label: 'signals · infer', cls: 'badge badge--signals' },
-    conversation:  { label: 'conversation',     cls: 'badge badge--conversation' },
-    manual:        { label: 'manual',            cls: 'badge badge--manual' },
-    daily:         { label: 'daily',             cls: 'badge badge--daily' },
+    conversation: { label: 'conversation', cls: 'badge badge--conversation' },
+    manual: { label: 'manual', cls: 'badge badge--manual' },
+    daily: { label: 'daily', cls: 'badge badge--daily' },
   };
-  const def = map[runType] ?? { label: runType ?? 'unknown', cls: 'badge badge--default' };
+  const def = map[runType] ?? {
+    label: runType ?? 'unknown',
+    cls: 'badge badge--default',
+  };
   return <span className={def.cls}>{def.label}</span>;
 }
 
 function confidenceBar(confidence) {
   if (confidence == null) return null;
-  const pct   = Math.round(Number(confidence) * 100);
+  const pct = Math.round(Number(confidence) * 100);
   const color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444';
   return (
     <div className="confidence">
-      <div className="confidence__bar" style={{ width: `${pct}%`, background: color }} />
+      <div
+        className="confidence__bar"
+        style={{ width: `${pct}%`, background: color }}
+      />
       <span className="confidence__label">{pct}%</span>
     </div>
   );
@@ -47,10 +53,10 @@ function DomainFields({ fields }) {
 
 function RunCard({ run, onCommit, onReject, actionState }) {
   const [expanded, setExpanded] = useState(false);
-  const state    = actionState[run.runId];
-  const busy     = state === 'committing' || state === 'rejecting';
-  const isDone   = state === 'done';
-  const isError  = state === 'error';
+  const state = actionState[run.runId];
+  const busy = state === 'committing' || state === 'rejecting';
+  const isDone = state === 'done';
+  const isError = state === 'error';
   const isSignal = run.runType === 'signals_infer';
 
   return (
@@ -76,14 +82,19 @@ function RunCard({ run, onCommit, onReject, actionState }) {
             <span className="badge badge--action">{run.action}</span>
           )}
           {isSignal && (
-            <span className="badge badge--gated" title="Requires human approval — cannot be auto-committed">
+            <span
+              className="badge badge--gated"
+              title="Requires human approval — cannot be auto-committed"
+            >
               🔒 gated
             </span>
           )}
         </div>
 
         <div className="run-card__meta">
-          <span className="run-card__count">{run.itemCount} item{run.itemCount !== 1 ? 's' : ''}</span>
+          <span className="run-card__count">
+            {run.itemCount} item{run.itemCount !== 1 ? 's' : ''}
+          </span>
           {run.confidence != null && confidenceBar(run.confidence)}
           {run.templateRef && (
             <span className="run-card__template" title={run.templateRef}>
@@ -99,7 +110,11 @@ function RunCard({ run, onCommit, onReject, actionState }) {
                 type="button"
                 className="btn btn--commit"
                 disabled={busy || isSignal}
-                title={isSignal ? 'signals_infer runs require explicit human approval' : 'Commit this run'}
+                title={
+                  isSignal
+                    ? 'signals_infer runs require explicit human approval'
+                    : 'Commit this run'
+                }
                 onClick={() => onCommit(run.runId)}
               >
                 {state === 'committing' ? 'Committing…' : '✓ Commit'}
@@ -116,7 +131,10 @@ function RunCard({ run, onCommit, onReject, actionState }) {
           )}
           {isDone && <span className="run-card__done-label">✓ done</span>}
           {isError && (
-            <span className="run-card__error-label" title="Action failed — check console">
+            <span
+              className="run-card__error-label"
+              title="Action failed — check console"
+            >
               ⚠ error
             </span>
           )}
@@ -128,7 +146,9 @@ function RunCard({ run, onCommit, onReject, actionState }) {
         <div className="run-card__items">
           {run.items.map((item, idx) => (
             <div key={item.path ?? idx} className="item-row">
-              <div className="item-row__path">{item.targetPath ?? item.path}</div>
+              <div className="item-row__path">
+                {item.targetPath ?? item.path}
+              </div>
               <div className="item-row__fields">
                 <DomainFields fields={item.domainFields} />
               </div>
@@ -154,16 +174,27 @@ export function Head() {
   return (
     <>
       <title>Inbox — Vaulty Viewer</title>
-      <meta name="description" content="Review and approve staged extraction proposals." />
+      <meta
+        name="description"
+        content="Review and approve staged extraction proposals."
+      />
     </>
   );
 }
 
 export default function InboxPage() {
-  const { runs, loading, error, apiStatus, refresh, commitRun, rejectRun, actionState } =
-    useInbox();
+  const {
+    runs,
+    loading,
+    error,
+    apiStatus,
+    refresh,
+    commitRun,
+    rejectRun,
+    actionState,
+  } = useInbox();
 
-  const [toastMsg, setToastMsg]     = useState(null);
+  const [toastMsg, setToastMsg] = useState(null);
   const [filterType, setFilterType] = useState('all');
 
   const toast = (msg, isError = false) => {
@@ -175,7 +206,9 @@ export default function InboxPage() {
     try {
       const result = await commitRun(runId);
       const committed = result?.structuredContent?.committed ?? 0;
-      toast(`Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`);
+      toast(
+        `Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`
+      );
     } catch (err) {
       toast(err.message ?? 'Commit failed', true);
     }
@@ -191,23 +224,27 @@ export default function InboxPage() {
   };
 
   /* filter tabs */
-  const runTypes    = ['all', ...new Set(runs.map((r) => r.runType ?? 'unknown'))];
-  const visibleRuns = filterType === 'all'
-    ? runs
-    : runs.filter((r) => r.runType === filterType);
+  const runTypes = ['all', ...new Set(runs.map((r) => r.runType ?? 'unknown'))];
+  const visibleRuns =
+    filterType === 'all' ? runs : runs.filter((r) => r.runType === filterType);
 
-  const counts = runs.reduce((acc, r) => {
-    const t = r.runType ?? 'unknown';
-    acc[t]   = (acc[t]   ?? 0) + 1;
-    acc.all  = (acc.all  ?? 0) + 1;
-    return acc;
-  }, { all: 0 });
+  const counts = runs.reduce(
+    (acc, r) => {
+      const t = r.runType ?? 'unknown';
+      acc[t] = (acc[t] ?? 0) + 1;
+      acc.all = (acc.all ?? 0) + 1;
+      return acc;
+    },
+    { all: 0 }
+  );
 
   return (
     <main className="page inbox-page">
       {/* toast */}
       {toastMsg && (
-        <div className={`inbox-toast ${toastMsg.isError ? 'inbox-toast--error' : 'inbox-toast--ok'}`}>
+        <div
+          className={`inbox-toast ${toastMsg.isError ? 'inbox-toast--error' : 'inbox-toast--ok'}`}
+        >
           {toastMsg.msg}
         </div>
       )}
@@ -221,9 +258,18 @@ export default function InboxPage() {
         </div>
         <div className="inbox-header__right">
           <span className={`api-badge api-badge--${apiStatus}`}>
-            {apiStatus === 'online' ? 'API online' : apiStatus === 'offline' ? 'API offline' : 'API'}
+            {apiStatus === 'online'
+              ? 'API online'
+              : apiStatus === 'offline'
+                ? 'API offline'
+                : 'API'}
           </span>
-          <button type="button" className="btn btn--refresh" onClick={refresh} disabled={loading}>
+          <button
+            type="button"
+            className="btn btn--refresh"
+            onClick={refresh}
+            disabled={loading}
+          >
             {loading ? 'Loading…' : '↻ Refresh'}
           </button>
         </div>
@@ -268,6 +314,24 @@ export default function InboxPage() {
           <span className="inbox-empty-icon">📭</span>
           <strong>Inbox is empty</strong>
           <span>No staged extraction proposals found.</span>
+        </div>
+      )}
+
+      {!loading && !error && runs.length > 0 && visibleRuns.length === 0 && (
+        <div className="inbox-state inbox-state--empty">
+          <span className="inbox-empty-icon">🔍</span>
+          <strong>No runs match this filter</strong>
+          <span>
+            Try selecting a different type or{' '}
+            <button
+              type="button"
+              className="btn-link"
+              onClick={() => setFilterType('all')}
+            >
+              show all
+            </button>
+            .
+          </span>
         </div>
       )}
 
