@@ -1,0 +1,113 @@
+import { useState, useEffect, useCallback } from 'react';
+import getApiBase from '../utils/api';
+
+/**
+ * Hook to manage staged extraction inbox.
+ *
+ * Returns:
+ *   runs        — array of staged run objects from GET /api/v1/inbox
+ *   loading     — initial load in progress
+ *   error       — last fetch error message or null
+ *   apiStatus   — 'online' | 'offline' | 'unknown'
+ *   refresh     — re-fetch the inbox
+ *   commitRun   — (runId) => Promise — commit a run
+ *   rejectRun   — (runId) => Promise — reject/delete a run
+ *   actionState — { [runId]: 'committing' | 'rejecting' | 'done' | 'error' }
+ */
+export function useInbox() {
+  const [runs, setRuns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [apiStatus, setApiStatus] = useState('unknown');
+  const [actionState, setActionState] = useState({});
+
+  const fetchInbox = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setApiStatus('unknown');
+
+    const base = getApiBase();
+    try {
+      const res = await fetch(`${base}/api/v1/inbox`);
+      if (!res.ok) {
+        setApiStatus('offline');
+        setError(`API returned ${res.status}`);
+        return;
+      }
+      const body = await res.json();
+      const fetched = body?.structuredContent?.runs ?? body?.runs ?? [];
+      setRuns(fetched);
+      setApiStatus('online');
+    } catch (err) {
+      setApiStatus('offline');
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInbox();
+  }, [fetchInbox]);
+
+  const commitRun = useCallback(
+    async (runId) => {
+      setActionState((prev) => ({ ...prev, [runId]: 'committing' }));
+      const base = getApiBase();
+      try {
+        const res = await fetch(`${base}/api/v1/inbox/${encodeURIComponent(runId)}/commit`, {
+          method: 'POST',
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.message ?? `Commit failed: ${res.status}`);
+        }
+        setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+        // Remove committed run from list
+        setRuns((prev) => prev.filter((r) => r.runId !== runId));
+        return await res.json();
+      } catch (err) {
+        setActionState((prev) => ({ ...prev, [runId]: 'error' }));
+        throw err;
+      }
+    },
+    []
+  );
+
+  const rejectRun = useCallback(
+    async (runId) => {
+      setActionState((prev) => ({ ...prev, [runId]: 'rejecting' }));
+      const base = getApiBase();
+      try {
+        const res = await fetch(`${base}/api/v1/inbox/${encodeURIComponent(runId)}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.message ?? `Reject failed: ${res.status}`);
+        }
+        setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+        // Remove rejected run from list
+        setRuns((prev) => prev.filter((r) => r.runId !== runId));
+        return await res.json();
+      } catch (err) {
+        setActionState((prev) => ({ ...prev, [runId]: 'error' }));
+        throw err;
+      }
+    },
+    []
+  );
+
+  return {
+    runs,
+    loading,
+    error,
+    apiStatus,
+    refresh: fetchInbox,
+    commitRun,
+    rejectRun,
+    actionState,
+  };
+}
+
+export default useInbox;
