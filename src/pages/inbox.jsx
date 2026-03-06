@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useInbox } from '../hooks/useInbox';
 
 /* ─── helpers ────────────────────────────────────────────────────────────── */
@@ -51,9 +51,9 @@ function DomainFields({ fields }) {
 
 /* ─── RunCard ─────────────────────────────────────────────────────────────── */
 
-function RunCard({ run, onCommit, onReject, actionState }) {
+const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }) {
   const [expanded, setExpanded] = useState(false);
-  const state = actionState[run.runId];
+  const state = runState;
   const busy = state === 'committing' || state === 'rejecting';
   const isDone = state === 'done';
   const isError = state === 'error';
@@ -62,7 +62,14 @@ function RunCard({ run, onCommit, onReject, actionState }) {
 
   return (
     <div
-      className={`run-card ${isDone ? 'run-card--done' : ''} ${isError ? 'run-card--error' : ''} ${hasReadError ? 'run-card--read-error' : ''}`}
+      className={[
+        'run-card',
+        isDone && 'run-card--done',
+        isError && 'run-card--error',
+        hasReadError && 'run-card--read-error',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       data-run-id={run.runId}
     >
       {/* header */}
@@ -172,7 +179,7 @@ function RunCard({ run, onCommit, onReject, actionState }) {
       )}
     </div>
   );
-}
+});
 
 /* ─── InboxPage ───────────────────────────────────────────────────────────── */
 
@@ -204,11 +211,12 @@ export default function InboxPage() {
   const [filterType, setFilterType] = useState('all');
   const toastTimerRef = useRef(null);
 
-  const toast = (msg, isError = false) => {
+  // Stable reference — safe to include in useCallback dep arrays.
+  const toast = useCallback((msg, isError = false) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastMsg({ msg, isError });
     toastTimerRef.current = setTimeout(() => setToastMsg(null), 4000);
-  };
+  }, []); // setToastMsg is a stable setter; toastTimerRef is a ref — no deps needed
 
   // Clear timer on unmount to avoid setState on an unmounted component.
   useEffect(() => {
@@ -217,54 +225,60 @@ export default function InboxPage() {
     };
   }, []);
 
-  const handleCommit = async (runId) => {
-    try {
-      const result = await commitRun(runId);
-      const committed = result?.structuredContent?.committed ?? 0;
-      const failed = result?.structuredContent?.failed ?? 0;
-      const rejected = result?.structuredContent?.rejected ?? 0;
-      if (failed > 0 || rejected > 0) {
-        // Some items did not commit — failed validation or rejected for low confidence.
-        // The run directory may still contain quarantined files; refresh so the user
-        // sees the current state rather than a silently vanished partial run.
-        const parts = [];
-        if (committed > 0) parts.push(`${committed} committed`);
-        if (rejected > 0) parts.push(`${rejected} rejected`);
-        if (failed > 0) parts.push(`${failed} failed`);
-        toast(
-          `Partial commit (${parts.join(', ')}) — refreshing`,
-          committed === 0
-        );
-        refresh();
-      } else {
-        toast(
-          `Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`
-        );
+  const handleCommit = useCallback(
+    async (runId) => {
+      try {
+        const result = await commitRun(runId);
+        const committed = result?.structuredContent?.committed ?? 0;
+        const failed = result?.structuredContent?.failed ?? 0;
+        const rejected = result?.structuredContent?.rejected ?? 0;
+        if (failed > 0 || rejected > 0) {
+          // Some items did not commit — failed validation or rejected for low confidence.
+          // The run directory may still contain quarantined files; refresh so the user
+          // sees the current state rather than a silently vanished partial run.
+          const parts = [];
+          if (committed > 0) parts.push(`${committed} committed`);
+          if (rejected > 0) parts.push(`${rejected} rejected`);
+          if (failed > 0) parts.push(`${failed} failed`);
+          toast(
+            `Partial commit (${parts.join(', ')}) — refreshing`,
+            committed === 0
+          );
+          refresh();
+        } else {
+          toast(
+            `Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`
+          );
+        }
+      } catch (err) {
+        toast(err.message ?? 'Commit failed', true);
       }
-    } catch (err) {
-      toast(err.message ?? 'Commit failed', true);
-    }
-  };
+    },
+    [commitRun, refresh, toast]
+  );
 
-  const handleReject = async (runId) => {
-    try {
-      const result = await rejectRun(runId);
-      const errors = result?.structuredContent?.errors ?? 0;
-      if (errors > 0) {
-        // At least one item could not be deleted. The run is partially rejected;
-        // refresh so the remaining items are visible rather than hiding the run.
-        toast(
-          `Partial rejection: ${errors} item${errors !== 1 ? 's' : ''} could not be removed — refreshing`,
-          true
-        );
-        refresh();
-      } else {
-        toast(`Rejected run ${runId}`);
+  const handleReject = useCallback(
+    async (runId) => {
+      try {
+        const result = await rejectRun(runId);
+        const errors = result?.structuredContent?.errors ?? 0;
+        if (errors > 0) {
+          // At least one item could not be deleted. The run is partially rejected;
+          // refresh so the remaining items are visible rather than hiding the run.
+          toast(
+            `Partial rejection: ${errors} item${errors !== 1 ? 's' : ''} could not be removed — refreshing`,
+            true
+          );
+          refresh();
+        } else {
+          toast(`Rejected run ${runId}`);
+        }
+      } catch (err) {
+        toast(err.message ?? 'Reject failed', true);
       }
-    } catch (err) {
-      toast(err.message ?? 'Reject failed', true);
-    }
-  };
+    },
+    [rejectRun, refresh, toast]
+  );
 
   /* filter tabs */
   const runTypes = ['all', ...new Set(runs.map((r) => r.runType ?? 'unknown'))];
@@ -386,7 +400,7 @@ export default function InboxPage() {
               run={run}
               onCommit={handleCommit}
               onReject={handleReject}
-              actionState={actionState}
+              runState={actionState[run.runId]}
             />
           ))}
         </section>
