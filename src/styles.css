@@ -6,26 +6,26 @@
 /* Short-name aliases — map legacy viewer vars to --vault-* tokens.
    All values come from tokens.css; nothing is hard-coded here. */
 :root {
-  --bg:           var(--vault-bg);
-  --surface:      var(--vault-surface);
-  --surface-2:    var(--vault-surface-2);
-  --surface-3:    var(--vault-surface-3);
-  --ink:          var(--vault-ink);
-  --muted:        var(--vault-muted);
-  --accent:       var(--vault-accent);
-  --accent-2:     var(--vault-accent-2);
-  --accent-3:     var(--vault-accent-3);
-  --shadow:       var(--vault-shadow);
-  --shadow-lg:    var(--vault-shadow-lg);
-  --radius:       var(--vault-radius);
-  --glow:         var(--vault-glow);
-  --radius-pill:  var(--vault-radius-pill);
-  --radius-sm:    var(--vault-radius-sm);
+  --bg: var(--vault-bg);
+  --surface: var(--vault-surface);
+  --surface-2: var(--vault-surface-2);
+  --surface-3: var(--vault-surface-3);
+  --ink: var(--vault-ink);
+  --muted: var(--vault-muted);
+  --accent: var(--vault-accent);
+  --accent-2: var(--vault-accent-2);
+  --accent-3: var(--vault-accent-3);
+  --shadow: var(--vault-shadow);
+  --shadow-lg: var(--vault-shadow-lg);
+  --radius: var(--vault-radius);
+  --glow: var(--vault-glow);
+  --radius-pill: var(--vault-radius-pill);
+  --radius-sm: var(--vault-radius-sm);
   --border-subtle: var(--vault-border-subtle);
   --border-faint: var(--vault-border-faint);
-  --border-soft:  var(--vault-border-soft);
-  --font-xs:      var(--vault-font-xs);
-  --font-sm:      var(--vault-font-sm);
+  --border-soft: var(--vault-border-soft);
+  --font-xs: var(--vault-font-xs);
+  --font-sm: var(--vault-font-sm);
 }
 
 * {
@@ -2469,7 +2469,6 @@ img {
   animation: spin 1s linear infinite;
 }
 
-
 /* Profile Header */
 .avatar-profile {
   display: flex;
@@ -3881,7 +3880,6 @@ img {
   z-index: 1;
   animation: fadeSlideInSm 0.5s ease;
 }
-
 
 .note-header__badges {
   display: flex;
@@ -5675,7 +5673,6 @@ img {
   animation: spin 0.7s linear infinite;
 }
 
-
 /* ── Run list ─────────────────────────────────────────────────────────────── */
 
 .inbox-list {
@@ -6036,5 +6033,180 @@ img {
     right: 12px;
     left: 12px;
     max-width: none;
+  }
+}
+
+/* ==========================================================================
+   Extra-small phones (≤ 480px) — fill gaps not covered by 600px breakpoints
+   ========================================================================== */
+@media (max-width: 480px) {
+  /* Page padding — tighter on very small screens */
+  .page {
+    padding: 24px 12px 64px;
+  }
+
+  /* Kanban — force single column + horizontal scroll safety */
+  .kanban {
+    grid-template-columns: 1fr;
+    overflow-x: hidden;
+  }
+
+  .kanban-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .select-group {
+    width: 100%;
+  }
+
+  .select-group select {
+    width: 100%;
+  }
+
+  .kanban-legend {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Note task card stats — single column */
+  .note-task-card__stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .note-task-card__stat {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Avatar capacity grid — single column */
+  .avatar-capacity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Avatar stats rows — single column */
+  .avatar-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  /* Avatar grid — single column */
+  .avatar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Goals summary — single column on very small screens */
+  .goals-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Goals filters — horizontal scroll */
+  .goals-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .goals-filter {
+    flex-shrink: 0;
+  }
+
+  /* COD panel — full width minus margin on very small phones */
+  .cod-panel {
+    width: calc(100vw - 24px);
+    right: 12px;
+    left: 12px;
+    top: 12px;
+  }
+
+  /* COD widget actions — wrap */
+  .cod-widget__actions {
+    flex-wrap: wrap;
+  }
+
+  .cod-widget__btn {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    text-align: center;
+  }
+
+  /* Hero — reduce heading size */
+  .hero__content h1 {
+    font-size: 1.75rem;
+  }
+
+  /* Toolbar — ensure search fills width */
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  /* Filters — horizontal scroll */
+  .filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-button {
+    flex-shrink: 0;
+  }
+
+  /* Quick links — single column */
+  .quick-links {
+    flex-direction: column;
+  }
+
+  /* Note actions — full-width wrap */
+  .note-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .note-actions__group {
+    width: 100%;
+  }
+
+  .note-actions__group--task {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--note-border);
+    padding-top: 8px;
+  }
+
+  /* Note footer nav — stack vertically */
+  .note-footer__nav {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Note footer links — full width */
+  .note-footer__link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Inbox run-card title — allow wrap */
+  .run-card__title {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Keyboard help overlay — nearly full width */
+  .keyboard-help {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
   }
 }
