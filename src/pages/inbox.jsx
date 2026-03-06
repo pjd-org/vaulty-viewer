@@ -55,7 +55,6 @@ const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }) {
   const [expanded, setExpanded] = useState(false);
   const state = runState;
   const busy = state === 'committing' || state === 'rejecting';
-  const isDone = state === 'done';
   const isError = state === 'error';
   const isSignal = run.runType === 'signals_infer';
   const hasReadError = Boolean(run.error);
@@ -64,7 +63,6 @@ const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }) {
     <div
       className={[
         'run-card',
-        isDone && 'run-card--done',
         isError && 'run-card--error',
         hasReadError && 'run-card--read-error',
       ]
@@ -117,32 +115,29 @@ const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }) {
         </div>
 
         <div className="run-card__actions">
-          {!isDone && (
-            <>
-              <button
-                type="button"
-                className="btn btn--commit"
-                disabled={busy || isSignal}
-                title={
-                  isSignal
-                    ? 'signals_infer runs require explicit human approval'
-                    : 'Commit this run'
-                }
-                onClick={() => onCommit(run.runId)}
-              >
-                {state === 'committing' ? 'Committing…' : '✓ Commit'}
-              </button>
-              <button
-                type="button"
-                className="btn btn--reject"
-                disabled={busy}
-                onClick={() => onReject(run.runId)}
-              >
-                {state === 'rejecting' ? 'Rejecting…' : '✕ Reject'}
-              </button>
-            </>
-          )}
-          {isDone && <span className="run-card__done-label">✓ done</span>}
+          <>
+            <button
+              type="button"
+              className="btn btn--commit"
+              disabled={busy || isSignal}
+              title={
+                isSignal
+                  ? 'signals_infer runs require explicit human approval'
+                  : 'Commit this run'
+              }
+              onClick={() => onCommit(run.runId)}
+            >
+              {state === 'committing' ? 'Committing…' : '✓ Commit'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--reject"
+              disabled={busy}
+              onClick={() => onReject(run.runId)}
+            >
+              {state === 'rejecting' ? 'Rejecting…' : '✕ Reject'}
+            </button>
+          </>
           {isError && (
             <span
               className="run-card__error-label"
@@ -210,6 +205,12 @@ export default function InboxPage() {
   const [toastMsg, setToastMsg] = useState(null);
   const [filterType, setFilterType] = useState('all');
   const toastTimerRef = useRef(null);
+
+  // True while ANY run has an in-flight action. Blocks Refresh so a concurrent
+  // fetchInbox cannot wipe actionState mid-request and re-enable buttons.
+  const anyActionInFlight = Object.values(actionState).some(
+    (s) => s === 'committing' || s === 'rejecting'
+  );
 
   // Stable reference — safe to include in useCallback dep arrays.
   const toast = useCallback((msg, isError = false) => {
@@ -325,7 +326,7 @@ export default function InboxPage() {
             type="button"
             className="btn btn--refresh"
             onClick={refresh}
-            disabled={loading}
+            disabled={loading || anyActionInFlight}
           >
             {loading ? 'Loading…' : '↻ Refresh'}
           </button>

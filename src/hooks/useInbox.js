@@ -12,7 +12,7 @@ import getApiBase from '../utils/api';
  *   refresh     — re-fetch the inbox
  *   commitRun   — (runId) => Promise — commit a run
  *   rejectRun   — (runId) => Promise — reject/delete a run
- *   actionState — { [runId]: 'committing' | 'rejecting' | 'done' | 'error' }
+ *   actionState — { [runId]: 'committing' | 'rejecting' | 'error' }
  */
 export function useInbox() {
   const [runs, setRuns] = useState([]);
