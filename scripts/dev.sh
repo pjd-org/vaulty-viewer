@@ -15,6 +15,7 @@ load_env() {
   env_file="$1"
   if [ -f "$env_file" ]; then
     set -a
+    # shellcheck source=/dev/null
     . "$env_file"
     set +a
   fi
@@ -33,7 +34,7 @@ resolve_path() {
   fi
 
   case "$candidate" in
-    "~"|"~/"*)
+    "~"|"$HOME"|"$HOME/"*)
       candidate="${HOME}${candidate#~}"
       ;;
   esac
