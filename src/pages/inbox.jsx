@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInbox } from '../hooks/useInbox';
 
 /* ─── helpers ────────────────────────────────────────────────────────────── */
@@ -58,10 +58,11 @@ function RunCard({ run, onCommit, onReject, actionState }) {
   const isDone = state === 'done';
   const isError = state === 'error';
   const isSignal = run.runType === 'signals_infer';
+  const hasReadError = Boolean(run.error);
 
   return (
     <div
-      className={`run-card ${isDone ? 'run-card--done' : ''} ${isError ? 'run-card--error' : ''}`}
+      className={`run-card ${isDone ? 'run-card--done' : ''} ${isError ? 'run-card--error' : ''} ${hasReadError ? 'run-card--read-error' : ''}`}
       data-run-id={run.runId}
     >
       {/* header */}
@@ -80,6 +81,11 @@ function RunCard({ run, onCommit, onReject, actionState }) {
           {runTypeBadge(run.runType)}
           {run.action && (
             <span className="badge badge--action">{run.action}</span>
+          )}
+          {hasReadError && (
+            <span className="badge badge--error" title={run.error}>
+              ⚠ read error
+            </span>
           )}
           {isSignal && (
             <span
@@ -196,11 +202,20 @@ export default function InboxPage() {
 
   const [toastMsg, setToastMsg] = useState(null);
   const [filterType, setFilterType] = useState('all');
+  const toastTimerRef = useRef(null);
 
   const toast = (msg, isError = false) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastMsg({ msg, isError });
-    setTimeout(() => setToastMsg(null), 4000);
+    toastTimerRef.current = setTimeout(() => setToastMsg(null), 4000);
   };
+
+  // Clear timer on unmount to avoid setState on an unmounted component.
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   const handleCommit = async (runId) => {
     try {
