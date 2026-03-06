@@ -25,6 +25,7 @@ export function useInbox() {
     setLoading(true);
     setError(null);
     setApiStatus('unknown');
+    setActionState({});
 
     const base = getApiBase();
     try {
@@ -66,7 +67,14 @@ export function useInbox() {
       if (!res.ok) {
         throw new Error(body?.message ?? `Commit failed: ${res.status}`);
       }
-      setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+      // Prune actionState: remove the runId entirely so if the run reappears
+      // after a refresh it starts with a clean slate rather than showing a
+      // stale 'done' or 'error' badge.
+      setActionState((prev) => {
+        const next = { ...prev };
+        delete next[runId];
+        return next;
+      });
       // Remove committed run from list
       setRuns((prev) => prev.filter((r) => r.runId !== runId));
       return body;
@@ -91,7 +99,12 @@ export function useInbox() {
       if (!res.ok) {
         throw new Error(body?.message ?? `Reject failed: ${res.status}`);
       }
-      setActionState((prev) => ({ ...prev, [runId]: 'done' }));
+      // Prune actionState: same reason as commitRun above.
+      setActionState((prev) => {
+        const next = { ...prev };
+        delete next[runId];
+        return next;
+      });
       // Remove rejected run from list
       setRuns((prev) => prev.filter((r) => r.runId !== runId));
       return body;
