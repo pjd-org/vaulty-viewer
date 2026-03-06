@@ -5475,15 +5475,15 @@ img {
 /* Dark mode keyboard help */
 @media (prefers-color-scheme: dark) {
   .keyboard-help {
-    background: #1a1a1f;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border-color: var(--border-subtle);
   }
 
   .keyboard-help__kbd,
   .keyboard-help__footer kbd {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #f0f0f5;
+    background: var(--surface-2);
+    border-color: var(--border-soft);
+    color: var(--ink);
   }
 }
 
@@ -5537,13 +5537,13 @@ img {
 
 @media (prefers-color-scheme: dark) {
   .keyboard-hint {
-    background: #1a1a1f;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--surface);
+    border-color: var(--border-soft);
   }
 
   .keyboard-hint kbd {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--surface-2);
+    border-color: var(--border-soft);
   }
 }
 
