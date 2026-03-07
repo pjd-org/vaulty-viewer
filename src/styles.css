@@ -1,7 +1,7 @@
 /* Design-system tokens — single source of truth */
 @import '@vault/ui/tokens.css';
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:wght@500;700&display=swap');
 
 /* Short-name aliases — map legacy viewer vars to --vault-* tokens.
    All values come from tokens.css; nothing is hard-coded here. */

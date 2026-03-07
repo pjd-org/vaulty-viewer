@@ -49,6 +49,36 @@ function DomainFields({ fields }) {
   );
 }
 
+function InboxNoteCard({ note }) {
+  const hasError = Boolean(note.error);
+  const title = note.title || note.path.split('/').pop() || note.path;
+
+  return (
+    <div
+      className={['run-card', hasError && 'run-card--read-error']
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className="run-card__header">
+        <div className="run-card__title">
+          <span className="run-card__id">{title}</span>
+          {note.status && <span className="badge badge--default">{note.status}</span>}
+          {hasError && (
+            <span className="badge badge--error" title={note.error}>
+              ⚠ read error
+            </span>
+          )}
+        </div>
+        <div className="run-card__meta">
+          <span className="run-card__template" title={note.path}>
+            {note.path}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── RunCard ─────────────────────────────────────────────────────────────── */
 
 const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }) {
@@ -184,7 +214,7 @@ export function Head() {
       <title>Inbox — Vaulty Viewer</title>
       <meta
         name="description"
-        content="Review and approve staged extraction proposals."
+        content="Review inbox notes and staged extraction proposals."
       />
     </>
   );
@@ -192,6 +222,7 @@ export function Head() {
 
 export default function InboxPage() {
   const {
+    notes,
     runs,
     loading,
     error,
@@ -311,7 +342,7 @@ export default function InboxPage() {
         <div className="inbox-header__left">
           <h1 className="inbox-header__title">Inbox</h1>
           <p className="inbox-header__sub">
-            Staged extraction proposals awaiting review
+            Regular inbox notes plus staged extraction proposals
           </p>
         </div>
         <div className="inbox-header__right">
@@ -353,7 +384,7 @@ export default function InboxPage() {
       {loading && (
         <div className="inbox-state">
           <div className="inbox-spinner" />
-          <span>Loading staged runs…</span>
+          <span>Loading inbox…</span>
         </div>
       )}
 
@@ -367,11 +398,11 @@ export default function InboxPage() {
         </div>
       )}
 
-      {!loading && !error && runs.length === 0 && (
+      {!loading && !error && notes.length === 0 && runs.length === 0 && (
         <div className="inbox-state inbox-state--empty">
           <span className="inbox-empty-icon">📭</span>
           <strong>Inbox is empty</strong>
-          <span>No staged extraction proposals found.</span>
+          <span>No inbox notes or staged extraction proposals found.</span>
         </div>
       )}
 
@@ -393,8 +424,24 @@ export default function InboxPage() {
         </div>
       )}
 
+      {!loading && !error && notes.length > 0 && (
+        <section className="inbox-list">
+          <header className="inbox-section-header">
+            <h2>Inbox notes</h2>
+            <span>{notes.length}</span>
+          </header>
+          {notes.map((note) => (
+            <InboxNoteCard key={note.path} note={note} />
+          ))}
+        </section>
+      )}
+
       {!loading && !error && visibleRuns.length > 0 && (
         <section className="inbox-list">
+          <header className="inbox-section-header">
+            <h2>Staged proposals</h2>
+            <span>{visibleRuns.length}</span>
+          </header>
           {visibleRuns.map((run) => (
             <RunCard
               key={run.runId}

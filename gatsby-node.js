@@ -1,5 +1,26 @@
 const path = require('path');
 
+exports.onCreateDevServer = ({ app }) => {
+  const apiOrigin =
+    process.env.GATSBY_VAULT_API_URL ||
+    `http://localhost:${process.env.API_PORT || 4300}`;
+
+  app.use((req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        `default-src 'self'`,
+        `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
+        `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+        `font-src 'self' data: https://fonts.gstatic.com`,
+        `img-src 'self' data: blob:`,
+        `connect-src 'self' ${apiOrigin} ws://localhost:* wss://localhost:*`,
+      ].join('; ')
+    );
+    next();
+  });
+};
+
 const IGNORED_DIRS = new Set([
   '_system',
   'templates',

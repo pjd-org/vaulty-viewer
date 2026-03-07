@@ -170,14 +170,20 @@ export function useCODStatus(staticData = null, profileOverride = null) {
         );
         if (avatarRes.ok) {
           const avatarJson = await avatarRes.json();
+          const avatarState =
+            avatarJson?.structuredContent?.state ||
+            avatarJson?.state ||
+            avatarJson?.structuredContent ||
+            avatarJson;
           const vitals =
-            avatarJson?.structuredContent?.vitals || avatarJson?.vitals;
+            avatarState?.vitals || avatarJson?.structuredContent?.vitals || avatarJson?.vitals;
           if (vitals) {
             avatarVitals = {
               money: vitals.money ?? avatarVitals.money,
               notoriety: vitals.notoriety ?? avatarVitals.notoriety,
               health: vitals.health ?? avatarVitals.health,
               healthTrend:
+                avatarState?.trends?.vitals7d?.health ??
                 avatarJson?.structuredContent?.trends?.vitals7d?.health ??
                 avatarVitals.healthTrend ??
                 null,
@@ -203,7 +209,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     } finally {
       setLoading(false);
     }
-  }, [getApiUrl]);
+  }, [getApiUrl, profileOverride]);
 
   /**
    * Update human state via API

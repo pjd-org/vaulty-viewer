@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import getApiBase from '../utils/api';
 
 /**
- * Hook to manage staged extraction inbox.
+ * Hook to manage the combined inbox view.
  *
  * Returns:
+ *   notes       — array of regular inbox notes from GET /api/v1/inbox
  *   runs        — array of staged run objects from GET /api/v1/inbox
  *   loading     — initial load in progress
  *   error       — last fetch error message or null
@@ -15,6 +16,7 @@ import getApiBase from '../utils/api';
  *   actionState — { [runId]: 'committing' | 'rejecting' | 'error' }
  */
 export function useInbox() {
+  const [notes, setNotes] = useState([]);
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +38,9 @@ export function useInbox() {
         return;
       }
       const body = await res.json();
+      const fetchedNotes = body?.structuredContent?.notes ?? body?.notes ?? [];
       const fetched = body?.structuredContent?.runs ?? body?.runs ?? [];
+      setNotes(fetchedNotes);
       setRuns(fetched);
       setApiStatus('online');
     } catch (err) {
@@ -115,6 +119,7 @@ export function useInbox() {
   }, []);
 
   return {
+    notes,
     runs,
     loading,
     error,

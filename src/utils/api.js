@@ -5,7 +5,8 @@
  * 1) Build-time env: GATSBY_VAULT_API_URL
  * 2) Runtime window injection: window.VAULT_API_URL
  * 3) Optional runtime config object: window.VIEWER_CONFIG.apiUrl
- * 4) Empty string (relative) to allow proxy setups
+ * 4) Local Gatsby dev fallback on :8000
+ * 5) Empty string (relative) to allow proxy setups
  */
 export function getApiBase() {
   const strip = (url) => url.replace(/\/+$/, '');
@@ -17,9 +18,11 @@ export function getApiBase() {
     if (window.VAULT_API_URL) return strip(window.VAULT_API_URL);
     if (window.VIEWER_CONFIG?.apiUrl) return strip(window.VIEWER_CONFIG.apiUrl);
     const { hostname, port } = window.location || {};
-    // Dev fallback: when running Gatsby dev/serve on localhost without proxy, point at API port 4300.
+    // Dev fallback: only when the viewer itself is served directly by Gatsby on :8000.
+    // Proxy-served deployments (for example localhost:8080) must stay same-origin
+    // so browser requests go through /api and satisfy the proxy CSP.
     if (hostname && hostname.match(/^(localhost|127\.0\.0\.1)$/)) {
-      if (port === '8000' || port === '8080' || port === '3000') {
+      if (port === '8000') {
         return 'http://localhost:4300';
       }
     }
