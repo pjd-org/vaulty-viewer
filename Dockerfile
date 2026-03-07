@@ -6,12 +6,14 @@ ENV CI=1
 ENV GATSBY_TELEMETRY_DISABLED=1
 ENV VAULT_CONTENT_PATH=/app/content
 
-# Viewer is standalone - use npm for flat node_modules (Gatsby CLI requires it)
-# Build context is apps/viewer only
-COPY package.json ./
+# Build context is the repo root (needed to access packages/ui)
+# Copy packages/ui first so workspace:* dep resolves via local path
+COPY packages/ui /packages/ui
+
+COPY apps/viewer/package.json ./
 RUN npm install --include=dev
 
-COPY . .
+COPY apps/viewer .
 
 # Create a placeholder content directory for builds without vault
 # The actual vault content will be mounted at runtime
