@@ -12,7 +12,7 @@ pnpm run develop
 ## Environment
 
 - `VAULT_CONTENT_PATH` (default: `./content`): path to the vault volume.
-- `PORT` (default: `8000`): Gatsby server port.
+- `PORT` (default: `4400`): runtime nginx port inside the container.
 - `BUILD_ON_START` (default: `1`): build on container start.
 
 ## CMS config
@@ -31,5 +31,5 @@ pointing to `/admin/` on the viewer host.
 
 ```sh
 docker build -t vault-viewer:latest .
-docker run --rm -p 8080:8000 -e VAULT_CONTENT_PATH=/vault -e BUILD_ON_START=1 -v /path/to/vault:/vault vault-viewer:latest
+docker run --rm -p 8080:4400 -e VAULT_CONTENT_PATH=/vault -e BUILD_ON_START=1 -v /path/to/vault:/vault vault-viewer:latest
 ```

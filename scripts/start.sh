@@ -6,7 +6,8 @@ PORT="${PORT:-4400}"
 VAULT_CONTENT_PATH="${VAULT_CONTENT_PATH:-${VAULT_PATH:-/vault}}"
 VAULT_API_URL="${VAULT_API_URL:-}"
 # API_PROXY_URL: backend URL for nginx to proxy /api/ requests
-# Derives from API_PORT (set by services/start.sh or .env); falls back to 4300.
+# Derives from API_PORT (set by services/start.sh or .env); pod mode should use
+# loopback so nginx reaches the API over the shared network namespace.
 API_PORT="${API_PORT:-4300}"
 API_PROXY_URL="${API_PROXY_URL:-http://127.0.0.1:${API_PORT}}"
 

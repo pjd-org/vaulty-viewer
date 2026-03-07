@@ -5,13 +5,14 @@ WORKDIR /app
 ENV CI=1
 ENV GATSBY_TELEMETRY_DISABLED=1
 ENV VAULT_CONTENT_PATH=/app/content
+ENV npm_config_cache=/tmp/.npm
 
 # Build context is the repo root (needed to access packages/ui)
 # Copy packages/ui first so workspace:* dep resolves via local path
 COPY packages/ui /packages/ui
 
 COPY apps/viewer/package.json ./
-RUN npm install --include=dev
+RUN npm install --include=dev --no-audit --no-fund && rm -rf /tmp/.npm
 
 COPY apps/viewer .
 
