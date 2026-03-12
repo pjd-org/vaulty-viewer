@@ -61,9 +61,7 @@ export function useGoals() {
       const tasksData = await tasksRes.json();
 
       const taskList =
-        tasksData.structuredContent?.tasks ||
-        tasksData.tasks ||
-        [];
+        tasksData.structuredContent?.tasks || tasksData.tasks || [];
       setTasks(taskList);
       setApiStatus('online');
       setUpdatedAt(new Date().toISOString());
@@ -82,39 +80,64 @@ export function useGoals() {
 
   // Group tasks by goalId and compute progress
   const goals = useMemo(() => {
+    // Exclude tasks from non-authoritative roots (archive, inbox, staged)
+    const activeTasks = tasks.filter((t) => {
+      const p = (t.path || '').replace(/\\/g, '/');
+      return (
+        !p.startsWith('archive/') &&
+        !p.startsWith('inbox/') &&
+        !p.startsWith('_archive/')
+      );
+    });
+
     // Normalize tasks: status + effort score fallback
-    const normalizedTasks = tasks.map((t) => {
+    const normalizedTasks = activeTasks.map((t) => {
       const rawStatus = (t.status || 'todo').toLowerCase();
       const status =
-        rawStatus === 'in_progress' ? 'in-progress' : rawStatus === 'done' ? 'completed' : rawStatus;
+        rawStatus === 'in_progress'
+          ? 'in-progress'
+          : rawStatus === 'done'
+            ? 'completed'
+            : rawStatus;
       const effortScore =
         typeof t.effortScore === 'number' && t.effortScore > 0
           ? t.effortScore
           : typeof t.effort === 'number' && t.effort > 0
-          ? t.effort
-          : typeof t.estimatedTimeMin === 'number' && t.estimatedTimeMin > 0
-          ? Math.max(1, Math.round(t.estimatedTimeMin / 15))
-          : 1;
+            ? t.effort
+            : typeof t.estimatedTimeMin === 'number' && t.estimatedTimeMin > 0
+              ? Math.max(1, Math.round(t.estimatedTimeMin / 15))
+              : 1;
       return { ...t, status, effortScore };
     });
+
+    // Sanitize a raw goalId/tag value: strip stray YAML quote artifacts
+    // e.g. "'platform-foundation'" -> "platform-foundation"
+    const sanitizeId = (raw) =>
+      String(raw).trim().replace(/^['"]/, '').replace(/['"]$/, '');
 
     // Find unique goalIds from explicit field or goal:* tags
     const goalIdSet = new Set();
     normalizedTasks.forEach((t) => {
-      if (t.goalId) goalIdSet.add(t.goalId);
+      if (t.goalId) goalIdSet.add(sanitizeId(t.goalId));
       (t.tags || [])
-        .filter((tag) => tag.startsWith('goal:'))
-        .forEach((tag) => goalIdSet.add(tag.replace(/^goal:/, '')));
+        .filter((tag) => String(tag).startsWith('goal:'))
+        .forEach((tag) =>
+          goalIdSet.add(sanitizeId(String(tag).replace(/^goal:/, '')))
+        );
     });
     const goalIds = Array.from(goalIdSet);
 
     return goalIds
       .map((goalId) => {
-        // Get all tasks for this goal (include archived/completed to show true progression)
+        // Get all tasks for this goal
         const goalTasks = normalizedTasks.filter(
           (t) =>
-            t.goalId === goalId ||
-            (t.tags || []).some((tag) => tag === `goal:${goalId}`)
+            (t.goalId && sanitizeId(t.goalId) === goalId) ||
+            (t.tags || []).some(
+              (tag) =>
+                String(tag).startsWith('goal:') &&
+                sanitizeId(String(tag).replace(/^goal:/, '')) === goalId
+            )
         );
 
         const completedTasks = goalTasks.filter(
@@ -127,8 +150,14 @@ export function useGoals() {
         const todoTasks = goalTasks.filter((t) => t.status === 'todo');
 
         // Calculate progress by effort (more accurate)
-        const totalEffort = goalTasks.reduce((sum, t) => sum + (t.effortScore || 1), 0);
-        const completedEffort = completedTasks.reduce((sum, t) => sum + (t.effortScore || 1), 0);
+        const totalEffort = goalTasks.reduce(
+          (sum, t) => sum + (t.effortScore || 1),
+          0
+        );
+        const completedEffort = completedTasks.reduce(
+          (sum, t) => sum + (t.effortScore || 1),
+          0
+        );
         const progressByEffort =
           totalEffort > 0
             ? Math.min(100, Math.round((completedEffort / totalEffort) * 100))
