@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'gatsby';
+import { Link } from '@tanstack/react-router';
+
+interface NavbarProps {
+  apiStatus?: 'online' | 'offline' | 'unknown';
+}
 
 /**
  * Simple top navigation shared across viewer pages.
  * Optionally shows API status via `apiStatus` prop.
  * Mobile-responsive with hamburger menu.
  */
-export default function Navbar({ apiStatus = 'unknown' }) {
+export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const statusLabel =
@@ -47,40 +51,35 @@ export default function Navbar({ apiStatus = 'unknown' }) {
 
       {/* Navigation links - toggleable on mobile */}
       <div className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
-        <Link to="/" activeClassName="navbar__link--active" onClick={closeMenu}>
+        <Link to="/" onClick={closeMenu}>
           Home
         </Link>
         <Link
           to="/kanban"
-          activeClassName="navbar__link--active"
           onClick={closeMenu}
         >
           Kanban
         </Link>
         <Link
           to="/avatar"
-          activeClassName="navbar__link--active"
           onClick={closeMenu}
         >
           Avatar
         </Link>
         <Link
           to="/goals"
-          activeClassName="navbar__link--active"
           onClick={closeMenu}
         >
           Goals
         </Link>
         <Link
           to="/cod-status"
-          activeClassName="navbar__link--active"
           onClick={closeMenu}
         >
           COD
         </Link>
         <Link
           to="/inbox"
-          activeClassName="navbar__link--active"
           onClick={closeMenu}
         >
           Inbox

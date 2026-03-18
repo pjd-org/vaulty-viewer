@@ -1,9 +1,38 @@
 import React from "react";
 
+interface KnowledgeDomains {
+  [domain: string]: number;
+}
+
+interface KnowledgeLearning {
+  now?: string[];
+  next?: string[];
+}
+
+interface Knowledge {
+  domains?: KnowledgeDomains;
+  learning?: KnowledgeLearning;
+  gaps?: string[];
+}
+
+interface KnowledgePanelProps {
+  knowledge?: Knowledge;
+}
+
+interface Capacity {
+  focusCostMax?: number;
+  effortScoreMax?: number;
+  timeBudgetMin?: number;
+}
+
+interface CapacityPanelProps {
+  capacity?: Capacity;
+}
+
 /**
  * Knowledge Panel - shows domains, learning focus, and gaps
  */
-export function KnowledgePanel({ knowledge }) {
+export function KnowledgePanel({ knowledge }: KnowledgePanelProps) {
   const domains = knowledge?.domains || {};
   const learning = knowledge?.learning || { now: [], next: [] };
   const gaps = knowledge?.gaps || [];
@@ -39,11 +68,11 @@ export function KnowledgePanel({ knowledge }) {
       )}
 
       {/* Learning Focus */}
-      {(learning.now?.length > 0 || learning.next?.length > 0) && (
+      {(learning.now?.length || 0 > 0 || learning.next?.length || 0 > 0) && (
         <>
           <div className="avatar-section__divider" />
           <div className="avatar-learning">
-            {learning.now?.length > 0 && (
+            {learning.now && learning.now.length > 0 && (
               <div className="avatar-learning__group">
                 <span className="avatar-learning__label">📚 Learning Now</span>
                 <div className="avatar-tags">
@@ -53,7 +82,7 @@ export function KnowledgePanel({ knowledge }) {
                 </div>
               </div>
             )}
-            {learning.next?.length > 0 && (
+            {learning.next && learning.next.length > 0 && (
               <div className="avatar-learning__group">
                 <span className="avatar-learning__label">📋 Up Next</span>
                 <div className="avatar-tags">
@@ -88,7 +117,7 @@ export function KnowledgePanel({ knowledge }) {
 /**
  * Capacity Panel - shows current work capacity limits
  */
-export function CapacityPanel({ capacity }) {
+export function CapacityPanel({ capacity }: CapacityPanelProps) {
   return (
     <div className="avatar-section">
       <div className="avatar-section__header">

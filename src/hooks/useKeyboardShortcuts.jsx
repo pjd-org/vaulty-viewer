@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from 'react';
-import { navigate } from 'gatsby';
 
 /**
  * Keyboard shortcuts for power users.
@@ -13,7 +12,7 @@ import { navigate } from 'gatsby';
  * - /: Focus search
  * - ?: Show help
  */
-export function useKeyboardShortcuts({ onSearch, onHelp } = {}) {
+export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
   const handleKeyDown = useCallback(
     (e) => {
       // Skip if in input/textarea/contenteditable
@@ -76,7 +75,11 @@ export function useKeyboardShortcuts({ onSearch, onHelp } = {}) {
 
         if (routes[e.key]) {
           e.preventDefault();
-          navigate(routes[e.key]);
+          if (onNavigate) {
+            onNavigate(routes[e.key]);
+          } else {
+            window.location.assign(routes[e.key]);
+          }
         }
       }
 
@@ -88,7 +91,7 @@ export function useKeyboardShortcuts({ onSearch, onHelp } = {}) {
         }
       }
     },
-    [onSearch, onHelp]
+    [onSearch, onHelp, onNavigate]
   );
 
   useEffect(() => {

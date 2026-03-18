@@ -1,11 +1,54 @@
-export const computeCounts = (goals) => ({
+export type GoalStatus = 'on-track' | 'at-risk' | 'behind' | 'blocked' | 'completed';
+
+export interface GoalStats {
+  total?: number;
+  completed?: number;
+  totalEffort?: number;
+  completedEffort?: number;
+  blocked?: number;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  status: GoalStatus;
+  progress?: number;
+  priority?: number;
+  stats?: GoalStats;
+  targetDate?: string;
+  eta?: string;
+  tasks?: Array<{
+    id?: string;
+    path?: string;
+    title: string;
+    status: string;
+    effortScore?: number;
+  }>;
+}
+
+export interface GoalCounts {
+  all: number;
+  active: number;
+  atRisk: number;
+  completed: number;
+}
+
+export interface GoalSummary {
+  totalTasks: number;
+  completedTasks: number;
+  totalEffort: number;
+  completedEffort: number;
+  overallProgress: number;
+}
+
+export const computeCounts = (goals: Goal[]): GoalCounts => ({
   all: goals.length,
   active: goals.filter((g) => g.status !== 'completed').length,
   atRisk: goals.filter((g) => ['at-risk', 'behind', 'blocked'].includes(g.status)).length,
   completed: goals.filter((g) => g.status === 'completed').length,
 });
 
-export const filterGoals = (goals, filter) => {
+export const filterGoals = (goals: Goal[], filter: string): Goal[] => {
   switch (filter) {
     case 'active':
       return goals.filter((g) => g.status !== 'completed');
@@ -18,7 +61,7 @@ export const filterGoals = (goals, filter) => {
   }
 };
 
-export const sortGoals = (goals, sortBy) => {
+export const sortGoals = (goals: Goal[], sortBy: string): Goal[] => {
   const sorted = [...goals];
   switch (sortBy) {
     case 'progress':
@@ -35,7 +78,7 @@ export const sortGoals = (goals, sortBy) => {
   }
 };
 
-export const computeSummary = (goals) => {
+export const computeSummary = (goals: Goal[]): GoalSummary => {
   const totalTasks = goals.reduce((sum, g) => sum + (g.stats?.total || 0), 0);
   const completedTasks = goals.reduce((sum, g) => sum + (g.stats?.completed || 0), 0);
   const totalEffort = goals.reduce((sum, g) => sum + (g.stats?.totalEffort || 0), 0);

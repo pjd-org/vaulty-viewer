@@ -1,9 +1,22 @@
 import React from "react";
 
+interface Progression {
+  streakDays?: number;
+  streakUpdated?: string;
+}
+
+interface ProgressionPanelProps {
+  progression?: Progression;
+  level: number;
+  currentXp: number;
+  xpToNext: number;
+  xpProgress: number;
+}
+
 /**
  * Progression Panel - shows level, XP, and streak
  */
-export function ProgressionPanel({ progression, level, currentXp, xpToNext, xpProgress }) {
+export function ProgressionPanel({ progression, level, currentXp, xpToNext, xpProgress }: ProgressionPanelProps) {
   const streakDays = progression?.streakDays || 0;
   const streakUpdated = progression?.streakUpdated;
   
@@ -11,7 +24,7 @@ export function ProgressionPanel({ progression, level, currentXp, xpToNext, xpPr
   const isStreakActive = streakUpdated && (() => {
     const updated = new Date(streakUpdated);
     const today = new Date();
-    const diffDays = Math.floor((today - updated) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor((today.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 1;
   })();
 

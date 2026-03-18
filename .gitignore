@@ -1,6 +1,9 @@
 node_modules/
 .cache/
 public/
+.vinxi/
+.output/
+app.config.timestamp_*.js
 .env
 .env.*
 .DS_Store

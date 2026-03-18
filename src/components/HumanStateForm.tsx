@@ -1,4 +1,28 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, FormEvent, ChangeEvent } from 'react';
+
+interface HumanState {
+  energy?: number;
+  focusCapacity?: 'low' | 'med' | 'high';
+  stress?: number;
+  sleepDebt?: number;
+  timeAvailableMin?: number;
+}
+
+interface FormData {
+  energy: number;
+  focusCapacity: 'low' | 'med' | 'high';
+  stress: number;
+  sleepHours: number;
+  timeAvailableMin: number;
+  source: string;
+}
+
+interface HumanStateFormProps {
+  currentState?: HumanState;
+  onSubmit: (formData: FormData) => void;
+  onCancel: () => void;
+  loading?: boolean;
+}
 
 /**
  * Form to update COD Human State
@@ -9,8 +33,8 @@ export function HumanStateForm({
   onSubmit,
   onCancel,
   loading = false,
-}) {
-  const [formData, setFormData] = useState({
+}: HumanStateFormProps) {
+  const [formData, setFormData] = useState<FormData>({
     energy: currentState?.energy ?? 0.5,
     focusCapacity: currentState?.focusCapacity || 'med',
     stress: currentState?.stress ?? 0.3,
@@ -19,11 +43,11 @@ export function HumanStateForm({
     source: 'moment-check',
   });
 
-  const handleChange = useCallback((field, value) => {
+  const handleChange = useCallback(<K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
@@ -49,7 +73,7 @@ export function HumanStateForm({
           max="1"
           step="0.05"
           value={formData.energy}
-          onChange={(e) => handleChange('energy', parseFloat(e.target.value))}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('energy', parseFloat(e.target.value))}
           className="cod-form__slider"
         />
         <div className="cod-form__hints">
@@ -62,7 +86,7 @@ export function HumanStateForm({
       <div className="cod-form__field">
         <label className="cod-form__label">🎯 Focus Capacity</label>
         <div className="cod-form__button-group">
-          {['low', 'med', 'high'].map((level) => (
+          {(['low', 'med', 'high'] as const).map((level) => (
             <button
               key={level}
               type="button"
@@ -89,7 +113,7 @@ export function HumanStateForm({
           max="1"
           step="0.05"
           value={formData.stress}
-          onChange={(e) => handleChange('stress', parseFloat(e.target.value))}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('stress', parseFloat(e.target.value))}
           className="cod-form__slider cod-form__slider--stress"
         />
         <div className="cod-form__hints">
@@ -110,7 +134,7 @@ export function HumanStateForm({
           max="12"
           step="0.5"
           value={formData.sleepHours}
-          onChange={(e) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleChange('sleepHours', parseFloat(e.target.value))
           }
           className="cod-form__slider"
@@ -135,7 +159,7 @@ export function HumanStateForm({
           max="480"
           step="15"
           value={formData.timeAvailableMin}
-          onChange={(e) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleChange('timeAvailableMin', parseInt(e.target.value))
           }
           className="cod-form__slider"

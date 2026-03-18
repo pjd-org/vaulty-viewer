@@ -1,6 +1,49 @@
 import React from "react";
 
-function formatMoney(money) {
+interface MoneyObject {
+  default_currency?: string;
+  defaultCurrency?: string;
+  balances?: Record<string, number>;
+}
+
+interface Needs {
+  sleep?: number;
+  social?: number;
+  food?: number;
+}
+
+interface Vitals {
+  health?: number;
+  energy?: number;
+  stress?: number;
+  rank?: string;
+  tasksCompletedToday?: number;
+  tasksCompletedThisWeek?: number;
+  sessionsCompletedThisWeek?: number;
+  activeSessions?: number;
+  totalTasksCompleted?: number;
+  totalSessions?: number;
+  money?: number | MoneyObject;
+  notoriety?: number;
+  needs?: Needs;
+}
+
+interface VitalsPanelProps {
+  vitals: Vitals;
+}
+
+interface VitalBarProps {
+  value: number;
+  label: string;
+  icon: string;
+  inverted?: boolean;
+}
+
+interface NeedsGridProps {
+  needs: Needs;
+}
+
+function formatMoney(money: number | MoneyObject | undefined): string | number {
   if (money === undefined || money === null) return "—";
   if (typeof money === "number") return money;
   if (typeof money === "object") {
@@ -17,9 +60,8 @@ function formatMoney(money) {
 /**
  * Progress bar for vitals with color thresholds
  */
-function VitalBar({ value, label, icon, inverted = false }) {
+function VitalBar({ value, label, icon, inverted = false }: VitalBarProps) {
   // For inverted metrics like stress, high is bad
-  const displayValue = inverted ? 100 - value : value;
   const effectiveValue = inverted ? 100 - value : value;
   
   let color = "success";
@@ -46,11 +88,11 @@ function VitalBar({ value, label, icon, inverted = false }) {
 /**
  * Needs mini-bars (sleep, social, food)
  */
-function NeedsGrid({ needs }) {
+function NeedsGrid({ needs }: NeedsGridProps) {
   const needsData = [
-    { key: "sleep", icon: "😴", label: "Sleep" },
-    { key: "social", icon: "👥", label: "Social" },
-    { key: "food", icon: "🍽️", label: "Food" },
+    { key: "sleep" as const, icon: "😴", label: "Sleep" },
+    { key: "social" as const, icon: "👥", label: "Social" },
+    { key: "food" as const, icon: "🍽️", label: "Food" },
   ];
 
   return (
@@ -74,7 +116,7 @@ function NeedsGrid({ needs }) {
 /**
  * Vitals Panel - displays health, energy, stress and needs
  */
-export function VitalsPanel({ vitals }) {
+export function VitalsPanel({ vitals }: VitalsPanelProps) {
   return (
     <div className="avatar-section">
       <div className="avatar-section__header">
@@ -118,7 +160,7 @@ export function VitalsPanel({ vitals }) {
       </div>
 
       {/* Additional Stats Row */}
-      {(vitals.totalTasksCompleted > 0 || vitals.totalSessions > 0) && (
+      {((vitals.totalTasksCompleted || 0) > 0 || (vitals.totalSessions || 0) > 0) && (
         <>
           <div className="avatar-section__divider" />
           <div className="avatar-stats-row avatar-stats-row--secondary">

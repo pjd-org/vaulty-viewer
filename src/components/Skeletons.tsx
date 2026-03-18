@@ -1,5 +1,13 @@
 import React from "react";
 
+interface SkeletonCardGridProps {
+  count?: number;
+}
+
+interface SkeletonGoalsListProps {
+  count?: number;
+}
+
 /**
  * Skeleton loading states for better perceived performance.
  */
@@ -68,7 +76,7 @@ export function SkeletonVitals() {
 /**
  * Grid of skeleton cards
  */
-export function SkeletonCardGrid({ count = 6 }) {
+export function SkeletonCardGrid({ count = 6 }: SkeletonCardGridProps) {
   return (
     <div className="grid">
       {Array.from({ length: count }).map((_, i) => (
@@ -94,7 +102,7 @@ export function SkeletonKanban() {
 /**
  * Goals list skeleton
  */
-export function SkeletonGoalsList({ count = 4 }) {
+export function SkeletonGoalsList({ count = 4 }: SkeletonGoalsListProps) {
   return (
     <div className="goals-list">
       {Array.from({ length: count }).map((_, i) => (

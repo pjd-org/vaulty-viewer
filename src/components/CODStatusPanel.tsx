@@ -1,7 +1,84 @@
 import React, { useState } from "react";
 import useCODStatus from "../hooks/useCODStatus";
 import HumanStateForm from "./HumanStateForm";
-import { navigate } from "gatsby";
+import { useNavigate } from "@tanstack/react-router";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface Validation {
+  status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN';
+  lastChecked?: string;
+}
+
+interface HumanState {
+  energy: number;
+  focusCapacity: 'low' | 'med' | 'high';
+  stress: number;
+  sleepDebt: number;
+  timeAvailableMin: number;
+}
+
+interface SessionTask {
+  title: string;
+  status: 'pending' | 'in_progress' | 'done';
+  estimatedMin?: number;
+}
+
+interface Session {
+  id?: string;
+  startedAt: string;
+  budgetMin: number;
+  tasks?: SessionTask[];
+}
+
+interface AvatarVitals {
+  money?: {
+    default_currency?: string;
+    balances?: Record<string, number>;
+    forms?: Record<string, number | string>;
+  };
+  notoriety?: number;
+  health?: number;
+}
+
+interface CODStatusBadgeProps {
+  status: string;
+  onClick: () => void;
+}
+
+interface ValidationCardProps {
+  validation: Validation;
+}
+
+interface ProgressBarProps {
+  value: number;
+  max?: number;
+  color?: string;
+  label: string;
+  showValue?: boolean;
+}
+
+interface HumanStateSectionProps {
+  state: HumanState;
+  onEdit: () => void;
+}
+
+interface SessionSectionProps {
+  session: Session;
+  onEnd?: () => void;
+  onAbort?: () => void;
+}
+
+interface WarningsSectionProps {
+  warnings: string[];
+}
+
+interface CODStatusPanelProps {
+  collapsed?: boolean;
+  staticData?: unknown;
+}
 
 // ============================================================================
 // Sub-components - Raycast Wrapped Style
@@ -10,7 +87,7 @@ import { navigate } from "gatsby";
 /**
  * Status badge for collapsed view
  */
-function CODStatusBadge({ status, onClick }) {
+function CODStatusBadge({ status, onClick }: CODStatusBadgeProps) {
   const className = `cod-badge cod-badge--${status.toLowerCase()}`;
   const label = status === "PASS" ? "✓ PASS" : status === "WARN" ? "⚡ WARN" : "✕ FAIL";
 
@@ -24,7 +101,7 @@ function CODStatusBadge({ status, onClick }) {
 /**
  * Validation card with glow effect
  */
-function ValidationCard({ validation }) {
+function ValidationCard({ validation }: ValidationCardProps) {
   const statusClass = validation.status.toLowerCase();
   const icon = validation.status === "PASS" ? "✓" : validation.status === "WARN" ? "⚡" : "✕";
   const timeAgo = validation.lastChecked
@@ -43,7 +120,7 @@ function ValidationCard({ validation }) {
 /**
  * Progress bar component - bar chart style
  */
-function ProgressBar({ value, max = 100, color = "accent", label, showValue = true }) {
+function ProgressBar({ value, max = 100, color = "accent", label, showValue = true }: ProgressBarProps) {
   const percent = Math.min(100, Math.max(0, (value / max) * 100));
   return (
     <div className="cod-progress">
@@ -64,7 +141,7 @@ function ProgressBar({ value, max = 100, color = "accent", label, showValue = tr
 /**
  * Human state section with vitals
  */
-function HumanStateSection({ state, onEdit }) {
+function HumanStateSection({ state, onEdit }: HumanStateSectionProps) {
   const focusLabel = state.focusCapacity === "high" ? "High" :
                      state.focusCapacity === "med" ? "Med" : "Low";
 
@@ -114,7 +191,7 @@ function HumanStateSection({ state, onEdit }) {
 /**
  * Active session section
  */
-function SessionSection({ session, onEnd, onAbort }) {
+function SessionSection({ session, onEnd, onAbort }: SessionSectionProps) {
   const startTime = new Date(session.startedAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -190,7 +267,7 @@ function SessionSection({ session, onEnd, onAbort }) {
 /**
  * Warnings section
  */
-function WarningsSection({ warnings }) {
+function WarningsSection({ warnings }: WarningsSectionProps) {
   if (!warnings || warnings.length === 0) return null;
 
   return (
@@ -214,19 +291,20 @@ function WarningsSection({ warnings }) {
 /**
  * COD Status Panel - Raycast Wrapped Style
  */
-export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }) {
+export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }: CODStatusPanelProps) {
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [showForm, setShowForm] = useState(false);
   const [profileChoice, setProfileChoice] = useState(() => {
     if (typeof window === "undefined") return "auto";
     return localStorage.getItem("codProfile") || "auto";
   });
+  const navigate = useNavigate();
   const {
     validation,
     humanState,
     session,
     warnings,
-    avatarVitals = {},
+    avatarVitals = {} as AvatarVitals,
     loading,
     updating,
     error,
@@ -236,7 +314,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     endSession,
   } = useCODStatus(staticData, profileChoice === "auto" ? null : profileChoice);
   const [sessionStarting, setSessionStarting] = useState(false);
-  const handleProfileChange = (value) => {
+  const handleProfileChange = (value: string) => {
     setProfileChoice(value);
     if (typeof window !== "undefined") {
       localStorage.setItem("codProfile", value);
@@ -246,7 +324,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
   const handleToggle = () => setCollapsed(!collapsed);
 
-  const handleUpdateHumanState = async (formData) => {
+  const handleUpdateHumanState = async (formData: Record<string, unknown>) => {
     const result = await updateHumanState(formData);
     if (result.success) {
       setShowForm(false);
@@ -265,7 +343,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     }
   };
 
-  const handleQuickSession = async (budgetMin) => {
+  const handleQuickSession = async (budgetMin: number) => {
     setSessionStarting(true);
     try {
       await startSession({ budgetMin });
@@ -386,7 +464,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
           </button>
           <button
             className="cod-button cod-button--pill cod-button--ghost"
-            onClick={() => navigate("/")}
+            onClick={() => navigate({ to: "/" })}
           >
             📋 Open Tasks
           </button>
@@ -428,7 +506,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
             {avatarVitals.money?.balances && Object.keys(avatarVitals.money.balances).length > 1 && (
               <div className="cod-stat-card__sub">
                 {Object.entries(avatarVitals.money.balances)
-                  .filter(([cur]) => cur !== avatarVitals.money.default_currency)
+                  .filter(([cur]) => cur !== avatarVitals.money?.default_currency)
                   .map(([cur, val]) => (
                     <span key={cur} className="cod-chip cod-chip--small">{cur} {val.toLocaleString()}</span>
                   ))}
@@ -486,7 +564,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 // Helpers
 // ============================================================================
 
-function formatTimeAgo(date) {
+function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return "just now";
   const minutes = Math.floor(seconds / 60);
