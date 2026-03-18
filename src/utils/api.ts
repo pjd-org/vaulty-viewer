@@ -2,7 +2,7 @@
  * Resolve the Vault API base URL for the viewer.
  *
  * Priority:
- * 1) Build-time env: GATSBY_VAULT_API_URL
+ * 1) Build-time env: VAULT_API_URL
  * 2) Runtime window injection: window.VAULT_API_URL
  * 3) Optional runtime config object: window.VIEWER_CONFIG.apiUrl
  * 4) Local dev fallback on :8000 (points to :4300 API)
@@ -58,8 +58,8 @@ const shouldRetryError = (error: unknown) => {
 }
 
 export function getApiBase(): string {
-  if (typeof process !== 'undefined' && process.env?.GATSBY_VAULT_API_URL) {
-    return strip(process.env.GATSBY_VAULT_API_URL)
+  if (typeof process !== 'undefined' && process.env?.VAULT_API_URL) {
+    return strip(process.env.VAULT_API_URL)
   }
 
   if (typeof window !== 'undefined') {

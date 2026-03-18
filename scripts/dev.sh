@@ -77,14 +77,11 @@ fi
 PORT="${PORT:-${VIEWER_PORT:-8000}}"
 API_PORT="${API_PORT:-4300}"
 VAULT_API_URL="${VAULT_API_URL:-http://localhost:${API_PORT}}"
-GATSBY_VAULT_API_URL="${GATSBY_VAULT_API_URL:-$VAULT_API_URL}"
 
 export VAULT_CONTENT_PATH
 export VAULT_PATH="$VAULT_CONTENT_PATH"
 export PORT
 export VAULT_API_URL
-export GATSBY_VAULT_API_URL
-export GATSBY_TELEMETRY_DISABLED=1
 export NODE_ENV=development
 
-exec pnpm exec gatsby develop -H 0.0.0.0 -p "$PORT"
+exec pnpm exec vinxi dev

@@ -17,8 +17,8 @@ afterEach(() => {
 });
 
 describe('getApiBase', () => {
-  it('prefers GATSBY_VAULT_API_URL and trims trailing slash', async () => {
-    process.env.GATSBY_VAULT_API_URL = 'http://api.example.com/';
+  it('prefers VAULT_API_URL and trims trailing slash', async () => {
+    process.env.VAULT_API_URL = 'http://api.example.com/';
     const { getApiBase } = await import('../src/utils/api.js');
     expect(getApiBase()).toBe('http://api.example.com');
   });
@@ -35,7 +35,7 @@ describe('getApiBase', () => {
     expect(getApiBase()).toBe('http://from-config:9999');
   });
 
-  it('uses localhost API fallback only for Gatsby dev on port 8000', async () => {
+  it('uses localhost API fallback on port 8000', async () => {
     globalThis.window = { location: { hostname: 'localhost', port: '8000' } };
     const { getApiBase } = await import('../src/utils/api.js');
     expect(getApiBase()).toBe('http://localhost:4300');
@@ -55,7 +55,7 @@ describe('getApiBase', () => {
 
 describe('apiFetch retry policy', () => {
   it('retries on 5xx and succeeds on a later attempt', async () => {
-    process.env.GATSBY_VAULT_API_URL = 'http://api.example.com';
+    process.env.VAULT_API_URL = 'http://api.example.com';
     const mockFetch = vi
       .fn()
       .mockResolvedValueOnce({ ok: false, status: 503 })
@@ -75,7 +75,7 @@ describe('apiFetch retry policy', () => {
   });
 
   it('does not retry on 4xx responses', async () => {
-    process.env.GATSBY_VAULT_API_URL = 'http://api.example.com';
+    process.env.VAULT_API_URL = 'http://api.example.com';
     const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
     globalThis.fetch = mockFetch;
 
@@ -91,7 +91,7 @@ describe('apiFetch retry policy', () => {
   });
 
   it('retries on network errors and then succeeds', async () => {
-    process.env.GATSBY_VAULT_API_URL = 'http://api.example.com';
+    process.env.VAULT_API_URL = 'http://api.example.com';
     const mockFetch = vi
       .fn()
       .mockRejectedValueOnce(new TypeError('network down'))
