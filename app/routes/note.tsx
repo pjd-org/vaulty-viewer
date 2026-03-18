@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import CODStatusPanel from '../../src/components/CODStatusPanel';
-import getApiBase from '../../src/utils/api';
+import getApiBase, { apiFetch } from '../../src/utils/api';
 
 const getApiUrl = getApiBase;
 
@@ -123,7 +123,7 @@ function NoteRoute() {
       const encodedPath = encodeURIComponent(`${notePath}.md`);
 
       try {
-        const response = await fetch(`${apiUrl}/api/v1/notes/${encodedPath}`);
+        const response = await apiFetch(`${apiUrl}/api/v1/notes/${encodedPath}`);
         if (!response.ok) {
           throw new Error(`Note not found: ${notePath}`);
         }
@@ -148,7 +148,7 @@ function NoteRoute() {
         // If it's a task, fetch additional task data
         if (notePath.startsWith('tasks/') && structured.frontmatter?.type === 'task') {
           try {
-            const taskResponse = await fetch(`${apiUrl}/api/v1/tasks/${encodedPath}`);
+            const taskResponse = await apiFetch(`${apiUrl}/api/v1/tasks/${encodedPath}`);
             if (taskResponse.ok) {
               const taskResult = await taskResponse.json();
               setTaskData(taskResult.structuredContent || taskResult);
@@ -278,7 +278,8 @@ function NoteRoute() {
           review_updated: new Date().toISOString(),
         },
       };
-      const res = await fetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+      // Endpoint is served by apps/api tools route: POST /api/v1/tools/:name/execute
+      const res = await apiFetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

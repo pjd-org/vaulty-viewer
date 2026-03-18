@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import getApiBase from '../utils/api';
+import getApiBase, { apiFetch } from '../utils/api';
 
 /**
  * Default/mock COD status for static builds or when API unavailable
@@ -154,7 +154,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     refetchInterval: queryEnabled ? 60_000 : false,
     queryFn: async () => {
       const profileParam = profileOverride ? `?profile=${profileOverride}` : '';
-      const response = await fetch(
+      const response = await apiFetch(
         `${apiUrl}/api/v1/cod/status${profileParam}`
       );
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -170,7 +170,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       // Try to load avatar vitals (money / notoriety / health)
       let avatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
-        const avatarRes = await fetch(
+        const avatarRes = await apiFetch(
           `${apiUrl}/api/v1/cod/avatar${profileParam}`
         );
         if (avatarRes.ok) {
@@ -218,7 +218,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const updateHumanStateMutation = useMutation({
     mutationFn: async ({ newState }) => {
-      const response = await fetch(`${apiUrl}/api/v1/cod/human-state`, {
+      const response = await apiFetch(`${apiUrl}/api/v1/cod/human-state`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newState),
@@ -241,7 +241,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const startSessionMutation = useMutation({
     mutationFn: async ({ taskIds = [], budgetMin = 60 }) => {
-      const response = await fetch(`${apiUrl}/api/v1/cod/session/start`, {
+      const response = await apiFetch(`${apiUrl}/api/v1/cod/session/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskIds, budgetMin }),
@@ -265,7 +265,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const endSessionMutation = useMutation({
     mutationFn: async ({ sessionId, status = 'completed' }) => {
-      const response = await fetch(`${apiUrl}/api/v1/cod/session/end`, {
+      const response = await apiFetch(`${apiUrl}/api/v1/cod/session/end`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, status }),

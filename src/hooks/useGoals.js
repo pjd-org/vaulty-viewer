@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import getApiBase from '../utils/api';
+import getApiBase, { apiFetch } from '../utils/api';
 
 /**
  * Get API URL from window config or default to relative path
@@ -46,7 +46,7 @@ export function useGoals() {
     staleTime: 30_000,
     retry: 1,
     queryFn: async () => {
-      const tasksRes = await fetch(`${apiUrl}/api/v1/tasks?status=all`);
+      const tasksRes = await apiFetch(`${apiUrl}/api/v1/tasks?status=all`);
       if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
       const tasksData = await tasksRes.json();
       return tasksData.structuredContent?.tasks || tasksData.tasks || [];

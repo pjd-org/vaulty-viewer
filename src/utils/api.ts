@@ -22,6 +22,41 @@ declare global {
 
 const strip = (url: string) => url.replace(/\/+$/, '')
 
+type RetryOptions = {
+  retries?: number
+  retryDelayMs?: number
+  retryMultiplier?: number
+}
+
+const DEFAULT_RETRIES = 3
+const DEFAULT_RETRY_DELAY_MS = 300
+const DEFAULT_RETRY_MULTIPLIER = 2
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
+
+const joinApiPath = (base: string, path: string) => {
+  if (isAbsoluteUrl(path)) return path
+  if (path.startsWith('/')) return `${base}${path}`
+  return `${base}/${path}`
+}
+
+const shouldRetryStatus = (status: number) => status >= 500 && status <= 599
+
+const shouldRetryError = (error: unknown) => {
+  if (error instanceof DOMException && error.name === 'AbortError') return false
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    String((error as { name: unknown }).name) === 'AbortError'
+  ) {
+    return false
+  }
+  return true
+}
+
 export function getApiBase(): string {
   if (typeof process !== 'undefined' && process.env?.GATSBY_VAULT_API_URL) {
     return strip(process.env.GATSBY_VAULT_API_URL)
@@ -48,6 +83,38 @@ export function getApiBase(): string {
   }
 
   return ''
+}
+
+export async function apiFetch(
+  path: string,
+  init?: RequestInit,
+  retryOptions?: RetryOptions
+): Promise<Response> {
+  const retries = retryOptions?.retries ?? DEFAULT_RETRIES
+  let delayMs = retryOptions?.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS
+  const retryMultiplier =
+    retryOptions?.retryMultiplier ?? DEFAULT_RETRY_MULTIPLIER
+  const url = joinApiPath(getApiBase(), path)
+
+  let attempt = 0
+  while (true) {
+    try {
+      const response = await fetch(url, init)
+      const canRetry = shouldRetryStatus(response.status) && attempt < retries
+      if (!canRetry) {
+        return response
+      }
+    } catch (error) {
+      const canRetry = shouldRetryError(error) && attempt < retries
+      if (!canRetry) {
+        throw error
+      }
+    }
+
+    await sleep(delayMs)
+    delayMs *= retryMultiplier
+    attempt += 1
+  }
 }
 
 export default getApiBase

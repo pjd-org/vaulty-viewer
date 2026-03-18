@@ -1,4 +1,4 @@
-import React, { useState, useCallback, FormEvent, ChangeEvent } from 'react';
+import React, { useState, useCallback, useMemo, FormEvent, ChangeEvent } from 'react';
 
 interface HumanState {
   energy?: number;
@@ -34,21 +34,55 @@ export function HumanStateForm({
   onCancel,
   loading = false,
 }: HumanStateFormProps) {
-  const [formData, setFormData] = useState<FormData>({
+  const initialFormData = useMemo<FormData>(() => ({
     energy: currentState?.energy ?? 0.5,
     focusCapacity: currentState?.focusCapacity || 'med',
     stress: currentState?.stress ?? 0.3,
     sleepHours: currentState?.sleepDebt ? 8 - currentState.sleepDebt : 7,
     timeAvailableMin: currentState?.timeAvailableMin || 60,
     source: 'moment-check',
-  });
+  }), [currentState]);
+
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleChange = useCallback(<K extends keyof FormData>(field: K, value: FormData[K]) => {
+    if (formError) {
+      setFormError(null);
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  }, [formError]);
+
+  const hasAnyNonEmptyField = useMemo(() => {
+    return Object.values(formData).some((value) => {
+      if (typeof value === 'string') return value.trim().length > 0;
+      if (typeof value === 'number') return Number.isFinite(value);
+      return value !== null && value !== undefined;
+    });
+  }, [formData]);
+
+  const hasChanges = useMemo(() => {
+    return (
+      formData.energy !== initialFormData.energy ||
+      formData.focusCapacity !== initialFormData.focusCapacity ||
+      formData.stress !== initialFormData.stress ||
+      formData.sleepHours !== initialFormData.sleepHours ||
+      formData.timeAvailableMin !== initialFormData.timeAvailableMin ||
+      formData.source !== initialFormData.source
+    );
+  }, [formData, initialFormData]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!hasAnyNonEmptyField) {
+      setFormError('Add at least one field value before saving.');
+      return;
+    }
+    if (!hasChanges) {
+      setFormError('Change at least one field before saving.');
+      return;
+    }
+    setFormError(null);
     onSubmit(formData);
   };
 
@@ -192,6 +226,11 @@ export function HumanStateForm({
       </div>
 
       {/* Actions */}
+      {formError && (
+        <div className="cod-form__error" role="alert">
+          {formError}
+        </div>
+      )}
       <div className="cod-form__actions">
         <button
           type="button"

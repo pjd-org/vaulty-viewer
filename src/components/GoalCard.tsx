@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import getApiBase from '../utils/api';
+import getApiBase, { apiFetch } from '../utils/api';
 
 interface GoalStats {
   total: number;
@@ -161,7 +161,7 @@ export function GoalCard({ goal }: GoalCardProps) {
           review_updated: new Date().toISOString(),
         },
       };
-      const res = await fetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+      const res = await apiFetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

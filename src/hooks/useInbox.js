@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import getApiBase from '../utils/api';
+import getApiBase, { apiFetch } from '../utils/api';
 
 /**
  * Hook to manage the combined inbox view.
@@ -29,7 +29,7 @@ export function useInbox() {
     staleTime: 10_000,
     retry: 1,
     queryFn: async () => {
-      const res = await fetch(`${base}/api/v1/inbox`);
+      const res = await apiFetch(`${base}/api/v1/inbox`);
       if (!res.ok) {
         throw new Error(`API returned ${res.status}`);
       }
@@ -43,7 +43,7 @@ export function useInbox() {
 
   const commitMutation = useMutation({
     mutationFn: async (runId) => {
-      const res = await fetch(
+      const res = await apiFetch(
         `${base}/api/v1/inbox/${encodeURIComponent(runId)}/commit`,
         {
           method: 'POST',
@@ -86,7 +86,7 @@ export function useInbox() {
 
   const rejectMutation = useMutation({
     mutationFn: async (runId) => {
-      const res = await fetch(
+      const res = await apiFetch(
         `${base}/api/v1/inbox/${encodeURIComponent(runId)}`,
         {
           method: 'DELETE',

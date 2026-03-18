@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import getApiBase from '../utils/api';
+import getApiBase, { apiFetch } from '../utils/api';
 
 /**
  * Default avatar state when API unavailable
@@ -76,9 +76,9 @@ export function useAvatar() {
     queryFn: async () => {
       // Fetch avatar state, session stats, and tasks in parallel
       const [avatarRes, sessionStatsRes, tasksRes] = await Promise.all([
-        fetch(`${apiUrl}/api/v1/cod/avatar`),
-        fetch(`${apiUrl}/api/v1/sessions/stats`).catch(() => null),
-        fetch(`${apiUrl}/api/v1/tasks`).catch(() => null),
+        apiFetch(`${apiUrl}/api/v1/cod/avatar`),
+        apiFetch(`${apiUrl}/api/v1/sessions/stats`).catch(() => null),
+        apiFetch(`${apiUrl}/api/v1/tasks`).catch(() => null),
       ]);
 
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);

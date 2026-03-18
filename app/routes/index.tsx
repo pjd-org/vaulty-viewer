@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import CODStatusWidget from "../../src/components/CODStatusWidget";
-import getApiBase from "../../src/utils/api";
+import getApiBase, { apiFetch } from "../../src/utils/api";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -121,7 +121,7 @@ function IndexRoute() {
       const apiUrl = getApiUrl();
       
       try {
-        const response = await fetch(`${apiUrl}/api/v1/notes`);
+        const response = await apiFetch(`${apiUrl}/api/v1/notes`);
         if (response.ok) {
           const result = await response.json();
           // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
@@ -159,7 +159,7 @@ function IndexRoute() {
     const fetchTasks = async () => {
       const apiUrl = getApiUrl();
       try {
-        const response = await fetch(`${apiUrl}/api/v1/tasks?status=all`);
+        const response = await apiFetch(`${apiUrl}/api/v1/tasks?status=all`);
         if (response.ok) {
           const result = await response.json();
           const tasks = result.structuredContent?.tasks || [];
