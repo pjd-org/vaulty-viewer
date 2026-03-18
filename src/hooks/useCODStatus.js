@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import getApiBase from '../utils/api';
 
 /**
@@ -94,11 +95,11 @@ function computeValidation(humanState, session, avatarVitals = {}) {
       if (w.includes('HARD_STOP window active')) return true;
       if (w.includes('overtime')) return true;
       if (w.includes('energy')) {
-        const val = parseInt(w.match(/\d+/)?.[0] || '100');
+        const val = parseInt(w.match(/\d+/)?.[0] || '100', 10);
         if (val < 20) return true;
       }
       if (w.includes('Health')) {
-        const val = parseInt(w.match(/\d+/)?.[0] || '100');
+        const val = parseInt(w.match(/\d+/)?.[0] || '100', 10);
         if (val < 25) return true;
       }
       return false;
@@ -114,7 +115,19 @@ function computeValidation(humanState, session, avatarVitals = {}) {
  * Uses static data from GraphQL at build time, with optional API polling for live updates
  */
 export function useCODStatus(staticData = null, profileOverride = null) {
-  const [data, setData] = useState(() => {
+  const queryClient = useQueryClient();
+  const [actionError, setActionError] = useState(null);
+
+  // Get API URL helper
+  const getApiUrl = useCallback(() => {
+    const url = getApiBase();
+    return url === null || url === undefined ? null : url;
+  }, []);
+
+  const apiUrl = getApiUrl();
+  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
+
+  const initialData = useMemo(() => {
     if (staticData) {
       const humanState = staticData.humanStateJson || DEFAULT_STATUS.humanState;
       const session = staticData.activeSessionJson || null;
@@ -128,26 +141,18 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       };
     }
     return DEFAULT_STATUS;
-  });
+  }, [staticData]);
 
-  const [loading, setLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState(null);
+  const queryKey = ['cod-status', apiUrl, profileOverride || 'auto'];
 
-  // Get API URL helper
-  const getApiUrl = useCallback(() => {
-    const url = getApiBase();
-    return url === '' ? '' : url;
-  }, []);
-
-  const refresh = useCallback(async () => {
-    const apiUrl = getApiUrl();
-    if (apiUrl === null) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
+  const statusQuery = useQuery({
+    queryKey,
+    enabled: queryEnabled,
+    initialData,
+    staleTime: 10_000,
+    retry: 1,
+    refetchInterval: queryEnabled ? 60_000 : false,
+    queryFn: async () => {
       const profileParam = profileOverride ? `?profile=${profileOverride}` : '';
       const response = await fetch(
         `${apiUrl}/api/v1/cod/status${profileParam}`
@@ -196,56 +201,113 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
       const validation = computeValidation(humanState, session, avatarVitals);
 
-      setData({
+      return {
         validation,
         humanState,
         session,
         warnings: validation.warnings,
         avatarVitals,
+      };
+    },
+  });
+
+  const refresh = useCallback(async () => {
+    if (!queryEnabled) return;
+    await statusQuery.refetch();
+  }, [queryEnabled, statusQuery]);
+
+  const updateHumanStateMutation = useMutation({
+    mutationFn: async ({ newState }) => {
+      const response = await fetch(`${apiUrl}/api/v1/cod/human-state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newState),
       });
-    } catch (err) {
-      setError(err.message);
-      // Keep existing data on error
-    } finally {
-      setLoading(false);
-    }
-  }, [getApiUrl, profileOverride]);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+      return response.json().catch(() => ({}));
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      await queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
+  });
+
+  const startSessionMutation = useMutation({
+    mutationFn: async ({ taskIds = [], budgetMin = 60 }) => {
+      const response = await fetch(`${apiUrl}/api/v1/cod/session/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskIds, budgetMin }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      await queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
+  });
+
+  const endSessionMutation = useMutation({
+    mutationFn: async ({ sessionId, status = 'completed' }) => {
+      const response = await fetch(`${apiUrl}/api/v1/cod/session/end`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      return response.json().catch(() => ({}));
+    },
+    onSuccess: async () => {
+      setActionError(null);
+      await queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
+  });
 
   /**
    * Update human state via API
    */
   const updateHumanState = useCallback(
     async (newState) => {
-      const apiUrl = getApiUrl();
-      if (apiUrl === null)
+      if (!queryEnabled) {
         return { success: false, error: 'API not available' };
+      }
 
-      setUpdating(true);
-      setError(null);
-
+      setActionError(null);
       try {
-        const response = await fetch(`${apiUrl}/api/v1/cod/human-state`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newState),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-
-        // Refresh to get updated state
+        await updateHumanStateMutation.mutateAsync({ newState });
         await refresh();
         return { success: true };
       } catch (err) {
-        setError(err.message);
-        return { success: false, error: err.message };
-      } finally {
-        setUpdating(false);
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        return { success: false, error: message };
       }
     },
-    [getApiUrl, refresh]
+    [queryEnabled, refresh, updateHumanStateMutation]
   );
 
   /**
@@ -253,36 +315,25 @@ export function useCODStatus(staticData = null, profileOverride = null) {
    */
   const startSession = useCallback(
     async ({ taskIds = [], budgetMin = 60 } = {}) => {
-      const apiUrl = getApiUrl();
-      if (apiUrl === null)
+      if (!queryEnabled) {
         return { success: false, error: 'API not available' };
+      }
 
-      setUpdating(true);
-      setError(null);
-
+      setActionError(null);
       try {
-        const response = await fetch(`${apiUrl}/api/v1/cod/session/start`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskIds, budgetMin }),
+        const session = await startSessionMutation.mutateAsync({
+          taskIds,
+          budgetMin,
         });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
         await refresh();
-        return { success: true, session: result };
+        return { success: true, session };
       } catch (err) {
-        setError(err.message);
-        return { success: false, error: err.message };
-      } finally {
-        setUpdating(false);
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        return { success: false, error: message };
       }
     },
-    [getApiUrl, refresh]
+    [queryEnabled, refresh, startSessionMutation]
   );
 
   /**
@@ -290,49 +341,36 @@ export function useCODStatus(staticData = null, profileOverride = null) {
    */
   const endSession = useCallback(
     async (sessionId, status = 'completed') => {
-      const apiUrl = getApiUrl();
-      if (apiUrl === null)
+      if (!queryEnabled) {
         return { success: false, error: 'API not available' };
+      }
 
-      setUpdating(true);
-      setError(null);
-
+      setActionError(null);
       try {
-        const response = await fetch(`${apiUrl}/api/v1/cod/session/end`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, status }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-
+        await endSessionMutation.mutateAsync({ sessionId, status });
         await refresh();
         return { success: true };
       } catch (err) {
-        setError(err.message);
-        return { success: false, error: err.message };
-      } finally {
-        setUpdating(false);
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        return { success: false, error: message };
       }
     },
-    [getApiUrl, refresh]
+    [endSessionMutation, queryEnabled, refresh]
   );
 
-  // Poll for updates when API available
-  useEffect(() => {
-    const apiUrl = getApiUrl();
-    if (apiUrl === null) return;
-
-    // Initial fetch
-    refresh();
-
-    // Poll every 60 seconds
-    const interval = setInterval(refresh, 60000);
-    return () => clearInterval(interval);
-  }, [getApiUrl, refresh]);
+  const queryError = statusQuery.error
+    ? statusQuery.error instanceof Error
+      ? statusQuery.error.message
+      : String(statusQuery.error)
+    : null;
+  const error = actionError || queryError;
+  const loading = queryEnabled ? statusQuery.isFetching : false;
+  const updating =
+    updateHumanStateMutation.isPending ||
+    startSessionMutation.isPending ||
+    endSessionMutation.isPending;
+  const data = statusQuery.data || initialData;
 
   return {
     ...data,

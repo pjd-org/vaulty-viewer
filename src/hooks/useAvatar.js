@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import getApiBase from '../utils/api';
 
 /**
@@ -58,30 +59,21 @@ function xpForLevel(level) {
  * Hook to fetch and manage avatar state
  */
 export function useAvatar() {
-  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [apiStatus, setApiStatus] = useState("unknown"); // online | offline | loading | unknown
-
   // Allow empty string to mean "same origin /api"
   const getApiUrl = useCallback(() => {
     const base = getApiBase();
     return base === null || base === undefined ? null : base;
   }, []);
 
-  const refresh = useCallback(async () => {
-    const apiUrl = getApiUrl();
-    if (apiUrl === null) {
-      setLoading(false);
-      setApiStatus("offline");
-      return;
-    }
+  const apiUrl = getApiUrl();
+  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
 
-    setLoading(true);
-    setError(null);
-    setApiStatus("loading");
-
-    try {
+  const avatarQuery = useQuery({
+    queryKey: ['avatar', apiUrl],
+    enabled: queryEnabled,
+    staleTime: 30_000,
+    retry: 1,
+    queryFn: async () => {
       // Fetch avatar state, session stats, and tasks in parallel
       const [avatarRes, sessionStatsRes, tasksRes] = await Promise.all([
         fetch(`${apiUrl}/api/v1/cod/avatar`),
@@ -161,7 +153,7 @@ export function useAvatar() {
         activeSessions: sessionStats.activeSessions || 0,
       };
 
-      setAvatar({
+      return {
         profile: state.profile || DEFAULT_AVATAR.profile,
         vitals,
         progression: state.progression || DEFAULT_AVATAR.progression,
@@ -169,15 +161,26 @@ export function useAvatar() {
         knowledge: state.knowledge || DEFAULT_AVATAR.knowledge,
         flags: state.flags || DEFAULT_AVATAR.flags,
         updated: state.updated || null,
-      });
-      setApiStatus("online");
-    } catch (err) {
-      setError(err.message);
-      setApiStatus("offline");
-    } finally {
-      setLoading(false);
-    }
-  }, [getApiUrl]);
+      };
+    },
+  });
+
+  const avatar = avatarQuery.data || DEFAULT_AVATAR;
+  const loading = queryEnabled ? avatarQuery.isFetching : false;
+  const error = avatarQuery.error
+    ? avatarQuery.error instanceof Error
+      ? avatarQuery.error.message
+      : String(avatarQuery.error)
+    : null;
+  const apiStatus = apiUrl === null
+    ? "offline"
+    : avatarQuery.isFetching && !avatarQuery.data
+      ? "loading"
+      : avatarQuery.isError
+        ? "offline"
+        : avatarQuery.isSuccess
+          ? "online"
+          : "unknown";
 
   // Calculate derived values
   const level = avatar.progression?.level || 1;
@@ -185,18 +188,11 @@ export function useAvatar() {
   const xpToNext = xpForLevel(level);
   const xpProgress = Math.min(100, Math.round((currentXp / xpToNext) * 100));
 
-  // Initial fetch
-  useEffect(() => {
-    const apiUrl = getApiUrl();
-    if (apiUrl === null) return;
-    refresh();
-  }, [getApiUrl, refresh]);
-
   return {
     avatar,
     loading,
     error,
-    refresh,
+    refresh: () => avatarQuery.refetch(),
     apiStatus,
     // Derived values
     level,

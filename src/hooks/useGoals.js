@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import getApiBase from '../utils/api';
 
 /**
@@ -36,47 +37,40 @@ function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
  * Hook to fetch and compute goal progress from tasks
  */
 export function useGoals() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [apiStatus, setApiStatus] = useState('unknown'); // online | offline | unknown
-  const [updatedAt, setUpdatedAt] = useState(null);
+  const apiUrl = getApiUrl();
+  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    setApiStatus('unknown');
-
-    try {
-      const apiUrl = getApiUrl();
-      if (apiUrl === null) {
-        setApiStatus('offline');
-        setLoading(false);
-        return;
-      }
-
-      // Fetch all tasks (both todo and completed for progress calculation)
+  const tasksQuery = useQuery({
+    queryKey: ['goals', 'tasks', apiUrl],
+    enabled: queryEnabled,
+    staleTime: 30_000,
+    retry: 1,
+    queryFn: async () => {
       const tasksRes = await fetch(`${apiUrl}/api/v1/tasks?status=all`);
       if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
       const tasksData = await tasksRes.json();
+      return tasksData.structuredContent?.tasks || tasksData.tasks || [];
+    },
+  });
 
-      const taskList =
-        tasksData.structuredContent?.tasks || tasksData.tasks || [];
-      setTasks(taskList);
-      setApiStatus('online');
-      setUpdatedAt(new Date().toISOString());
-    } catch (err) {
-      console.error('[useGoals] Error:', err);
-      setError(err.message);
-      setApiStatus('offline');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const tasks = tasksQuery.data || [];
+  const loading = queryEnabled ? tasksQuery.isFetching : false;
+  const error = tasksQuery.error
+    ? tasksQuery.error instanceof Error
+      ? tasksQuery.error.message
+      : String(tasksQuery.error)
+    : null;
+  const apiStatus = apiUrl === null
+    ? 'offline'
+    : tasksQuery.isError
+      ? 'offline'
+      : tasksQuery.isSuccess
+        ? 'online'
+        : 'unknown';
+  const updatedAt =
+    tasksQuery.dataUpdatedAt > 0
+      ? new Date(tasksQuery.dataUpdatedAt).toISOString()
+      : null;
 
   // Group tasks by goalId and compute progress
   const goals = useMemo(() => {
@@ -248,7 +242,7 @@ export function useGoals() {
     error,
     apiStatus,
     updatedAt,
-    refresh: fetchData,
+    refresh: () => tasksQuery.refetch(),
   };
 }
 
