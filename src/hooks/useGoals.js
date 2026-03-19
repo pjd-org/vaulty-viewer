@@ -46,7 +46,7 @@ export function useGoals() {
     staleTime: 30_000,
     retry: 1,
     queryFn: async () => {
-      const tasksRes = await apiFetch('/api/v1/tasks?status=all');
+      const tasksRes = await apiFetch('/api/v1/tasks?status=all&limit=1000');
       if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
       const tasksData = await tasksRes.json();
       return tasksData.structuredContent?.tasks || tasksData.tasks || [];

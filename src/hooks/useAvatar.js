@@ -78,7 +78,7 @@ export function useAvatar() {
       const [avatarRes, sessionStatsRes, tasksRes] = await Promise.all([
         apiFetch('/api/v1/cod/avatar'),
         apiFetch('/api/v1/sessions/stats').catch(() => null),
-        apiFetch('/api/v1/tasks').catch(() => null),
+        apiFetch('/api/v1/tasks?status=all&limit=1000').catch(() => null),
       ]);
 
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
