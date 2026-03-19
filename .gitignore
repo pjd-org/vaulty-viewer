@@ -3,6 +3,7 @@ node_modules/
 public/
 .vinxi/
 .output/
+.playwright-cli/
 app.config.timestamp_*.js
 .env
 .env.*
