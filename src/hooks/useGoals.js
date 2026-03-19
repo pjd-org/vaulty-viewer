@@ -7,7 +7,7 @@ import getApiBase, { apiFetch } from '../utils/api';
  */
 const getApiUrl = () => {
   const base = getApiBase();
-  return base === null || base === undefined ? null : base; // allow empty string for same-origin
+  return base;
 };
 
 /**
@@ -38,7 +38,7 @@ function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
  */
 export function useGoals() {
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
+  const queryEnabled = typeof window !== 'undefined';
 
   const tasksQuery = useQuery({
     queryKey: ['goals', 'tasks', apiUrl],
@@ -46,7 +46,7 @@ export function useGoals() {
     staleTime: 30_000,
     retry: 1,
     queryFn: async () => {
-      const tasksRes = await apiFetch(`${apiUrl}/api/v1/tasks?status=all`);
+      const tasksRes = await apiFetch('/api/v1/tasks?status=all');
       if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
       const tasksData = await tasksRes.json();
       return tasksData.structuredContent?.tasks || tasksData.tasks || [];
@@ -60,13 +60,11 @@ export function useGoals() {
       ? tasksQuery.error.message
       : String(tasksQuery.error)
     : null;
-  const apiStatus = apiUrl === null
+  const apiStatus = tasksQuery.isError
     ? 'offline'
-    : tasksQuery.isError
-      ? 'offline'
-      : tasksQuery.isSuccess
-        ? 'online'
-        : 'unknown';
+    : tasksQuery.isSuccess
+      ? 'online'
+      : 'unknown';
   const updatedAt =
     tasksQuery.dataUpdatedAt > 0
       ? new Date(tasksQuery.dataUpdatedAt).toISOString()

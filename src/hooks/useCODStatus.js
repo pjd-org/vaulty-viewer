@@ -121,11 +121,11 @@ export function useCODStatus(staticData = null, profileOverride = null) {
   // Get API URL helper
   const getApiUrl = useCallback(() => {
     const url = getApiBase();
-    return url === null || url === undefined ? null : url;
+    return url;
   }, []);
 
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
+  const queryEnabled = typeof window !== 'undefined';
 
   const initialData = useMemo(() => {
     if (staticData) {
@@ -154,9 +154,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     refetchInterval: queryEnabled ? 60_000 : false,
     queryFn: async () => {
       const profileParam = profileOverride ? `?profile=${profileOverride}` : '';
-      const response = await apiFetch(
-        `${apiUrl}/api/v1/cod/status${profileParam}`
-      );
+      const response = await apiFetch(`/api/v1/cod/status${profileParam}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
@@ -170,9 +168,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       // Try to load avatar vitals (money / notoriety / health)
       let avatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
-        const avatarRes = await apiFetch(
-          `${apiUrl}/api/v1/cod/avatar${profileParam}`
-        );
+        const avatarRes = await apiFetch(`/api/v1/cod/avatar${profileParam}`);
         if (avatarRes.ok) {
           const avatarJson = await avatarRes.json();
           const avatarState =
@@ -218,7 +214,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const updateHumanStateMutation = useMutation({
     mutationFn: async ({ newState }) => {
-      const response = await apiFetch(`${apiUrl}/api/v1/cod/human-state`, {
+      const response = await apiFetch('/api/v1/cod/human-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newState),
@@ -241,7 +237,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const startSessionMutation = useMutation({
     mutationFn: async ({ taskIds = [], budgetMin = 60 }) => {
-      const response = await apiFetch(`${apiUrl}/api/v1/cod/session/start`, {
+      const response = await apiFetch('/api/v1/cod/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskIds, budgetMin }),
@@ -265,7 +261,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const endSessionMutation = useMutation({
     mutationFn: async ({ sessionId, status = 'completed' }) => {
-      const response = await apiFetch(`${apiUrl}/api/v1/cod/session/end`, {
+      const response = await apiFetch('/api/v1/cod/session/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, status }),

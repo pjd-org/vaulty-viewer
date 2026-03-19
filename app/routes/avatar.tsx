@@ -4,7 +4,6 @@ import useAvatar from "../../src/hooks/useAvatar";
 import VitalsPanel from "../../src/components/VitalsPanel";
 import ProgressionPanel from "../../src/components/ProgressionPanel";
 import { KnowledgePanel, CapacityPanel } from "../../src/components/KnowledgePanel";
-import "../../src/styles.css";
 import { apiBadgeText, computeSnapshotStats } from "../../src/lib/avatar-logic";
 
 interface MoneyObject {
@@ -145,7 +144,7 @@ function AvatarRoute() {
     <div className="avatar-page">
       <div className="page">
         <nav className="breadcrumb">
-          <Link to="/" className="back-link">← Home</Link>
+          <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">← Home</Link>
         </nav>
 
         <header className="page-header">
@@ -248,7 +247,12 @@ function AvatarRoute() {
 
             {/* Quick Actions */}
             <div className="avatar-actions">
-              <Link to="/" className="avatar-action avatar-action--primary" title="Tasker powered task list">
+              <Link
+                to="/"
+                search={{ q: undefined, collection: undefined }}
+                className="avatar-action avatar-action--primary"
+                title="Tasker powered task list"
+              >
                 <span className="avatar-action__icon">📋</span>
                 <span className="avatar-action__label">
                   Open Tasks

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useCODStatus from "../hooks/useCODStatus";
+import type { CODHumanStateFormData } from "../hooks/useCODStatus";
 import HumanStateForm from "./HumanStateForm";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -9,12 +10,12 @@ import { useNavigate } from "@tanstack/react-router";
 
 interface Validation {
   status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN';
-  lastChecked?: string;
+  lastChecked?: string | null;
 }
 
 interface HumanState {
   energy: number;
-  focusCapacity: 'low' | 'med' | 'high';
+  focusCapacity: 'low' | 'med' | 'high' | 'unknown';
   stress: number;
   sleepDebt: number;
   timeAvailableMin: number;
@@ -324,7 +325,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
   const handleToggle = () => setCollapsed(!collapsed);
 
-  const handleUpdateHumanState = async (formData: Record<string, unknown>) => {
+  const handleUpdateHumanState = async (formData: CODHumanStateFormData) => {
     const result = await updateHumanState(formData);
     if (result.success) {
       setShowForm(false);
@@ -375,10 +376,20 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
   // Show form mode
   if (showForm) {
+    const normalizedHumanState = humanState
+      ? {
+          ...humanState,
+          focusCapacity:
+            humanState.focusCapacity === "unknown"
+              ? "med"
+              : humanState.focusCapacity,
+        }
+      : undefined;
+
     return (
       <div className="cod-panel">
         <HumanStateForm
-          currentState={humanState}
+          currentState={normalizedHumanState}
           onSubmit={handleUpdateHumanState}
           onCancel={() => setShowForm(false)}
           loading={updating}
@@ -464,7 +475,12 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
           </button>
           <button
             className="cod-button cod-button--pill cod-button--ghost"
-            onClick={() => navigate({ to: "/" })}
+            onClick={() =>
+              navigate({
+                to: "/",
+                search: { q: undefined, collection: undefined },
+              })
+            }
           >
             📋 Open Tasks
           </button>

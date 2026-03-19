@@ -15,7 +15,7 @@ function CODStatusRoute() {
   return (
     <main className="page cod-status-page" style={codPageStyle()}>
       <header className="detail__header" style={{ paddingBottom: '24px' }}>
-        <Link to="/" className="back-link">
+        <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">
           ← Back to vault
         </Link>
         <h1>COD Status</h1>

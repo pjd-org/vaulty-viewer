@@ -26,7 +26,7 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="navbar__brand">
-        <Link to="/" className="navbar__logo">
+        <Link to="/" search={{ q: undefined, collection: undefined }} className="navbar__logo">
           Vaulty Viewer
         </Link>
       </div>
@@ -51,7 +51,7 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
 
       {/* Navigation links - toggleable on mobile */}
       <div className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
-        <Link to="/" onClick={closeMenu}>
+        <Link to="/" search={{ q: undefined, collection: undefined }} onClick={closeMenu}>
           Home
         </Link>
         <Link

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import CODStatusPanel from '../../src/components/CODStatusPanel';
-import getApiBase, { apiFetch } from '../../src/utils/api';
-
-const getApiUrl = getApiBase;
+import { apiFetch } from '../../src/utils/api';
 
 const formatLabel = (value: string) =>
   value
@@ -57,6 +55,15 @@ interface TaskData {
     rewardPotential?: number;
   };
 }
+
+const getStringValue = (value: unknown) =>
+  typeof value === 'string' ? value : null;
+
+const getNumberValue = (value: unknown) =>
+  typeof value === 'number' ? value : null;
+
+const getBooleanValue = (value: unknown) =>
+  typeof value === 'boolean' ? value : false;
 
 // Status badge component
 const StatusBadge = ({ status }: StatusBadgeProps) => {
@@ -118,12 +125,11 @@ function NoteRoute() {
         return;
       }
 
-      const apiUrl = getApiUrl();
       // Encode the path for the API call - replace slashes with %2F
       const encodedPath = encodeURIComponent(`${notePath}.md`);
 
       try {
-        const response = await apiFetch(`${apiUrl}/api/v1/notes/${encodedPath}`);
+        const response = await apiFetch(`/api/v1/notes/${encodedPath}`);
         if (!response.ok) {
           throw new Error(`Note not found: ${notePath}`);
         }
@@ -148,7 +154,7 @@ function NoteRoute() {
         // If it's a task, fetch additional task data
         if (notePath.startsWith('tasks/') && structured.frontmatter?.type === 'task') {
           try {
-            const taskResponse = await apiFetch(`${apiUrl}/api/v1/tasks/${encodedPath}`);
+            const taskResponse = await apiFetch(`/api/v1/tasks/${encodedPath}`);
             if (taskResponse.ok) {
               const taskResult = await taskResponse.json();
               setTaskData(taskResult.structuredContent || taskResult);
@@ -269,7 +275,6 @@ function NoteRoute() {
     setReviewSubmitting(true);
     setReviewMessage(null);
     try {
-      const apiUrl = getApiUrl();
       const body = {
         path: `${notePath}.md`,
         addHistoryNote: `Review (${reviewDecision}): ${reviewComment || 'No comment provided.'}`,
@@ -279,7 +284,7 @@ function NoteRoute() {
         },
       };
       // Endpoint is served by apps/api tools route: POST /api/v1/tools/:name/execute
-      const res = await apiFetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+      const res = await apiFetch('/api/v1/tools/obsidian_update_task/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -300,6 +305,14 @@ function NoteRoute() {
   // Determine note type for specialized UI
   const isTask = note?.frontmatter?.type === 'task' || note?.collection === 'tasks';
   const isGoal = note?.frontmatter?.type === 'goal' || note?.collection === 'goals';
+  const noteStatus = getStringValue(note?.frontmatter?.status);
+  const notePriority = getNumberValue(note?.frontmatter?.priority);
+  const noteCreated = getStringValue(note?.frontmatter?.created);
+  const noteEstimatedTimeMin = getNumberValue(note?.frontmatter?.estimatedTimeMin);
+  const noteEffortScore = getNumberValue(note?.frontmatter?.effortScore);
+  const noteGoalId = getStringValue(note?.frontmatter?.goalId);
+  const noteSpecPath = getStringValue(note?.frontmatter?.spec_path);
+  const isDelegatable = getBooleanValue(note?.frontmatter?.delegatable);
 
   const renderReviewPanel = () => {
     if (!isTask) return null;
@@ -358,7 +371,7 @@ function NoteRoute() {
       <main className="page page--detail note-page">
         <CODStatusPanel />
         <header className="detail__header">
-          <Link to="/" className="back-link">
+          <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">
             ← Back to vault
           </Link>
         </header>
@@ -375,7 +388,7 @@ function NoteRoute() {
       <main className="page page--detail note-page">
         <CODStatusPanel />
         <header className="detail__header">
-          <Link to="/" className="back-link">
+          <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">
             ← Back to vault
           </Link>
         </header>
@@ -384,7 +397,15 @@ function NoteRoute() {
           <h2>Note Not Found</h2>
           <p>{error}</p>
           <div className="note-error__actions">
-            <button onClick={() => navigate({ to: '/' })} className="note-action note-action--primary">
+            <button
+              onClick={() =>
+                navigate({
+                  to: '/',
+                  search: { q: undefined, collection: undefined },
+                })
+              }
+              className="note-action note-action--primary"
+            >
               Return to Vault
             </button>
             <button onClick={() => window.location.reload()} className="note-action">
@@ -404,9 +425,9 @@ function NoteRoute() {
       
       {/* Breadcrumb navigation */}
       <nav className="note-breadcrumb">
-        <Link to="/" className="note-breadcrumb__item">Vault</Link>
+        <Link to="/" search={{ q: undefined, collection: undefined }} className="note-breadcrumb__item">Vault</Link>
         <span className="note-breadcrumb__sep">/</span>
-        <Link to={`/?collection=${note.collection}`} className="note-breadcrumb__item">
+        <Link to="/" search={{ collection: note.collection, q: '' }} className="note-breadcrumb__item">
           {formatLabel(note.collection)}
         </Link>
         <span className="note-breadcrumb__sep">/</span>
@@ -419,13 +440,13 @@ function NoteRoute() {
           <span className={`note-type note-type--${note.collection}`}>
             {note.collection}
           </span>
-          {note.frontmatter?.status && (
-            <StatusBadge status={note.frontmatter.status as string} />
+          {noteStatus && (
+            <StatusBadge status={noteStatus} />
           )}
-          {note.frontmatter?.priority && (
-            <PriorityBadge priority={note.frontmatter.priority as number} />
+          {notePriority !== null && (
+            <PriorityBadge priority={notePriority} />
           )}
-          {note.frontmatter?.delegatable && (
+          {isDelegatable && (
             <span className="note-badge note-badge--delegatable">🤖 Delegatable</span>
           )}
         </div>
@@ -434,24 +455,28 @@ function NoteRoute() {
         
         {/* Meta info row */}
         <div className="note-meta">
-          {note.frontmatter?.created && (
+          {noteCreated && (
             <span className="note-meta__item">
-              📅 Created {formatDate(note.frontmatter.created as string)}
+              📅 Created {formatDate(noteCreated)}
             </span>
           )}
-          {note.frontmatter?.estimatedTimeMin && (
+          {noteEstimatedTimeMin !== null && (
             <span className="note-meta__item">
-              ⏱️ ~{note.frontmatter.estimatedTimeMin as number}min
+              ⏱️ ~{noteEstimatedTimeMin}min
             </span>
           )}
-          {note.frontmatter?.effortScore && (
+          {noteEffortScore !== null && (
             <span className="note-meta__item">
-              💪 Effort: {note.frontmatter.effortScore as number}/10
+              💪 Effort: {noteEffortScore}/10
             </span>
           )}
-          {note.frontmatter?.goalId && (
-            <Link to={`/note?p=goals/${note.frontmatter.goalId as string}`} className="note-meta__item note-meta__link">
-              🎯 {formatLabel(note.frontmatter.goalId as string)}
+          {noteGoalId && (
+            <Link
+              to="/note"
+              search={{ p: `goals/${noteGoalId}` }}
+              className="note-meta__item note-meta__link"
+            >
+              🎯 {formatLabel(noteGoalId)}
             </Link>
           )}
         </div>
@@ -460,9 +485,10 @@ function NoteRoute() {
         {note.tags?.length > 0 && (
           <div className="note-tags">
             {note.tags.map((tag) => (
-              <Link 
-                key={tag} 
-                to={`/?q=${encodeURIComponent(tag)}`}
+              <Link
+                key={tag}
+                to="/"
+                search={{ q: tag, collection: 'all' }}
                 className="note-tag"
               >
                 #{tag}
@@ -495,12 +521,17 @@ function NoteRoute() {
         </div>
         
         {/* Task-specific actions - only show if spec exists */}
-        {isTask && note.frontmatter?.spec_path && (
+        {isTask && noteSpecPath && (
           <div className="note-actions__group note-actions__group--task">
             <ActionButton
               icon="📖"
               label="View Spec"
-              onClick={() => navigate({ to: `/note?p=${(note.frontmatter.spec_path as string).replace('.md', '')}` })}
+              onClick={() =>
+                navigate({
+                  to: '/note',
+                  search: { p: noteSpecPath.replace('.md', '') },
+                })
+              }
             />
           </div>
         )}
@@ -557,7 +588,7 @@ function NoteRoute() {
       {/* Footer with related actions */}
       <footer className="note-footer">
         <div className="note-footer__nav">
-          <Link to="/" className="note-footer__link">
+          <Link to="/" search={{ q: undefined, collection: undefined }} className="note-footer__link">
             ← Back to Vault
           </Link>
           {note.collection === 'tasks' && (

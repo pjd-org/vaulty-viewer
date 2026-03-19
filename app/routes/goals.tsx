@@ -122,7 +122,7 @@ function GoalsRoute() {
   return (
     <main className="page goals-page">
       <nav className="breadcrumb">
-        <Link to="/" className="back-link">← Home</Link>
+        <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">← Home</Link>
       </nav>
       
       <header className="page-header">
@@ -134,7 +134,12 @@ function GoalsRoute() {
           </span>
         </p>
         <div className="quick-links" style={{ marginTop: 12, paddingTop: 12 }}>
-          <Link to="/" className="quick-link quick-link--primary" title="Open tasks filtered by goal tags">
+          <Link
+            to="/"
+            search={{ q: undefined, collection: undefined }}
+            className="quick-link quick-link--primary"
+            title="Open tasks filtered by goal tags"
+          >
             <span className="quick-link__icon">📋</span>
             <span className="quick-link__label">Open Tasks</span>
           </Link>
@@ -213,7 +218,11 @@ function GoalsRoute() {
                     Show all goals
                   </button>
                 )}
-                <Link to="/note?p=goals" className="goals-empty__btn goals-empty__btn--primary">
+                <Link
+                  to="/note"
+                  search={{ p: 'goals' }}
+                  className="goals-empty__btn goals-empty__btn--primary"
+                >
                   📂 Browse Goals Folder
                 </Link>
               </div>

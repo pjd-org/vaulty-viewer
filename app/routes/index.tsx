@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import CODStatusWidget from "../../src/components/CODStatusWidget";
-import getApiBase, { apiFetch } from "../../src/utils/api";
+import { apiFetch } from "../../src/utils/api";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -9,8 +9,6 @@ const formatLabel = (value: string) =>
   value
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
-const getApiUrl = getApiBase;
 
 interface NoteItem {
   id: string;
@@ -46,12 +44,20 @@ interface TaskData {
 type ApiStatus = 'online' | 'offline' | 'unknown';
 
 export const Route = createFileRoute('/')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === 'string' && search.q.length > 0 ? search.q : undefined,
+    collection:
+      typeof search.collection === 'string' && search.collection.length > 0
+        ? search.collection
+        : undefined,
+  }),
   component: IndexRoute,
 })
 
 function IndexRoute() {
-  const [query, setQuery] = useState("");
-  const [activeCollection, setActiveCollection] = useState("all");
+  const { q, collection } = Route.useSearch();
+  const [query, setQuery] = useState(q ?? "");
+  const [activeCollection, setActiveCollection] = useState(collection ?? "all");
   const [apiNotes, setApiNotes] = useState<NoteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [taskStats, setTaskStats] = useState<TaskStats>({ total: 0, todo: 0, completed: 0, highPriority: 0 });
@@ -59,6 +65,14 @@ function IndexRoute() {
   const [taskData, setTaskData] = useState<TaskData>({}); // Map of path -> task frontmatter
   const [apiStatus, setApiStatus] = useState<ApiStatus>("unknown"); // online | offline | unknown
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setQuery(q ?? "");
+  }, [q]);
+
+  useEffect(() => {
+    setActiveCollection(collection ?? "all");
+  }, [collection]);
 
   // Derive collection from path
   const deriveCollection = (path: string) => {
@@ -118,10 +132,8 @@ function IndexRoute() {
   // Fetch notes from API at runtime
   useEffect(() => {
     const fetchNotes = async () => {
-      const apiUrl = getApiUrl();
-      
       try {
-        const response = await apiFetch(`${apiUrl}/api/v1/notes`);
+        const response = await apiFetch('/api/v1/notes');
         if (response.ok) {
           const result = await response.json();
           // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
@@ -157,9 +169,8 @@ function IndexRoute() {
     };
 
     const fetchTasks = async () => {
-      const apiUrl = getApiUrl();
       try {
-        const response = await apiFetch(`${apiUrl}/api/v1/tasks?status=all`);
+        const response = await apiFetch('/api/v1/tasks?status=all');
         if (response.ok) {
           const result = await response.json();
           const tasks = result.structuredContent?.tasks || [];
@@ -309,7 +320,12 @@ function IndexRoute() {
             </div>
           </div>
           <div className="quick-links">
-            <Link to="/" className="quick-link quick-link--primary" title={apiStatus === "online" ? "Powered by Tasker API" : "Falling back to static content"}>
+            <Link
+              to="/"
+              search={{ q: undefined, collection: undefined }}
+              className="quick-link quick-link--primary"
+              title={apiStatus === "online" ? "Powered by Tasker API" : "Falling back to static content"}
+            >
               <span className="quick-link__icon">📋</span>
               <span className="quick-link__label">
                 View Tasks ({taskStats.todo || 0} active{taskStats.highPriority ? `, ${taskStats.highPriority} high` : ""})

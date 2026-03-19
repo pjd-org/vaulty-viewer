@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from '@tanstack/react-router';
-import getApiBase, { apiFetch } from "../../src/utils/api";
+import { apiFetch } from "../../src/utils/api";
 import {
   STATUS_COLUMNS,
   buildColumns,
@@ -29,10 +29,8 @@ function KanbanRoute() {
 
   useEffect(() => {
     const loadTasks = async () => {
-      const apiBase = getApiBase();
-      if (apiBase === null || apiBase === undefined) return;
       try {
-        const res = await apiFetch(`${apiBase}/api/v1/tasks`);
+        const res = await apiFetch('/api/v1/tasks');
         if (res.ok) {
           const body = await res.json();
           const apiList = (body.structuredContent?.tasks || body.tasks || []).map((t: Parameters<typeof normalizeTask>[0]) =>
@@ -99,17 +97,12 @@ function KanbanRoute() {
   const isReadOnly = apiStatus !== "online";
 
   const updateStatus = async (task: KanbanTask, status: string) => {
-    const apiBase = getApiBase();
-    if (apiBase === null || apiBase === undefined) {
-      setApiStatus("offline");
-      return;
-    }
     if (!task.path) return;
     if (task.status === status) return;
     setMutatingTaskId(task.id);
     try {
       const res = await apiFetch(
-        `${apiBase}/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
+        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

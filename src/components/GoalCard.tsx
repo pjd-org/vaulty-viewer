@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import getApiBase, { apiFetch } from '../utils/api';
+import { apiFetch } from '../utils/api';
 
 interface GoalStats {
   total: number;
@@ -152,7 +152,6 @@ export function GoalCard({ goal }: GoalCardProps) {
     setReviewBusy(true);
     setReviewMsg(null);
     try {
-      const apiUrl = getApiBase();
       const body = {
         path: firstTaskPath,
         addHistoryNote: `Goal review (${decision}) for ${goal.id}`,
@@ -161,7 +160,7 @@ export function GoalCard({ goal }: GoalCardProps) {
           review_updated: new Date().toISOString(),
         },
       };
-      const res = await apiFetch(`${apiUrl}/api/v1/tools/obsidian_update_task/execute`, {
+      const res = await apiFetch('/api/v1/tools/obsidian_update_task/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

@@ -20,7 +20,7 @@ export function useInbox() {
   const [actionState, setActionState] = useState({});
   const queryClient = useQueryClient();
   const base = getApiBase();
-  const queryEnabled = typeof window !== 'undefined' && base !== null;
+  const queryEnabled = typeof window !== 'undefined';
   const queryKey = ['inbox', base];
 
   const inboxQuery = useQuery({
@@ -29,7 +29,7 @@ export function useInbox() {
     staleTime: 10_000,
     retry: 1,
     queryFn: async () => {
-      const res = await apiFetch(`${base}/api/v1/inbox`);
+      const res = await apiFetch('/api/v1/inbox');
       if (!res.ok) {
         throw new Error(`API returned ${res.status}`);
       }
@@ -44,7 +44,7 @@ export function useInbox() {
   const commitMutation = useMutation({
     mutationFn: async (runId) => {
       const res = await apiFetch(
-        `${base}/api/v1/inbox/${encodeURIComponent(runId)}/commit`,
+        `/api/v1/inbox/${encodeURIComponent(runId)}/commit`,
         {
           method: 'POST',
         }
@@ -87,7 +87,7 @@ export function useInbox() {
   const rejectMutation = useMutation({
     mutationFn: async (runId) => {
       const res = await apiFetch(
-        `${base}/api/v1/inbox/${encodeURIComponent(runId)}`,
+        `/api/v1/inbox/${encodeURIComponent(runId)}`,
         {
           method: 'DELETE',
         }

@@ -62,11 +62,11 @@ export function useAvatar() {
   // Allow empty string to mean "same origin /api"
   const getApiUrl = useCallback(() => {
     const base = getApiBase();
-    return base === null || base === undefined ? null : base;
+    return base;
   }, []);
 
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined' && apiUrl !== null;
+  const queryEnabled = typeof window !== 'undefined';
 
   const avatarQuery = useQuery({
     queryKey: ['avatar', apiUrl],
@@ -76,9 +76,9 @@ export function useAvatar() {
     queryFn: async () => {
       // Fetch avatar state, session stats, and tasks in parallel
       const [avatarRes, sessionStatsRes, tasksRes] = await Promise.all([
-        apiFetch(`${apiUrl}/api/v1/cod/avatar`),
-        apiFetch(`${apiUrl}/api/v1/sessions/stats`).catch(() => null),
-        apiFetch(`${apiUrl}/api/v1/tasks`).catch(() => null),
+        apiFetch('/api/v1/cod/avatar'),
+        apiFetch('/api/v1/sessions/stats').catch(() => null),
+        apiFetch('/api/v1/tasks').catch(() => null),
       ]);
 
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
@@ -172,15 +172,13 @@ export function useAvatar() {
       ? avatarQuery.error.message
       : String(avatarQuery.error)
     : null;
-  const apiStatus = apiUrl === null
-    ? "offline"
-    : avatarQuery.isFetching && !avatarQuery.data
-      ? "loading"
-      : avatarQuery.isError
-        ? "offline"
-        : avatarQuery.isSuccess
-          ? "online"
-          : "unknown";
+  const apiStatus = avatarQuery.isFetching && !avatarQuery.data
+    ? "loading"
+    : avatarQuery.isError
+      ? "offline"
+      : avatarQuery.isSuccess
+        ? "online"
+        : "unknown";
 
   // Calculate derived values
   const level = avatar.progression?.level || 1;
