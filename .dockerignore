@@ -1,6 +1,8 @@
 node_modules
-public
 .cache
+public
 .git
+.gitignore
+.env
+.env.*
 *.log
-.DS_Store

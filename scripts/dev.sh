@@ -15,6 +15,7 @@ load_env() {
   env_file="$1"
   if [ -f "$env_file" ]; then
     set -a
+    # shellcheck source=/dev/null
     . "$env_file"
     set +a
   fi
@@ -33,7 +34,7 @@ resolve_path() {
   fi
 
   case "$candidate" in
-    "~"|"~/"*)
+    "~"|"$HOME"|"$HOME/"*)
       candidate="${HOME}${candidate#~}"
       ;;
   esac
@@ -74,11 +75,13 @@ else
 fi
 
 PORT="${PORT:-${VIEWER_PORT:-8000}}"
+API_PORT="${API_PORT:-4300}"
+VAULT_API_URL="${VAULT_API_URL:-http://localhost:${API_PORT}}"
 
 export VAULT_CONTENT_PATH
 export VAULT_PATH="$VAULT_CONTENT_PATH"
 export PORT
-export GATSBY_TELEMETRY_DISABLED=1
+export VAULT_API_URL
 export NODE_ENV=development
 
-exec pnpm exec gatsby develop -H 0.0.0.0 -p "$PORT"
+exec pnpm exec vinxi dev

@@ -1,35 +1,29 @@
 # Vaulty Viewer
 
-Gatsby-based viewer for Vaulty notes, plus Decap CMS for in-browser markdown edits.
+TanStack Start viewer for Vaulty notes and task surfaces.
 
 ## Quick start
 
 ```sh
 pnpm install
-pnpm run develop
+pnpm run dev
 ```
+
+## Scripts
+
+- `pnpm run dev` -> local dev server
+- `pnpm run build` -> production build
+- `pnpm run start` -> run built app
 
 ## Environment
 
-- `VAULT_CONTENT_PATH` (default: `./content`): path to the vault volume.
-- `PORT` (default: `8000`): Gatsby server port.
-- `BUILD_ON_START` (default: `1`): build on container start.
-
-## CMS config
-
-Update `static/admin/config.yml` with your GitHub repo and OAuth settings.
-For self-hosted auth, you will need a GitHub OAuth app and callback URL
-pointing to `/admin/` on the viewer host.
-
-## Public repo checklist
-
-- Keep `.env` and tokens out of git (use `.env.example` for defaults).
-- `static/admin/config.yml` should only include repo metadata (no secrets).
-- Use `auth_scope: public_repo` for public repos, switch to `repo` for private.
+- `VAULT_API_URL` (optional): absolute API URL when not using same-origin `/api` proxy.
+- `PORT` (default: `8000`): viewer server port.
+- `HOST` (default: `0.0.0.0`): bind address for container/dev.
 
 ## Container run
 
 ```sh
-docker build -t vault-viewer:latest .
-docker run --rm -p 8080:8000 -e VAULT_CONTENT_PATH=/vault -e BUILD_ON_START=1 -v /path/to/vault:/vault vault-viewer:latest
+docker build -t vault-viewer:latest -f apps/viewer/Dockerfile .
+docker run --rm -p 8000:8000 -e VAULT_API_URL=http://host.docker.internal:4300 vault-viewer:latest
 ```

@@ -1,6 +1,10 @@
 node_modules/
 .cache/
 public/
+.vinxi/
+.output/
+.playwright-cli/
+app.config.timestamp_*.js
 .env
 .env.*
 .DS_Store
