@@ -12,18 +12,26 @@
 
 import { Route as rootRoute } from './../app/routes/__root'
 import { Route as NoteImport } from './../app/routes/note'
+import { Route as LoginImport } from './../app/routes/login'
 import { Route as KanbanImport } from './../app/routes/kanban'
 import { Route as InboxImport } from './../app/routes/inbox'
 import { Route as GoalsImport } from './../app/routes/goals'
 import { Route as CodStatusImport } from './../app/routes/cod-status'
 import { Route as AvatarImport } from './../app/routes/avatar'
 import { Route as IndexImport } from './../app/routes/index'
+import { Route as OauthConsentImport } from './../app/routes/oauth/consent'
 
 // Create/Update Routes
 
 const NoteRoute = NoteImport.update({
   id: '/note',
   path: '/note',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoginRoute = LoginImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -60,6 +68,12 @@ const AvatarRoute = AvatarImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const OauthConsentRoute = OauthConsentImport.update({
+  id: '/oauth/consent',
+  path: '/oauth/consent',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -109,11 +123,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KanbanImport
       parentRoute: typeof rootRoute
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
     '/note': {
       id: '/note'
       path: '/note'
       fullPath: '/note'
       preLoaderRoute: typeof NoteImport
+      parentRoute: typeof rootRoute
+    }
+    '/oauth/consent': {
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentImport
       parentRoute: typeof rootRoute
     }
   }
@@ -128,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/oauth/consent': typeof OauthConsentRoute
 }
 
 export interface FileRoutesByTo {
@@ -138,7 +168,9 @@ export interface FileRoutesByTo {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/oauth/consent': typeof OauthConsentRoute
 }
 
 export interface FileRoutesById {
@@ -149,7 +181,9 @@ export interface FileRoutesById {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/oauth/consent': typeof OauthConsentRoute
 }
 
 export interface FileRouteTypes {
@@ -161,7 +195,9 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/login'
     | '/note'
+    | '/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -170,7 +206,9 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/login'
     | '/note'
+    | '/oauth/consent'
   id:
     | '__root__'
     | '/'
@@ -179,7 +217,9 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/login'
     | '/note'
+    | '/oauth/consent'
   fileRoutesById: FileRoutesById
 }
 
@@ -190,7 +230,9 @@ export interface RootRouteChildren {
   GoalsRoute: typeof GoalsRoute
   InboxRoute: typeof InboxRoute
   KanbanRoute: typeof KanbanRoute
+  LoginRoute: typeof LoginRoute
   NoteRoute: typeof NoteRoute
+  OauthConsentRoute: typeof OauthConsentRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -200,7 +242,9 @@ const rootRouteChildren: RootRouteChildren = {
   GoalsRoute: GoalsRoute,
   InboxRoute: InboxRoute,
   KanbanRoute: KanbanRoute,
+  LoginRoute: LoginRoute,
   NoteRoute: NoteRoute,
+  OauthConsentRoute: OauthConsentRoute,
 }
 
 export const routeTree = rootRoute
@@ -219,7 +263,9 @@ export const routeTree = rootRoute
         "/goals",
         "/inbox",
         "/kanban",
-        "/note"
+        "/login",
+        "/note",
+        "/oauth/consent"
       ]
     },
     "/": {
@@ -240,8 +286,14 @@ export const routeTree = rootRoute
     "/kanban": {
       "filePath": "kanban.tsx"
     },
+    "/login": {
+      "filePath": "login.tsx"
+    },
     "/note": {
       "filePath": "note.tsx"
+    },
+    "/oauth/consent": {
+      "filePath": "oauth/consent.tsx"
     }
   }
 }

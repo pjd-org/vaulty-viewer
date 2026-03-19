@@ -1,21 +1,53 @@
-import { Outlet } from '@tanstack/react-router'
-import { createRootRoute } from '@tanstack/react-router'
+import * as React from 'react'
+import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import Navbar from '../../src/components/Navbar'
 import { queryClient } from '../../src/query-client'
+import appCss from '../../src/styles.css?url'
 
 export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'Vaulty Viewer' },
+    ],
+    links: [{ rel: 'stylesheet', href: appCss }],
+  }),
   component: RootComponent,
   errorComponent: RootError,
   notFoundComponent: RootNotFound,
 })
 
 function RootComponent() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+  const hideNavbar = pathname === '/login' || pathname === '/oauth/consent'
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Navbar />
-      <Outlet />
-    </QueryClientProvider>
+    <RootDocument>
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen">
+          {!hideNavbar && <Navbar />}
+          <Outlet />
+        </div>
+      </QueryClientProvider>
+    </RootDocument>
+  )
+}
+
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
   )
 }
 
