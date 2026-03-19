@@ -38,13 +38,13 @@ function computeValidation(humanState, session, avatarVitals = {}) {
 
   if (humanState) {
     // Energy check
-    if (humanState.energy < 40) {
-      warnings.push(`Low energy (${Math.round(humanState.energy)}%)`);
+    if (humanState.energy < 0.40) {
+      warnings.push(`Low energy (${Math.round(humanState.energy * 100)}%)`);
     }
 
     // Stress check
-    if (humanState.stress > 70) {
-      warnings.push(`High stress (${Math.round(humanState.stress)}%)`);
+    if (humanState.stress > 0.70) {
+      warnings.push(`High stress (${Math.round(humanState.stress * 100)}%)`);
     }
 
     // Sleep debt check

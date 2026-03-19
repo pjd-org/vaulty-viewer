@@ -46,18 +46,18 @@ export default function CODStatusWidget() {
         <div className="cod-widget__info">
           <span className="cod-widget__label">{statusMessage}</span>
           <span className="cod-widget__sublabel">
-            {loading ? "Syncing..." : error ? "API offline" : `${humanState.energy}% energy`}
+            {loading ? "Syncing..." : error ? "API offline" : `${Math.round(humanState.energy * 100)}% energy`}
           </span>
         </div>
       </div>
 
       <div className="cod-widget__vitals">
         <div className="cod-widget__vital">
-          <span className="cod-widget__vital-value">{humanState.energy}%</span>
+          <span className="cod-widget__vital-value">{Math.round(humanState.energy * 100)}%</span>
           <span className="cod-widget__vital-label">Energy</span>
         </div>
         <div className="cod-widget__vital">
-          <span className="cod-widget__vital-value">{humanState.stress}%</span>
+          <span className="cod-widget__vital-value">{Math.round(humanState.stress * 100)}%</span>
           <span className="cod-widget__vital-label">Stress</span>
         </div>
         <div className="cod-widget__vital">

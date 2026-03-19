@@ -160,14 +160,14 @@ function HumanStateSection({ state, onEdit }: HumanStateSectionProps) {
       </div>
       <div className="cod-vitals">
         <ProgressBar
-          value={state.energy}
+          value={state.energy * 100}
           label="⚡ Energy"
-          color={state.energy < 40 ? "danger" : state.energy < 60 ? "warning" : "success"}
+          color={state.energy < 0.40 ? "danger" : state.energy < 0.60 ? "warning" : "success"}
         />
         <ProgressBar
-          value={100 - state.stress}
+          value={(1 - state.stress) * 100}
           label="🧘 Calm"
-          color={state.stress > 70 ? "danger" : state.stress > 50 ? "warning" : "success"}
+          color={state.stress > 0.70 ? "danger" : state.stress > 0.50 ? "warning" : "success"}
         />
         <ProgressBar
           value={Math.max(0, 100 - state.sleepDebt * 20)}
