@@ -84,6 +84,12 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         >
           Inbox
         </Link>
+        <Link
+          to="/knowledge"
+          onClick={closeMenu}
+        >
+          Knowledge
+        </Link>
       </div>
 
       <div className="navbar__status">

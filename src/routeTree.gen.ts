@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './../app/routes/__root'
 import { Route as NoteImport } from './../app/routes/note'
 import { Route as LoginImport } from './../app/routes/login'
+import { Route as KnowledgeImport } from './../app/routes/knowledge'
 import { Route as KanbanImport } from './../app/routes/kanban'
 import { Route as InboxImport } from './../app/routes/inbox'
 import { Route as GoalsImport } from './../app/routes/goals'
@@ -20,6 +21,8 @@ import { Route as CodStatusImport } from './../app/routes/cod-status'
 import { Route as AvatarImport } from './../app/routes/avatar'
 import { Route as IndexImport } from './../app/routes/index'
 import { Route as OauthConsentImport } from './../app/routes/oauth/consent'
+import { Route as KnowledgeSearchImport } from './../app/routes/knowledge.search'
+import { Route as KnowledgeGraphImport } from './../app/routes/knowledge.graph'
 
 // Create/Update Routes
 
@@ -32,6 +35,12 @@ const NoteRoute = NoteImport.update({
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const KnowledgeRoute = KnowledgeImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -75,6 +84,18 @@ const OauthConsentRoute = OauthConsentImport.update({
   id: '/oauth/consent',
   path: '/oauth/consent',
   getParentRoute: () => rootRoute,
+} as any)
+
+const KnowledgeSearchRoute = KnowledgeSearchImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => KnowledgeRoute,
+} as any)
+
+const KnowledgeGraphRoute = KnowledgeGraphImport.update({
+  id: '/graph',
+  path: '/graph',
+  getParentRoute: () => KnowledgeRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -123,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KanbanImport
       parentRoute: typeof rootRoute
     }
+    '/knowledge': {
+      id: '/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof KnowledgeImport
+      parentRoute: typeof rootRoute
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -137,6 +165,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NoteImport
       parentRoute: typeof rootRoute
     }
+    '/knowledge/graph': {
+      id: '/knowledge/graph'
+      path: '/graph'
+      fullPath: '/knowledge/graph'
+      preLoaderRoute: typeof KnowledgeGraphImport
+      parentRoute: typeof KnowledgeImport
+    }
+    '/knowledge/search': {
+      id: '/knowledge/search'
+      path: '/search'
+      fullPath: '/knowledge/search'
+      preLoaderRoute: typeof KnowledgeSearchImport
+      parentRoute: typeof KnowledgeImport
+    }
     '/oauth/consent': {
       id: '/oauth/consent'
       path: '/oauth/consent'
@@ -149,6 +191,20 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface KnowledgeRouteChildren {
+  KnowledgeGraphRoute: typeof KnowledgeGraphRoute
+  KnowledgeSearchRoute: typeof KnowledgeSearchRoute
+}
+
+const KnowledgeRouteChildren: KnowledgeRouteChildren = {
+  KnowledgeGraphRoute: KnowledgeGraphRoute,
+  KnowledgeSearchRoute: KnowledgeSearchRoute,
+}
+
+const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
+  KnowledgeRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avatar': typeof AvatarRoute
@@ -156,8 +212,11 @@ export interface FileRoutesByFullPath {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
 }
 
@@ -168,8 +227,11 @@ export interface FileRoutesByTo {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
 }
 
@@ -181,8 +243,11 @@ export interface FileRoutesById {
   '/goals': typeof GoalsRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
 }
 
@@ -195,8 +260,11 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/knowledge'
     | '/login'
     | '/note'
+    | '/knowledge/graph'
+    | '/knowledge/search'
     | '/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -206,8 +274,11 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/knowledge'
     | '/login'
     | '/note'
+    | '/knowledge/graph'
+    | '/knowledge/search'
     | '/oauth/consent'
   id:
     | '__root__'
@@ -217,8 +288,11 @@ export interface FileRouteTypes {
     | '/goals'
     | '/inbox'
     | '/kanban'
+    | '/knowledge'
     | '/login'
     | '/note'
+    | '/knowledge/graph'
+    | '/knowledge/search'
     | '/oauth/consent'
   fileRoutesById: FileRoutesById
 }
@@ -230,6 +304,7 @@ export interface RootRouteChildren {
   GoalsRoute: typeof GoalsRoute
   InboxRoute: typeof InboxRoute
   KanbanRoute: typeof KanbanRoute
+  KnowledgeRoute: typeof KnowledgeRouteWithChildren
   LoginRoute: typeof LoginRoute
   NoteRoute: typeof NoteRoute
   OauthConsentRoute: typeof OauthConsentRoute
@@ -242,6 +317,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoalsRoute: GoalsRoute,
   InboxRoute: InboxRoute,
   KanbanRoute: KanbanRoute,
+  KnowledgeRoute: KnowledgeRouteWithChildren,
   LoginRoute: LoginRoute,
   NoteRoute: NoteRoute,
   OauthConsentRoute: OauthConsentRoute,
@@ -263,6 +339,7 @@ export const routeTree = rootRoute
         "/goals",
         "/inbox",
         "/kanban",
+        "/knowledge",
         "/login",
         "/note",
         "/oauth/consent"
@@ -286,11 +363,26 @@ export const routeTree = rootRoute
     "/kanban": {
       "filePath": "kanban.tsx"
     },
+    "/knowledge": {
+      "filePath": "knowledge.tsx",
+      "children": [
+        "/knowledge/graph",
+        "/knowledge/search"
+      ]
+    },
     "/login": {
       "filePath": "login.tsx"
     },
     "/note": {
       "filePath": "note.tsx"
+    },
+    "/knowledge/graph": {
+      "filePath": "knowledge.graph.tsx",
+      "parent": "/knowledge"
+    },
+    "/knowledge/search": {
+      "filePath": "knowledge.search.tsx",
+      "parent": "/knowledge"
     },
     "/oauth/consent": {
       "filePath": "oauth/consent.tsx"
