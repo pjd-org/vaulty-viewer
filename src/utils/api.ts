@@ -170,6 +170,9 @@ const withAuthorizationHeader = (
   if (!headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`)
   }
+  if (!headers.has('X-Vault-Service-Auth')) {
+    headers.set('X-Vault-Service-Auth', 'bearer')
+  }
   return {
     ...(init || {}),
     headers,

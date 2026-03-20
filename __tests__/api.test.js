@@ -159,7 +159,9 @@ describe('apiFetch internal server token mode', () => {
     const firstApiHeaders = new Headers(mockFetch.mock.calls[1][1]?.headers);
     const secondApiHeaders = new Headers(mockFetch.mock.calls[2][1]?.headers);
     expect(firstApiHeaders.get('Authorization')).toBe(`Bearer ${mintedToken}`);
+    expect(firstApiHeaders.get('X-Vault-Service-Auth')).toBe('bearer');
     expect(secondApiHeaders.get('Authorization')).toBe(`Bearer ${mintedToken}`);
+    expect(secondApiHeaders.get('X-Vault-Service-Auth')).toBe('bearer');
   });
 
   it('uses AUTH_MCP_API_KEY and AUTH_SERVICE_URL fallbacks when viewer vars are absent', async () => {
@@ -234,5 +236,6 @@ describe('apiFetch internal server token mode', () => {
     expect(mockFetch.mock.calls[0][0]).toBe('/api/v1/tasks');
     const headers = new Headers(mockFetch.mock.calls[0][1]?.headers);
     expect(headers.get('Authorization')).toBeNull();
+    expect(headers.get('X-Vault-Service-Auth')).toBeNull();
   });
 });
