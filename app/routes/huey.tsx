@@ -16,6 +16,8 @@ type InvokeResponse = {
   result?: string
   threadId?: string
   thread_id?: string
+  next_action?: string | null
+  tool_results_degraded?: boolean
 }
 
 const createMessage = (
@@ -37,8 +39,8 @@ function HueyRoute() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     createMessage(
       'assistant',
-      'Huey is ready. Ask for planning, repo work, vault operations, or note triage.',
-      'Connected through Tensura'
+      'Huey is ready. Ask about the repo, specs, tasks, promotion flow, or blocked work.',
+      'Connected through Tensura supervisor'
     ),
   ])
   const [input, setInput] = useState('')
@@ -65,13 +67,14 @@ function HueyRoute() {
     setError(null)
 
     try {
-      const response = await apiFetch('/tensura/v1/agents/invoke', {
+      const response = await apiFetch('/tensura/v1/supervisor/invoke', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           threadId,
+          mode: 'repo+spec',
           messages: [{ role: 'user', content: prompt }],
         }),
       })
@@ -95,10 +98,13 @@ function HueyRoute() {
         payload && typeof payload.result === 'string' && payload.result.trim().length > 0
           ? payload.result
           : 'Huey responded without text.'
+      const assistantMetaParts = [`Thread ${nextThreadId}`]
+      if (payload?.next_action) assistantMetaParts.push(`Next ${payload.next_action}`)
+      if (payload?.tool_results_degraded) assistantMetaParts.push('Degraded tools')
 
       setMessages((current) => [
         ...current,
-        createMessage('assistant', assistantText, `Thread ${nextThreadId}`),
+        createMessage('assistant', assistantText, assistantMetaParts.join(' • ')),
       ])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Huey request failed'
@@ -119,8 +125,8 @@ function HueyRoute() {
           <p className="eyebrow">Huey Control Surface</p>
           <h1>Chat with Huey, directly in Viewer</h1>
           <p className="lede">
-            This route talks to Tensura without going through the OpenCode web UI, so we keep the
-            workflow inside the product and remove agent-selection friction.
+            This route talks to the Tensura supervisor workflow, so Viewer stays on the repo and
+            spec-aware path instead of the generic direct-agent route.
           </p>
         </div>
         <div className="huey-hero__meta">
@@ -141,7 +147,7 @@ function HueyRoute() {
           <div className="huey-sidebar__card">
             <h2>Session</h2>
             <p className="huey-sidebar__value">{threadId}</p>
-            <p className="huey-sidebar__hint">Tensura agent invoke thread id</p>
+            <p className="huey-sidebar__hint">Tensura supervisor thread id</p>
           </div>
           <div className="huey-sidebar__card">
             <h2>Use cases</h2>
