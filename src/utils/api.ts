@@ -5,8 +5,7 @@
  * Browser runtime:
  * 1) window.VAULT_API_URL
  * 2) window.VIEWER_CONFIG.apiUrl
- * 3) Local dev fallback on :8000 (points to :4300 API)
- * 4) Same-origin /api (relative)
+ * 3) Same-origin /api (relative)
  *
  * Server runtime:
  * 1) VAULT_API_URL
@@ -260,14 +259,6 @@ export function getApiBase(): string {
 
     if (window.VIEWER_CONFIG?.apiUrl) {
       return strip(window.VIEWER_CONFIG.apiUrl)
-    }
-
-    const { hostname, port } = window.location || {}
-
-    if (hostname && /^(localhost|127\.0\.0\.1)$/.test(hostname)) {
-      if (port === '8000') {
-        return 'http://localhost:4300'
-      }
     }
 
     return ''

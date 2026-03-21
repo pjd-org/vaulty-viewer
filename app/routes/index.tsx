@@ -2,6 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import CODStatusWidget from "../../src/components/CODStatusWidget";
 import { apiFetch } from "../../src/utils/api";
+import {
+  classifyHomepageFailure,
+  formatHomepageMetric,
+  homepageApiBadgeText,
+  homepageEmptyMessage,
+  mergeHomepageApiStatus,
+  type HomepageLoadState,
+} from "../../src/lib/homepage-logic";
 
 const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
 
@@ -41,8 +49,6 @@ interface TaskData {
   [path: string]: TaskInfo;
 }
 
-type ApiStatus = 'online' | 'offline' | 'unknown';
-
 export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>) => ({
     q: typeof search.q === 'string' && search.q.length > 0 ? search.q : undefined,
@@ -59,11 +65,11 @@ function IndexRoute() {
   const [query, setQuery] = useState(q ?? "");
   const [activeCollection, setActiveCollection] = useState(collection ?? "all");
   const [apiNotes, setApiNotes] = useState<NoteItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [taskStats, setTaskStats] = useState<TaskStats>({ total: 0, todo: 0, completed: 0, highPriority: 0 });
   const [goalsCount, setGoalsCount] = useState(0);
   const [taskData, setTaskData] = useState<TaskData>({}); // Map of path -> task frontmatter
-  const [apiStatus, setApiStatus] = useState<ApiStatus>("unknown"); // online | offline | unknown
+  const [notesState, setNotesState] = useState<HomepageLoadState>("loading");
+  const [tasksState, setTasksState] = useState<HomepageLoadState>("loading");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -157,14 +163,18 @@ function IndexRoute() {
             // Count goals from notes
             const goalNotes = processedNotes.filter((n: NoteItem) => n.collection === 'goals');
             setGoalsCount(goalNotes.length);
-            setApiStatus("online");
           }
+          setNotesState("ready");
+        } else {
+          setApiNotes([]);
+          setGoalsCount(0);
+          setNotesState(classifyHomepageFailure(response.status));
         }
       } catch (err) {
         console.error("[viewer] Failed to fetch notes from API:", err);
-        setApiStatus("offline");
-      } finally {
-        setLoading(false);
+        setApiNotes([]);
+        setGoalsCount(0);
+        setNotesState("offline");
       }
     };
 
@@ -191,11 +201,17 @@ function IndexRoute() {
             }
           });
           setTaskData(taskMap);
-          setApiStatus("online");
+          setTasksState("ready");
+        } else {
+          setTaskStats({ total: 0, todo: 0, completed: 0, highPriority: 0 });
+          setTaskData({});
+          setTasksState(classifyHomepageFailure(response.status));
         }
       } catch (err) {
         console.error("[viewer] Failed to fetch tasks from API:", err);
-        setApiStatus("offline");
+        setTaskStats({ total: 0, todo: 0, completed: 0, highPriority: 0 });
+        setTaskData({});
+        setTasksState("offline");
       }
     };
     
@@ -205,6 +221,8 @@ function IndexRoute() {
 
   // Use API data
   const items = apiNotes;
+  const loading = notesState === "loading" || tasksState === "loading";
+  const apiStatus = mergeHomepageApiStatus([notesState, tasksState]);
 
   const counts = items.reduce<Record<string, number>>(
     (acc, item) => {
@@ -245,6 +263,30 @@ function IndexRoute() {
     });
   }, [items, activeCollection, query]);
 
+  const tasksReady = tasksState === "ready";
+  const notesReady = notesState === "ready";
+  const activeTasksDisplay = formatHomepageMetric(taskStats.todo, tasksState);
+  const highPriorityDisplay = formatHomepageMetric(taskStats.highPriority, tasksState);
+  const goalsDisplay = formatHomepageMetric(goalsCount, notesState);
+  const completedTasksDisplay = formatHomepageMetric(taskStats.completed, tasksState);
+  const notesDisplay = formatHomepageMetric(counts.all, notesState);
+  const collectionsDisplay = formatHomepageMetric(collectionKeys.length, notesState);
+  const taskLinkLabel = tasksReady
+    ? `View Tasks (${taskStats.todo} active${taskStats.highPriority ? `, ${taskStats.highPriority} high` : ""})`
+    : tasksState === "unauthorized"
+      ? "View Tasks (auth required)"
+      : loading
+        ? "View Tasks (loading…)"
+        : "View Tasks (unavailable)";
+  const goalsLinkLabel = notesReady
+    ? `Goals (${goalsCount})`
+    : notesState === "unauthorized"
+      ? "Goals (auth required)"
+      : loading
+        ? "Goals (loading…)"
+        : "Goals (unavailable)";
+  const emptyMessage = homepageEmptyMessage(apiStatus, loading);
+
   return (
     <main className="page">
       <CODStatusWidget />
@@ -261,21 +303,21 @@ function IndexRoute() {
             <div className="stat" data-type="tasks">
               <div className="stat__icon">📋</div>
               <div className="stat__content">
-                <div className="stat__value">{taskStats.todo}</div>
+                <div className="stat__value">{activeTasksDisplay}</div>
                 <div className="stat__label">Active Tasks</div>
               </div>
             </div>
             <div className="stat" data-type="priority">
               <div className="stat__icon">🔥</div>
               <div className="stat__content">
-                <div className="stat__value">{taskStats.highPriority}</div>
+                <div className="stat__value">{highPriorityDisplay}</div>
                 <div className="stat__label">High Priority</div>
               </div>
             </div>
             <div className="stat" data-type="goals">
               <div className="stat__icon">🎯</div>
               <div className="stat__content">
-                <div className="stat__value">{goalsCount}</div>
+                <div className="stat__value">{goalsDisplay}</div>
                 <div className="stat__label">Goals</div>
               </div>
             </div>
@@ -307,15 +349,15 @@ function IndexRoute() {
           )}
           <div className="stats-secondary">
             <div className="stat-mini">
-              <span className="stat-mini__value">{taskStats.completed}</span>
+              <span className="stat-mini__value">{completedTasksDisplay}</span>
               <span className="stat-mini__label">completed</span>
             </div>
             <div className="stat-mini">
-              <span className="stat-mini__value">{counts.all}</span>
+              <span className="stat-mini__value">{notesDisplay}</span>
               <span className="stat-mini__label">notes</span>
             </div>
             <div className="stat-mini">
-              <span className="stat-mini__value">{collectionKeys.length}</span>
+              <span className="stat-mini__value">{collectionsDisplay}</span>
               <span className="stat-mini__label">collections</span>
             </div>
           </div>
@@ -324,21 +366,25 @@ function IndexRoute() {
               to="/"
               search={{ q: undefined, collection: undefined }}
               className="quick-link quick-link--primary"
-              title={apiStatus === "online" ? "Powered by Tasker API" : "Falling back to static content"}
+              title={
+                apiStatus === "online"
+                  ? "Powered by Tasker API"
+                  : apiStatus === "unauthorized"
+                    ? "Homepage API authentication failed"
+                    : apiStatus === "offline"
+                      ? "Homepage API unavailable"
+                      : "Loading homepage data"
+              }
             >
               <span className="quick-link__icon">📋</span>
-              <span className="quick-link__label">
-                View Tasks ({taskStats.todo || 0} active{taskStats.highPriority ? `, ${taskStats.highPriority} high` : ""})
-              </span>
+              <span className="quick-link__label">{taskLinkLabel}</span>
               <span className={`api-badge api-badge--${apiStatus}`}>
-                {apiStatus === "online" ? "API online" : apiStatus === "offline" ? "API offline" : "API"}
+                {homepageApiBadgeText(apiStatus)}
               </span>
             </Link>
             <Link to="/goals" className="quick-link" title="Goals via Tasker API">
               <span className="quick-link__icon">🎯</span>
-              <span className="quick-link__label">
-                Goals ({goalsCount || 0})
-              </span>
+              <span className="quick-link__label">{goalsLinkLabel}</span>
             </Link>
             <Link to="/avatar" className="quick-link" title="Avatar dashboard and vitals">
               <span className="quick-link__icon">🧙</span>
@@ -368,7 +414,7 @@ function IndexRoute() {
               data-active={activeCollection === collection.key}
               onClick={() => setActiveCollection(collection.key)}
             >
-              {collection.label} ({counts[collection.key] || 0})
+              {collection.label} ({notesReady ? counts[collection.key] || 0 : "—"})
             </button>
           ))}
         </div>
@@ -376,7 +422,7 @@ function IndexRoute() {
 
       {filtered.length === 0 ? (
         <div className="empty">
-          No matches yet. Try a different query or change the collection filter.
+          {emptyMessage}
         </div>
       ) : (
         <section className="grid">

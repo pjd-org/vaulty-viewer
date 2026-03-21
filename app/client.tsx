@@ -1,4 +1,4 @@
-import { StartClient } from '@tanstack/start'
+import { StartClient } from '@tanstack/react-start'
 import { createRouter } from '../src/router'
 
 const router = createRouter()

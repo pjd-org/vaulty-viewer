@@ -49,10 +49,10 @@ describe('getApiBase', () => {
     expect(getApiBase()).toBe('http://from-config:9999');
   });
 
-  it('uses localhost API fallback on port 8000', async () => {
+  it('keeps same-origin default when served on port 8000', async () => {
     globalThis.window = { location: { hostname: 'localhost', port: '8000' } };
     const { getApiBase } = await import('../src/utils/api.js');
-    expect(getApiBase()).toBe('http://localhost:4300');
+    expect(getApiBase()).toBe('');
   });
 
   it('keeps localhost proxy deployments on same-origin when served on 8080', async () => {

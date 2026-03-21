@@ -22,17 +22,32 @@ export interface InboxRun {
   error?: string
 }
 
+export interface InboxPendingConfirmation {
+  token?: string
+  expiresAt?: string
+  message?: string
+}
+
 export type InboxActionState = Record<
   string,
   'committing' | 'rejecting' | 'error' | undefined
 >
 
 export interface InboxMutationResult {
+  status?: 'pending_confirmation' | 'committed'
+  token?: string
+  expiresAt?: string
+  message?: string
+  mode?: string
   structuredContent?: {
+    status?: 'pending_confirmation' | 'committed'
+    token?: string
+    expiresAt?: string
+    message?: string
     committed?: number
     failed?: number
     rejected?: number
-    errors?: number
+    errors?: number | string[]
   }
   [key: string]: unknown
 }
@@ -47,6 +62,7 @@ export interface UseInboxResult {
   commitRun: (runId: string) => Promise<InboxMutationResult>
   rejectRun: (runId: string) => Promise<InboxMutationResult>
   actionState: InboxActionState
+  pendingConfirmations: Record<string, InboxPendingConfirmation | undefined>
 }
 
 export function useInbox(): UseInboxResult

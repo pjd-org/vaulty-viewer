@@ -33,6 +33,7 @@ interface RunCardProps {
   onCommit: (runId: string) => Promise<void>;
   onReject: (runId: string) => Promise<void>;
   runState?: string;
+  awaitingConfirmation?: boolean;
 }
 
 interface ToastMsg {
@@ -120,7 +121,13 @@ function InboxNoteCard({ note }: { note: InboxNote }) {
 
 /* ─── RunCard ─────────────────────────────────────────────────────────────── */
 
-const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }: RunCardProps) {
+const RunCard = memo(function RunCard({
+  run,
+  onCommit,
+  onReject,
+  runState,
+  awaitingConfirmation = false,
+}: RunCardProps) {
   const [expanded, setExpanded] = useState(false);
   const state = runState;
   const busy = state === 'committing' || state === 'rejecting';
@@ -155,6 +162,11 @@ const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }: Run
           {runTypeBadge(run.runType)}
           {run.action && (
             <span className="badge badge--action">{run.action}</span>
+          )}
+          {awaitingConfirmation && (
+            <span className="badge badge--manual">
+              confirm required
+            </span>
           )}
           {hasReadError && (
             <span className="badge badge--error" title={run.error}>
@@ -192,11 +204,17 @@ const RunCard = memo(function RunCard({ run, onCommit, onReject, runState }: Run
               title={
                 isSignal
                   ? 'signals_infer runs require explicit human approval'
-                  : 'Commit this run'
+                  : awaitingConfirmation
+                    ? 'Click again to confirm promotion'
+                    : 'Commit this run'
               }
               onClick={() => onCommit(run.runId)}
             >
-              {state === 'committing' ? 'Committing…' : '✓ Commit'}
+              {state === 'committing'
+                ? 'Committing…'
+                : awaitingConfirmation
+                  ? '✓ Confirm Promote'
+                  : '✓ Commit'}
             </button>
             <button
               type="button"
@@ -262,6 +280,7 @@ function InboxRoute() {
     commitRun,
     rejectRun,
     actionState,
+    pendingConfirmations,
   } = useInbox();
 
   const [toastMsg, setToastMsg] = useState<ToastMsg | null>(null);
@@ -292,6 +311,18 @@ function InboxRoute() {
     async (runId: string) => {
       try {
         const result = await commitRun(runId);
+        const status =
+          result?.structuredContent?.status ?? result?.status ?? null;
+        if (status === 'pending_confirmation') {
+          const expiresAt =
+            result?.structuredContent?.expiresAt ?? result?.expiresAt;
+          toast(
+            expiresAt
+              ? `Confirmation armed for ${runId}. Click Commit again before ${expiresAt}.`
+              : `Confirmation armed for ${runId}. Click Commit again to promote.`
+          );
+          return;
+        }
         const committed = result?.structuredContent?.committed ?? 0;
         const failed = result?.structuredContent?.failed ?? 0;
         const rejected = result?.structuredContent?.rejected ?? 0;
@@ -324,12 +355,13 @@ function InboxRoute() {
     async (runId: string) => {
       try {
         const result = await rejectRun(runId);
-        const errors = result?.structuredContent?.errors ?? 0;
-        if (errors > 0) {
+        const rawErrors = result?.structuredContent?.errors ?? 0;
+        const errorCount = Array.isArray(rawErrors) ? rawErrors.length : rawErrors;
+        if (errorCount > 0) {
           // At least one item could not be deleted. The run is partially rejected;
           // refresh so the remaining items are visible rather than hiding the run.
           toast(
-            `Partial rejection: ${errors} item${errors !== 1 ? 's' : ''} could not be removed — refreshing`,
+            `Partial rejection: ${errorCount} item${errorCount !== 1 ? 's' : ''} could not be removed — refreshing`,
             true
           );
           refresh();
@@ -480,6 +512,7 @@ function InboxRoute() {
               onCommit={handleCommit}
               onReject={handleReject}
               runState={actionState[run.runId]}
+              awaitingConfirmation={Boolean(pendingConfirmations[run.runId])}
             />
           ))}
         </section>
