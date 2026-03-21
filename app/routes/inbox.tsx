@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
@@ -8,6 +8,8 @@ interface InboxNote {
   path: string;
   title?: string;
   status?: string;
+  tags?: string[];
+  frontmatter?: Record<string, unknown>;
   error?: string;
 }
 
@@ -41,6 +43,10 @@ interface ToastMsg {
   isError: boolean;
 }
 
+type InboxNoteSource = 'inbox' | 'rejected' | 'extracted' | 'other';
+
+const NOTE_PAGE_SIZE = 24;
+
 /* ─── helpers ────────────────────────────────────────────────────────────── */
 
 function runTypeBadge(runType?: string) {
@@ -55,6 +61,60 @@ function runTypeBadge(runType?: string) {
     cls: 'badge badge--default',
   };
   return <span className={def.cls}>{def.label}</span>;
+}
+
+function getNoteSource(path: string): InboxNoteSource {
+  if (path.startsWith('inbox/rejected/')) return 'rejected';
+  if (path.startsWith('inbox/extracted/')) return 'extracted';
+  if (path.startsWith('inbox/')) return 'inbox';
+  return 'other';
+}
+
+function getSourceBadgeClass(source: InboxNoteSource) {
+  const map: Record<InboxNoteSource, string> = {
+    inbox: 'badge badge--source-inbox',
+    rejected: 'badge badge--source-rejected',
+    extracted: 'badge badge--source-extracted',
+    other: 'badge badge--default',
+  };
+  return map[source];
+}
+
+function sourceLabel(source: InboxNoteSource) {
+  const map: Record<InboxNoteSource, string> = {
+    inbox: 'regular',
+    rejected: 'rejected',
+    extracted: 'extracted',
+    other: 'other',
+  };
+  return map[source];
+}
+
+function stripMarkdownExtension(path: string) {
+  return path.endsWith('.md') ? path.slice(0, -3) : path;
+}
+
+function noteStatusKey(note: InboxNote) {
+  return (note.status || 'unknown').toLowerCase();
+}
+
+function noteSortWeight(note: InboxNote) {
+  const status = noteStatusKey(note);
+  const source = getNoteSource(note.path);
+  const statusWeight: Record<string, number> = {
+    active: 0,
+    todo: 1,
+    draft: 2,
+    stable: 4,
+    unknown: 5,
+  };
+  const sourceWeight: Record<InboxNoteSource, number> = {
+    inbox: 0,
+    extracted: 1,
+    rejected: 2,
+    other: 3,
+  };
+  return (statusWeight[status] ?? 3) * 10 + sourceWeight[source];
 }
 
 function confidenceBar(confidence?: number | null) {
@@ -92,6 +152,8 @@ function DomainFields({ fields }: { fields?: Record<string, unknown> }) {
 function InboxNoteCard({ note }: { note: InboxNote }) {
   const hasError = Boolean(note.error);
   const title = note.title || note.path.split('/').pop() || note.path;
+  const source = getNoteSource(note.path);
+  const tags = (note.tags || []).slice(0, 4);
 
   return (
     <div
@@ -103,6 +165,7 @@ function InboxNoteCard({ note }: { note: InboxNote }) {
         <div className="run-card__title">
           <span className="run-card__id">{title}</span>
           {note.status && <span className="badge badge--default">{note.status}</span>}
+          <span className={getSourceBadgeClass(source)}>{sourceLabel(source)}</span>
           {hasError && (
             <span className="badge badge--error" title={note.error}>
               ⚠ read error
@@ -114,7 +177,25 @@ function InboxNoteCard({ note }: { note: InboxNote }) {
             {note.path}
           </span>
         </div>
+        <div className="run-card__actions">
+          <Link
+            className="btn btn--refresh"
+            to="/note"
+            search={{ p: stripMarkdownExtension(note.path) }}
+          >
+            Open
+          </Link>
+        </div>
       </div>
+      {tags.length > 0 && (
+        <div className="inbox-note-card__tags">
+          {tags.map((tag) => (
+            <span key={tag} className="inbox-note-card__tag">
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -285,6 +366,10 @@ function InboxRoute() {
 
   const [toastMsg, setToastMsg] = useState<ToastMsg | null>(null);
   const [filterType, setFilterType] = useState('all');
+  const [noteQuery, setNoteQuery] = useState('');
+  const [noteSourceFilter, setNoteSourceFilter] = useState<'all' | InboxNoteSource>('all');
+  const [noteStatusFilter, setNoteStatusFilter] = useState('all');
+  const [noteLimit, setNoteLimit] = useState(NOTE_PAGE_SIZE);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // True while ANY run has an in-flight action. Blocks Refresh so a concurrent
@@ -390,6 +475,77 @@ function InboxRoute() {
     { all: 0 }
   );
 
+  const typedNotes = notes as InboxNote[];
+
+  const noteSourceCounts = typedNotes.reduce<Record<string, number>>(
+    (acc, note) => {
+      const source = getNoteSource(note.path);
+      acc[source] = (acc[source] ?? 0) + 1;
+      acc.all = (acc.all ?? 0) + 1;
+      return acc;
+    },
+    { all: 0 }
+  );
+
+  const noteStatusCounts = typedNotes.reduce<Record<string, number>>(
+    (acc, note) => {
+      const status = noteStatusKey(note);
+      acc[status] = (acc[status] ?? 0) + 1;
+      acc.all = (acc.all ?? 0) + 1;
+      return acc;
+    },
+    { all: 0 }
+  );
+
+  const noteSourceOptions = useMemo(
+    () => ['all', ...new Set(typedNotes.map((note) => getNoteSource(note.path)))],
+    [typedNotes]
+  );
+
+  const noteStatusOptions = useMemo(
+    () => ['all', ...new Set(typedNotes.map((note) => noteStatusKey(note)))],
+    [typedNotes]
+  );
+
+  const filteredNotes = useMemo(() => {
+    const needle = noteQuery.trim().toLowerCase();
+    return [...typedNotes]
+      .filter((note) => {
+        const source = getNoteSource(note.path);
+        const status = noteStatusKey(note);
+        if (noteSourceFilter !== 'all' && source !== noteSourceFilter) return false;
+        if (noteStatusFilter !== 'all' && status !== noteStatusFilter) return false;
+        if (!needle) return true;
+        const haystack = [
+          note.title,
+          note.path,
+          note.status,
+          ...(note.tags || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return haystack.includes(needle);
+      })
+      .sort((a, b) => {
+        const weightDelta = noteSortWeight(a) - noteSortWeight(b);
+        if (weightDelta !== 0) return weightDelta;
+        return (a.title || a.path).localeCompare(b.title || b.path);
+      });
+  }, [noteQuery, noteSourceFilter, noteStatusFilter, typedNotes]);
+
+  useEffect(() => {
+    setNoteLimit(NOTE_PAGE_SIZE);
+  }, [noteQuery, noteSourceFilter, noteStatusFilter]);
+
+  const visibleNotes = filteredNotes.slice(0, noteLimit);
+  const hasMoreNotes = filteredNotes.length > visibleNotes.length;
+  const activeNoteCount = noteStatusCounts.active ?? 0;
+  const draftNoteCount = noteStatusCounts.draft ?? 0;
+  const stableNoteCount = noteStatusCounts.stable ?? 0;
+  const rejectedNoteCount = noteSourceCounts.rejected ?? 0;
+  const regularInboxCount = noteSourceCounts.inbox ?? 0;
+
   return (
     <main className="page inbox-page">
       {/* toast */}
@@ -405,7 +561,7 @@ function InboxRoute() {
         <div className="inbox-header__left">
           <h1 className="inbox-header__title">Inbox</h1>
           <p className="inbox-header__sub">
-            Regular inbox notes plus staged extraction proposals
+            Triage staged promotions first, then browse the note backlog without drowning in it
           </p>
         </div>
         <div className="inbox-header__right">
@@ -427,21 +583,30 @@ function InboxRoute() {
         </div>
       </header>
 
-      {/* filter tabs */}
-      {runs.length > 0 && (
-        <div className="inbox-filters">
-          {runTypes.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={`inbox-filter ${filterType === t ? 'inbox-filter--active' : ''}`}
-              onClick={() => setFilterType(t)}
-            >
-              {t} ({counts[t] ?? 0})
-            </button>
-          ))}
+      <section className="inbox-summary-grid">
+        <div className="inbox-summary-card">
+          <span className="inbox-summary-card__label">Staged proposals</span>
+          <strong className="inbox-summary-card__value">{runs.length}</strong>
+          <span className="inbox-summary-card__meta">ready to promote or reject</span>
         </div>
-      )}
+        <div className="inbox-summary-card">
+          <span className="inbox-summary-card__label">Regular inbox notes</span>
+          <strong className="inbox-summary-card__value">{regularInboxCount}</strong>
+          <span className="inbox-summary-card__meta">plain notes under /inbox</span>
+        </div>
+        <div className="inbox-summary-card">
+          <span className="inbox-summary-card__label">Draft / active</span>
+          <strong className="inbox-summary-card__value">{draftNoteCount + activeNoteCount}</strong>
+          <span className="inbox-summary-card__meta">
+            {draftNoteCount} draft, {activeNoteCount} active
+          </span>
+        </div>
+        <div className="inbox-summary-card">
+          <span className="inbox-summary-card__label">Rejected backlog</span>
+          <strong className="inbox-summary-card__value">{rejectedNoteCount}</strong>
+          <span className="inbox-summary-card__meta">historical rejects and dead ends</span>
+        </div>
+      </section>
 
       {/* states */}
       {loading && (
@@ -469,42 +634,85 @@ function InboxRoute() {
         </div>
       )}
 
-      {!loading && !error && runs.length > 0 && visibleRuns.length === 0 && (
-        <div className="inbox-state inbox-state--empty">
-          <span className="inbox-empty-icon">🔍</span>
-          <strong>No runs match this filter</strong>
-          <span>
-            Try selecting a different type or{' '}
-            <button
-              type="button"
-              className="btn-link"
-              onClick={() => setFilterType('all')}
-            >
-              show all
-            </button>
-            .
-          </span>
-        </div>
-      )}
-
-      {!loading && !error && notes.length > 0 && (
+      {!loading && !error && (
         <section className="inbox-list">
           <header className="inbox-section-header">
-            <h2>Inbox notes</h2>
-            <span>{notes.length}</span>
-          </header>
-          {notes.map((note) => (
-            <InboxNoteCard key={note.path} note={note as InboxNote} />
-          ))}
-        </section>
-      )}
-
-      {!loading && !error && visibleRuns.length > 0 && (
-        <section className="inbox-list">
-          <header className="inbox-section-header">
-            <h2>Staged proposals</h2>
+            <div>
+              <h2>Staged proposals</h2>
+              <p className="inbox-section-header__sub">
+                Commit or reject extraction runs. This is the actual work queue.
+              </p>
+            </div>
             <span>{visibleRuns.length}</span>
           </header>
+
+          {runs.length > 0 && (
+            <div className="inbox-filters">
+              {runTypes.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`inbox-filter ${filterType === t ? 'inbox-filter--active' : ''}`}
+                  onClick={() => setFilterType(t)}
+                >
+                  {t} ({counts[t] ?? 0})
+                </button>
+              ))}
+            </div>
+          )}
+
+          {runs.length === 0 && (
+            <div className="inbox-state inbox-state--empty inbox-state--panel">
+              <span className="inbox-empty-icon">✅</span>
+              <strong>No staged proposals waiting</strong>
+              <span>
+                The queue is clear. What remains below is note inventory: drafts,
+                regular inbox notes, extracted artifacts, and rejected items.
+              </span>
+              <div className="inbox-empty-actions">
+                <button
+                  type="button"
+                  className="btn btn--refresh"
+                  onClick={() => setNoteStatusFilter('draft')}
+                >
+                  Show drafts ({draftNoteCount})
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--refresh"
+                  onClick={() => setNoteStatusFilter('active')}
+                >
+                  Show active ({activeNoteCount})
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--refresh"
+                  onClick={() => setNoteSourceFilter('rejected')}
+                >
+                  Show rejected ({rejectedNoteCount})
+                </button>
+              </div>
+            </div>
+          )}
+
+          {runs.length > 0 && visibleRuns.length === 0 && (
+            <div className="inbox-state inbox-state--empty">
+              <span className="inbox-empty-icon">🔍</span>
+              <strong>No runs match this filter</strong>
+              <span>
+                Try selecting a different type or{' '}
+                <button
+                  type="button"
+                  className="btn-link"
+                  onClick={() => setFilterType('all')}
+                >
+                  show all
+                </button>
+                .
+              </span>
+            </div>
+          )}
+
           {visibleRuns.map((run) => (
             <RunCard
               key={run.runId}
@@ -515,6 +723,91 @@ function InboxRoute() {
               awaitingConfirmation={Boolean(pendingConfirmations[run.runId])}
             />
           ))}
+        </section>
+      )}
+
+      {!loading && !error && notes.length > 0 && (
+        <section className="inbox-list">
+          <header className="inbox-section-header">
+            <div>
+              <h2>Inbox notes</h2>
+              <p className="inbox-section-header__sub">
+                Search and filter raw inbox inventory instead of scanning hundreds of entries.
+              </p>
+            </div>
+            <span>
+              {filteredNotes.length} / {notes.length}
+            </span>
+          </header>
+
+          <div className="inbox-note-controls">
+            <label className="inbox-note-search">
+              <span>Search</span>
+              <input
+                type="search"
+                value={noteQuery}
+                onChange={(event) => setNoteQuery(event.target.value)}
+                placeholder="title, path, status, tag"
+              />
+            </label>
+
+            <div className="inbox-note-filter-groups">
+              <div className="inbox-filters">
+                {noteSourceOptions.map((source) => (
+                  <button
+                    key={source}
+                    type="button"
+                    className={`inbox-filter ${noteSourceFilter === source ? 'inbox-filter--active' : ''}`}
+                    onClick={() =>
+                      setNoteSourceFilter(source as 'all' | InboxNoteSource)
+                    }
+                  >
+                    {source} ({noteSourceCounts[source] ?? 0})
+                  </button>
+                ))}
+              </div>
+
+              <div className="inbox-filters">
+                {noteStatusOptions.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className={`inbox-filter ${noteStatusFilter === status ? 'inbox-filter--active' : ''}`}
+                    onClick={() => setNoteStatusFilter(status)}
+                  >
+                    {status} ({noteStatusCounts[status] ?? 0})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {filteredNotes.length === 0 && (
+            <div className="inbox-state inbox-state--empty inbox-state--panel">
+              <span className="inbox-empty-icon">🔎</span>
+              <strong>No inbox notes match these filters</strong>
+              <span>Reset the search or pick a broader source/status filter.</span>
+            </div>
+          )}
+
+          {visibleNotes.map((note) => (
+            <InboxNoteCard key={note.path} note={note as InboxNote} />
+          ))}
+
+          {hasMoreNotes && (
+            <div className="inbox-list__footer">
+              <button
+                type="button"
+                className="btn btn--refresh"
+                onClick={() => setNoteLimit((current) => current + NOTE_PAGE_SIZE)}
+              >
+                Show {Math.min(NOTE_PAGE_SIZE, filteredNotes.length - visibleNotes.length)} more
+              </button>
+              <span className="inbox-list__meta">
+                Showing {visibleNotes.length} of {filteredNotes.length} notes
+              </span>
+            </div>
+          )}
         </section>
       )}
     </main>

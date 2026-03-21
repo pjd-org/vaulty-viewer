@@ -22,6 +22,7 @@ function KanbanRoute() {
   const [filterTag, setFilterTag] = useState("");
   const [filterProject, setFilterProject] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
+  const [expandCompletedColumn, setExpandCompletedColumn] = useState(false);
   const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
 
@@ -230,6 +231,15 @@ function KanbanRoute() {
 
       <section className="kanban">
         {columns.map((col) => (
+          (() => {
+            const isCompletedColumn = col.key === "completed";
+            const totalItems = col.items.length;
+            const visibleItems =
+              isCompletedColumn && !expandCompletedColumn
+                ? col.items.slice(0, 5)
+                : col.items;
+
+            return (
           <div
             key={col.key}
             className={`kanban__column ${draggingTaskId ? "kanban__column--droppable" : ""}`}
@@ -240,11 +250,11 @@ function KanbanRoute() {
             <header className="kanban__column-header">
               <div>
                 <p className="muted">{col.label}</p>
-                <h3>{col.items.length} task{col.items.length === 1 ? "" : "s"}</h3>
+                <h3>{totalItems} task{totalItems === 1 ? "" : "s"}</h3>
               </div>
               <span className="pill">{col.key}</span>
             </header>
-            {col.items.length === 0 ? (
+            {totalItems === 0 ? (
               <div className="kanban__empty">
                 <div className="kanban__empty-icon">
                   {col.key === 'todo' ? '📝' : col.key === 'in-progress' ? '🚀' : col.key === 'blocked' ? '🚧' : '🎉'}
@@ -263,7 +273,7 @@ function KanbanRoute() {
               </div>
             ) : (
               <div className="kanban__cards">
-                {col.items.map((task) => (
+                {visibleItems.map((task) => (
                   <article
                     key={task.id}
                     className={`kanban-card ${
@@ -349,9 +359,22 @@ function KanbanRoute() {
                     </div>
                   </article>
                 ))}
+                {isCompletedColumn && totalItems > 5 ? (
+                  <button
+                    type="button"
+                    className="kanban__more"
+                    onClick={() => setExpandCompletedColumn((prev) => !prev)}
+                  >
+                    {expandCompletedColumn
+                      ? "Show fewer completed"
+                      : `Show ${totalItems - 5} more completed`}
+                  </button>
+                ) : null}
               </div>
             )}
           </div>
+            );
+          })()
         ))}
       </section>
 

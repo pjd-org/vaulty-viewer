@@ -12,6 +12,37 @@ interface NavbarProps {
  */
 export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const rawTensuraAppUrl =
+    (typeof window !== 'undefined' &&
+      typeof (
+        window as Window & {
+          VIEWER_CONFIG?: { tensuraUrl?: string; hueyChatUrl?: string };
+        }
+      ).VIEWER_CONFIG?.tensuraUrl === 'string' &&
+      (
+        window as Window & {
+          VIEWER_CONFIG?: { tensuraUrl?: string; hueyChatUrl?: string };
+        }
+      ).VIEWER_CONFIG?.tensuraUrl) ||
+    process.env.VIEWER_TENSURA_URL ||
+    (typeof window !== 'undefined' &&
+      typeof (
+        window as Window & {
+          VIEWER_CONFIG?: { tensuraUrl?: string; hueyChatUrl?: string };
+        }
+      ).VIEWER_CONFIG?.hueyChatUrl === 'string' &&
+      (
+        window as Window & {
+          VIEWER_CONFIG?: { tensuraUrl?: string; hueyChatUrl?: string };
+        }
+      ).VIEWER_CONFIG?.hueyChatUrl) ||
+    process.env.VIEWER_HUEY_CHAT_URL ||
+    '/tensura/opencode';
+  const tensuraAppUrl =
+    rawTensuraAppUrl === '/tensura'
+      ? '/tensura/opencode'
+      : rawTensuraAppUrl;
+  const hueyAppUrl = '/huey'
 
   const statusLabel =
     apiStatus === 'online'
@@ -72,6 +103,9 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         >
           Goals
         </Link>
+        <a href={hueyAppUrl} onClick={closeMenu} className="navbar__huey-link">
+          Huey
+        </a>
         <Link
           to="/cod-status"
           onClick={closeMenu}
@@ -90,6 +124,15 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         >
           Knowledge
         </Link>
+        <a
+          href={tensuraAppUrl}
+          onClick={closeMenu}
+          className="navbar__huey-link"
+          target={tensuraAppUrl.startsWith('http') ? '_blank' : undefined}
+          rel={tensuraAppUrl.startsWith('http') ? 'noreferrer noopener' : undefined}
+        >
+          OpenCode
+        </a>
       </div>
 
       <div className="navbar__status">

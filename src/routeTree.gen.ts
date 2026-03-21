@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './../app/routes/__root'
 import { Route as NoteImport } from './../app/routes/note'
 import { Route as LoginImport } from './../app/routes/login'
+import { Route as HueyImport } from './../app/routes/huey'
 import { Route as KnowledgeImport } from './../app/routes/knowledge'
 import { Route as KanbanImport } from './../app/routes/kanban'
 import { Route as InboxImport } from './../app/routes/inbox'
@@ -35,6 +36,12 @@ const NoteRoute = NoteImport.update({
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const HueyRoute = HueyImport.update({
+  id: '/huey',
+  path: '/huey',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -137,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InboxImport
       parentRoute: typeof rootRoute
     }
+    '/huey': {
+      id: '/huey'
+      path: '/huey'
+      fullPath: '/huey'
+      preLoaderRoute: typeof HueyImport
+      parentRoute: typeof rootRoute
+    }
     '/kanban': {
       id: '/kanban'
       path: '/kanban'
@@ -210,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/avatar': typeof AvatarRoute
   '/cod-status': typeof CodStatusRoute
   '/goals': typeof GoalsRoute
+  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -225,6 +240,7 @@ export interface FileRoutesByTo {
   '/avatar': typeof AvatarRoute
   '/cod-status': typeof CodStatusRoute
   '/goals': typeof GoalsRoute
+  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -241,6 +257,7 @@ export interface FileRoutesById {
   '/avatar': typeof AvatarRoute
   '/cod-status': typeof CodStatusRoute
   '/goals': typeof GoalsRoute
+  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -302,6 +319,7 @@ export interface RootRouteChildren {
   AvatarRoute: typeof AvatarRoute
   CodStatusRoute: typeof CodStatusRoute
   GoalsRoute: typeof GoalsRoute
+  HueyRoute: typeof HueyRoute
   InboxRoute: typeof InboxRoute
   KanbanRoute: typeof KanbanRoute
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
@@ -315,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvatarRoute: AvatarRoute,
   CodStatusRoute: CodStatusRoute,
   GoalsRoute: GoalsRoute,
+  HueyRoute: HueyRoute,
   InboxRoute: InboxRoute,
   KanbanRoute: KanbanRoute,
   KnowledgeRoute: KnowledgeRouteWithChildren,

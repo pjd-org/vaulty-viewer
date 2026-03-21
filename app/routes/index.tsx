@@ -139,7 +139,9 @@ function IndexRoute() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await apiFetch('/api/v1/notes');
+        const response = await apiFetch(
+          '/api/v1/notes?pattern=' + encodeURIComponent('notes/**/*.md')
+        );
         if (response.ok) {
           const result = await response.json();
           // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
