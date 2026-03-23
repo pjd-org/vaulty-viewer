@@ -90,6 +90,7 @@ function IndexRoute() {
   const [notesState, setNotesState] = useState<HomepageLoadState>("loading");
   const [tasksState, setTasksState] = useState<HomepageLoadState>("loading");
   const [activeTasks, setActiveTasks] = useState<TaskInfo[]>([]);
+  const [visibleCount, setVisibleCount] = useState(48);
 
   useEffect(() => { setQuery(q ?? ""); }, [q]);
   useEffect(() => { setActiveCollection(collection ?? "all"); }, [collection]);
@@ -188,6 +189,7 @@ function IndexRoute() {
   ];
 
   const filtered = useMemo(() => {
+    setVisibleCount(48);
     const needle = query.trim().toLowerCase();
     return items.filter(item => {
       if (activeCollection !== "all" && item.collection !== activeCollection) return false;
@@ -455,8 +457,9 @@ function IndexRoute() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((item, index) => {
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.slice(0, visibleCount).map((item, index) => {
               const taskInfo = item.path ? taskData[item.path] : null;
               const priority = taskInfo?.priority;
               const status = taskInfo?.status;
@@ -498,6 +501,18 @@ function IndexRoute() {
               );
             })}
           </div>
+          {visibleCount < filtered.length && (
+            <div className="mt-6 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibleCount(v => v + 48)}
+                className="px-6 py-2 font-manrope text-xs font-bold uppercase tracking-widest rounded-full border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+              >
+                Load more ({filtered.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+          </>
         )}
       </section>
     </main>
