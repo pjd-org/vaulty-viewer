@@ -1,12 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import CODStatusWidget from "../../src/components/CODStatusWidget";
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { apiFetch } from "../../src/utils/api";
 import {
   classifyHomepageFailure,
   formatHomepageMetric,
-  homepageApiBadgeText,
-  homepageEmptyMessage,
   mergeHomepageApiStatus,
   type HomepageLoadState,
 } from "../../src/lib/homepage-logic";
@@ -60,6 +57,28 @@ export const Route = createFileRoute('/')({
   component: IndexRoute,
 })
 
+
+/** Simulated bar heights for Intelligence Feed (12 bars, seeded by task/note totals) */
+function buildBars(seed: number): number[] {
+  const heights = [40, 65, 45, 85, 30, 55, 95, 40, 70, 50, 35, 60];
+  const offset = seed % heights.length;
+  return [...heights.slice(offset), ...heights.slice(0, offset)];
+}
+
+/** Small Material Symbol icon */
+function Icon({ name, className = "", style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>;
+}
+
+/** Activity item icon badge */
+function ActivityBadge({ color, icon }: { color: string; icon: string }) {
+  return (
+    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
+      <Icon name={icon} className="text-[18px]" />
+    </div>
+  );
+}
+
 function IndexRoute() {
   const { q, collection } = Route.useSearch();
   const [query, setQuery] = useState(q ?? "");
@@ -67,455 +86,420 @@ function IndexRoute() {
   const [apiNotes, setApiNotes] = useState<NoteItem[]>([]);
   const [taskStats, setTaskStats] = useState<TaskStats>({ total: 0, todo: 0, completed: 0, highPriority: 0 });
   const [goalsCount, setGoalsCount] = useState(0);
-  const [taskData, setTaskData] = useState<TaskData>({}); // Map of path -> task frontmatter
+  const [taskData, setTaskData] = useState<TaskData>({});
   const [notesState, setNotesState] = useState<HomepageLoadState>("loading");
   const [tasksState, setTasksState] = useState<HomepageLoadState>("loading");
-  const navigate = useNavigate();
+  const [activeTasks, setActiveTasks] = useState<TaskInfo[]>([]);
 
-  useEffect(() => {
-    setQuery(q ?? "");
-  }, [q]);
+  useEffect(() => { setQuery(q ?? ""); }, [q]);
+  useEffect(() => { setActiveCollection(collection ?? "all"); }, [collection]);
 
-  useEffect(() => {
-    setActiveCollection(collection ?? "all");
-  }, [collection]);
-
-  // Derive collection from path
   const deriveCollection = (path: string) => {
-    const parts = path.split("/");
-    if (parts.length > 1) {
-      const folder = parts[0].toLowerCase();
-      if (folder === "tasks") return "tasks";
-      if (folder === "goals") return "goals";
-      if (folder === "notes") return "notes";
-      if (folder === "projects") return "projects";
-      if (folder === "specs") return "specs";
-      if (folder === "knowledge") return "knowledge";
-      return folder;
-    }
-    return "notes";
+    const folder = path.split("/")[0]?.toLowerCase();
+    const known = ["tasks", "goals", "notes", "projects", "specs", "knowledge"];
+    return known.includes(folder) ? folder : folder || "notes";
   };
 
-  // Check if a path should be ignored (system files/folders)
   const shouldIgnorePath = (pathStr: string | undefined) => {
     if (!pathStr) return true;
-    
     const parts = pathStr.split("/");
-    const fileName = parts[parts.length - 1];
-    
-    // Ignore system folders
-    const ignoredFolders = [
-      "_system", "_trash", "_log", "_archive",
-      "templates", ".obsidian", ".vault", ".git",
-      "archive", ".vault-", "node_modules", ".cache",
-      "core", "interests", "dashboards", "logs"
-    ];
-    
-    if (parts.some(part => 
-      ignoredFolders.some(ignored => part.toLowerCase().startsWith(ignored))
-    )) {
-      return true;
-    }
-    
-    // Ignore config files
-    if (fileName.startsWith("config.") || fileName.includes(".config.")) {
-      return true;
-    }
-    
-    // Ignore hidden files
-    if (fileName.startsWith(".")) {
-      return true;
-    }
-    
-    // Ignore system prefixed files
-    if (fileName.startsWith("_")) {
-      return true;
-    }
-    
-    return false;
+    const ignored = ["_system", "_trash", "_log", "_archive", "templates", ".obsidian", ".vault", ".git", "archive", "node_modules", ".cache", "core", "interests", "dashboards", "logs"];
+    if (parts.some(p => ignored.some(i => p.toLowerCase().startsWith(i)))) return true;
+    const file = parts[parts.length - 1];
+    return file.startsWith("config.") || file.includes(".config.") || file.startsWith(".") || file.startsWith("_");
   };
 
-  // Fetch notes from API at runtime
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await apiFetch(
-          '/api/v1/notes?pattern=' + encodeURIComponent('notes/**/*.md')
-        );
-        if (response.ok) {
-          const result = await response.json();
-          // API returns { structuredContent: { notes: ["path1.md", "path2.md", ...] } }
-          const notePaths = result.structuredContent?.notes || result.notes || [];
-          if (notePaths.length > 0) {
-            const processedNotes = notePaths
-              .map((path: string | { path?: string }) => (typeof path === "string" ? path : (path.path || "")))
-              .filter((pathStr: string) => !shouldIgnorePath(pathStr))
-              .map((pathStr: string, idx: number) => {
-                const title = pathStr.split("/").pop()?.replace(".md", "") || "Untitled";
-                return {
-                  id: `api-${idx}`,
-                  title: formatLabel(title),
-                  excerpt: "",
-                  slug: `/note?p=${encodeURIComponent(pathStr.replace(".md", ""))}`,
-                  collection: deriveCollection(pathStr),
-                  path: pathStr,
-                };
-              });
-            setApiNotes(processedNotes);
-            // Count goals from notes
-            const goalNotes = processedNotes.filter((n: NoteItem) => n.collection === 'goals');
-            setGoalsCount(goalNotes.length);
-          }
+        const res = await apiFetch('/api/v1/notes?pattern=' + encodeURIComponent('notes/**/*.md'));
+        if (res.ok) {
+          const result = await res.json();
+          const paths: string[] = result.structuredContent?.notes || result.notes || [];
+          const notes = paths
+            .map(p => (typeof p === "string" ? p : (p as { path?: string }).path || ""))
+            .filter(p => !shouldIgnorePath(p))
+            .map((p, i) => ({
+              id: `api-${i}`,
+              title: formatLabel(p.split("/").pop()?.replace(".md", "") || "Untitled"),
+              excerpt: "",
+              slug: `/note?p=${encodeURIComponent(p.replace(".md", ""))}`,
+              collection: deriveCollection(p),
+              path: p,
+            }));
+          setApiNotes(notes);
+          setGoalsCount(notes.filter(n => n.collection === "goals").length);
           setNotesState("ready");
         } else {
-          setApiNotes([]);
-          setGoalsCount(0);
-          setNotesState(classifyHomepageFailure(response.status));
+          setNotesState(classifyHomepageFailure(res.status));
         }
-      } catch (err) {
-        console.error("[viewer] Failed to fetch notes from API:", err);
-        setApiNotes([]);
-        setGoalsCount(0);
+      } catch {
         setNotesState("offline");
       }
     };
 
     const fetchTasks = async () => {
       try {
-        const response = await apiFetch('/api/v1/tasks?status=all');
-        if (response.ok) {
-          const result = await response.json();
-          const tasks = result.structuredContent?.tasks || [];
-          const total = result.structuredContent?.total || tasks.length;
-          const todo = tasks.filter((t: TaskInfo) => t.status === 'todo').length;
-          const completed = tasks.filter((t: TaskInfo) => t.status === 'completed').length;
-          const highPriority = tasks.filter((t: TaskInfo) => (t.priority || 0) >= 9 && t.status === 'todo').length;
-          const recurring = tasks.filter(
-            (t: TaskInfo) => Array.isArray(t.tags) && t.tags.includes('recurring')
-          ).slice(0, 5);
-          setTaskStats({ total, todo, completed, highPriority, recurring });
-          
-          // Build task data map for card enhancement
-          const taskMap: TaskData = {};
-          tasks.forEach((task: TaskInfo) => {
-            if (task.path) {
-              taskMap[task.path] = task;
-            }
-          });
-          setTaskData(taskMap);
+        const res = await apiFetch('/api/v1/tasks?status=all');
+        if (res.ok) {
+          const result = await res.json();
+          const tasks: TaskInfo[] = result.structuredContent?.tasks || [];
+          const todo = tasks.filter(t => t.status === 'todo').length;
+          const completed = tasks.filter(t => t.status === 'completed').length;
+          const highPriority = tasks.filter(t => (t.priority || 0) >= 9 && t.status === 'todo').length;
+          const recurring = tasks.filter(t => Array.isArray(t.tags) && t.tags.includes('recurring')).slice(0, 5);
+          setTaskStats({ total: result.structuredContent?.total || tasks.length, todo, completed, highPriority, recurring });
+          const active = tasks.filter(t => t.status === 'todo' || t.status === 'in-progress').slice(0, 2);
+          setActiveTasks(active);
+          const map: TaskData = {};
+          tasks.forEach(t => { if (t.path) map[t.path] = t; });
+          setTaskData(map);
           setTasksState("ready");
         } else {
-          setTaskStats({ total: 0, todo: 0, completed: 0, highPriority: 0 });
-          setTaskData({});
-          setTasksState(classifyHomepageFailure(response.status));
+          setTasksState(classifyHomepageFailure(res.status));
         }
-      } catch (err) {
-        console.error("[viewer] Failed to fetch tasks from API:", err);
-        setTaskStats({ total: 0, todo: 0, completed: 0, highPriority: 0 });
-        setTaskData({});
+      } catch {
         setTasksState("offline");
       }
     };
-    
+
     fetchNotes();
     fetchTasks();
   }, []);
 
-  // Use API data
   const items = apiNotes;
   const loading = notesState === "loading" || tasksState === "loading";
   const apiStatus = mergeHomepageApiStatus([notesState, tasksState]);
+  const bars = buildBars(taskStats.total + apiNotes.length);
 
-  const counts = items.reduce<Record<string, number>>(
-    (acc, item) => {
-      acc[item.collection] = (acc[item.collection] || 0) + 1;
-      acc.all += 1;
-      return acc;
-    },
-    { all: 0 }
-  );
+  const counts = items.reduce<Record<string, number>>((acc, item) => {
+    acc[item.collection] = (acc[item.collection] || 0) + 1;
+    acc.all += 1;
+    return acc;
+  }, { all: 0 });
 
-  const collectionKeys = Object.keys(counts).filter((key) => key !== "all");
-  const ordered = PREFERRED_COLLECTIONS.filter((key) =>
-    collectionKeys.includes(key)
-  );
-  const extra = collectionKeys
-    .filter((key) => !PREFERRED_COLLECTIONS.includes(key))
-    .sort();
+  const collectionKeys = Object.keys(counts).filter(k => k !== "all");
+  const ordered = PREFERRED_COLLECTIONS.filter(k => collectionKeys.includes(k));
+  const extra = collectionKeys.filter(k => !PREFERRED_COLLECTIONS.includes(k)).sort();
   const collections = [
     { key: "all", label: "All" },
-    ...ordered.map((key) => ({ key, label: formatLabel(key) })),
-    ...extra.map((key) => ({ key, label: formatLabel(key) })),
+    ...ordered.map(k => ({ key: k, label: formatLabel(k) })),
+    ...extra.map(k => ({ key: k, label: formatLabel(k) })),
   ];
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return items.filter((item) => {
-      if (activeCollection !== "all" && item.collection !== activeCollection) {
-        return false;
-      }
-      if (!needle) {
-        return true;
-      }
-      return (
-        item.title.toLowerCase().includes(needle) ||
-        item.excerpt.toLowerCase().includes(needle) ||
-        item.slug.toLowerCase().includes(needle)
-      );
+    return items.filter(item => {
+      if (activeCollection !== "all" && item.collection !== activeCollection) return false;
+      if (!needle) return true;
+      return item.title.toLowerCase().includes(needle) || item.slug.toLowerCase().includes(needle);
     });
   }, [items, activeCollection, query]);
 
-  const tasksReady = tasksState === "ready";
   const notesReady = notesState === "ready";
   const activeTasksDisplay = formatHomepageMetric(taskStats.todo, tasksState);
   const highPriorityDisplay = formatHomepageMetric(taskStats.highPriority, tasksState);
-  const goalsDisplay = formatHomepageMetric(goalsCount, notesState);
-  const completedTasksDisplay = formatHomepageMetric(taskStats.completed, tasksState);
-  const notesDisplay = formatHomepageMetric(counts.all, notesState);
-  const collectionsDisplay = formatHomepageMetric(collectionKeys.length, notesState);
-  const taskLinkLabel = tasksReady
-    ? `View Tasks (${taskStats.todo} active${taskStats.highPriority ? `, ${taskStats.highPriority} high` : ""})`
-    : tasksState === "unauthorized"
-      ? "View Tasks (auth required)"
-      : loading
-        ? "View Tasks (loading…)"
-        : "View Tasks (unavailable)";
-  const goalsLinkLabel = notesReady
-    ? `Goals (${goalsCount})`
-    : notesState === "unauthorized"
-      ? "Goals (auth required)"
-      : loading
-        ? "Goals (loading…)"
-        : "Goals (unavailable)";
-  const emptyMessage = homepageEmptyMessage(apiStatus, loading);
+
+  // Activity feed: derive from recent notes
+  const recentActivity = items.slice(0, 4).map(n => ({
+    icon: n.collection === "tasks" ? "task_alt" : n.collection === "goals" ? "flag" : "description",
+    color: n.collection === "tasks" ? "bg-primary/10 text-primary" : n.collection === "goals" ? "bg-secondary/10 text-secondary" : "bg-surface-container-high text-on-surface-variant",
+    title: n.title,
+    meta: n.collection,
+    href: n.slug,
+  }));
+
+  const statusLabel = apiStatus === "online" ? "Operational" : apiStatus === "offline" ? "Offline" : "Loading";
+  const statusColor = apiStatus === "online" ? "text-secondary" : apiStatus === "offline" ? "text-error" : "text-on-surface-variant";
 
   return (
-    <main className="page">
-      <CODStatusWidget />
-      <header className="hero">
-        <div className="hero__content">
-          <p className="eyebrow">Vaulty Viewer</p>
-          <h1>Your vault, beautifully organized.</h1>
-          <p className="lede">
-            Browse notes, track tasks, and explore your knowledge graph — all in one unified interface.
+    <main className="px-6 pb-12 pt-6 max-w-[1400px] mx-auto">
+      {/* ── Hero ──────────────────────────────────────────────────── */}
+      <section className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <p className="text-[11px] font-manrope uppercase tracking-[0.15em] text-on-surface-variant mb-2">
+            Vaulty · Operational Command Center
+          </p>
+          <h1 className="font-space-grotesk text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface leading-tight max-w-2xl">
+            Your vault,{" "}
+            <span className="text-primary italic">fully operational.</span>
+          </h1>
+          <p className="font-manrope text-on-surface-variant mt-3 text-base max-w-xl">
+            Notes, tasks, and knowledge — unified in one command surface.
           </p>
         </div>
-        <div className="hero__panel">
-          <div className="stats">
-            <div className="stat" data-type="tasks">
-              <div className="stat__icon">📋</div>
-              <div className="stat__content">
-                <div className="stat__value">{activeTasksDisplay}</div>
-                <div className="stat__label">Active Tasks</div>
-              </div>
-            </div>
-            <div className="stat" data-type="priority">
-              <div className="stat__icon">🔥</div>
-              <div className="stat__content">
-                <div className="stat__value">{highPriorityDisplay}</div>
-                <div className="stat__label">High Priority</div>
-              </div>
-            </div>
-            <div className="stat" data-type="goals">
-              <div className="stat__icon">🎯</div>
-              <div className="stat__content">
-                <div className="stat__value">{goalsDisplay}</div>
-                <div className="stat__label">Goals</div>
-              </div>
-            </div>
+        <div className="flex items-center gap-6 bg-surface-container rounded-xl px-6 py-4 shrink-0">
+          <div className="flex flex-col">
+            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">Active Tasks</span>
+            <span className={`font-space-grotesk text-2xl font-bold ${loading ? "text-on-surface-variant" : "text-primary"}`}>
+              {activeTasksDisplay}
+            </span>
           </div>
-          {taskStats.recurring && taskStats.recurring.length > 0 && (
-            <div className="hero-recurring">
-              <div className="hero-recurring__header">
-                <span className="hero-recurring__title">🔁 Recurring tasks</span>
-                <span className="hero-recurring__subtitle">
-                  Drag to plan in COD or open to edit schedule
-                </span>
-              </div>
-              <div className="hero-recurring__list">
-                {taskStats.recurring.map((t) => (
-                  <a
-                    key={t.path || t.id}
-                    className="hero-recurring__item"
-                    href={`/note?p=${encodeURIComponent((t.path || '').replace(/\.md$/, ''))}`}
-                    title={t.title}
-                  >
-                    <span className="hero-recurring__name">{t.title || t.path}</span>
-                    {t.nextRun && (
-                      <span className="hero-recurring__meta">next: {new Date(t.nextRun).toLocaleDateString()}</span>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="stats-secondary">
-            <div className="stat-mini">
-              <span className="stat-mini__value">{completedTasksDisplay}</span>
-              <span className="stat-mini__label">completed</span>
-            </div>
-            <div className="stat-mini">
-              <span className="stat-mini__value">{notesDisplay}</span>
-              <span className="stat-mini__label">notes</span>
-            </div>
-            <div className="stat-mini">
-              <span className="stat-mini__value">{collectionsDisplay}</span>
-              <span className="stat-mini__label">collections</span>
-            </div>
+          <div className="w-px h-8 bg-outline-variant" />
+          <div className="flex flex-col">
+            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">High Priority</span>
+            <span className={`font-space-grotesk text-2xl font-bold ${loading ? "text-on-surface-variant" : "text-error"}`}>
+              {highPriorityDisplay}
+            </span>
           </div>
-          <div className="quick-links">
-            <Link
-              to="/"
-              search={{ q: undefined, collection: undefined }}
-              className="quick-link quick-link--primary"
-              title={
-                apiStatus === "online"
-                  ? "Powered by Tasker API"
-                  : apiStatus === "unauthorized"
-                    ? "Homepage API authentication failed"
-                    : apiStatus === "offline"
-                      ? "Homepage API unavailable"
-                      : "Loading homepage data"
-              }
-            >
-              <span className="quick-link__icon">📋</span>
-              <span className="quick-link__label">{taskLinkLabel}</span>
-              <span className={`api-badge api-badge--${apiStatus}`}>
-                {homepageApiBadgeText(apiStatus)}
-              </span>
-            </Link>
-            <Link to="/goals" className="quick-link" title="Goals via Tasker API">
-              <span className="quick-link__icon">🎯</span>
-              <span className="quick-link__label">{goalsLinkLabel}</span>
-            </Link>
-            <Link to="/avatar" className="quick-link" title="Avatar dashboard and vitals">
-              <span className="quick-link__icon">🧙</span>
-              <span className="quick-link__label">Avatar Dashboard</span>
-            </Link>
+          <div className="w-px h-8 bg-outline-variant" />
+          <div className="flex flex-col">
+            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">System</span>
+            <span className={`font-space-grotesk text-2xl font-bold ${statusColor}`}>{statusLabel}</span>
           </div>
-        </div>
-      </header>
-
-      <section className="toolbar">
-        <label className="search" htmlFor="vault-search">
-          <span>🔍</span>
-          <input
-            id="vault-search"
-            type="search"
-            placeholder="Search notes, tasks, or paths..."
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-        <div className="filters">
-          {collections.map((collection) => (
-            <button
-              key={collection.key}
-              type="button"
-              className="filter-button"
-              data-active={activeCollection === collection.key}
-              onClick={() => setActiveCollection(collection.key)}
-            >
-              {collection.label} ({notesReady ? counts[collection.key] || 0 : "—"})
-            </button>
-          ))}
         </div>
       </section>
 
-      {filtered.length === 0 ? (
-        <div className="empty">
-          {emptyMessage}
-        </div>
-      ) : (
-        <section className="grid">
-          {filtered.map((item, index) => {
-            // Get collection icon
-            const collectionIcons: Record<string, string> = {
-              tasks: '📋',
-              goals: '🎯',
-              notes: '📝',
-              projects: '🚀',
-              specs: '📐',
-              knowledge: '📚',
-              reports: '📊',
-              ideas: '💡',
-              ops: '⚙️',
-              reminders: '🔔',
-            };
-            const icon = collectionIcons[item.collection] || '📄';
-            
-            // Extract path for display (remove .md and show folder structure)
-            const pathParts = item.slug.replace('/note?p=', '').split('%2F');
-            const displayPath = pathParts.length > 1 
-              ? decodeURIComponent(pathParts.slice(0, -1).join(' / '))
-              : null;
-            
-            // Get task frontmatter data if available
-            const taskInfo = item.path ? taskData[item.path] : null;
-            const priority = taskInfo?.priority;
-            const status = taskInfo?.status;
-            const tags = taskInfo?.tags?.slice(0, 3) || [];
-            const estimatedTime = (taskInfo as Record<string, unknown>)?.estimatedTimeMin as number | undefined;
-            const goalId = (taskInfo as Record<string, unknown>)?.goalId as string | undefined;
-            
-            return (
-              <Link
-                key={item.id}
-                to={item.slug}
-                className="card"
-                data-collection={item.collection}
-                data-status={status}
-                data-priority={(priority || 0) >= 9 ? 'high' : (priority || 0) >= 7 ? 'medium' : 'normal'}
-                style={{ "--delay": `${Math.min(index, 20) * 0.03}s` } as React.CSSProperties}
-              >
-                <div className="card__header">
-                  <span className="card__icon">{icon}</span>
-                  {status && (
-                    <span className="card__status" data-status={status}>
-                      {status === 'completed' ? '✓' : status === 'todo' ? '○' : '◐'}
-                    </span>
-                  )}
-                  {priority && priority >= 9 && (
-                    <span className="card__priority" data-level="high">P{priority}</span>
-                  )}
-                  <span className="pill" data-collection={item.collection}>{item.collection}</span>
-                </div>
-                <h3 className="card__title">{item.title}</h3>
-                {item.excerpt && <p className="card__excerpt">{item.excerpt}</p>}
-                {tags.length > 0 && (
-                  <div className="card__tags">
-                    {tags.filter(t => !t.startsWith('goal:') && t !== 'task').slice(0, 3).map((tag, i) => (
-                      <span key={i} className="card__tag">#{tag}</span>
-                    ))}
-                  </div>
-                )}
-                <div className="card__meta-row">
-                  {estimatedTime && (
-                    <span className="card__time">
-                      <span className="card__time-icon">⏱</span>
-                      {estimatedTime >= 60 ? `${Math.round(estimatedTime/60)}h` : `${estimatedTime}m`}
-                    </span>
-                  )}
-                  {goalId && (
-                    <span className="card__goal">
-                      🎯 {formatLabel(goalId.replace(/-/g, ' '))}
-                    </span>
-                  )}
-                </div>
-                {displayPath && !taskInfo && (
-                  <div className="card__path">
-                    <span className="card__path-icon">📁</span>
-                    <span>{displayPath}</span>
-                  </div>
-                )}
-                <div className="card__footer">
-                  <span className="card__action">Open →</span>
-                </div>
+      {/* ── Bento Grid ────────────────────────────────────────────── */}
+      <div className="grid grid-cols-12 gap-5 mb-10">
+
+        {/* Intelligence Feed — 8 cols */}
+        <div className="col-span-12 lg:col-span-8 bg-surface-container rounded-xl p-6 transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault-lg">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h2 className="font-space-grotesk text-xl font-bold text-on-surface tracking-tight">Intelligence Feed</h2>
+              <p className="font-manrope text-[11px] uppercase tracking-widest text-on-surface-variant mt-1">
+                Vault Activity · {items.length} items indexed
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <Link to="/knowledge" className="px-3 py-1 bg-surface-container-high text-[10px] font-manrope rounded-full text-on-surface-variant border border-outline-variant/20 uppercase tracking-widest hover:bg-surface-container-highest transition-colors">
+                Explore
               </Link>
-            );
-          })}
-        </section>
-      )}
+            </div>
+          </div>
+          {/* Bar chart */}
+          <div className="h-48 flex items-end gap-1.5 px-1">
+            {bars.map((h, i) => (
+              <div
+                key={i}
+                className="flex-1 bg-primary/15 hover:bg-primary transition-colors duration-[var(--vault-duration-snappy)] rounded-t-sm cursor-pointer"
+                style={{ height: `${h}%` }}
+              />
+            ))}
+          </div>
+          {/* Stats row */}
+          <div className="grid grid-cols-4 mt-6 pt-6 border-t border-outline-variant/20 gap-4">
+            {[
+              { label: "Notes", value: formatHomepageMetric(counts.notes || 0, notesState) },
+              { label: "Tasks", value: formatHomepageMetric(counts.tasks || 0, notesState) },
+              { label: "Goals", value: formatHomepageMetric(goalsCount, notesState) },
+              { label: "Total", value: formatHomepageMetric(counts.all || 0, notesState) },
+            ].map(({ label, value }) => (
+              <div key={label} className="text-center">
+                <p className="font-manrope text-[10px] text-on-surface-variant uppercase tracking-widest">{label}</p>
+                <p className="font-space-grotesk text-xl font-bold text-on-surface mt-1">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Vault Status — 4 cols */}
+        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
+          <div className="absolute top-4 left-4">
+            <Icon name="verified_user" className="text-secondary text-2xl" />
+          </div>
+          <div className="relative w-40 h-40 flex items-center justify-center">
+            <div
+              className="absolute inset-0 rounded-full border-4 border-surface-container"
+              style={{ borderTopColor: "var(--vault-secondary)", animation: "spin 10s linear infinite" }}
+            />
+            <div className="text-center">
+              <Icon name="lock" className="text-secondary text-5xl" style={{ fontVariationSettings: "'FILL' 1" } as React.CSSProperties} />
+              <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant mt-2">
+                {apiStatus === "online" ? "Vault Secure" : apiStatus === "offline" ? "Vault Offline" : "Connecting…"}
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 text-center">
+            <h3 className="font-space-grotesk text-lg font-bold text-on-surface">
+              {apiStatus === "online" ? "All Systems Go" : "Connection Issue"}
+            </h3>
+            <p className="font-manrope text-sm text-on-surface-variant mt-1">
+              {tasksState === "ready" ? `${taskStats.total} tasks tracked` : "Checking status…"}
+            </p>
+            <Link
+              to="/cod-status"
+              className="mt-5 inline-flex items-center gap-1 px-5 py-1.5 rounded-full border border-secondary/30 text-secondary font-manrope text-xs font-bold uppercase tracking-widest hover:bg-secondary/10 transition-colors"
+            >
+              <Icon name="monitoring" className="text-sm" /> COD Status
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Activity — 4 cols */}
+        <div className="col-span-12 lg:col-span-4 bg-surface-container rounded-xl p-6 flex flex-col transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
+          <h2 className="font-space-grotesk text-xl font-bold text-on-surface mb-6 tracking-tight">Recent Activity</h2>
+          <div className="space-y-5 overflow-y-auto flex-1">
+            {recentActivity.length > 0 ? recentActivity.map((item, i) => (
+              <a key={i} href={item.href} className="flex gap-4 hover:opacity-80 transition-opacity">
+                <ActivityBadge color={item.color} icon={item.icon} />
+                <div className="min-w-0">
+                  <p className="font-manrope text-sm font-medium text-on-surface truncate">{item.title}</p>
+                  <p className="font-manrope text-[10px] text-on-surface-variant uppercase tracking-widest mt-0.5">{item.meta}</p>
+                </div>
+              </a>
+            )) : (
+              <div className="flex flex-col items-center justify-center h-full text-on-surface-variant py-8">
+                <Icon name="folder_open" className="text-3xl mb-2 opacity-40" />
+                <p className="font-manrope text-sm">{loading ? "Loading…" : "No recent items"}</p>
+              </div>
+            )}
+          </div>
+          <Link to="/knowledge" className="mt-6 font-manrope text-[11px] uppercase tracking-widest text-primary font-bold hover:opacity-80 transition-opacity">
+            Browse all notes →
+          </Link>
+        </div>
+
+        {/* Active Operations — 8 cols */}
+        <div className="col-span-12 lg:col-span-8 bg-surface-container rounded-xl p-6 transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-space-grotesk text-xl font-bold text-on-surface tracking-tight">Active Operations</h2>
+            <Link to="/kanban" className="font-manrope text-[11px] uppercase tracking-widest text-primary font-bold hover:opacity-80 transition-opacity">
+              View Board
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeTasks.length > 0 ? activeTasks.map((task, i) => {
+              const progress = task.status === "in-progress" ? 65 : 20;
+              return (
+                <a
+                  key={task.path || i}
+                  href={task.path ? `/note?p=${encodeURIComponent(task.path.replace(/\.md$/, ''))}` : "#"}
+                  className="p-5 bg-surface-container-high rounded-xl border border-outline-variant/10 hover:border-primary/40 transition-all cursor-pointer group block"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="p-2.5 bg-surface-container rounded-lg group-hover:bg-primary/10 transition-colors">
+                      <Icon name={i === 0 ? "terminal" : "psychology"} className="text-primary text-lg" />
+                    </div>
+                    <span className={`px-2 py-1 text-[10px] font-manrope font-bold uppercase rounded ${task.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"}`}>
+                      {task.status === "in-progress" ? "In Progress" : "Todo"}
+                    </span>
+                  </div>
+                  <h4 className="font-space-grotesk font-bold text-base text-on-surface">{task.title || "Untitled Task"}</h4>
+                  <div className="mt-4 w-full bg-surface-container h-1 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${progress}%` }} />
+                  </div>
+                </a>
+              );
+            }) : (
+              <div className="col-span-2 flex flex-col items-center justify-center py-10 text-on-surface-variant">
+                <Icon name="check_circle" className="text-4xl mb-3 opacity-40" />
+                <p className="font-manrope text-sm">{loading ? "Loading tasks…" : "No active tasks. Nice."}</p>
+              </div>
+            )}
+          </div>
+          {/* Quick-add */}
+          <div className="mt-5 flex items-center gap-3 bg-surface-container-high p-2 rounded-xl">
+            <input
+              className="flex-1 bg-transparent border-none text-sm font-manrope focus:ring-0 placeholder:text-on-surface-variant text-on-surface outline-none"
+              placeholder="Queue new operational task…"
+              type="text"
+            />
+            <Link
+              to="/kanban"
+              className="bg-gradient-to-r from-primary to-primary-container text-white p-2 rounded-lg hover:opacity-90 transition-opacity active:scale-95"
+            >
+              <Icon name="add" className="text-lg" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Notes Archive ──────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-space-grotesk text-lg font-bold text-on-surface tracking-tight">Note Archive</h2>
+          <span className="font-manrope text-[11px] uppercase tracking-widest text-on-surface-variant">
+            {notesReady ? `${counts.all} items` : "—"}
+          </span>
+        </div>
+
+        {/* Search + filters */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <label className="flex items-center gap-2 flex-1 bg-surface-container-high rounded-xl px-4 py-2.5">
+            <Icon name="search" className="text-on-surface-variant text-lg shrink-0" />
+            <input
+              id="vault-search"
+              type="search"
+              className="flex-1 bg-transparent border-none text-sm font-manrope focus:ring-0 placeholder:text-on-surface-variant text-on-surface outline-none"
+              placeholder="Search notes, tasks, or paths…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {collections.map(col => (
+              <button
+                key={col.key}
+                type="button"
+                onClick={() => setActiveCollection(col.key)}
+                className={`px-3 py-1.5 font-manrope text-xs rounded-full border transition-colors ${
+                  activeCollection === col.key
+                    ? "bg-primary text-white border-transparent"
+                    : "bg-transparent text-on-surface-variant border-outline-variant/30 hover:bg-surface-container-high"
+                }`}
+              >
+                {col.label} ({notesReady ? counts[col.key] || 0 : "—"})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid */}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
+            <Icon name="search_off" className="text-4xl mb-3 opacity-40" />
+            <p className="font-manrope text-sm">
+              {loading ? "Loading vault…" : query ? "No matches found." : "No items in this collection."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((item, index) => {
+              const taskInfo = item.path ? taskData[item.path] : null;
+              const priority = taskInfo?.priority;
+              const status = taskInfo?.status;
+              const iconMap: Record<string, string> = {
+                tasks: "task_alt", goals: "flag", notes: "description",
+                projects: "rocket_launch", specs: "architecture",
+                knowledge: "local_library", reports: "bar_chart",
+              };
+              const icon = iconMap[item.collection] || "article";
+              return (
+                <Link
+                  key={item.id}
+                  to={item.slug}
+                  className="group block p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 hover:border-primary/30 hover:shadow-vault-sm transition-all duration-[var(--vault-duration-snappy)]"
+                  style={{ animationDelay: `${Math.min(index, 20) * 30}ms` } as React.CSSProperties}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Icon name={icon} className="text-primary text-base opacity-80" />
+                      <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">{item.collection}</span>
+                    </div>
+                    {(priority || 0) >= 9 && (
+                      <span className="font-manrope text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-error/10 text-error rounded">P{priority}</span>
+                    )}
+                  </div>
+                  <h3 className="font-space-grotesk font-semibold text-sm text-on-surface leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                    {item.title}
+                  </h3>
+                  {status && (
+                    <div className="mt-2 flex items-center gap-1">
+                      <Icon name={status === "completed" ? "check_circle" : status === "todo" ? "radio_button_unchecked" : "pending"} className="text-[14px] text-on-surface-variant" />
+                      <span className="font-manrope text-[10px] text-on-surface-variant capitalize">{status}</span>
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="font-manrope text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">Open →</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
