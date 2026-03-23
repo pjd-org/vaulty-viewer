@@ -10,43 +10,69 @@ interface KnowledgeNoteCardProps {
   status?: string;
 }
 
-const audienceBadgeClass: Record<string, string> = {
-  human: 'knowledge-badge knowledge-badge--human',
-  agent: 'knowledge-badge knowledge-badge--agent',
-  bubble: 'knowledge-badge knowledge-badge--bubble',
+const audienceColor: Record<string, string> = {
+  human: 'bg-primary/10 text-primary',
+  agent: 'bg-secondary/10 text-secondary',
+  bubble: 'bg-tertiary/10 text-tertiary',
 };
 
-const maturityBadgeClass: Record<string, string> = {
-  draft: 'knowledge-badge knowledge-badge--draft',
-  stable: 'knowledge-badge knowledge-badge--stable',
-  deprecated: 'knowledge-badge knowledge-badge--deprecated',
+const maturityColor: Record<string, string> = {
+  draft: 'bg-surface-container-high text-on-surface-variant',
+  stable: 'bg-secondary/10 text-secondary',
+  deprecated: 'bg-error/10 text-error',
 };
 
 export function KnowledgeNoteCard({ path, title, audience, domain, tags, status }: KnowledgeNoteCardProps) {
   return (
-    <div className="card knowledge-note-card">
-      <div className="knowledge-note-card__header">
-        <Link to="/note" search={{ p: path }} className="knowledge-note-card__title">
-          {title}
-        </Link>
-        <div className="knowledge-note-card__badges">
-          {audience && audienceBadgeClass[audience] && (
-            <span className={audienceBadgeClass[audience]}>{audience}</span>
-          )}
-          {status && maturityBadgeClass[status] && (
-            <span className={maturityBadgeClass[status]}>{status}</span>
-          )}
-        </div>
+    <Link
+      to="/note"
+      search={{ p: path }}
+      className="group block p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 hover:border-primary/30 hover:shadow-vault-sm transition-all duration-[var(--vault-duration-snappy)]"
+    >
+      {/* Badges row */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-3">
+        {audience && audienceColor[audience] && (
+          <span className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${audienceColor[audience]}`}>
+            {audience}
+          </span>
+        )}
+        {status && maturityColor[status] && (
+          <span className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${maturityColor[status]}`}>
+            {status}
+          </span>
+        )}
       </div>
+
+      {/* Title */}
+      <h3 className="font-space-grotesk font-semibold text-sm text-on-surface leading-snug group-hover:text-primary transition-colors line-clamp-2">
+        {title}
+      </h3>
+
+      {/* Domain + tags */}
       {(domain || (tags && tags.length > 0)) && (
-        <div className="knowledge-note-card__meta">
-          {domain && <span className="tag knowledge-note-card__domain">{domain}</span>}
-          {tags && tags.map((tag) => (
-            <span key={tag} className="tag">{tag}</span>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {domain && (
+            <span className="font-manrope text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded">
+              {domain}
+            </span>
+          )}
+          {tags && tags.slice(0, 3).map((tag) => (
+            <span key={tag} className="font-manrope text-[10px] px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
+              #{tag}
+            </span>
           ))}
+          {tags && tags.length > 3 && (
+            <span className="font-manrope text-[10px] text-on-surface-variant">+{tags.length - 3}</span>
+          )}
         </div>
       )}
-    </div>
+
+      <div className="mt-3">
+        <span className="font-manrope text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+          Open →
+        </span>
+      </div>
+    </Link>
   );
 }
 

@@ -13,10 +13,10 @@
 import { Route as rootRoute } from './../app/routes/__root'
 import { Route as NoteImport } from './../app/routes/note'
 import { Route as LoginImport } from './../app/routes/login'
-import { Route as HueyImport } from './../app/routes/huey'
 import { Route as KnowledgeImport } from './../app/routes/knowledge'
 import { Route as KanbanImport } from './../app/routes/kanban'
 import { Route as InboxImport } from './../app/routes/inbox'
+import { Route as HueyImport } from './../app/routes/huey'
 import { Route as GoalsImport } from './../app/routes/goals'
 import { Route as CodStatusImport } from './../app/routes/cod-status'
 import { Route as AvatarImport } from './../app/routes/avatar'
@@ -39,12 +39,6 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const HueyRoute = HueyImport.update({
-  id: '/huey',
-  path: '/huey',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const KnowledgeRoute = KnowledgeImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -60,6 +54,12 @@ const KanbanRoute = KanbanImport.update({
 const InboxRoute = InboxImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const HueyRoute = HueyImport.update({
+  id: '/huey',
+  path: '/huey',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -137,18 +137,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoalsImport
       parentRoute: typeof rootRoute
     }
-    '/inbox': {
-      id: '/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxImport
-      parentRoute: typeof rootRoute
-    }
     '/huey': {
       id: '/huey'
       path: '/huey'
       fullPath: '/huey'
       preLoaderRoute: typeof HueyImport
+      parentRoute: typeof rootRoute
+    }
+    '/inbox': {
+      id: '/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof InboxImport
       parentRoute: typeof rootRoute
     }
     '/kanban': {
@@ -275,6 +275,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/cod-status'
     | '/goals'
+    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -289,6 +290,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/cod-status'
     | '/goals'
+    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -303,6 +305,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/cod-status'
     | '/goals'
+    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -356,6 +359,7 @@ export const routeTree = rootRoute
         "/avatar",
         "/cod-status",
         "/goals",
+        "/huey",
         "/inbox",
         "/kanban",
         "/knowledge",
@@ -375,6 +379,9 @@ export const routeTree = rootRoute
     },
     "/goals": {
       "filePath": "goals.tsx"
+    },
+    "/huey": {
+      "filePath": "huey.tsx"
     },
     "/inbox": {
       "filePath": "inbox.tsx"
