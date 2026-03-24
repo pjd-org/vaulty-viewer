@@ -88,23 +88,41 @@ const statusColors: Record<string, string> = {
 };
 
 const StatusBadge = ({ status }: StatusBadgeProps) => (
-  <span className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusColors[status] ?? 'bg-surface-container-high text-on-surface-variant'}`}>
+  <span
+    className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusColors[status] ?? 'bg-surface-container-high text-on-surface-variant'}`}
+  >
     {status}
   </span>
 );
 
 const PriorityBadge = ({ priority }: PriorityBadgeProps) => {
-  const cls = priority >= 7 ? 'bg-error/10 text-error' : priority >= 4 ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-variant';
-  return <span className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${cls}`}>P{priority}</span>;
+  const cls =
+    priority >= 7
+      ? 'bg-error/10 text-error'
+      : priority >= 4
+        ? 'bg-primary/10 text-primary'
+        : 'bg-surface-container-high text-on-surface-variant';
+  return (
+    <span
+      className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${cls}`}
+    >
+      P{priority}
+    </span>
+  );
 };
 
 const variantClass: Record<string, string> = {
   primary: 'bg-primary text-white hover:opacity-90',
   danger: 'bg-error/10 text-error hover:bg-error/20 border border-error/20',
-  accent: 'bg-secondary/10 text-secondary hover:bg-secondary/20 border border-secondary/20',
+  accent:
+    'bg-secondary/10 text-secondary hover:bg-secondary/20 border border-secondary/20',
   success: 'bg-secondary/10 text-secondary',
-  default: 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/20',
+  default:
+    'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/20',
 };
+
+const panelClass =
+  'rounded-2xl border border-outline-variant/10 bg-surface-container/80 shadow-sm backdrop-blur';
 
 const ActionButton = ({
   icon,
@@ -146,8 +164,12 @@ function NoteRoute() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
   const [pendingPromotionToken, setPendingPromotionToken] = useState('');
-  const [pendingPromotionExpiry, setPendingPromotionExpiry] = useState<string | null>(null);
-  const [lifecycleBusy, setLifecycleBusy] = useState<'promote' | 'reject' | 'complete' | null>(null);
+  const [pendingPromotionExpiry, setPendingPromotionExpiry] = useState<
+    string | null
+  >(null);
+  const [lifecycleBusy, setLifecycleBusy] = useState<
+    'promote' | 'reject' | 'complete' | null
+  >(null);
   const [lifecycleMessage, setLifecycleMessage] = useState<string | null>(null);
   const [lifecycleError, setLifecycleError] = useState(false);
 
@@ -161,7 +183,9 @@ function NoteRoute() {
     const timer = window.setTimeout(() => {
       setPendingPromotionToken('');
       setPendingPromotionExpiry(null);
-      setLifecycleMessage('Promote confirmation expired. Click Promote again to re-arm it.');
+      setLifecycleMessage(
+        'Promote confirmation expired. Click Promote again to re-arm it.'
+      );
     }, delayMs);
 
     return () => window.clearTimeout(timer);
@@ -195,7 +219,10 @@ function NoteRoute() {
 
         const result = await response.json();
         const structured = result.structuredContent || {};
-        const frontmatter = (structured.frontmatter || {}) as Record<string, unknown>;
+        const frontmatter = (structured.frontmatter || {}) as Record<
+          string,
+          unknown
+        >;
         const resolvedPath = getStringValue(structured.path) || apiPath;
         const rawContent = getStringValue(structured.content) || '';
         const lifecycle = getLifecycleContext(resolvedPath, frontmatter);
@@ -205,7 +232,9 @@ function NoteRoute() {
           searchPath: stripMarkdownExtension(resolvedPath),
           title:
             getStringValue(frontmatter.title) ||
-            formatNoteLabel(stripMarkdownExtension(resolvedPath).split('/').pop() || ''),
+            formatNoteLabel(
+              stripMarkdownExtension(resolvedPath).split('/').pop() || ''
+            ),
           tags: Array.isArray(frontmatter.tags)
             ? frontmatter.tags.map((tag) => String(tag))
             : [],
@@ -505,8 +534,12 @@ function NoteRoute() {
 
   if (loading) {
     return (
-      <main className="px-6 pb-12 pt-6 max-w-[900px] mx-auto">
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6">
+      <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
+        <Link
+          to="/"
+          search={{ q: undefined, collection: undefined }}
+          className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6"
+        >
           ← Back to vault
         </Link>
         <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
@@ -519,17 +552,30 @@ function NoteRoute() {
 
   if (error) {
     return (
-      <main className="px-6 pb-12 pt-6 max-w-[900px] mx-auto">
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6">
+      <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
+        <Link
+          to="/"
+          search={{ q: undefined, collection: undefined }}
+          className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6"
+        >
           ← Back to vault
         </Link>
         <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
           <span className="text-4xl mb-4">📄</span>
-          <h2 className="font-space-grotesk text-xl font-bold text-on-surface mb-2">Note Not Found</h2>
-          <p className="font-manrope text-sm text-on-surface-variant mb-6">{error}</p>
+          <h2 className="font-space-grotesk text-xl font-bold text-on-surface mb-2">
+            Note Not Found
+          </h2>
+          <p className="font-manrope text-sm text-on-surface-variant mb-6">
+            {error}
+          </p>
           <div className="flex gap-3">
             <button
-              onClick={() => navigate({ to: '/', search: { q: undefined, collection: undefined } })}
+              onClick={() =>
+                navigate({
+                  to: '/',
+                  search: { q: undefined, collection: undefined },
+                })
+              }
               className="px-4 py-2 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity"
               type="button"
             >
@@ -554,7 +600,9 @@ function NoteRoute() {
   const notePriority = getNumberValue(note.frontmatter.priority);
   const noteCreated = getStringValue(note.frontmatter.created);
   const noteUpdated = getStringValue(note.frontmatter.updated);
-  const noteEstimatedTimeMin = getNumberValue(note.frontmatter.estimatedTimeMin);
+  const noteEstimatedTimeMin = getNumberValue(
+    note.frontmatter.estimatedTimeMin
+  );
   const noteEffortScore = getNumberValue(note.frontmatter.effortScore);
   const noteGoalId = getStringValue(note.frontmatter.goalId);
   const noteSpecPath = getStringValue(note.frontmatter.spec_path);
@@ -563,14 +611,22 @@ function NoteRoute() {
     note.frontmatter.type === 'goal' || note.collection === 'goals';
 
   return (
-    <main className="px-6 pb-12 pt-6 max-w-[1200px] mx-auto">
+    <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 font-manrope text-[11px] text-on-surface-variant mb-6">
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="hover:text-on-surface transition-colors">
+        <Link
+          to="/"
+          search={{ q: undefined, collection: undefined }}
+          className="hover:text-on-surface transition-colors"
+        >
           Vault
         </Link>
         <span className="opacity-40">/</span>
-        <Link to="/" search={{ collection: note.collection, q: '' }} className="hover:text-on-surface transition-colors">
+        <Link
+          to="/"
+          search={{ collection: note.collection, q: '' }}
+          className="hover:text-on-surface transition-colors"
+        >
           {formatNoteLabel(note.collection)}
         </Link>
         <span className="opacity-40">/</span>
@@ -604,10 +660,16 @@ function NoteRoute() {
         <div className="flex items-center gap-4 flex-wrap font-manrope text-[11px] text-on-surface-variant">
           {noteCreated && <span>Created {formatDate(noteCreated)}</span>}
           {noteUpdated && <span>Updated {formatDate(noteUpdated)}</span>}
-          {noteEstimatedTimeMin !== null && <span>~{noteEstimatedTimeMin} min</span>}
+          {noteEstimatedTimeMin !== null && (
+            <span>~{noteEstimatedTimeMin} min</span>
+          )}
           {noteEffortScore !== null && <span>Effort {noteEffortScore}/10</span>}
           {noteGoalId && (
-            <Link to="/note" search={{ p: noteGoalId }} className="text-primary hover:opacity-80 transition-opacity">
+            <Link
+              to="/note"
+              search={{ p: noteGoalId }}
+              className="text-primary hover:opacity-80 transition-opacity"
+            >
               Goal {formatNoteLabel(noteGoalId)}
             </Link>
           )}
@@ -630,15 +692,16 @@ function NoteRoute() {
       </header>
 
       {/* Two-column layout */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] items-start">
         {/* Main content */}
-        <section className="flex-1 min-w-0">
+        <section className="min-w-0 space-y-6">
           {/* Task progress card */}
           {note.lifecycle.isTask && taskData && (
             <div className="bg-surface-container rounded-xl p-5 mb-6 border border-outline-variant/10">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-space-grotesk font-bold text-sm text-on-surface">Task Progress</h3>
+                <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
+                  Task Progress
+                </h3>
                 {taskData.metrics?.currentMilestone !== undefined && (
                   <span className="font-manrope text-[10px] uppercase tracking-widest text-primary font-bold">
                     {taskData.metrics.currentMilestone}% complete
@@ -648,26 +711,40 @@ function NoteRoute() {
               <div className="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden mb-4">
                 <div
                   className="bg-primary h-full rounded-full transition-all"
-                  style={{ width: `${taskData.metrics?.currentMilestone || 0}%` }}
+                  style={{
+                    width: `${taskData.metrics?.currentMilestone || 0}%`,
+                  }}
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 {taskData.metrics?.effortRemaining !== undefined && (
                   <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">{taskData.metrics.effortRemaining}</p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">Effort Left</p>
+                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
+                      {taskData.metrics.effortRemaining}
+                    </p>
+                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                      Effort Left
+                    </p>
                   </div>
                 )}
                 {taskData.metrics?.estimatedCompletionMin !== undefined && (
                   <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">{taskData.metrics.estimatedCompletionMin}m</p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">Est. Time</p>
+                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
+                      {taskData.metrics.estimatedCompletionMin}m
+                    </p>
+                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                      Est. Time
+                    </p>
                   </div>
                 )}
                 {taskData.metrics?.rewardPotential !== undefined && (
                   <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">{(taskData.metrics.rewardPotential * 100).toFixed(0)}%</p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">Reward</p>
+                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
+                      {(taskData.metrics.rewardPotential * 100).toFixed(0)}%
+                    </p>
+                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                      Reward
+                    </p>
                   </div>
                 )}
               </div>
@@ -681,15 +758,18 @@ function NoteRoute() {
         </section>
 
         {/* Sidebar */}
-        <aside className="lg:w-72 shrink-0 flex flex-col gap-4 lg:sticky lg:top-6">
-
+        <aside className="space-y-4 xl:sticky xl:top-6">
           {/* Actions */}
-          <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/10">
+          <div className={`${panelClass} p-4 sm:p-5`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">Actions</h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">work from note</span>
+              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
+                Actions
+              </h3>
+              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                reader tools
+              </span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-2">
               {note.lifecycle.canPromote && (
                 <ActionButton
                   icon={pendingPromotionToken ? '✓' : '↑'}
@@ -700,33 +780,67 @@ function NoteRoute() {
                 />
               )}
               {note.lifecycle.canReject && (
-                <ActionButton icon="✕" label="Reject to Queue" onClick={handleReject} variant="danger" disabled={lifecycleBusy !== null} />
+                <ActionButton
+                  icon="✕"
+                  label="Reject to Queue"
+                  onClick={handleReject}
+                  variant="danger"
+                  disabled={lifecycleBusy !== null}
+                />
               )}
               {note.lifecycle.canComplete && (
-                <ActionButton icon="✓" label="Complete & Archive" onClick={handleCompleteTask} variant="accent" disabled={lifecycleBusy !== null} />
+                <ActionButton
+                  icon="✓"
+                  label="Complete & Archive"
+                  onClick={handleCompleteTask}
+                  variant="accent"
+                  disabled={lifecycleBusy !== null}
+                />
               )}
-              <ActionButton icon="📋" label={copied ? 'Copied!' : 'Copy Path'} onClick={handleCopyPath} variant={copied ? 'success' : 'default'} />
+              <ActionButton
+                icon="📋"
+                label={copied ? 'Copied!' : 'Copy Path'}
+                onClick={handleCopyPath}
+                variant={copied ? 'success' : 'default'}
+              />
               <ActionButton icon="🔗" label="Share" onClick={handleShare} />
-              <ActionButton icon="🗂" label="Open in Obsidian" onClick={handleOpenInObsidian} variant="accent" />
+              <ActionButton
+                icon="🗂"
+                label="Open in Obsidian"
+                onClick={handleOpenInObsidian}
+                variant="accent"
+              />
               {noteSpecPath && (
                 <ActionButton
                   icon="📖"
                   label="Open Spec"
-                  onClick={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(noteSpecPath) } })}
+                  onClick={() =>
+                    navigate({
+                      to: '/note',
+                      search: { p: stripMarkdownExtension(noteSpecPath) },
+                    })
+                  }
                 />
               )}
             </div>
             {note.lifecycle.canReview && (
               <div className="mt-4 pt-4 border-t border-outline-variant/10">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-space-grotesk font-bold text-xs text-on-surface">Task Review</h4>
+                  <h4 className="font-space-grotesk font-bold text-xs text-on-surface">
+                    Task Review
+                  </h4>
                   <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                    {note.lifecycle.reviewStatus ? `current: ${note.lifecycle.reviewStatus}` : 'task workflow'}
+                    {note.lifecycle.reviewStatus
+                      ? `current: ${note.lifecycle.reviewStatus}`
+                      : 'task workflow'}
                   </span>
                 </div>
                 <div className="flex gap-3 mb-3 flex-wrap">
                   {['approve', 'needs_changes'].map((val) => (
-                    <label key={val} className="flex items-center gap-1.5 cursor-pointer font-manrope text-xs text-on-surface">
+                    <label
+                      key={val}
+                      className="flex items-center gap-1.5 cursor-pointer font-manrope text-xs text-on-surface"
+                    >
                       <input
                         type="radio"
                         name="review-decision"
@@ -746,21 +860,25 @@ function NoteRoute() {
                   value={reviewComment}
                   onChange={(event) => setReviewComment(event.target.value)}
                 />
-                  <button
-                    className="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
-                    onClick={handleReviewSubmit}
-                    disabled={reviewSubmitting || lifecycleBusy !== null}
-                    type="button"
-                  >
-                    {reviewSubmitting ? 'Submitting…' : 'Submit review'}
-                  </button>
+                <button
+                  className="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
+                  onClick={handleReviewSubmit}
+                  disabled={reviewSubmitting || lifecycleBusy !== null}
+                  type="button"
+                >
+                  {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+                </button>
                 {reviewMessage && (
-                  <p className="font-manrope text-xs text-on-surface-variant mt-2">{reviewMessage}</p>
+                  <p className="font-manrope text-xs text-on-surface-variant mt-2">
+                    {reviewMessage}
+                  </p>
                 )}
               </div>
             )}
             {lifecycleMessage && (
-              <p className={`font-manrope text-xs mt-3 ${lifecycleError ? 'text-error' : 'text-on-surface-variant'}`}>
+              <p
+                className={`font-manrope text-xs mt-3 ${lifecycleError ? 'text-error' : 'text-on-surface-variant'}`}
+              >
                 {lifecycleMessage}
               </p>
             )}
@@ -769,47 +887,70 @@ function NoteRoute() {
                 Expires at {pendingPromotionExpiry}.
               </p>
             )}
-            {note.lifecycle.isTask && !note.lifecycle.canComplete && noteStatus === 'completed' && (
-              <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
-                Completed tasks archive through the existing handler flow.
-              </p>
-            )}
-              {!note.lifecycle.isTask && note.lifecycle.source === 'canonical' && (
+            {note.lifecycle.isTask &&
+              !note.lifecycle.canComplete &&
+              noteStatus === 'completed' && (
+                <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
+                  Completed tasks archive through the existing handler flow.
+                </p>
+              )}
+            {!note.lifecycle.isTask &&
+              note.lifecycle.source === 'canonical' && (
                 <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
                   Archive actions for canonical notes are not yet supported.
                 </p>
               )}
-            </div>
+          </div>
 
           {/* Context */}
-          <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/10">
+          <div className={`${panelClass} p-4 sm:p-5`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">Context</h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">metadata</span>
+              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
+                Context
+              </h3>
+              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                metadata
+              </span>
             </div>
             <dl className="space-y-2">
               {[
                 ['Path', note.path],
                 note.lifecycle.runId ? ['Run', note.lifecycle.runId] : null,
-                note.lifecycle.targetPath ? ['Target', note.lifecycle.targetPath] : null,
-                note.lifecycle.reviewStatus ? ['Review', note.lifecycle.reviewStatus] : null,
-              ].filter((x): x is [string, string] => x !== null).map(([dt, dd]) => (
-                <div key={dt as string}>
-                  <dt className="font-manrope text-[9px] uppercase tracking-widest text-on-surface-variant">{dt as string}</dt>
-                  <dd className="font-manrope text-[11px] text-on-surface break-all">{dd as string}</dd>
-                </div>
-              ))}
+                note.lifecycle.targetPath
+                  ? ['Target', note.lifecycle.targetPath]
+                  : null,
+                note.lifecycle.reviewStatus
+                  ? ['Review', note.lifecycle.reviewStatus]
+                  : null,
+              ]
+                .filter((x): x is [string, string] => x !== null)
+                .map(([dt, dd]) => (
+                  <div key={dt as string}>
+                    <dt className="font-manrope text-[9px] uppercase tracking-widest text-on-surface-variant">
+                      {dt as string}
+                    </dt>
+                    <dd className="font-manrope text-[11px] text-on-surface break-all">
+                      {dd as string}
+                    </dd>
+                  </div>
+                ))}
             </dl>
           </div>
 
           {/* Related notes */}
-          <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/10">
+          <div className={`${panelClass} p-4 sm:p-5`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">Related Notes</h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">graph</span>
+              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
+                Related Notes
+              </h3>
+              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                graph
+              </span>
             </div>
             {relatedNotes.length === 0 ? (
-              <p className="font-manrope text-xs text-on-surface-variant">No related notes found yet.</p>
+              <p className="font-manrope text-xs text-on-surface-variant">
+                No related notes found yet.
+              </p>
             ) : (
               <div className="flex flex-col gap-2">
                 {relatedNotes.map((related) => (
@@ -821,7 +962,11 @@ function NoteRoute() {
                   >
                     <div className="min-w-0">
                       <p className="font-manrope text-xs font-medium text-on-surface truncate group-hover:text-primary transition-colors">
-                        {formatNoteLabel(stripMarkdownExtension(related.path).split('/').pop() || related.path)}
+                        {formatNoteLabel(
+                          stripMarkdownExtension(related.path)
+                            .split('/')
+                            .pop() || related.path
+                        )}
                       </p>
                       <p className="font-manrope text-[10px] text-on-surface-variant truncate">
                         {stripMarkdownExtension(related.path)}
@@ -849,12 +994,17 @@ function NoteRoute() {
             ← Back to Vault
           </Link>
           {note.collection === 'tasks' && (
-            <Link to="/goals" className="font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors">
+            <Link
+              to="/goals"
+              className="font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+            >
               View Goals →
             </Link>
           )}
         </div>
-        <span className="font-manrope text-[10px] text-on-surface-variant truncate max-w-xs">{note.path}</span>
+        <span className="font-manrope text-[10px] text-on-surface-variant truncate max-w-xs">
+          {note.path}
+        </span>
       </footer>
     </main>
   );

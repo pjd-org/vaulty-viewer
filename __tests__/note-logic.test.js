@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -8,16 +11,53 @@ import {
 } from '../src/lib/note-logic.ts';
 
 describe('note-logic', () => {
-  it('renders wikilinks as internal note hrefs and strips unsafe script tags', () => {
+  it('renders wikilinks and vault note links as internal note hrefs', () => {
     const html = renderNoteMarkdown(
-      '# Hello\n\n[[notes/tasks/viewer/demo-task|Open task]]\n\n<script>alert(1)</script>'
+      [
+        '# Hello',
+        '',
+        '[[notes/tasks/viewer/demo-task|Open task]]',
+        '[Legacy task link](/note/notes/tasks/viewer/demo-task)',
+        '[Vault note link](/notes/tasks/viewer/demo-task)',
+        '',
+        '<script>alert(1)</script>',
+      ].join('\n')
     );
 
     expect(html).toContain(
       `<a href="${toNoteHref('notes/tasks/viewer/demo-task')}" class="wikilink">Open task</a>`
     );
+    expect(html).toContain(
+      `<a href="${toNoteHref('notes/tasks/viewer/demo-task')}" class="wikilink">Legacy task link</a>`
+    );
+    expect(html).toContain(
+      `<a href="${toNoteHref('notes/tasks/viewer/demo-task')}" class="wikilink">Vault note link</a>`
+    );
     expect(html).not.toContain('<script>');
     expect(html).toContain('<h1>Hello</h1>');
+  });
+
+  it('keeps reader-safe markup for task, knowledge, and inbox/rejected note content', () => {
+    const taskHtml = renderNoteMarkdown(
+      '# Task note\n\n- [ ] Work item\n- [x] Done item\n\n[[notes/knowledge/reader-surface]]'
+    );
+    const knowledgeHtml = renderNoteMarkdown(
+      '# Knowledge note\n\n[Reader note](/note/notes/tasks/viewer/demo-task)\n\n```js\nconsole.log("ok")\n```'
+    );
+    const rejectedHtml = renderNoteMarkdown(
+      '# Rejected note\n\n[Back to queue](/inbox/rejected/run-1/demo-task)\n\n<script>alert(2)</script>'
+    );
+
+    expect(taskHtml).toContain('<li class="task-item">');
+    expect(taskHtml).toContain('class="wikilink"');
+    expect(knowledgeHtml).toContain(
+      'href="/note?p=notes%2Ftasks%2Fviewer%2Fdemo-task"'
+    );
+    expect(knowledgeHtml).toContain('<code class="language-js">');
+    expect(rejectedHtml).toContain(
+      'href="/note?p=inbox%2Frejected%2Frun-1%2Fdemo-task"'
+    );
+    expect(rejectedHtml).not.toContain('<script>');
   });
 
   it('normalizes api note paths with markdown extension', () => {
@@ -39,10 +79,13 @@ describe('note-logic', () => {
     expect(staged.canReject).toBe(true);
     expect(staged.isCanonicalTask).toBe(false);
 
-    const stagedWithoutRun = getLifecycleContext('inbox/extracted/run-1/demo.md', {
-      type: 'task',
-      _target_path: 'notes/tasks/viewer/demo.md',
-    });
+    const stagedWithoutRun = getLifecycleContext(
+      'inbox/extracted/run-1/demo.md',
+      {
+        type: 'task',
+        _target_path: 'notes/tasks/viewer/demo.md',
+      }
+    );
     expect(stagedWithoutRun.canPromote).toBe(false);
     expect(stagedWithoutRun.isStaged).toBe(false);
 
@@ -62,5 +105,21 @@ describe('note-logic', () => {
     expect(canonicalTask.canReview).toBe(true);
     expect(canonicalTask.canComplete).toBe(true);
     expect(canonicalTask.reviewStatus).toBe('needs_changes');
+  });
+
+  it('keeps the note route in a reader-first responsive layout with related notes', () => {
+    const cwd = process.cwd();
+    const viewerRoot = cwd.endsWith('/apps/viewer')
+      ? cwd
+      : resolve(cwd, 'apps/viewer');
+    const source = readFileSync(
+      resolve(viewerRoot, 'app/routes/note.tsx'),
+      'utf8'
+    );
+
+    expect(source).toContain('/api/v1/graph/related/${encodedPath}?limit=8');
+    expect(source).toContain('xl:grid-cols-[minmax(0,1fr)_19rem]');
+    expect(source).toContain('xl:sticky xl:top-6');
+    expect(source).toContain('reader tools');
   });
 });

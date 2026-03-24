@@ -141,12 +141,12 @@ function rewriteWikiLinks(markdown: string) {
     .replace(
       /\[\[([^\]|]+)\|([^\]]+)\]\]/g,
       (_match, target: string, label: string) =>
-        `[${label}](${INTERNAL_LINK_SCHEME}${target})`
+        `[${label}](${INTERNAL_LINK_SCHEME}${toNoteSearchPath(target)})`
     )
     .replace(/\[\[([^\]]+)\]\]/g, (_match, target: string) => {
       const normalized = toNoteSearchPath(target);
       const label = normalized.split('/').pop() || normalized;
-      return `[${label}](${INTERNAL_LINK_SCHEME}${target})`;
+      return `[${label}](${INTERNAL_LINK_SCHEME}${normalized})`;
     });
 }
 
@@ -161,8 +161,12 @@ function normalizeInternalHref(href: string) {
   if (href.startsWith('/note/')) {
     return toNoteSearchPath(href.slice('/note/'.length));
   }
-  if (href.startsWith('#') || href.startsWith('/')) return null;
+  if (href.startsWith('#')) return null;
+  if (href.startsWith('//')) return null;
   if (EXTERNAL_PROTOCOL.test(href)) return null;
+  if (href.startsWith('/')) {
+    return toNoteSearchPath(href);
+  }
   return toNoteSearchPath(href);
 }
 
@@ -172,16 +176,12 @@ function buildRenderer() {
     const internalHref = normalizeInternalHref(href);
     if (internalHref) {
       const resolvedHref = escapeHtml(toNoteHref(internalHref));
-      const resolvedTitle = title
-        ? ` title="${escapeHtml(title)}"`
-        : '';
+      const resolvedTitle = title ? ` title="${escapeHtml(title)}"` : '';
       return `<a href="${resolvedHref}" class="wikilink"${resolvedTitle}>${text}</a>`;
     }
 
     const safeHref = escapeHtml(href || '#');
-    const safeTitle = title
-      ? ` title="${escapeHtml(title)}"`
-      : '';
+    const safeTitle = title ? ` title="${escapeHtml(title)}"` : '';
     return `<a href="${safeHref}" target="_blank" rel="noreferrer noopener"${safeTitle}>${text}</a>`;
   };
   return renderer;
@@ -209,7 +209,5 @@ export function renderNoteMarkdown(markdown: string) {
     renderer: buildRenderer(),
   }) as string;
 
-  return applyTaskItemClasses(
-    sanitizeHtml(rawHtml, SANITIZE_OPTIONS).trim()
-  );
+  return applyTaskItemClasses(sanitizeHtml(rawHtml, SANITIZE_OPTIONS).trim());
 }
