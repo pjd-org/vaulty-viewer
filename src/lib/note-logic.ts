@@ -109,26 +109,28 @@ export function getLifecycleContext(
   frontmatter: Record<string, unknown>
 ): NoteLifecycle {
   const source = getNoteSource(notePath);
+  const runId = readStringValue(frontmatter._run_id);
   const isTask =
     frontmatter.type === 'task' ||
     isTaskPath(notePath) ||
     getNoteCollection(notePath) === 'tasks';
   const noteStatus = readStringValue(frontmatter.status);
+  const isStaged = (source === 'extracted' || source === 'rejected') && !!runId;
 
   return {
     source,
     isTask,
     isCanonicalTask: source === 'canonical' && isTask,
-    isStaged: source === 'extracted' || source === 'rejected',
-    canPromote: source === 'extracted' || source === 'rejected',
-    canReject: source === 'extracted',
+    isStaged,
+    canPromote: isStaged,
+    canReject: source === 'extracted' && !!runId,
     canComplete:
       source === 'canonical' &&
       isTask &&
       noteStatus !== 'completed' &&
       noteStatus !== 'archived',
     canReview: source === 'canonical' && isTask,
-    runId: readStringValue(frontmatter._run_id),
+    runId,
     targetPath: readStringValue(frontmatter._target_path),
     reviewStatus: readStringValue(frontmatter.review_status),
   };

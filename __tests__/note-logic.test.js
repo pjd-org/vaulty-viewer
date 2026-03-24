@@ -39,6 +39,13 @@ describe('note-logic', () => {
     expect(staged.canReject).toBe(true);
     expect(staged.isCanonicalTask).toBe(false);
 
+    const stagedWithoutRun = getLifecycleContext('inbox/extracted/run-1/demo.md', {
+      type: 'task',
+      _target_path: 'notes/tasks/viewer/demo.md',
+    });
+    expect(stagedWithoutRun.canPromote).toBe(false);
+    expect(stagedWithoutRun.isStaged).toBe(false);
+
     const rejected = getLifecycleContext('inbox/rejected/run-1/demo.md', {
       type: 'task',
       _run_id: 'run-1',

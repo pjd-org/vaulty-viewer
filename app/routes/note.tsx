@@ -152,6 +152,22 @@ function NoteRoute() {
   const [lifecycleError, setLifecycleError] = useState(false);
 
   useEffect(() => {
+    if (!pendingPromotionExpiry) return undefined;
+
+    const expiresAtMs = Date.parse(pendingPromotionExpiry);
+    if (!Number.isFinite(expiresAtMs)) return undefined;
+
+    const delayMs = Math.max(expiresAtMs - Date.now(), 0);
+    const timer = window.setTimeout(() => {
+      setPendingPromotionToken('');
+      setPendingPromotionExpiry(null);
+      setLifecycleMessage('Promote confirmation expired. Click Promote again to re-arm it.');
+    }, delayMs);
+
+    return () => window.clearTimeout(timer);
+  }, [pendingPromotionExpiry]);
+
+  useEffect(() => {
     const requestedPath = toNoteSearchPath(p);
 
     const fetchNote = async () => {
@@ -303,22 +319,19 @@ function NoteRoute() {
         throw new Error(errText || `HTTP ${res.status}`);
       }
 
-      setNote((current) =>
-        current
-          ? {
-              ...current,
-              frontmatter: {
-                ...current.frontmatter,
-                review_status: reviewDecision,
-                review_updated: new Date().toISOString(),
-              },
-              lifecycle: {
-                ...current.lifecycle,
-                reviewStatus: reviewDecision,
-              },
-            }
-          : current
-      );
+      setNote((current) => {
+        if (!current) return current;
+        const nextFrontmatter = {
+          ...current.frontmatter,
+          review_status: reviewDecision,
+          review_updated: new Date().toISOString(),
+        };
+        return {
+          ...current,
+          frontmatter: nextFrontmatter,
+          lifecycle: getLifecycleContext(current.path, nextFrontmatter),
+        };
+      });
       setReviewMessage('Review recorded via Tasker API.');
       setReviewComment('');
     } catch (err) {
@@ -330,19 +343,26 @@ function NoteRoute() {
 
   const handlePromote = async () => {
     if (!note) return;
+    if (!note.lifecycle.runId) {
+      setLifecycleError(true);
+      setLifecycleMessage('Missing run id for this staged note.');
+      return;
+    }
     setLifecycleBusy('promote');
     setLifecycleMessage(null);
     setLifecycleError(false);
 
     try {
-      const res = await apiFetch('/api/v1/inbox/item/commit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          path: note.path,
-          token: pendingPromotionToken || undefined,
-        }),
-      });
+      const res = await apiFetch(
+        `/api/v1/inbox/${encodeURIComponent(note.lifecycle.runId)}/commit`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: pendingPromotionToken || undefined,
+          }),
+        }
+      );
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
@@ -383,16 +403,22 @@ function NoteRoute() {
 
   const handleReject = async () => {
     if (!note) return;
+    if (!note.lifecycle.runId) {
+      setLifecycleError(true);
+      setLifecycleMessage('Missing run id for this staged note.');
+      return;
+    }
     setLifecycleBusy('reject');
     setLifecycleMessage(null);
     setLifecycleError(false);
 
     try {
-      const res = await apiFetch('/api/v1/inbox/item/reject', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: note.path }),
-      });
+      const res = await apiFetch(
+        `/api/v1/inbox/${encodeURIComponent(note.lifecycle.runId)}`,
+        {
+          method: 'DELETE',
+        }
+      );
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
@@ -437,19 +463,37 @@ function NoteRoute() {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
       }
 
-      setNote((current) =>
-        current
-          ? {
-              ...current,
-              frontmatter: {
-                ...current.frontmatter,
-                status: 'completed',
-              },
-            }
-          : current
-      );
+      const updatedPath =
+        getStringValue(body?.structuredContent?.path) ||
+        getStringValue(body?.path) ||
+        null;
+      setNote((current) => {
+        if (!current) return current;
+        const nextPath = updatedPath || current.path;
+        const nextFrontmatter = {
+          ...current.frontmatter,
+          status: 'completed',
+        };
+        return {
+          ...current,
+          frontmatter: nextFrontmatter,
+          path: nextPath,
+          searchPath: stripMarkdownExtension(nextPath),
+          lifecycle: getLifecycleContext(nextPath, nextFrontmatter),
+        };
+      });
+      if (updatedPath && updatedPath !== note.path) {
+        setLifecycleMessage(
+          'Task completed and archived. Opening the updated note location.'
+        );
+        navigate({
+          to: '/note',
+          search: { p: stripMarkdownExtension(updatedPath) },
+        });
+        return;
+      }
       setLifecycleMessage(
-        'Task marked completed. Handler-side archive rules will move it out of notes/tasks when the completion flow finishes.'
+        'Task completed. Handler-side archive rules will move it out of notes/tasks when the completion flow finishes.'
       );
     } catch (err) {
       setLifecycleError(true);
@@ -659,7 +703,7 @@ function NoteRoute() {
                 <ActionButton icon="✕" label="Reject to Queue" onClick={handleReject} variant="danger" disabled={lifecycleBusy !== null} />
               )}
               {note.lifecycle.canComplete && (
-                <ActionButton icon="✓" label="Complete Task" onClick={handleCompleteTask} variant="accent" disabled={lifecycleBusy !== null} />
+                <ActionButton icon="✓" label="Complete & Archive" onClick={handleCompleteTask} variant="accent" disabled={lifecycleBusy !== null} />
               )}
               <ActionButton icon="📋" label={copied ? 'Copied!' : 'Copy Path'} onClick={handleCopyPath} variant={copied ? 'success' : 'default'} />
               <ActionButton icon="🔗" label="Share" onClick={handleShare} />
@@ -672,6 +716,49 @@ function NoteRoute() {
                 />
               )}
             </div>
+            {note.lifecycle.canReview && (
+              <div className="mt-4 pt-4 border-t border-outline-variant/10">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-space-grotesk font-bold text-xs text-on-surface">Task Review</h4>
+                  <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
+                    {note.lifecycle.reviewStatus ? `current: ${note.lifecycle.reviewStatus}` : 'task workflow'}
+                  </span>
+                </div>
+                <div className="flex gap-3 mb-3 flex-wrap">
+                  {['approve', 'needs_changes'].map((val) => (
+                    <label key={val} className="flex items-center gap-1.5 cursor-pointer font-manrope text-xs text-on-surface">
+                      <input
+                        type="radio"
+                        name="review-decision"
+                        value={val}
+                        checked={reviewDecision === val}
+                        onChange={() => setReviewDecision(val)}
+                        className="accent-primary"
+                      />
+                      {val === 'approve' ? 'Approve' : 'Needs changes'}
+                    </label>
+                  ))}
+                </div>
+                <textarea
+                  className="w-full bg-surface-container-high text-on-surface font-manrope text-xs rounded-lg p-2.5 border border-outline-variant/20 focus:outline-none focus:border-primary/40 resize-none"
+                  placeholder="Add a short review comment"
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(event) => setReviewComment(event.target.value)}
+                />
+                  <button
+                    className="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
+                    onClick={handleReviewSubmit}
+                    disabled={reviewSubmitting || lifecycleBusy !== null}
+                    type="button"
+                  >
+                    {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+                  </button>
+                {reviewMessage && (
+                  <p className="font-manrope text-xs text-on-surface-variant mt-2">{reviewMessage}</p>
+                )}
+              </div>
+            )}
             {lifecycleMessage && (
               <p className={`font-manrope text-xs mt-3 ${lifecycleError ? 'text-error' : 'text-on-surface-variant'}`}>
                 {lifecycleMessage}
@@ -687,57 +774,12 @@ function NoteRoute() {
                 Completed tasks archive through the existing handler flow.
               </p>
             )}
-            {!note.lifecycle.isTask && note.lifecycle.source === 'canonical' && (
-              <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
-                Archive actions for canonical notes are not yet supported.
-              </p>
-            )}
-          </div>
-
-          {/* Review */}
-          {note.lifecycle.canReview && (
-            <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-space-grotesk font-bold text-sm text-on-surface">Review</h3>
-                <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                  {note.lifecycle.reviewStatus ? `current: ${note.lifecycle.reviewStatus}` : 'task workflow'}
-                </span>
-              </div>
-              <div className="flex gap-3 mb-3">
-                {['approve', 'needs_changes'].map((val) => (
-                  <label key={val} className="flex items-center gap-1.5 cursor-pointer font-manrope text-xs text-on-surface">
-                    <input
-                      type="radio"
-                      name="review-decision"
-                      value={val}
-                      checked={reviewDecision === val}
-                      onChange={() => setReviewDecision(val)}
-                      className="accent-primary"
-                    />
-                    {val === 'approve' ? 'Approve' : 'Needs changes'}
-                  </label>
-                ))}
-              </div>
-              <textarea
-                className="w-full bg-surface-container-high text-on-surface font-manrope text-xs rounded-lg p-2.5 border border-outline-variant/20 focus:outline-none focus:border-primary/40 resize-none"
-                placeholder="Add a short review comment"
-                rows={3}
-                value={reviewComment}
-                onChange={(event) => setReviewComment(event.target.value)}
-              />
-              <button
-                className="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
-                onClick={handleReviewSubmit}
-                disabled={reviewSubmitting}
-                type="button"
-              >
-                {reviewSubmitting ? 'Submitting…' : 'Submit review'}
-              </button>
-              {reviewMessage && (
-                <p className="font-manrope text-xs text-on-surface-variant mt-2">{reviewMessage}</p>
+              {!note.lifecycle.isTask && note.lifecycle.source === 'canonical' && (
+                <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
+                  Archive actions for canonical notes are not yet supported.
+                </p>
               )}
             </div>
-          )}
 
           {/* Context */}
           <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/10">
