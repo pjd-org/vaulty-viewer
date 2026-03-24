@@ -118,8 +118,11 @@ describe('note-logic', () => {
     );
 
     expect(source).toContain('/api/v1/graph/related/${encodedPath}?limit=8');
-    expect(source).toContain('xl:grid-cols-[minmax(0,1fr)_19rem]');
-    expect(source).toContain('xl:sticky xl:top-6');
+    expect(source).toContain(
+      'grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] items-start'
+    );
+    expect(source).toContain('className="space-y-4 xl:sticky xl:top-6"');
+    expect(source).toContain('className="flex gap-6"');
     expect(source).toContain('reader tools');
   });
 });
