@@ -1,520 +1,595 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from '@tanstack/react-router'
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { apiFetch } from "../../src/utils/api";
 import {
-  classifyHomepageFailure,
-  formatHomepageMetric,
+  normalizeNextAction,
+  normalizeSessionSummary,
+  formatSessionDuration,
+  isBlocked,
+  dueDays,
+  formatScore,
+  formatDuration,
+  elapsedMinutes,
+  type NextAction,
+  type ActiveSession,
+  type SessionSummary,
+} from "../../src/lib/focus-logic";
+import {
   mergeHomepageApiStatus,
-  type HomepageLoadState,
+  homepageApiBadgeText,
 } from "../../src/lib/homepage-logic";
 
-const PREFERRED_COLLECTIONS = ["notes", "tasks", "reports"];
+export const Route = createFileRoute("/")({
+  component: FocusRoute,
+});
 
-const formatLabel = (value: string) =>
-  value
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+// ---------------------------------------------------------------------------
+// Data hook
+// ---------------------------------------------------------------------------
 
-interface NoteItem {
-  id: string;
-  title: string;
-  excerpt: string;
-  slug: string;
-  collection: string;
-  path?: string;
+function useFocusData() {
+  const [nextActions, setNextActions] = useState<NextAction[]>([]);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
+  const [recentSessions, setRecentSessions] = useState<SessionSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [apiOnline, setApiOnline] = useState(true);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [actionsRes, sessionsRes, recentRes] = await Promise.all([
+        apiFetch("/api/v1/tasks/next-actions?max=10"),
+        apiFetch("/api/v1/sessions?status=active&limit=1"),
+        apiFetch("/api/v1/sessions?limit=3"),
+      ]);
+      if (actionsRes.ok) {
+        const body = await actionsRes.json();
+        const raw: Record<string, unknown>[] =
+          body.structuredContent?.tasks ?? body.tasks ?? [];
+        setNextActions(raw.map(normalizeNextAction));
+        setApiOnline(true);
+      } else {
+        setApiOnline(false);
+      }
+      if (sessionsRes.ok) {
+        const body = await sessionsRes.json();
+        const sessions: ActiveSession[] =
+          body.structuredContent?.sessions ?? body.sessions ?? [];
+        setActiveSession(
+          sessions.find((s) => s.status === "active") ?? null
+        );
+      }
+      if (recentRes.ok) {
+        const body = await recentRes.json();
+        const raw: unknown[] = body.structuredContent?.sessions ?? body.sessions ?? [];
+        setRecentSessions(raw.map(normalizeSessionSummary));
+      }
+    } catch {
+      setApiOnline(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { nextActions, activeSession, recentSessions, loading, apiOnline, reload };
 }
 
-interface TaskStats {
-  total: number;
-  todo: number;
-  completed: number;
-  highPriority: number;
-  recurring?: TaskInfo[];
-}
+// ---------------------------------------------------------------------------
+// Components
+// ---------------------------------------------------------------------------
 
-interface TaskInfo {
-  id?: string;
-  path?: string;
-  title?: string;
-  status?: string;
-  priority?: number;
-  tags?: string[];
-  nextRun?: string;
-}
-
-interface TaskData {
-  [path: string]: TaskInfo;
-}
-
-export const Route = createFileRoute('/')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    q: typeof search.q === 'string' && search.q.length > 0 ? search.q : undefined,
-    collection:
-      typeof search.collection === 'string' && search.collection.length > 0
-        ? search.collection
-        : undefined,
-  }),
-  component: IndexRoute,
-})
-
-
-/** Simulated bar heights for Intelligence Feed (12 bars, seeded by task/note totals) */
-function buildBars(seed: number): number[] {
-  const heights = [40, 65, 45, 85, 30, 55, 95, 40, 70, 50, 35, 60];
-  const offset = seed % heights.length;
-  return [...heights.slice(offset), ...heights.slice(0, offset)];
-}
-
-/** Small Material Symbol icon */
-function Icon({ name, className = "", style }: { name: string; className?: string; style?: React.CSSProperties }) {
-  return <span className={`material-symbols-outlined ${className}`} style={style}>{name}</span>;
-}
-
-/** Activity item icon badge */
-function ActivityBadge({ color, icon }: { color: string; icon: string }) {
+function StatusChip({ online }: { online: boolean }) {
+  const status = mergeHomepageApiStatus([online ? 'ready' : 'offline']);
+  const text = homepageApiBadgeText(status);
   return (
-    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
-      <Icon name={icon} className="text-[18px]" />
+    <span className={`status-chip status-chip--${status}`} aria-label={text}>
+      <span className="status-chip__dot" />
+      {text}
+    </span>
+  );
+}
+
+function CommandBar({ apiOnline }: { apiOnline: boolean }) {
+  return (
+    <nav className="cmd-bar" aria-label="Quick navigation">
+      <div className="cmd-bar__links">
+        <Link to="/kanban" className="cmd-bar__link">Board</Link>
+        <Link to="/huey" className="cmd-bar__link">Huey</Link>
+        <Link to="/cod-status" className="cmd-bar__link">COD</Link>
+        <Link to="/goals" className="cmd-bar__link">Goals</Link>
+        <Link to="/avatar" className="cmd-bar__link">Avatar</Link>
+      </div>
+      <StatusChip online={apiOnline} />
+    </nav>
+  );
+}
+
+function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
+  if (!sessions.length) return null;
+  return (
+    <section className="recent-sessions">
+      <p className="focus-section-label">Recent sessions</p>
+      <div className="recent-sessions__list">
+        {sessions.map((s) => (
+          <Link key={s.id} to={`/session/${s.id}`} className="recent-sessions__item">
+            <span className="recent-sessions__title">
+              {s.title ?? `Session ${s.id.slice(0, 6)}`}
+            </span>
+            <span className={`chip chip--${s.status}`}>{s.status}</span>
+            <span className="recent-sessions__duration">
+              {formatSessionDuration(s.startedAt, s.endedAt)}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GettingStartedCard() {
+  return (
+    <div className="focus-empty-card">
+      <p className="focus-empty-card__title">Nothing ready to work on.</p>
+      <p className="focus-empty-card__desc">Start by planning, picking tasks, or asking Huey what to do next.</p>
+      <div className="focus-empty-card__actions">
+        <Link to="/huey" className="pill pill--soft">Ask Huey →</Link>
+        <Link to="/kanban" className="pill pill--soft">Open Board →</Link>
+        <Link to="/goals" className="pill pill--ghost">View Goals →</Link>
+      </div>
     </div>
   );
 }
 
-function IndexRoute() {
-  const { q, collection } = Route.useSearch();
-  const [query, setQuery] = useState(q ?? "");
-  const [activeCollection, setActiveCollection] = useState(collection ?? "all");
-  const [apiNotes, setApiNotes] = useState<NoteItem[]>([]);
-  const [taskStats, setTaskStats] = useState<TaskStats>({ total: 0, todo: 0, completed: 0, highPriority: 0 });
-  const [goalsCount, setGoalsCount] = useState(0);
-  const [taskData, setTaskData] = useState<TaskData>({});
-  const [notesState, setNotesState] = useState<HomepageLoadState>("loading");
-  const [tasksState, setTasksState] = useState<HomepageLoadState>("loading");
-  const [activeTasks, setActiveTasks] = useState<TaskInfo[]>([]);
-  const [visibleCount, setVisibleCount] = useState(48);
 
-  useEffect(() => { setQuery(q ?? ""); }, [q]);
-  useEffect(() => { setActiveCollection(collection ?? "all"); }, [collection]);
-
-  const deriveCollection = (path: string) => {
-    const folder = path.split("/")[0]?.toLowerCase();
-    const known = ["tasks", "goals", "notes", "projects", "specs", "knowledge"];
-    return known.includes(folder) ? folder : folder || "notes";
-  };
-
-  const shouldIgnorePath = (pathStr: string | undefined) => {
-    if (!pathStr) return true;
-    const parts = pathStr.split("/");
-    const ignored = ["_system", "_trash", "_log", "_archive", "templates", ".obsidian", ".vault", ".git", "archive", "node_modules", ".cache", "core", "interests", "dashboards", "logs"];
-    if (parts.some(p => ignored.some(i => p.toLowerCase().startsWith(i)))) return true;
-    const file = parts[parts.length - 1];
-    return file.startsWith("config.") || file.includes(".config.") || file.startsWith(".") || file.startsWith("_");
-  };
-
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const res = await apiFetch('/api/v1/notes?pattern=' + encodeURIComponent('notes/**/*.md'));
-        if (res.ok) {
-          const result = await res.json();
-          const paths: string[] = result.structuredContent?.notes || result.notes || [];
-          const notes = paths
-            .map(p => (typeof p === "string" ? p : (p as { path?: string }).path || ""))
-            .filter(p => !shouldIgnorePath(p))
-            .map((p, i) => ({
-              id: `api-${i}`,
-              title: formatLabel(p.split("/").pop()?.replace(".md", "") || "Untitled"),
-              excerpt: "",
-              slug: `/note?p=${encodeURIComponent(p.replace(".md", ""))}`,
-              collection: deriveCollection(p),
-              path: p,
-            }));
-          setApiNotes(notes);
-          setGoalsCount(notes.filter(n => n.collection === "goals").length);
-          setNotesState("ready");
-        } else {
-          setNotesState(classifyHomepageFailure(res.status));
-        }
-      } catch {
-        setNotesState("offline");
-      }
-    };
-
-    const fetchTasks = async () => {
-      try {
-        const res = await apiFetch('/api/v1/tasks?status=all');
-        if (res.ok) {
-          const result = await res.json();
-          const tasks: TaskInfo[] = result.structuredContent?.tasks || [];
-          const todo = tasks.filter(t => t.status === 'todo').length;
-          const completed = tasks.filter(t => t.status === 'completed').length;
-          const highPriority = tasks.filter(t => (t.priority || 0) >= 9 && t.status === 'todo').length;
-          const recurring = tasks.filter(t => Array.isArray(t.tags) && t.tags.includes('recurring')).slice(0, 5);
-          setTaskStats({ total: result.structuredContent?.total || tasks.length, todo, completed, highPriority, recurring });
-          const active = tasks.filter(t => t.status === 'todo' || t.status === 'in-progress').slice(0, 2);
-          setActiveTasks(active);
-          const map: TaskData = {};
-          tasks.forEach(t => { if (t.path) map[t.path] = t; });
-          setTaskData(map);
-          setTasksState("ready");
-        } else {
-          setTasksState(classifyHomepageFailure(res.status));
-        }
-      } catch {
-        setTasksState("offline");
-      }
-    };
-
-    fetchNotes();
-    fetchTasks();
-  }, []);
-
-  const items = apiNotes;
-  const loading = notesState === "loading" || tasksState === "loading";
-  const apiStatus = mergeHomepageApiStatus([notesState, tasksState]);
-  const bars = buildBars(taskStats.total + apiNotes.length);
-
-  const counts = items.reduce<Record<string, number>>((acc, item) => {
-    acc[item.collection] = (acc[item.collection] || 0) + 1;
-    acc.all += 1;
-    return acc;
-  }, { all: 0 });
-
-  const collectionKeys = Object.keys(counts).filter(k => k !== "all");
-  const ordered = PREFERRED_COLLECTIONS.filter(k => collectionKeys.includes(k));
-  const extra = collectionKeys.filter(k => !PREFERRED_COLLECTIONS.includes(k)).sort();
-  const collections = [
-    { key: "all", label: "All" },
-    ...ordered.map(k => ({ key: k, label: formatLabel(k) })),
-    ...extra.map(k => ({ key: k, label: formatLabel(k) })),
-  ];
-
-  const filtered = useMemo(() => {
-    setVisibleCount(48);
-    const needle = query.trim().toLowerCase();
-    return items.filter(item => {
-      if (activeCollection !== "all" && item.collection !== activeCollection) return false;
-      if (!needle) return true;
-      return item.title.toLowerCase().includes(needle) || item.slug.toLowerCase().includes(needle);
-    });
-  }, [items, activeCollection, query]);
-
-  const notesReady = notesState === "ready";
-  const activeTasksDisplay = formatHomepageMetric(taskStats.todo, tasksState);
-  const highPriorityDisplay = formatHomepageMetric(taskStats.highPriority, tasksState);
-
-  // Activity feed: derive from recent notes
-  const recentActivity = items.slice(0, 4).map(n => ({
-    icon: n.collection === "tasks" ? "task_alt" : n.collection === "goals" ? "flag" : "description",
-    color: n.collection === "tasks" ? "bg-primary/10 text-primary" : n.collection === "goals" ? "bg-secondary/10 text-secondary" : "bg-surface-container-high text-on-surface-variant",
-    title: n.title,
-    meta: n.collection,
-    href: n.slug,
-  }));
-
-  const statusLabel = apiStatus === "online" ? "Operational" : apiStatus === "offline" ? "Offline" : "Loading";
-  const statusColor = apiStatus === "online" ? "text-secondary" : apiStatus === "offline" ? "text-error" : "text-on-surface-variant";
+  session,
+  onResume,
+  onEnd,
+}: {
+  session: ActiveSession;
+  onResume: () => void;
+  onEnd: () => void;
+}) {
+  const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
+  const tasksDone = session.tasks?.filter((t) => t.status === "done").length ?? 0;
+  const tasksTotal = session.tasks?.length ?? 0;
 
   return (
-    <main className="px-6 pb-12 pt-6 max-w-[1400px] mx-auto">
-      {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <p className="text-[11px] font-manrope uppercase tracking-[0.15em] text-on-surface-variant mb-2">
-            Vaulty · Operational Command Center
-          </p>
-          <h1 className="font-space-grotesk text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface leading-tight max-w-2xl">
-            Your vault,{" "}
-            <span className="text-primary italic">fully operational.</span>
-          </h1>
-          <p className="font-manrope text-on-surface-variant mt-3 text-base max-w-xl">
-            Notes, tasks, and knowledge — unified in one command surface.
-          </p>
-        </div>
-        <div className="flex items-center gap-6 bg-surface-container rounded-xl px-6 py-4 shrink-0">
-          <div className="flex flex-col">
-            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">Active Tasks</span>
-            <span className={`font-space-grotesk text-2xl font-bold ${loading ? "text-on-surface-variant" : "text-primary"}`}>
-              {activeTasksDisplay}
-            </span>
-          </div>
-          <div className="w-px h-8 bg-outline-variant" />
-          <div className="flex flex-col">
-            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">High Priority</span>
-            <span className={`font-space-grotesk text-2xl font-bold ${loading ? "text-on-surface-variant" : "text-error"}`}>
-              {highPriorityDisplay}
-            </span>
-          </div>
-          <div className="w-px h-8 bg-outline-variant" />
-          <div className="flex flex-col">
-            <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">System</span>
-            <span className={`font-space-grotesk text-2xl font-bold ${statusColor}`}>{statusLabel}</span>
-          </div>
-        </div>
-      </section>
+    <div className="session-banner">
+      <div className="session-banner__info">
+        <span className="session-banner__label">Session active</span>
+        {session.title && (
+          <span className="session-banner__title">{session.title}</span>
+        )}
+        <span className="session-banner__meta">
+          {elapsed !== null && <>{elapsed}m elapsed · </>}
+          {tasksTotal > 0 && (
+            <>
+              {tasksDone}/{tasksTotal} tasks
+            </>
+          )}
+        </span>
+      </div>
+      <div className="session-banner__actions">
+        <button className="session-banner__btn" onClick={onResume}>
+          Resume
+        </button>
+        <button className="session-banner__btn session-banner__btn--end" onClick={onEnd}>
+          End
+        </button>
+      </div>
+    </div>
+  );
+}
 
-      {/* ── Bento Grid ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-12 gap-5 mb-10">
+function TaskChips({ task }: { task: NextAction }) {
+  const days = dueDays(task);
+  const blocked = isBlocked(task);
+  return (
+    <div className="na-card__chips">
+      <span className="chip chip--score">◆ {formatScore(task.score)}</span>
+      {task.effortScore > 0 && (
+        <span className="chip chip--effort">e{task.effortScore}</span>
+      )}
+      {task.focusCost > 0 && (
+        <span className="chip chip--focus">f{task.focusCost}</span>
+      )}
+      {task.estimatedTimeMin > 0 && (
+        <span className="chip chip--time">{formatDuration(task.estimatedTimeMin)}</span>
+      )}
+      {days !== null && days <= 7 && (
+        <span className={`chip chip--due${days <= 2 ? " chip--urgent" : ""}`}>
+          {days <= 0 ? "due today" : `due ${days}d`}
+        </span>
+      )}
+      {blocked && <span className="chip chip--blocked">⚑ blocked</span>}
+      {task.tags
+        .filter((t) => t !== "task")
+        .slice(0, 2)
+        .map((t) => (
+          <span key={t} className="chip chip--tag">#{t}</span>
+        ))}
+    </div>
+  );
+}
 
-        {/* Intelligence Feed — 8 cols */}
-        <div className="col-span-12 lg:col-span-8 bg-surface-container rounded-xl p-6 transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault-lg">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <h2 className="font-space-grotesk text-xl font-bold text-on-surface tracking-tight">Intelligence Feed</h2>
-              <p className="font-manrope text-[11px] uppercase tracking-widest text-on-surface-variant mt-1">
-                Vault Activity · {items.length} items indexed
-              </p>
-            </div>
-            <div className="flex gap-2 items-center">
-              <Link to="/knowledge" className="px-3 py-1 bg-surface-container-high text-[10px] font-manrope rounded-full text-on-surface-variant border border-outline-variant/20 uppercase tracking-widest hover:bg-surface-container-highest transition-colors">
-                Explore
-              </Link>
-            </div>
-          </div>
-          {/* Bar chart */}
-          <div className="h-48 flex items-end gap-1.5 px-1">
-            {bars.map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 bg-primary/15 hover:bg-primary transition-colors duration-[var(--vault-duration-snappy)] rounded-t-sm cursor-pointer"
-                style={{ height: `${h}%` }}
-              />
-            ))}
-          </div>
-          {/* Stats row */}
-          <div className="grid grid-cols-4 mt-6 pt-6 border-t border-outline-variant/20 gap-4">
-            {[
-              { label: "Notes", value: formatHomepageMetric(counts.notes || 0, notesState) },
-              { label: "Tasks", value: formatHomepageMetric(counts.tasks || 0, notesState) },
-              { label: "Goals", value: formatHomepageMetric(goalsCount, notesState) },
-              { label: "Total", value: formatHomepageMetric(counts.all || 0, notesState) },
-            ].map(({ label, value }) => (
-              <div key={label} className="text-center">
-                <p className="font-manrope text-[10px] text-on-surface-variant uppercase tracking-widest">{label}</p>
-                <p className="font-space-grotesk text-xl font-bold text-on-surface mt-1">{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+function BestMoveCard({
+  task,
+  onStart,
+  onSkip,
+  onComplete,
+  mutating,
+}: {
+  task: NextAction;
+  onStart: (t: NextAction) => void;
+  onSkip: (t: NextAction) => void;
+  onComplete: (t: NextAction) => void;
+  mutating: boolean;
+}) {
+  return (
+    <article className={`na-card na-card--hero${isBlocked(task) ? " na-card--blocked" : ""}`}>
+      <div className="na-card__main">
+        <Link
+          to={`/note/${encodeURIComponent(task.path)}`}
+          className="na-card__title na-card__title--hero"
+        >
+          {task.title}
+        </Link>
+        {task.description && (
+          <p className="na-card__desc">{task.description}</p>
+        )}
+        <TaskChips task={task} />
+      </div>
+      <div className="na-card__actions">
+        <button
+          className="na-card__btn na-card__btn--start"
+          onClick={() => onStart(task)}
+          disabled={mutating}
+        >
+          Start
+        </button>
+        <button
+          className="na-card__btn na-card__btn--done"
+          onClick={() => onComplete(task)}
+          disabled={mutating}
+          title="Mark done"
+        >
+          ✓
+        </button>
+        <button
+          className="na-card__btn na-card__btn--skip"
+          onClick={() => onSkip(task)}
+          title="Skip"
+        >
+          ×
+        </button>
+      </div>
+    </article>
+  );
+}
 
-        {/* Vault Status — 4 cols */}
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
-          <div className="absolute top-4 left-4">
-            <Icon name="verified_user" className="text-secondary text-2xl" />
-          </div>
-          <div className="relative w-40 h-40 flex items-center justify-center">
-            <div
-              className="absolute inset-0 rounded-full border-4 border-surface-container"
-              style={{ borderTopColor: "var(--vault-secondary)", animation: "spin 10s linear infinite" }}
-            />
-            <div className="text-center">
-              <Icon name="lock" className="text-secondary text-5xl" style={{ fontVariationSettings: "'FILL' 1" } as React.CSSProperties} />
-              <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant mt-2">
-                {apiStatus === "online" ? "Vault Secure" : apiStatus === "offline" ? "Vault Offline" : "Connecting…"}
-              </p>
-            </div>
-          </div>
-          <div className="mt-6 text-center">
-            <h3 className="font-space-grotesk text-lg font-bold text-on-surface">
-              {apiStatus === "online" ? "All Systems Go" : "Connection Issue"}
-            </h3>
-            <p className="font-manrope text-sm text-on-surface-variant mt-1">
-              {tasksState === "ready" ? `${taskStats.total} tasks tracked` : "Checking status…"}
-            </p>
-            <Link
-              to="/cod-status"
-              className="mt-5 inline-flex items-center gap-1 px-5 py-1.5 rounded-full border border-secondary/30 text-secondary font-manrope text-xs font-bold uppercase tracking-widest hover:bg-secondary/10 transition-colors"
+function NextActionCard({
+  task,
+  onStart,
+  onSkip,
+  onComplete,
+  mutating,
+}: {
+  task: NextAction;
+  onStart: (t: NextAction) => void;
+  onSkip: (t: NextAction) => void;
+  onComplete: (t: NextAction) => void;
+  mutating: boolean;
+}) {
+  return (
+    <article className={`na-card${isBlocked(task) ? " na-card--blocked" : ""}`}>
+      <div className="na-card__main">
+        <Link
+          to={`/note/${encodeURIComponent(task.path)}`}
+          className="na-card__title"
+        >
+          {task.title}
+        </Link>
+        <TaskChips task={task} />
+      </div>
+      <div className="na-card__actions">
+        <button
+          className="na-card__btn na-card__btn--start"
+          onClick={() => onStart(task)}
+          disabled={mutating}
+        >
+          Start
+        </button>
+        <button
+          className="na-card__btn na-card__btn--done"
+          onClick={() => onComplete(task)}
+          disabled={mutating}
+          title="Mark done"
+        >
+          ✓
+        </button>
+        <button
+          className="na-card__btn na-card__btn--skip"
+          onClick={() => onSkip(task)}
+          title="Skip"
+        >
+          ×
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function StartSessionPanel({
+  tasks,
+  budgetMin,
+  onBudgetChange,
+  onStart,
+  onCancel,
+}: {
+  tasks: NextAction[];
+  budgetMin: number;
+  onBudgetChange: (min: number) => void;
+  onStart: (taskIds: string[]) => void;
+  onCancel: () => void;
+}) {
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(tasks.slice(0, 5).map((t) => t.id))
+  );
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  return (
+    <div className="session-plan">
+      <div className="session-plan__header">
+        <span className="session-plan__title">Plan a session</span>
+        <button className="session-plan__close" onClick={onCancel}>×</button>
+      </div>
+      <div className="session-plan__budget">
+        <label className="session-plan__label">Duration</label>
+        <div className="session-plan__budget-options">
+          {[30, 60, 90, 120].map((m) => (
+            <button
+              key={m}
+              className={`session-plan__budget-btn${budgetMin === m ? " session-plan__budget-btn--active" : ""}`}
+              onClick={() => onBudgetChange(m)}
             >
-              <Icon name="monitoring" className="text-sm" /> COD Status
-            </Link>
-          </div>
-        </div>
-
-        {/* Recent Activity — 4 cols */}
-        <div className="col-span-12 lg:col-span-4 bg-surface-container rounded-xl p-6 flex flex-col transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
-          <h2 className="font-space-grotesk text-xl font-bold text-on-surface mb-6 tracking-tight">Recent Activity</h2>
-          <div className="space-y-5 overflow-y-auto flex-1">
-            {recentActivity.length > 0 ? recentActivity.map((item, i) => (
-              <a key={i} href={item.href} className="flex gap-4 hover:opacity-80 transition-opacity">
-                <ActivityBadge color={item.color} icon={item.icon} />
-                <div className="min-w-0">
-                  <p className="font-manrope text-sm font-medium text-on-surface truncate">{item.title}</p>
-                  <p className="font-manrope text-[10px] text-on-surface-variant uppercase tracking-widest mt-0.5">{item.meta}</p>
-                </div>
-              </a>
-            )) : (
-              <div className="flex flex-col items-center justify-center h-full text-on-surface-variant py-8">
-                <Icon name="folder_open" className="text-3xl mb-2 opacity-40" />
-                <p className="font-manrope text-sm">{loading ? "Loading…" : "No recent items"}</p>
-              </div>
-            )}
-          </div>
-          <Link to="/knowledge" className="mt-6 font-manrope text-[11px] uppercase tracking-widest text-primary font-bold hover:opacity-80 transition-opacity">
-            Browse all notes →
-          </Link>
-        </div>
-
-        {/* Active Operations — 8 cols */}
-        <div className="col-span-12 lg:col-span-8 bg-surface-container rounded-xl p-6 transition-all duration-[var(--vault-duration-snappy)] hover:shadow-vault">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-space-grotesk text-xl font-bold text-on-surface tracking-tight">Active Operations</h2>
-            <Link to="/kanban" className="font-manrope text-[11px] uppercase tracking-widest text-primary font-bold hover:opacity-80 transition-opacity">
-              View Board
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeTasks.length > 0 ? activeTasks.map((task, i) => {
-              const progress = task.status === "in-progress" ? 65 : 20;
-              return (
-                <a
-                  key={task.path || i}
-                  href={task.path ? `/note?p=${encodeURIComponent(task.path.replace(/\.md$/, ''))}` : "#"}
-                  className="p-5 bg-surface-container-high rounded-xl border border-outline-variant/10 hover:border-primary/40 transition-all cursor-pointer group block"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2.5 bg-surface-container rounded-lg group-hover:bg-primary/10 transition-colors">
-                      <Icon name={i === 0 ? "terminal" : "psychology"} className="text-primary text-lg" />
-                    </div>
-                    <span className={`px-2 py-1 text-[10px] font-manrope font-bold uppercase rounded ${task.status === "in-progress" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"}`}>
-                      {task.status === "in-progress" ? "In Progress" : "Todo"}
-                    </span>
-                  </div>
-                  <h4 className="font-space-grotesk font-bold text-base text-on-surface">{task.title || "Untitled Task"}</h4>
-                  <div className="mt-4 w-full bg-surface-container h-1 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${progress}%` }} />
-                  </div>
-                </a>
-              );
-            }) : (
-              <div className="col-span-2 flex flex-col items-center justify-center py-10 text-on-surface-variant">
-                <Icon name="check_circle" className="text-4xl mb-3 opacity-40" />
-                <p className="font-manrope text-sm">{loading ? "Loading tasks…" : "No active tasks. Nice."}</p>
-              </div>
-            )}
-          </div>
-          {/* Quick-add */}
-          <div className="mt-5 flex items-center gap-3 bg-surface-container-high p-2 rounded-xl">
-            <input
-              className="flex-1 bg-transparent border-none text-sm font-manrope focus:ring-0 placeholder:text-on-surface-variant text-on-surface outline-none"
-              placeholder="Queue new operational task…"
-              type="text"
-            />
-            <Link
-              to="/kanban"
-              className="bg-gradient-to-r from-primary to-primary-container text-white p-2 rounded-lg hover:opacity-90 transition-opacity active:scale-95"
-            >
-              <Icon name="add" className="text-lg" />
-            </Link>
-          </div>
+              {formatDuration(m)}
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* ── Notes Archive ──────────────────────────────────────────── */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-space-grotesk text-lg font-bold text-on-surface tracking-tight">Note Archive</h2>
-          <span className="font-manrope text-[11px] uppercase tracking-widest text-on-surface-variant">
-            {notesReady ? `${counts.all} items` : "—"}
-          </span>
-        </div>
-
-        {/* Search + filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <label className="flex items-center gap-2 flex-1 bg-surface-container-high rounded-xl px-4 py-2.5">
-            <Icon name="search" className="text-on-surface-variant text-lg shrink-0" />
+      <div className="session-plan__tasks">
+        <label className="session-plan__label">Tasks</label>
+        {tasks.map((t) => (
+          <label key={t.id} className="session-plan__task-row">
             <input
-              id="vault-search"
-              type="search"
-              className="flex-1 bg-transparent border-none text-sm font-manrope focus:ring-0 placeholder:text-on-surface-variant text-on-surface outline-none"
-              placeholder="Search notes, tasks, or paths…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
+              type="checkbox"
+              checked={selected.has(t.id)}
+              onChange={() => toggle(t.id)}
             />
+            <span className="session-plan__task-title">{t.title}</span>
+            <span className="chip chip--score">◆ {formatScore(t.score)}</span>
           </label>
-          <div className="flex gap-2 flex-wrap">
-            {collections.map(col => (
-              <button
-                key={col.key}
-                type="button"
-                onClick={() => setActiveCollection(col.key)}
-                className={`px-3 py-1.5 font-manrope text-xs rounded-full border transition-colors ${
-                  activeCollection === col.key
-                    ? "bg-primary text-white border-transparent"
-                    : "bg-transparent text-on-surface-variant border-outline-variant/30 hover:bg-surface-container-high"
-                }`}
-              >
-                {col.label} ({notesReady ? counts[col.key] || 0 : "—"})
-              </button>
-            ))}
-          </div>
-        </div>
+        ))}
+      </div>
+      <div className="session-plan__footer">
+        <button
+          className="na-card__btn na-card__btn--start"
+          disabled={selected.size === 0}
+          onClick={() => onStart(Array.from(selected))}
+        >
+          Start Session ({selected.size} task{selected.size !== 1 ? "s" : ""})
+        </button>
+      </div>
+    </div>
+  );
+}
 
-        {/* Grid */}
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
-            <Icon name="search_off" className="text-4xl mb-3 opacity-40" />
-            <p className="font-manrope text-sm">
-              {loading ? "Loading vault…" : query ? "No matches found." : "No items in this collection."}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.slice(0, visibleCount).map((item, index) => {
-              const taskInfo = item.path ? taskData[item.path] : null;
-              const priority = taskInfo?.priority;
-              const status = taskInfo?.status;
-              const iconMap: Record<string, string> = {
-                tasks: "task_alt", goals: "flag", notes: "description",
-                projects: "rocket_launch", specs: "architecture",
-                knowledge: "local_library", reports: "bar_chart",
-              };
-              const icon = iconMap[item.collection] || "article";
-              return (
-                <Link
-                  key={item.id}
-                  to={item.slug}
-                  className="group block p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 hover:border-primary/30 hover:shadow-vault-sm transition-all duration-[var(--vault-duration-snappy)]"
-                  style={{ animationDelay: `${Math.min(index, 20) * 30}ms` } as React.CSSProperties}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Icon name={icon} className="text-primary text-base opacity-80" />
-                      <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">{item.collection}</span>
-                    </div>
-                    {(priority || 0) >= 9 && (
-                      <span className="font-manrope text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-error/10 text-error rounded">P{priority}</span>
-                    )}
-                  </div>
-                  <h3 className="font-space-grotesk font-semibold text-sm text-on-surface leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                    {item.title}
-                  </h3>
-                  {status && (
-                    <div className="mt-2 flex items-center gap-1">
-                      <Icon name={status === "completed" ? "check_circle" : status === "todo" ? "radio_button_unchecked" : "pending"} className="text-[14px] text-on-surface-variant" />
-                      <span className="font-manrope text-[10px] text-on-surface-variant capitalize">{status}</span>
-                    </div>
-                  )}
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-manrope text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">Open →</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          {visibleCount < filtered.length && (
-            <div className="mt-6 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setVisibleCount(v => v + 48)}
-                className="px-6 py-2 font-manrope text-xs font-bold uppercase tracking-widest rounded-full border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
-              >
-                Load more ({filtered.length - visibleCount} remaining)
-              </button>
-            </div>
+// ---------------------------------------------------------------------------
+// Route
+// ---------------------------------------------------------------------------
+
+function FocusRoute() {
+  const navigate = useNavigate();
+  const { nextActions, activeSession, recentSessions, loading, apiOnline, reload } = useFocusData();
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const [sessionPanelOpen, setSessionPanelOpen] = useState(false);
+  const [budgetMin, setBudgetMin] = useState(60);
+  const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const [endingSession, setEndingSession] = useState(false);
+
+  const visible = useMemo(
+    () => nextActions.filter((t) => !skipped.has(t.id)),
+    [nextActions, skipped]
+  );
+  const best = visible[0] ?? null;
+  const queue = visible.slice(1, 5);
+
+  const startTask = async (task: NextAction) => {
+    if (!task.path) return;
+    setMutatingId(task.id);
+    try {
+      await apiFetch(
+        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "in-progress" }),
+        }
+      );
+      reload();
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
+  const completeTask = async (task: NextAction) => {
+    if (!task.path) return;
+    setMutatingId(task.id);
+    try {
+      await apiFetch(
+        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "completed" }),
+        }
+      );
+      reload();
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
+  const skipTask = (task: NextAction) => {
+    setSkipped((prev) => new Set([...prev, task.id]));
+  };
+
+  const startSession = async (taskIds: string[]) => {
+    try {
+      const res = await apiFetch("/cod/session/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskIds, budgetMin }),
+      });
+      if (res.ok) {
+        const body = await res.json();
+        const id =
+          body.structuredContent?.id ?? body.id ?? (body as Record<string, unknown>).sessionId;
+        if (id) {
+          await navigate({ to: `/session/${id}` });
+          return;
+        }
+      }
+    } catch {
+      // fallback: reload focus view
+    }
+    setSessionPanelOpen(false);
+    reload();
+  };
+
+  const endSession = async () => {
+    if (!activeSession) return;
+    setEndingSession(true);
+    try {
+      await apiFetch("/cod/session/end", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: activeSession.id, status: "completed" }),
+      });
+      reload();
+    } finally {
+      setEndingSession(false);
+    }
+  };
+
+  return (
+    <main className="page focus-page">
+      {activeSession && !endingSession && (
+        <ActiveSessionBanner
+          session={activeSession}
+          onResume={() => navigate({ to: `/session/${activeSession.id}` })}
+          onEnd={endSession}
+        />
+      )}
+
+      <header className="focus-header">
+        <div>
+          <p className="eyebrow">Focus</p>
+          <h1>What now?</h1>
+        </div>
+      </header>
+
+      <CommandBar apiOnline={apiOnline} />
+
+      {loading ? (
+        <div className="focus-loading">Loading…</div>
+      ) : visible.length === 0 ? (
+        <GettingStartedCard />
+      ) : (
+        <>
+          <section className="focus-hero">
+            <p className="focus-section-label">Best move now</p>
+            {best && (
+              <BestMoveCard
+                task={best}
+                onStart={startTask}
+                onSkip={skipTask}
+                onComplete={completeTask}
+                mutating={mutatingId === best.id}
+              />
+            )}
+          </section>
+
+          {queue.length > 0 && (
+            <section className="focus-queue">
+              <p className="focus-section-label">Up next</p>
+              <div className="focus-queue__list">
+                {queue.map((t) => (
+                  <NextActionCard
+                    key={t.id}
+                    task={t}
+                    onStart={startTask}
+                    onSkip={skipTask}
+                    onComplete={completeTask}
+                    mutating={mutatingId === t.id}
+                  />
+                ))}
+              </div>
+            </section>
           )}
-          </>
-        )}
-      </section>
+
+          <section className="focus-session">
+            {!sessionPanelOpen ? (
+              <button
+                className="focus-session-trigger"
+                onClick={() => setSessionPanelOpen(true)}
+              >
+                + Plan a session
+              </button>
+            ) : (
+              <StartSessionPanel
+                tasks={visible.slice(0, 8)}
+                budgetMin={budgetMin}
+                onBudgetChange={setBudgetMin}
+                onStart={startSession}
+                onCancel={() => setSessionPanelOpen(false)}
+              />
+            )}
+          </section>
+
+          <RecentSessionsPanel sessions={recentSessions} />
+
+          <details className="focus-backlog">
+            <summary className="focus-backlog__summary">
+              All tasks ({nextActions.length})
+            </summary>
+            <div className="focus-backlog__list">
+              {nextActions.map((t) => (
+                <Link
+                  key={t.id}
+                  to={`/note/${encodeURIComponent(t.path)}`}
+                  className="focus-backlog__item"
+                >
+                  <span className="focus-backlog__title">{t.title}</span>
+                  <span className="chip chip--score">◆ {formatScore(t.score)}</span>
+                </Link>
+              ))}
+            </div>
+          </details>
+        </>
+      )}
     </main>
   );
 }

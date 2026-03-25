@@ -129,8 +129,21 @@ export function KeyboardShortcutsHelp({ onClose }) {
   }, [onClose]);
 
   return (
-    <div className="keyboard-help-overlay" onClick={onClose}>
-      <div className="keyboard-help" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="keyboard-help-overlay"
+      onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') onClose(); }}
+      role="button"
+      tabIndex={0}
+      aria-label="Close keyboard shortcuts"
+    >
+      <div
+        className="keyboard-help"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label="Keyboard shortcuts"
+      >
         <div className="keyboard-help__header">
           <h3>Keyboard Shortcuts</h3>
           <button className="keyboard-help__close" onClick={onClose}>
@@ -141,8 +154,8 @@ export function KeyboardShortcutsHelp({ onClose }) {
           {shortcuts.map(({ keys, description }) => (
             <div key={description} className="keyboard-help__item">
               <span className="keyboard-help__keys">
-                {keys.map((key, i) => (
-                  <span key={i}>
+                {keys.map((key) => (
+                  <span key={key}>
                     <kbd className="keyboard-help__kbd">{key}</kbd>
                     {i < keys.length - 1 && ' then '}
                   </span>

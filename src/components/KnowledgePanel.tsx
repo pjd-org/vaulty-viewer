@@ -54,10 +54,10 @@ export function KnowledgePanel({ knowledge }: KnowledgePanelProps) {
               <div key={domain} className="avatar-domain">
                 <span className="avatar-domain__name">{domain}</span>
                 <div className="avatar-domain__level">
-                  {[...Array(5)].map((_, i) => (
+                  {[...Array(5)].map((_, pos) => (
                     <span
-                      key={i}
-                      className={`avatar-domain__pip ${i < level ? 'avatar-domain__pip--filled' : ''}`}
+                      key={`pip-${pos}`}
+                      className={`avatar-domain__pip ${pos < level ? 'avatar-domain__pip--filled' : ''}`}
                     />
                   ))}
                 </div>

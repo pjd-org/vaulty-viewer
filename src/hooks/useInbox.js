@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import getApiBase, { apiFetch } from '../utils/api';
+import { splitInboxNotes, computeInboxCounts } from '../lib/inbox-logic';
 
 /**
  * Hook to manage the combined inbox view.
@@ -221,6 +222,8 @@ export function useInbox() {
 
   const notes = inboxQuery.data?.notes || [];
   const runs = inboxQuery.data?.runs || [];
+  const { workbenchNotes, archiveNotes } = splitInboxNotes(notes);
+  const counts = computeInboxCounts(runs, workbenchNotes, archiveNotes);
   const loading = queryEnabled ? inboxQuery.isFetching : false;
   const error = inboxQuery.error
     ? inboxQuery.error instanceof Error
@@ -236,6 +239,9 @@ export function useInbox() {
   return {
     notes,
     runs,
+    workbenchNotes,
+    archiveNotes,
+    counts,
     loading,
     error,
     apiStatus,

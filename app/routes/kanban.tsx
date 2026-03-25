@@ -182,8 +182,9 @@ function KanbanRoute() {
 
       <section className="kanban-controls">
         <div className="select-group">
-          <label>Filter by tag</label>
+          <label htmlFor="kanban-filter-tag">Filter by tag</label>
           <select
+            id="kanban-filter-tag"
             value={filterTag}
             onChange={(e) => setFilterTag(e.target.value)}
             aria-label="Filter by tag"
@@ -197,8 +198,9 @@ function KanbanRoute() {
           </select>
         </div>
         <div className="select-group">
-          <label>Filter by project</label>
+          <label htmlFor="kanban-filter-project">Filter by project</label>
           <select
+            id="kanban-filter-project"
             value={filterProject}
             onChange={(e) => setFilterProject(e.target.value)}
             aria-label="Filter by project"

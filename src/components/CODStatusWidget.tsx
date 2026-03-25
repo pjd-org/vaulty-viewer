@@ -61,18 +61,18 @@ export default function CODStatusWidget() {
           <div className="cod-widget__info">
             <span className="cod-widget__label">{statusMessage}</span>
             <span className="cod-widget__sublabel">
-              {loading ? "Syncing..." : error ? "API offline" : `${Math.round(humanState.energy * 100)}% energy`}
+              {loading ? "Syncing..." : error ? "API offline" : `${Math.round(humanState.energy)}% energy`}
             </span>
           </div>
         </div>
 
         <div className="cod-widget__vitals">
           <div className="cod-widget__vital">
-            <span className="cod-widget__vital-value">{Math.round(humanState.energy * 100)}%</span>
+            <span className="cod-widget__vital-value">{Math.round(humanState.energy)}%</span>
             <span className="cod-widget__vital-label">Energy</span>
           </div>
           <div className="cod-widget__vital">
-            <span className="cod-widget__vital-value">{Math.round(humanState.stress * 100)}%</span>
+            <span className="cod-widget__vital-value">{Math.round(humanState.stress)}%</span>
             <span className="cod-widget__vital-label">Stress</span>
           </div>
           <div className="cod-widget__vital">
@@ -112,6 +112,7 @@ export default function CODStatusWidget() {
         <div
           className="cod-modal__overlay"
           onClick={closeModal}
+          onKeyDown={(e) => { if (e.key === 'Escape') closeModal(); }}
           role="dialog"
           aria-modal="true"
           aria-label="COD Status"
@@ -119,6 +120,8 @@ export default function CODStatusWidget() {
           <div
             className="cod-modal__panel"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="document"
           >
             <button
               className="cod-modal__close"

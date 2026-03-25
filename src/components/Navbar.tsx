@@ -86,22 +86,16 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
           Home
         </Link>
         <Link
-          to="/kanban"
+          to="/projects"
           onClick={closeMenu}
         >
-          Kanban
+          Projects
         </Link>
         <Link
           to="/avatar"
           onClick={closeMenu}
         >
           Avatar
-        </Link>
-        <Link
-          to="/goals"
-          onClick={closeMenu}
-        >
-          Goals
         </Link>
         <a href={hueyAppUrl} onClick={closeMenu} className="navbar__huey-link">
           Huey
@@ -142,7 +136,16 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
       </div>
 
       {/* Mobile menu overlay */}
-      {menuOpen && <div className="navbar__overlay" onClick={closeMenu} />}
+      {menuOpen && (
+        <div
+          className="navbar__overlay"
+          onClick={closeMenu}
+          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') closeMenu(); }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close menu"
+        />
+      )}
     </nav>
   );
 }

@@ -1,6 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { marked } from 'marked'
+import sanitizeHtml from 'sanitize-html'
 import { apiFetch } from '../../src/utils/api'
+import {
+  INTENT_TEMPLATES,
+  getTemplate,
+  isIntentComplete,
+  type IntentType,
+  type IntentTemplate,
+} from '../../src/lib/huey-intents'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 type ChatRole = 'user' | 'assistant' | 'system'
 
@@ -20,6 +33,13 @@ type InvokeResponse = {
   tool_results_degraded?: boolean
 }
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const INITIAL_MESSAGE_CONTENT =
+  'Huey is ready. Select an intent or type freely.'
+
 const createMessage = (
   role: ChatRole,
   content: string,
@@ -31,47 +51,315 @@ const createMessage = (
   meta,
 })
 
+function makeInitialMessages(): ChatMessage[] {
+  return [createMessage('assistant', INITIAL_MESSAGE_CONTENT, 'Connected through Tensura supervisor')]
+}
+
+function renderMarkdown(content: string): string {
+  const raw = marked.parse(content, { async: false }) as string
+  return sanitizeHtml(raw, {
+    allowedTags: [...sanitizeHtml.defaults.allowedTags, 'code', 'pre', 'kbd', 'mark'],
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      code: ['class'],
+      pre: ['class'],
+    },
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function HueyHeader({
+  threadId,
+  activeIntent,
+  onNewThread,
+  sending,
+}: {
+  threadId: string
+  activeIntent: IntentType | null
+  onNewThread: () => void
+  sending: boolean
+}) {
+  const intentLabel = activeIntent
+    ? INTENT_TEMPLATES.find((t) => t.id === activeIntent)?.label
+    : null
+
+  return (
+    <header className="huey-header">
+      <div className="huey-header__identity">
+        <h1 className="huey-header__title">Huey</h1>
+        {intentLabel && (
+          <span className="huey-header__intent-chip">{intentLabel}</span>
+        )}
+      </div>
+      <div className="huey-header__meta">
+        <span className="huey-header__thread" title={threadId}>
+          {threadId.length > 28 ? `…${threadId.slice(-20)}` : threadId}
+        </span>
+        <button
+          className="huey-header__new-thread"
+          onClick={onNewThread}
+          disabled={sending}
+        >
+          New thread
+        </button>
+        <Link to="/" className="pill pill--ghost">← Focus</Link>
+      </div>
+    </header>
+  )
+}
+
+function IntentSelector({ onSelect }: { onSelect: (id: IntentType) => void }) {
+  const primary = INTENT_TEMPLATES.filter((t) => t.id !== 'freeform')
+  const freeform = INTENT_TEMPLATES.find((t) => t.id === 'freeform')!
+
+  return (
+    <div className="huey-intent-surface">
+      <p className="huey-intent-surface__label">What do you want to do?</p>
+      <div className="huey-intent-grid">
+        {primary.map((t) => (
+          <button
+            key={t.id}
+            className="huey-intent-btn"
+            onClick={() => onSelect(t.id)}
+          >
+            <span className="huey-intent-btn__label">{t.label}</span>
+            <span className="huey-intent-btn__desc">{t.description}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        className="huey-intent-btn huey-intent-btn--freeform"
+        onClick={() => onSelect(freeform.id)}
+      >
+        <span className="huey-intent-btn__label">{freeform.label}</span>
+        <span className="huey-intent-btn__desc">{freeform.description}</span>
+      </button>
+    </div>
+  )
+}
+
+function DynamicInput({
+  template,
+  values,
+  onChange,
+  onSend,
+  onBack,
+  sending,
+  error,
+}: {
+  template: IntentTemplate
+  values: Record<string, string>
+  onChange: (values: Record<string, string>) => void
+  onSend: () => void
+  onBack: () => void
+  sending: boolean
+  error: string | null
+}) {
+  const canSend = !sending && isIntentComplete(template, values)
+
+  const set = (key: string, value: string) => onChange({ ...values, [key]: value })
+
+  return (
+    <div className="huey-dynamic-input">
+      <div className="huey-dynamic-input__header">
+        <span className="huey-dynamic-input__intent">{template.label}</span>
+        <button className="huey-dynamic-input__back" onClick={onBack}>
+          ← Change
+        </button>
+      </div>
+
+      <div className="huey-dynamic-input__fields">
+        {template.fields.map((field) => (
+          <div key={field.key} className="huey-field">
+            <label className="huey-field__label" htmlFor={`huey-field-${field.key}`}>
+              {field.label}
+              {!field.required && <span className="huey-field__optional"> (optional)</span>}
+            </label>
+            {field.multiline ? (
+              <textarea
+                id={`huey-field-${field.key}`}
+                className="huey-field__input huey-field__input--textarea"
+                value={values[field.key] ?? ''}
+                onChange={(e) => set(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                rows={field.id === 'freeform' ? 5 : 3}
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canSend) {
+                    e.preventDefault()
+                    onSend()
+                  }
+                }}
+              />
+            ) : (
+              <input
+                id={`huey-field-${field.key}`}
+                type="text"
+                className="huey-field__input"
+                value={values[field.key] ?? ''}
+                onChange={(e) => set(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && canSend) {
+                    e.preventDefault()
+                    onSend()
+                  }
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="huey-dynamic-input__footer">
+        <span className="huey-composer__hint">
+          {template.id === 'freeform' ? 'Cmd/Ctrl+Enter to send' : 'Enter or Cmd+Enter to send'}
+        </span>
+        <button
+          className="na-card__btn na-card__btn--start"
+          onClick={onSend}
+          disabled={!canSend}
+        >
+          {sending ? 'Sending…' : 'Send to Huey'}
+        </button>
+      </div>
+
+      {error && <p className="huey-composer__error">{error}</p>}
+    </div>
+  )
+}
+
+function PostResponseActions() {
+  return (
+    <div className="huey-post-actions">
+      <Link to="/" className="chip chip--tag huey-post-action">
+        View next actions →
+      </Link>
+      <Link to="/" className="chip chip--tag huey-post-action" onClick={() => {
+        // Signal to Focus page to open session panel
+        sessionStorage.setItem('huey-open-session', '1')
+      }}>
+        Start session →
+      </Link>
+      <Link to="/kanban" className="chip chip--tag huey-post-action">
+        Open board →
+      </Link>
+    </div>
+  )
+}
+
+function ChatTimeline({
+  messages,
+  sending,
+}: {
+  messages: ChatMessage[]
+  sending: boolean
+}) {
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: 'smooth' })
+  }, [messages, sending])
+
+  return (
+    <div className="huey-chat__timeline" ref={ref}>
+      {messages.map((message) => (
+        <article key={message.id} className={`huey-bubble huey-bubble--${message.role}`}>
+          <div className="huey-bubble__header">
+            <strong>
+              {message.role === 'assistant' ? 'Huey' : message.role === 'user' ? 'You' : message.role}
+            </strong>
+            {message.meta ? <span>{message.meta}</span> : null}
+          </div>
+          {message.role === 'assistant' ? (
+            <>
+              <div
+                className="huey-bubble__body"
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
+              />
+              <PostResponseActions />
+            </>
+          ) : (
+            <p>{message.content}</p>
+          )}
+        </article>
+      ))}
+      {sending && (
+        <article className="huey-bubble huey-bubble--assistant huey-bubble--pending">
+          <div className="huey-bubble__header">
+            <strong>Huey</strong>
+            <span>thinking</span>
+          </div>
+          <p>Working on it…</p>
+        </article>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Route
+// ---------------------------------------------------------------------------
+
 export const Route = createFileRoute('/huey')({
   component: HueyRoute,
 })
 
 function HueyRoute() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    createMessage(
-      'assistant',
-      'Huey is ready. Ask about the repo, specs, tasks, promotion flow, or blocked work.',
-      'Connected through Tensura supervisor'
-    ),
-  ])
-  const [input, setInput] = useState('')
-  const [threadId, setThreadId] = useState<string>('huey-viewer-thread')
+  const [messages, setMessages] = useState<ChatMessage[]>(makeInitialMessages)
+  const [threadId, setThreadId] = useState('huey-viewer-thread')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const timelineRef = useRef<HTMLDivElement | null>(null)
+  const [activeIntent, setActiveIntent] = useState<IntentType | null>(null)
+  const [intentValues, setIntentValues] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    timelineRef.current?.scrollTo({
-      top: timelineRef.current.scrollHeight,
-      behavior: 'smooth',
-    })
-  }, [messages, sending])
+  const newThread = () => {
+    setThreadId(`huey-viewer-thread-${Date.now()}`)
+    setMessages(makeInitialMessages())
+    setError(null)
+    setActiveIntent(null)
+    setIntentValues({})
+  }
+
+  const resetIntent = () => {
+    setActiveIntent(null)
+    setIntentValues({})
+    setError(null)
+  }
+
+  const selectIntent = (id: IntentType) => {
+    setActiveIntent(id)
+    setIntentValues({})
+    setError(null)
+  }
 
   const sendMessage = async () => {
-    const prompt = input.trim()
-    if (!prompt || sending) return
+    if (!activeIntent || sending) return
 
-    const userMessage = createMessage('user', prompt)
-    setMessages((current) => [...current, userMessage])
-    setInput('')
+    const template = getTemplate(activeIntent)
+    if (!isIntentComplete(template, intentValues)) return
+
+    const prompt = template.buildPrompt(intentValues)
+    if (!prompt.trim()) return
+
+    const displayText =
+      activeIntent === 'freeform'
+        ? intentValues.message ?? prompt
+        : `[${template.label}] ${Object.values(intentValues).filter(Boolean).join(' · ')}`
+
+    const userMessage = createMessage('user', displayText)
+    setMessages((prev) => [...prev, userMessage])
+    setIntentValues({})
     setSending(true)
     setError(null)
 
     try {
       const response = await apiFetch('/tensura/v1/supervisor/invoke', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           threadId,
           mode: 'repo+spec',
@@ -80,6 +368,7 @@ function HueyRoute() {
       })
 
       const payload = (await response.json().catch(() => null)) as InvokeResponse | null
+
       if (!response.ok) {
         throw new Error(
           payload && typeof payload.result === 'string'
@@ -95,128 +384,59 @@ function HueyRoute() {
       setThreadId(nextThreadId)
 
       const assistantText =
-        payload && typeof payload.result === 'string' && payload.result.trim().length > 0
+        payload && typeof payload.result === 'string' && payload.result.trim()
           ? payload.result
           : 'Huey responded without text.'
-      const assistantMetaParts = [`Thread ${nextThreadId}`]
-      if (payload?.next_action) assistantMetaParts.push(`Next ${payload.next_action}`)
-      if (payload?.tool_results_degraded) assistantMetaParts.push('Degraded tools')
 
-      setMessages((current) => [
-        ...current,
-        createMessage('assistant', assistantText, assistantMetaParts.join(' • ')),
+      const metaParts = [`Thread ${nextThreadId}`]
+      if (payload?.next_action) metaParts.push(`Next: ${payload.next_action}`)
+      if (payload?.tool_results_degraded) metaParts.push('Degraded tools')
+
+      setMessages((prev) => [
+        ...prev,
+        createMessage('assistant', assistantText, metaParts.join(' · ')),
       ])
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Huey request failed'
-      setError(message)
-      setMessages((current) => [
-        ...current,
-        createMessage('system', `Request failed: ${message}`),
+      const msg = err instanceof Error ? err.message : 'Huey request failed'
+      setError(msg)
+      setMessages((prev) => [
+        ...prev,
+        createMessage('system', `Request failed: ${msg}`),
       ])
     } finally {
       setSending(false)
     }
   }
 
+  const template = activeIntent ? getTemplate(activeIntent) : null
+
   return (
     <main className="page huey-page">
-      <header className="huey-hero">
-        <div>
-          <p className="eyebrow">Huey Control Surface</p>
-          <h1>Chat with Huey, directly in Viewer</h1>
-          <p className="lede">
-            This route talks to the Tensura supervisor workflow, so Viewer stays on the repo and
-            spec-aware path instead of the generic direct-agent route.
-          </p>
-        </div>
-        <div className="huey-hero__meta">
-          <span className="api-badge api-badge--online">Tensura route</span>
-          <a
-            href="/tensura/opencode"
-            className="huey-linkout"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            Open OpenCode fallback
-          </a>
-        </div>
-      </header>
+      <HueyHeader
+        threadId={threadId}
+        activeIntent={activeIntent}
+        onNewThread={newThread}
+        sending={sending}
+      />
 
       <section className="huey-shell">
-        <aside className="huey-sidebar">
-          <div className="huey-sidebar__card">
-            <h2>Session</h2>
-            <p className="huey-sidebar__value">{threadId}</p>
-            <p className="huey-sidebar__hint">Tensura supervisor thread id</p>
-          </div>
-          <div className="huey-sidebar__card">
-            <h2>Use cases</h2>
-            <ul className="huey-sidebar__list">
-              <li>Plan the next implementation step</li>
-              <li>Review a spec or task before promotion</li>
-              <li>Draft repo changes with vault context</li>
-              <li>Summarize what is blocked right now</li>
-            </ul>
-          </div>
-        </aside>
-
-        <section className="huey-chat">
-          <div className="huey-chat__timeline" ref={timelineRef}>
-            {messages.map((message) => (
-              <article
-                key={message.id}
-                className={`huey-bubble huey-bubble--${message.role}`}
-              >
-                <div className="huey-bubble__header">
-                  <strong>{message.role === 'assistant' ? 'Huey' : message.role}</strong>
-                  {message.meta ? <span>{message.meta}</span> : null}
-                </div>
-                <p>{message.content}</p>
-              </article>
-            ))}
-            {sending ? (
-              <article className="huey-bubble huey-bubble--assistant huey-bubble--pending">
-                <div className="huey-bubble__header">
-                  <strong>Huey</strong>
-                  <span>thinking</span>
-                </div>
-                <p>Working on it...</p>
-              </article>
-            ) : null}
-          </div>
-
-          <div className="huey-composer">
-            <label className="huey-composer__label" htmlFor="huey-input">
-              Message
-            </label>
-            <textarea
-              id="huey-input"
-              className="huey-composer__input"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask Huey to plan, inspect, explain, or act..."
-              rows={4}
-              onKeyDown={(event) => {
-                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                  event.preventDefault()
-                  void sendMessage()
-                }
-              }}
+        <div className="huey-input-surface">
+          {!activeIntent ? (
+            <IntentSelector onSelect={selectIntent} />
+          ) : (
+            <DynamicInput
+              template={template!}
+              values={intentValues}
+              onChange={setIntentValues}
+              onSend={sendMessage}
+              onBack={resetIntent}
+              sending={sending}
+              error={error}
             />
-            <div className="huey-composer__footer">
-              <span className="huey-composer__hint">Send with Cmd/Ctrl + Enter</span>
-              <button
-                type="button"
-                className="huey-composer__send"
-                onClick={() => void sendMessage()}
-                disabled={sending || input.trim().length === 0}
-              >
-                {sending ? 'Sending...' : 'Send to Huey'}
-              </button>
-            </div>
-            {error ? <p className="huey-composer__error">{error}</p> : null}
-          </div>
-        </section>
+          )}
+        </div>
+
+        <ChatTimeline messages={messages} sending={sending} />
       </section>
     </main>
   )

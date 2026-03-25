@@ -87,7 +87,6 @@ function KnowledgeSearchRoute() {
           value={q}
           onChange={(e) => handleQueryChange(e.target.value)}
           placeholder="Search knowledge notes…"
-          autoFocus
         />
         <div className="knowledge-search__mode-toggle">
           <button

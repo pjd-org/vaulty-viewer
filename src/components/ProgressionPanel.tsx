@@ -41,8 +41,8 @@ export function ProgressionPanel({ progression, level, currentXp, xpToNext, xpPr
           <span className="avatar-level__label">Level</span>
         </div>
         <div className="avatar-level__stars">
-          {[...Array(Math.min(level, 5))].map((_, i) => (
-            <span key={i} className="avatar-level__star">⭐</span>
+          {[...Array(Math.min(level, 5))].map((_, pos) => (
+            <span key={`star-${pos}`} className="avatar-level__star">⭐</span>
           ))}
         </div>
       </div>

@@ -118,7 +118,7 @@ export function HumanStateForm({
 
       {/* Focus Capacity */}
       <div className="cod-form__field">
-        <label className="cod-form__label">🎯 Focus Capacity</label>
+        <span className="cod-form__label">🎯 Focus Capacity</span>
         <div className="cod-form__button-group">
           {(['low', 'med', 'high'] as const).map((level) => (
             <button
@@ -206,7 +206,7 @@ export function HumanStateForm({
 
       {/* Check-in Type */}
       <div className="cod-form__field">
-        <label className="cod-form__label">Check-in Type</label>
+        <span className="cod-form__label">Check-in Type</span>
         <div className="cod-form__button-group">
           {[
             { value: 'morning-check', label: '🌅 Morning' },

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import sanitizeHtml from 'sanitize-html';
 import { apiFetch } from '../../src/utils/api';
 import {
   formatNoteLabel,
@@ -753,7 +754,21 @@ function NoteRoute() {
 
           <article
             className="note-content"
-            dangerouslySetInnerHTML={{ __html: note.html }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(note.html, {
+                allowedTags: [
+                  ...sanitizeHtml.defaults.allowedTags,
+                  'code', 'pre', 'kbd', 'mark', 'details', 'summary',
+                  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                ],
+                allowedAttributes: {
+                  ...sanitizeHtml.defaults.allowedAttributes,
+                  code: ['class'],
+                  pre: ['class'],
+                  '*': ['class', 'id'],
+                },
+              }),
+            }}
           />
         </section>
 
