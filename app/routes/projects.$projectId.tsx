@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../../src/utils/api";
 import {
   normalizeTask,
@@ -18,11 +19,13 @@ import {
 } from "../../src/lib/focus-logic";
 import { PageFrame, SoftPanel } from "../components/layout";
 import { EmptyState } from "../components/ui";
+import SkeletonCard from "../components/ui/SkeletonCard";
 import {
   ProjectDetailHeader,
   ProjectBoardSection,
   BlockersRail,
 } from "../components/projects";
+import { fetchProjectById } from "../lib/api/projects";
 
 export const Route = createFileRoute("/projects/$projectId")({
   component: ProjectDetailRoute,
@@ -144,6 +147,13 @@ function ProjectDetailRoute() {
     );
   }
 
+  // Fetch project summary via TanStack Query
+  const { data: projectDisplay, isLoading: projectLoading, isError: projectError } = useQuery(
+    ['project', projectId],
+    () => fetchProjectById(projectId),
+    { enabled: !!projectId, staleTime: 1000 * 60, retry: 1 }
+  );
+
   const { allTasks, nextActions, projectNote, loading, apiOnline, reload, mutatingId, updateStatus } =
     useProjectDetail(projectId);
 
@@ -151,6 +161,78 @@ function ProjectDetailRoute() {
     () => getProjectTasks(allTasks, projectId),
     [allTasks, projectId]
   );
+
+  const projects = useMemo(() => deriveProjects(allTasks), [allTasks]);
+  const derivedProject = projects.find((p) => p.id === projectId);
+
+  // Prefer projectDisplay (API) for title/status/progress when available
+  const project: ProjectSummary | undefined = useMemo(() => {
+    if (projectDisplay) {
+      return {
+        id: projectDisplay.id,
+        title: projectDisplay.title,
+        status: projectDisplay.statusVariant === 'completed' ? 'completed' : 'active',
+        progress: (projectDisplay.progressPercent ?? 0) / 100,
+        priority: derivedProject?.priority ?? 0,
+        taskCounts: derivedProject?.taskCounts ?? {
+          total: projectTasks.length,
+          done: projectTasks.filter((t) => t.status === 'done').length,
+          inProgress: projectTasks.filter((t) => t.status === 'in-progress').length,
+          blocked: projectTasks.filter((t) => t.status === 'blocked').length,
+          todo: projectTasks.filter((t) => !['done','in-progress','blocked'].includes(t.status)).length,
+        },
+      };
+    }
+    if (!derivedProject && !projectNote) return undefined;
+    const base: ProjectSummary = derivedProject ?? {
+      id: projectNote!.id,
+      title: projectNote!.title,
+      status: (projectNote!.status === 'completed' ? 'completed' : 'active') as ProjectSummary['status'],
+      progress: 0,
+      priority: projectNote!.priority,
+      taskCounts: { total: 0, done: 0, inProgress: 0, blocked: 0, todo: 0 },
+    };
+    if (!projectNote) return base;
+    return {
+      ...base,
+      title: projectNote.title,
+      priority: projectNote.priority,
+      horizon: projectNote.horizon,
+      domain: projectNote.domain,
+      notePath: projectNote.path,
+    };
+  }, [projectDisplay, derivedProject, projectNote, projectTasks]);
+
+  const blockedTasks = useMemo(
+    () => projectTasks.filter((t) => t.status === "blocked"),
+    [projectTasks]
+  );
+
+  const anyLoading = loading || projectLoading;
+
+  if (anyLoading) {
+    return (
+      <main className="space-y-6">
+        <PageFrame title="Project" subtitle="Loading…">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-8 space-y-6">
+              <SkeletonCard />
+              <div className="space-y-4">
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4 space-y-4">
+              <SkeletonCard />
+              <SoftPanel>
+                <EmptyState title="Related notes coming soon" />
+              </SoftPanel>
+            </div>
+          </div>
+        </PageFrame>
+      </main>
+    );
+  }
 
   const projects = useMemo(() => deriveProjects(allTasks), [allTasks]);
   const derivedProject = projects.find((p) => p.id === projectId);
