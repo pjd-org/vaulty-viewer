@@ -3,22 +3,21 @@ import { toTaskDisplayMeta, toProjectSummaryDisplay } from '../../app/lib/displa
 
 describe('display helpers', () => {
   it('maps task fields correctly', () => {
-    const task = { id: 't1', title: 'Do thing', estimatedMinutes: 45, focusCost: 8, bestMove: 'Start' };
+    const task = { estimatedTimeMin: 45, focusCost: 8, effortScore: 5, score: 1.6, status: 'in-progress' };
     const out = toTaskDisplayMeta(task);
-    expect(out.id).toBe('t1');
-    expect(out.title).toBe('Do thing');
-    expect(out.estimatedMinutes).toBe(45);
-    expect(out.focusCost).toBe('Deep');
-    expect(out.bestMove).toBe('Start');
+    expect(out.durationLabel).toBeTruthy();
+    expect(out.focusLabel).toBe('Deep focus');
+    expect(out.scoreLabel).toBe('Best fit');
+    expect(out.effortLabel).toBe('Heavy');
+    expect(out.statusLabel).toBe('In progress');
   });
 
   it('maps project fields correctly', () => {
-    const p = { id: 'p1', title: 'Project X', status: 'active', progress: 42, bestMove: 'Ship' };
+    const p = { title: 'Project X', status: 'active', taskCount: 10, completedTaskCount: 4, nextAction: { title: 'Ship' } };
     const out = toProjectSummaryDisplay(p);
-    expect(out.id).toBe('p1');
     expect(out.title).toBe('Project X');
-    expect(out.statusVariant).toBe('active');
-    expect(out.progressPercent).toBe(42);
+    expect(out.statusVariant).toBe('success');
+    expect(out.progressPercent).toBe(40);
     expect(out.bestMoveTitle).toBe('Ship');
   });
 });
