@@ -3,6 +3,14 @@
  * Pure data and functions. No API calls.
  */
 
+export interface ThreadRecord {
+  id: string;
+  title: string;
+  intent: IntentType | null;
+  emoji: string;
+  timestamp: number;
+}
+
 export type IntentType =
   | 'plan_next_step'
   | 'review_spec'

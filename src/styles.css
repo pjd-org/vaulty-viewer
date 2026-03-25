@@ -252,320 +252,576 @@ img {
   }
 }
 
-.huey-page {
-  max-width: 1320px;
+/* ==========================================================================
+   Huey — Two-panel chat interface
+   ========================================================================== */
+
+.huey-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  height: calc(100dvh - 90px);
+  overflow: hidden;
 }
 
-.huey-hero {
+/* ---- History sidebar ---- */
+
+.huey-history {
   display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  align-items: flex-end;
-  margin-bottom: 28px;
+  flex-direction: column;
+  border-right: 1px solid var(--border-faint);
+  background: var(--surface);
+  overflow: hidden;
 }
 
-.huey-hero__meta {
+.huey-history__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
 }
 
-.huey-linkout {
-  display: inline-flex;
+.huey-history__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.huey-history__new {
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(129, 140, 248, 0.28);
-  color: #c7d2fe;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  transition: background 0.12s, color 0.12s;
+}
+
+.huey-history__new:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.huey-history__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 6px 16px;
+}
+
+.huey-history__empty {
+  margin: 24px 8px 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.huey-history__group {
+  margin-bottom: 4px;
+}
+
+.huey-history__group-label {
+  margin: 10px 8px 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.huey-thread-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+  transition: background 0.12s;
+}
+
+.huey-thread-item:hover { background: var(--surface-2); }
+.huey-thread-item--active { background: var(--surface-3); }
+
+.huey-thread-item__icon {
+  font-size: 1rem;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.huey-thread-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.huey-thread-item__title {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 174px;
+  display: block;
+}
+
+.huey-thread-item__time {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ---- Chat panel ---- */
+
+.huey-chat-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.huey-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-faint);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.huey-panel-header__back {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
   text-decoration: none;
-  background: rgba(15, 23, 42, 0.6);
+  transition: color 0.12s;
 }
 
-.huey-shell {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 22px;
-  align-items: start;
+.huey-panel-header__back:hover { color: var(--ink); }
+
+.huey-panel-header__title {
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
 }
 
-.huey-sidebar {
-  display: grid;
-  gap: 16px;
+.huey-panel-header__new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  transition: background 0.12s, color 0.12s;
 }
 
-.huey-sidebar__card {
-  padding: 18px;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72)),
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.14), transparent 40%);
-  box-shadow: 0 18px 42px rgba(2, 6, 23, 0.22);
+.huey-panel-header__new:hover {
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
-.huey-sidebar__card h2 {
-  margin: 0 0 10px;
-  font-size: 0.95rem;
+/* ---- Chat body ---- */
+
+.huey-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px 12px;
+  display: flex;
+  flex-direction: column;
 }
 
-.huey-sidebar__value {
+/* ---- Greeting ---- */
+
+.huey-greeting {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.huey-greeting__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+
+.huey-greeting__title {
   margin: 0;
-  font-size: 0.95rem;
-  color: #e2e8f0;
-  word-break: break-word;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.huey-sidebar__hint {
-  margin: 10px 0 0;
-  color: #94a3b8;
+.huey-greeting__sub {
+  margin: 0;
   font-size: 0.88rem;
+  color: var(--muted);
 }
 
-.huey-sidebar__list {
-  margin: 0;
-  padding-left: 18px;
-  color: #cbd5e1;
-  display: grid;
-  gap: 8px;
+/* ---- Chat timeline ---- */
+
+.huey-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
 }
 
-.huey-chat {
-  display: grid;
-  gap: 18px;
-}
-
-.huey-chat__timeline {
-  min-height: 520px;
-  max-height: 68vh;
-  overflow: auto;
-  padding: 20px;
-  border-radius: 26px;
-  border: 1px solid rgba(129, 140, 248, 0.18);
-  background:
-    radial-gradient(circle at top, rgba(99, 102, 241, 0.12), transparent 36%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  display: grid;
-  gap: 14px;
-}
+/* ---- Bubbles ---- */
 
 .huey-bubble {
-  max-width: min(86%, 760px);
-  padding: 14px 16px;
+  max-width: min(82%, 680px);
+  padding: 12px 16px;
   border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.8);
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 .huey-bubble--user {
   margin-left: auto;
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.88), rgba(59, 130, 246, 0.8));
-  border-color: rgba(129, 140, 248, 0.45);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
 }
 
 .huey-bubble--assistant {
   margin-right: auto;
-  background: rgba(17, 24, 39, 0.92);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(26, 26, 26, 0.06));
+  border-radius: 18px 18px 18px 4px;
 }
 
 .huey-bubble--system {
   margin-right: auto;
-  background: rgba(120, 53, 15, 0.35);
-  border-color: rgba(251, 191, 36, 0.24);
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 12px;
+  font-size: 0.82rem;
 }
 
-.huey-bubble--pending {
-  opacity: 0.86;
-}
+.huey-bubble--pending { opacity: 0.7; }
 
 .huey-bubble__header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  font-size: 0.82rem;
-  color: #94a3b8;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
 }
+
+.huey-bubble--user .huey-bubble__header { color: rgba(255, 255, 255, 0.7); }
 
 .huey-bubble p {
   margin: 0;
   white-space: pre-wrap;
-  line-height: 1.65;
 }
 
-.huey-bubble__body {
-  font-size: inherit;
-  line-height: 1.65;
-  color: inherit;
-}
-
-.huey-bubble__body > :first-child {
-  margin-top: 0;
-}
-
-.huey-bubble__body > :last-child {
-  margin-bottom: 0;
-}
-
-.huey-bubble__body p {
-  margin: 0 0 0.6em;
-}
-
+.huey-bubble__body { font-size: inherit; line-height: inherit; }
+.huey-bubble__body > :first-child { margin-top: 0; }
+.huey-bubble__body > :last-child { margin-bottom: 0; }
+.huey-bubble__body p { margin: 0 0 0.5em; }
 .huey-bubble__body ul,
-.huey-bubble__body ol {
-  margin: 0.4em 0 0.6em;
-  padding-left: 1.4em;
-}
-
-.huey-bubble__body li {
-  margin-bottom: 0.25em;
-}
+.huey-bubble__body ol { margin: 0.3em 0 0.5em; padding-left: 1.4em; }
+.huey-bubble__body li { margin-bottom: 0.2em; }
 
 .huey-bubble__body code {
-  padding: 0.15em 0.4em;
-  border-radius: 6px;
-  font-size: 0.88em;
-  background: rgba(99, 102, 241, 0.18);
-  color: #c7d2fe;
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  font-size: 0.85em;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
   font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
 }
 
 .huey-bubble__body pre {
-  margin: 0.6em 0;
+  margin: 0.5em 0;
   padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(2, 6, 23, 0.7);
-  border: 1px solid rgba(129, 140, 248, 0.2);
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
   overflow-x: auto;
 }
 
 .huey-bubble__body pre code {
   padding: 0;
   background: none;
-  color: #e2e8f0;
-  font-size: 0.85em;
+  color: var(--ink);
+  font-size: 0.83em;
 }
 
-.huey-bubble__body a {
-  color: #818cf8;
-  text-decoration: underline;
+.huey-bubble__body a { color: var(--accent); text-decoration: underline; }
+.huey-bubble__body strong { font-weight: 700; }
+
+/* Thinking dots */
+.huey-bubble__thinking {
+  display: flex;
+  gap: 4px;
+  margin: 2px 0;
 }
 
-.huey-bubble__body strong {
-  color: #e2e8f0;
+.huey-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: huey-pulse 1.2s ease-in-out infinite;
 }
 
-.huey-new-thread {
-  display: block;
-  width: 100%;
-  margin-top: 14px;
-  padding: 8px 0;
-  border-radius: 10px;
-  border: 1px solid rgba(129, 140, 248, 0.28);
-  background: rgba(99, 102, 241, 0.1);
-  color: #a5b4fc;
-  font: inherit;
-  font-size: 0.88rem;
-  cursor: pointer;
-  transition: background 0.15s;
+.huey-dot:nth-child(2) { animation-delay: 0.2s; }
+.huey-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes huey-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
 
-.huey-new-thread:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.2);
+/* Post-response actions */
+.huey-post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-faint);
 }
 
-.huey-new-thread:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.huey-post-action { text-decoration: none; cursor: pointer; font-size: 0.78rem; }
+.huey-post-action:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---- Composer ---- */
 
 .huey-composer {
-  padding: 20px;
-  border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.84);
-  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.16);
-}
-
-.huey-composer__label {
-  display: block;
-  margin-bottom: 10px;
-  color: #cbd5e1;
-  font-size: 0.92rem;
-  font-weight: 600;
-}
-
-.huey-composer__input {
-  width: 100%;
-  resize: vertical;
-  min-height: 120px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(129, 140, 248, 0.22);
-  background: rgba(2, 6, 23, 0.55);
-  color: #e5e7eb;
-  font: inherit;
-}
-
-.huey-composer__input:focus {
-  outline: none;
-  border-color: rgba(129, 140, 248, 0.58);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
-}
-
-.huey-composer__footer {
+  flex-shrink: 0;
+  padding: 10px 20px 16px;
+  border-top: 1px solid var(--border-faint);
+  background: var(--surface);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.huey-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.huey-chips::-webkit-scrollbar { display: none; }
+
+.huey-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 14px;
-}
-
-.huey-composer__hint {
-  color: #94a3b8;
-  font-size: 0.88rem;
-}
-
-.huey-composer__send {
-  min-width: 154px;
-  min-height: 44px;
-  border: none;
-  border-radius: 14px;
-  padding: 0 18px;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
   font: inherit;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
-.huey-composer__send:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.huey-chip:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--border-soft);
 }
+
+.huey-chip--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.huey-chip--active:hover { filter: brightness(1.08); }
+
+/* Intent fields */
+.huey-intent-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.huey-intent-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.huey-intent-field__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.huey-intent-field__optional { font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.huey-intent-field__input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.huey-intent-field__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.huey-intent-field__input--area { resize: vertical; min-height: 60px; }
+
+/* Input row */
+.huey-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.huey-input-row__field {
+  flex: 1;
+  min-height: 42px;
+  max-height: 160px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 22px;
+  font: inherit;
+  font-size: 0.92rem;
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
+  transition: border-color 0.12s, background 0.12s;
+  field-sizing: content;
+}
+
+.huey-input-row__field:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.huey-input-row__field:disabled { opacity: 0.5; }
+
+.huey-input-row__intent-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 22px;
+  background: rgba(99, 102, 241, 0.06);
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.huey-input-row__clear {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.12s;
+}
+
+.huey-input-row__clear:hover { color: var(--ink); }
+
+.huey-input-row__send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: filter 0.12s, background 0.12s;
+}
+
+.huey-input-row__send:hover:not(:disabled) { filter: brightness(1.1); }
+.huey-input-row__send:disabled { background: var(--surface-3); color: var(--muted); cursor: not-allowed; }
 
 .huey-composer__error {
-  margin: 12px 0 0;
-  color: #fca5a5;
-  font-size: 0.92rem;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--danger, #ef4444);
 }
 
-@media (max-width: 960px) {
-  .huey-hero {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .huey-shell {
+/* Responsive */
+@media (max-width: 768px) {
+  .huey-layout {
     grid-template-columns: 1fr;
   }
-
-  .huey-chat__timeline {
-    min-height: 420px;
-    max-height: none;
+  .huey-history {
+    display: none;
+  }
+  .huey-chat-body {
+    padding: 16px 16px 8px;
+  }
+  .huey-composer {
+    padding: 10px 12px 14px;
   }
 }
 
@@ -7121,468 +7377,6 @@ img {
   }
 }
 
-/* ==========================================================================
-   Huey — Intent-driven UI additions
-   ========================================================================== */
-
-/* Intent selector row */
-.huey-intents {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px 14px 0;
-}
-
-.huey-intent-chip {
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border, #e5e7eb);
-  background: transparent;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--muted, #6b7280);
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.huey-intent-chip:hover {
-  border-color: var(--c-active, #10b981);
-  color: var(--c-active, #10b981);
-}
-
-.huey-intent-chip--active {
-  background: var(--c-active, #10b981);
-  border-color: var(--c-active, #10b981);
-  color: #fff;
-}
-
-.huey-intent-chip--active:hover {
-  filter: brightness(1.05);
-  color: #fff;
-}
-
-/* Focused intent input block */
-.huey-focused-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 14px;
-}
-
-.huey-focused-input__label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted, #888);
-}
-
-.huey-focused-input__field {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--card-bg, #fff);
-  color: inherit;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-}
-
-.huey-focused-input__field:focus {
-  outline: none;
-  border-color: var(--c-active, #10b981);
-}
-
-.huey-focused-input__constraints {
-  font-size: 12px;
-  color: var(--muted, #6b7280);
-}
-
-.huey-focused-input__constraints > summary {
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  padding: 2px 0;
-}
-
-.huey-focused-input__constraints[open] > summary {
-  margin-bottom: 6px;
-}
-
-/* Response CTA strip */
-.huey-response-ctas {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 4px 14px 8px;
-}
-
-/* Context card extras */
-.huey-context__session {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  margin: 4px 0 0;
-}
-
-.huey-context__dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--c-active, #10b981);
-  flex-shrink: 0;
-}
-
-.huey-context__dot--off {
-  background: var(--muted, #9ca3af);
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .huey-focused-input__field {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
-  }
-  .huey-intent-chip {
-    border-color: var(--border, #2d2d3d);
-  }
-}
-
-/* ==========================================================================
-   Huey — Intent-driven execution interface
-   ========================================================================== */
-
-/* Page layout */
-.huey-page {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 0 16px 64px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Header */
-.huey-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 0 8px;
-  border-bottom: 1px solid var(--border, #e5e7eb);
-}
-
-.huey-header__identity {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.huey-header__title {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1;
-}
-
-.huey-header__intent-chip {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 3px 8px;
-  border-radius: 20px;
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--c-active, #10b981);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.huey-header__meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.huey-header__thread {
-  font-size: 11px;
-  color: var(--muted, #9ca3af);
-  font-family: monospace;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.huey-header__new-thread {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  color: var(--muted, #6b7280);
-  transition: background 0.15s, color 0.15s;
-}
-
-.huey-header__new-thread:hover:not(:disabled) {
-  background: var(--hover-bg, rgba(0,0,0,0.04));
-  color: inherit;
-}
-
-.huey-header__new-thread:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Shell layout: input surface above, chat timeline below */
-.huey-shell {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.huey-input-surface {
-  /* Container for intent selector or dynamic input */
-}
-
-/* Intent selector */
-.huey-intent-surface {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.huey-intent-surface__label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted, #888);
-  margin: 0;
-}
-
-.huey-intent-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.huey-intent-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 12px 14px;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 10px;
-  background: var(--card-bg, #fff);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-}
-
-.huey-intent-btn:hover {
-  border-color: var(--c-active, #10b981);
-  background: rgba(16, 185, 129, 0.04);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.huey-intent-btn--freeform {
-  border-style: dashed;
-  border-color: var(--border, #d1d5db);
-  color: var(--muted, #6b7280);
-  width: 100%;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-}
-
-.huey-intent-btn--freeform .huey-intent-btn__label {
-  font-weight: 500;
-}
-
-.huey-intent-btn--freeform:hover {
-  border-color: var(--muted, #9ca3af);
-  color: inherit;
-}
-
-.huey-intent-btn__label {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.huey-intent-btn__desc {
-  font-size: 12px;
-  color: var(--muted, #6b7280);
-  line-height: 1.3;
-  font-weight: 400;
-}
-
-/* Dynamic input */
-.huey-dynamic-input {
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 10px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--card-bg, #fff);
-}
-
-.huey-dynamic-input__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.huey-dynamic-input__intent {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.huey-dynamic-input__back {
-  border: none;
-  background: none;
-  font-size: 12px;
-  color: var(--muted, #9ca3af);
-  cursor: pointer;
-  padding: 0;
-}
-
-.huey-dynamic-input__back:hover { color: inherit; }
-
-.huey-dynamic-input__fields {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.huey-dynamic-input__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-/* Field */
-.huey-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.huey-field__label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted, #6b7280);
-}
-
-.huey-field__optional {
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.huey-field__input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--input-bg, #fff);
-  color: inherit;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-  outline: none;
-}
-
-.huey-field__input:focus {
-  border-color: var(--c-active, #10b981);
-}
-
-.huey-field__input--textarea {
-  resize: vertical;
-  min-height: 70px;
-}
-
-/* Post-response action chips */
-.huey-post-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border, #e5e7eb);
-}
-
-.huey-post-action {
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.1s, color 0.1s;
-}
-
-.huey-post-action:hover {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--c-active, #10b981);
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-/* Chat timeline */
-.huey-chat__timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 4px 0;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .huey-intent-btn {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
-  }
-
-  .huey-dynamic-input {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
-  }
-
-  .huey-field__input {
-    background: var(--input-bg, #1a1a2a);
-    border-color: var(--border, #2d2d3d);
-    color: inherit;
-  }
-
-  .huey-header {
-    border-bottom-color: var(--border, #2d2d3d);
-  }
-
-  .huey-post-actions {
-    border-top-color: var(--border, #2d2d3d);
-  }
-}
-
-/* Narrow screens */
-@media (max-width: 480px) {
-  .huey-intent-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .huey-header__thread {
-    display: none;
-  }
-}
 
 /* ==========================================================================
    Command Center — CommandBar, StatusChip, RecentSessions, GettingStartedCard

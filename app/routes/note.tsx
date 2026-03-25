@@ -13,6 +13,10 @@ import {
   toNoteSearchPath,
   type NoteLifecycle,
 } from '../../src/lib/note-logic';
+import { toNoteHeaderDisplay } from '../lib/display';
+import { SoftPanel } from '../components/layout';
+import { PrimaryButton, SecondaryButton } from '../components/ui';
+import { NoteHeader, NoteMetaRail, NoteBodyRenderer } from '../components/note';
 
 const formatDate = (dateStr: string | undefined | null) => {
   if (!dateStr) return null;
@@ -26,22 +30,6 @@ const formatDate = (dateStr: string | undefined | null) => {
     return dateStr;
   }
 };
-
-interface StatusBadgeProps {
-  status: string;
-}
-
-interface PriorityBadgeProps {
-  priority: number;
-}
-
-interface ActionButtonProps {
-  icon: string;
-  label: string;
-  onClick: () => void;
-  variant?: string;
-  disabled?: boolean;
-}
 
 interface NoteRecord {
   path: string;
@@ -78,71 +66,6 @@ const getNumberValue = (value: unknown) =>
 
 const getBooleanValue = (value: unknown) =>
   typeof value === 'boolean' ? value : false;
-
-const statusColors: Record<string, string> = {
-  completed: 'bg-secondary/10 text-secondary',
-  'in-progress': 'bg-primary/10 text-primary',
-  todo: 'bg-surface-container-high text-on-surface-variant',
-  blocked: 'bg-error/10 text-error',
-  backlog: 'bg-surface-container-high text-on-surface-variant',
-  rejected: 'bg-error/10 text-error',
-};
-
-const StatusBadge = ({ status }: StatusBadgeProps) => (
-  <span
-    className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${statusColors[status] ?? 'bg-surface-container-high text-on-surface-variant'}`}
-  >
-    {status}
-  </span>
-);
-
-const PriorityBadge = ({ priority }: PriorityBadgeProps) => {
-  const cls =
-    priority >= 7
-      ? 'bg-error/10 text-error'
-      : priority >= 4
-        ? 'bg-primary/10 text-primary'
-        : 'bg-surface-container-high text-on-surface-variant';
-  return (
-    <span
-      className={`font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${cls}`}
-    >
-      P{priority}
-    </span>
-  );
-};
-
-const variantClass: Record<string, string> = {
-  primary: 'bg-primary text-white hover:opacity-90',
-  danger: 'bg-error/10 text-error hover:bg-error/20 border border-error/20',
-  accent:
-    'bg-secondary/10 text-secondary hover:bg-secondary/20 border border-secondary/20',
-  success: 'bg-secondary/10 text-secondary',
-  default:
-    'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/20',
-};
-
-const panelClass =
-  'rounded-2xl border border-outline-variant/10 bg-surface-container/80 shadow-sm backdrop-blur';
-
-const ActionButton = ({
-  icon,
-  label,
-  onClick,
-  variant = 'default',
-  disabled = false,
-}: ActionButtonProps) => (
-  <button
-    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-manrope text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${variantClass[variant] ?? variantClass.default}`}
-    onClick={onClick}
-    disabled={disabled}
-    title={label}
-    type="button"
-  >
-    <span>{icon}</span>
-    <span>{label}</span>
-  </button>
-);
 
 export const Route = createFileRoute('/note')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -533,493 +456,349 @@ function NoteRoute() {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
-        <Link
-          to="/"
-          search={{ q: undefined, collection: undefined }}
-          className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6"
-        >
-          ← Back to vault
-        </Link>
-        <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
-          <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-4" />
-          <p className="font-manrope text-sm">Loading note…</p>
-        </div>
-      </main>
-    );
-  }
+  // Derived values (safe to compute before render; guarded where needed)
+  const noteSpecPath = note ? getStringValue(note.frontmatter.spec_path) : null;
+  const noteStatus = note ? getStringValue(note.frontmatter.status) : null;
+  const noteEstimatedTimeMin = note
+    ? getNumberValue(note.frontmatter.estimatedTimeMin)
+    : null;
+  const noteEffortScore = note
+    ? getNumberValue(note.frontmatter.effortScore)
+    : null;
+  const noteGoalId = note ? getStringValue(note.frontmatter.goalId) : null;
+  const isDelegatable = note
+    ? getBooleanValue(note.frontmatter.delegatable)
+    : false;
 
-  if (error) {
-    return (
-      <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
-        <Link
-          to="/"
-          search={{ q: undefined, collection: undefined }}
-          className="inline-flex items-center gap-1 font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors mb-6"
-        >
-          ← Back to vault
-        </Link>
-        <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
-          <span className="text-4xl mb-4">📄</span>
-          <h2 className="font-space-grotesk text-xl font-bold text-on-surface mb-2">
-            Note Not Found
-          </h2>
-          <p className="font-manrope text-sm text-on-surface-variant mb-6">
-            {error}
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() =>
-                navigate({
-                  to: '/',
-                  search: { q: undefined, collection: undefined },
-                })
-              }
-              className="px-4 py-2 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity"
-              type="button"
-            >
-              Return to Vault
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-surface-container-high text-on-surface rounded-lg font-manrope text-xs border border-outline-variant/20 hover:bg-surface-container-highest transition-colors"
-              type="button"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (!note) return null;
-
-  const noteStatus = getStringValue(note.frontmatter.status);
-  const notePriority = getNumberValue(note.frontmatter.priority);
-  const noteCreated = getStringValue(note.frontmatter.created);
-  const noteUpdated = getStringValue(note.frontmatter.updated);
-  const noteEstimatedTimeMin = getNumberValue(
-    note.frontmatter.estimatedTimeMin
-  );
-  const noteEffortScore = getNumberValue(note.frontmatter.effortScore);
-  const noteGoalId = getStringValue(note.frontmatter.goalId);
-  const noteSpecPath = getStringValue(note.frontmatter.spec_path);
-  const isDelegatable = getBooleanValue(note.frontmatter.delegatable);
-  const isGoal =
-    note.frontmatter.type === 'goal' || note.collection === 'goals';
+  // Sanitize options preserved from original
+  const sanitizeOptions = {
+    allowedTags: [
+      ...sanitizeHtml.defaults.allowedTags,
+      'code', 'pre', 'kbd', 'mark', 'details', 'summary',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    ],
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      code: ['class'],
+      pre: ['class'],
+      '*': ['class', 'id'],
+    },
+  } as const;
 
   return (
-    <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 font-manrope text-[11px] text-on-surface-variant mb-6">
+    <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto space-y-6">
+      {/* Back nav */}
+      <nav>
         <Link
           to="/"
           search={{ q: undefined, collection: undefined }}
-          className="hover:text-on-surface transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
         >
-          Vault
+          ← Back to vault
         </Link>
-        <span className="opacity-40">/</span>
-        <Link
-          to="/"
-          search={{ collection: note.collection, q: '' }}
-          className="hover:text-on-surface transition-colors"
-        >
-          {formatNoteLabel(note.collection)}
-        </Link>
-        <span className="opacity-40">/</span>
-        <span className="text-on-surface truncate max-w-xs">{note.title}</span>
       </nav>
 
       {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-2 flex-wrap mb-3">
-          <span className="font-manrope text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-primary/10 text-primary rounded">
-            {note.collection}
-          </span>
-          {noteStatus && <StatusBadge status={noteStatus} />}
-          {notePriority !== null && <PriorityBadge priority={notePriority} />}
-          {isDelegatable && (
-            <span className="font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-secondary/10 text-secondary rounded">
-              delegatable
-            </span>
-          )}
-          {note.lifecycle.source !== 'canonical' && (
-            <span className="font-manrope text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
-              {note.lifecycle.source} queue
-            </span>
-          )}
-        </div>
-
-        <h1 className="font-space-grotesk text-3xl font-extrabold tracking-tight text-on-surface leading-tight mb-3">
-          {note.title}
-        </h1>
-
-        <div className="flex items-center gap-4 flex-wrap font-manrope text-[11px] text-on-surface-variant">
-          {noteCreated && <span>Created {formatDate(noteCreated)}</span>}
-          {noteUpdated && <span>Updated {formatDate(noteUpdated)}</span>}
-          {noteEstimatedTimeMin !== null && (
-            <span>~{noteEstimatedTimeMin} min</span>
-          )}
-          {noteEffortScore !== null && <span>Effort {noteEffortScore}/10</span>}
-          {noteGoalId && (
-            <Link
-              to="/note"
-              search={{ p: noteGoalId }}
-              className="text-primary hover:opacity-80 transition-opacity"
-            >
-              Goal {formatNoteLabel(noteGoalId)}
-            </Link>
-          )}
-        </div>
-
-        {note.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {note.tags.map((tag) => (
-              <Link
-                key={tag}
-                to="/"
-                search={{ q: tag, collection: 'all' }}
-                className="font-manrope text-[10px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded hover:bg-primary/10 hover:text-primary transition-colors"
-              >
-                #{tag}
-              </Link>
-            ))}
-          </div>
-        )}
-      </header>
-
-      {/* Two-column layout */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] items-start">
-        {/* Main content */}
-        <section className="min-w-0 space-y-6">
-          {/* Task progress card */}
-          {note.lifecycle.isTask && taskData && (
-            <div className="bg-surface-container rounded-xl p-5 mb-6 border border-outline-variant/10">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
-                  Task Progress
-                </h3>
-                {taskData.metrics?.currentMilestone !== undefined && (
-                  <span className="font-manrope text-[10px] uppercase tracking-widest text-primary font-bold">
-                    {taskData.metrics.currentMilestone}% complete
-                  </span>
-                )}
-              </div>
-              <div className="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden mb-4">
-                <div
-                  className="bg-primary h-full rounded-full transition-all"
-                  style={{
-                    width: `${taskData.metrics?.currentMilestone || 0}%`,
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                {taskData.metrics?.effortRemaining !== undefined && (
-                  <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
-                      {taskData.metrics.effortRemaining}
-                    </p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                      Effort Left
-                    </p>
-                  </div>
-                )}
-                {taskData.metrics?.estimatedCompletionMin !== undefined && (
-                  <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
-                      {taskData.metrics.estimatedCompletionMin}m
-                    </p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                      Est. Time
-                    </p>
-                  </div>
-                )}
-                {taskData.metrics?.rewardPotential !== undefined && (
-                  <div className="text-center">
-                    <p className="font-space-grotesk font-bold text-lg text-on-surface">
-                      {(taskData.metrics.rewardPotential * 100).toFixed(0)}%
-                    </p>
-                    <p className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                      Reward
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <article
-            className="note-content"
-            dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(note.html, {
-                allowedTags: [
-                  ...sanitizeHtml.defaults.allowedTags,
-                  'code', 'pre', 'kbd', 'mark', 'details', 'summary',
-                  'table', 'thead', 'tbody', 'tr', 'th', 'td',
-                ],
-                allowedAttributes: {
-                  ...sanitizeHtml.defaults.allowedAttributes,
-                  code: ['class'],
-                  pre: ['class'],
-                  '*': ['class', 'id'],
-                },
-              }),
-            }}
-          />
-        </section>
-
-        {/* Sidebar */}
-        <aside className="space-y-4 xl:sticky xl:top-6">
-          {/* Actions */}
-          <div className={`${panelClass} p-4 sm:p-5`}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
-                Actions
-              </h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                reader tools
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
+      {note && (
+        <NoteHeader
+          display={toNoteHeaderDisplay({
+            title: note.title,
+            type: getStringValue(note.frontmatter.type),
+            status: noteStatus,
+            path: note.path,
+          })}
+          extraActions={
+            <>
               {note.lifecycle.canPromote && (
-                <ActionButton
-                  icon={pendingPromotionToken ? '✓' : '↑'}
-                  label={pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
+                <PrimaryButton
                   onClick={handlePromote}
-                  variant="primary"
                   disabled={lifecycleBusy !== null}
-                />
+                >
+                  {pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
+                </PrimaryButton>
               )}
               {note.lifecycle.canReject && (
-                <ActionButton
-                  icon="✕"
-                  label="Reject to Queue"
+                <SecondaryButton
                   onClick={handleReject}
-                  variant="danger"
                   disabled={lifecycleBusy !== null}
-                />
+                  className="text-red-600 hover:bg-red-50"
+                >
+                  Reject
+                </SecondaryButton>
               )}
               {note.lifecycle.canComplete && (
-                <ActionButton
-                  icon="✓"
-                  label="Complete & Archive"
+                <SecondaryButton
                   onClick={handleCompleteTask}
-                  variant="accent"
                   disabled={lifecycleBusy !== null}
-                />
+                >
+                  Complete &amp; Archive
+                </SecondaryButton>
               )}
-              <ActionButton
-                icon="📋"
-                label={copied ? 'Copied!' : 'Copy Path'}
-                onClick={handleCopyPath}
-                variant={copied ? 'success' : 'default'}
-              />
-              <ActionButton icon="🔗" label="Share" onClick={handleShare} />
-              <ActionButton
-                icon="🗂"
-                label="Open in Obsidian"
-                onClick={handleOpenInObsidian}
-                variant="accent"
-              />
+              <SecondaryButton onClick={handleCopyPath}>
+                {copied ? 'Copied!' : 'Copy Path'}
+              </SecondaryButton>
+              <SecondaryButton onClick={() => void handleShare()}>
+                Share
+              </SecondaryButton>
+              <SecondaryButton onClick={handleOpenInObsidian}>
+                Open in Obsidian
+              </SecondaryButton>
               {noteSpecPath && (
-                <ActionButton
-                  icon="📖"
-                  label="Open Spec"
+                <SecondaryButton
                   onClick={() =>
                     navigate({
                       to: '/note',
                       search: { p: stripMarkdownExtension(noteSpecPath) },
                     })
                   }
-                />
-              )}
-            </div>
-            {note.lifecycle.canReview && (
-              <div className="mt-4 pt-4 border-t border-outline-variant/10">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-space-grotesk font-bold text-xs text-on-surface">
-                    Task Review
-                  </h4>
-                  <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                    {note.lifecycle.reviewStatus
-                      ? `current: ${note.lifecycle.reviewStatus}`
-                      : 'task workflow'}
-                  </span>
-                </div>
-                <div className="flex gap-3 mb-3 flex-wrap">
-                  {['approve', 'needs_changes'].map((val) => (
-                    <label
-                      key={val}
-                      className="flex items-center gap-1.5 cursor-pointer font-manrope text-xs text-on-surface"
-                    >
-                      <input
-                        type="radio"
-                        name="review-decision"
-                        value={val}
-                        checked={reviewDecision === val}
-                        onChange={() => setReviewDecision(val)}
-                        className="accent-primary"
-                      />
-                      {val === 'approve' ? 'Approve' : 'Needs changes'}
-                    </label>
-                  ))}
-                </div>
-                <textarea
-                  className="w-full bg-surface-container-high text-on-surface font-manrope text-xs rounded-lg p-2.5 border border-outline-variant/20 focus:outline-none focus:border-primary/40 resize-none"
-                  placeholder="Add a short review comment"
-                  rows={3}
-                  value={reviewComment}
-                  onChange={(event) => setReviewComment(event.target.value)}
-                />
-                <button
-                  className="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg font-manrope text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
-                  onClick={handleReviewSubmit}
-                  disabled={reviewSubmitting || lifecycleBusy !== null}
-                  type="button"
                 >
-                  {reviewSubmitting ? 'Submitting…' : 'Submit review'}
-                </button>
-                {reviewMessage && (
-                  <p className="font-manrope text-xs text-on-surface-variant mt-2">
-                    {reviewMessage}
+                  Open Spec
+                </SecondaryButton>
+              )}
+            </>
+          }
+        />
+      )}
+
+      {/* Lifecycle feedback */}
+      {lifecycleMessage && (
+        <p
+          className={`text-sm px-1 ${lifecycleError ? 'text-red-500' : 'text-slate-500'}`}
+        >
+          {lifecycleMessage}
+        </p>
+      )}
+      {pendingPromotionExpiry && (
+        <p className="text-xs text-slate-400 px-1">
+          Promotion window expires at {pendingPromotionExpiry}.
+        </p>
+      )}
+
+      {/* Body + Rail */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Content */}
+        <div className="col-span-12 lg:col-span-8">
+          <SoftPanel>
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="w-7 h-7 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin mb-3" />
+                <p className="text-sm text-slate-400">Loading note…</p>
+              </div>
+            )}
+            {!loading && error && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <span className="text-3xl mb-3">📄</span>
+                <h2 className="text-lg font-semibold text-slate-800 mb-1">
+                  Note not found
+                </h2>
+                <p className="text-sm text-slate-500 mb-4">{error}</p>
+                <div className="flex gap-3">
+                  <PrimaryButton
+                    onClick={() =>
+                      navigate({
+                        to: '/',
+                        search: { q: undefined, collection: undefined },
+                      })
+                    }
+                  >
+                    Return to Vault
+                  </PrimaryButton>
+                  <SecondaryButton onClick={() => window.location.reload()}>
+                    Try Again
+                  </SecondaryButton>
+                </div>
+              </div>
+            )}
+            {!loading && !error && note && (
+              <>
+                {/* Task progress */}
+                {note.lifecycle.isTask && taskData?.metrics && (
+                  <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-semibold text-slate-700">
+                        Task Progress
+                      </span>
+                      {taskData.metrics.currentMilestone !== undefined && (
+                        <span className="text-xs text-blue-600 font-medium">
+                          {taskData.metrics.currentMilestone}% complete
+                        </span>
+                      )}
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-1.5 mb-3">
+                      <div
+                        className="bg-blue-500 h-full rounded-full transition-all"
+                        style={{
+                          width: `${taskData.metrics.currentMilestone ?? 0}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      {taskData.metrics.effortRemaining !== undefined && (
+                        <div>
+                          <p className="text-base font-bold text-slate-800">
+                            {taskData.metrics.effortRemaining}
+                          </p>
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                            Effort Left
+                          </p>
+                        </div>
+                      )}
+                      {taskData.metrics.estimatedCompletionMin !== undefined && (
+                        <div>
+                          <p className="text-base font-bold text-slate-800">
+                            {taskData.metrics.estimatedCompletionMin}m
+                          </p>
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                            Est. Time
+                          </p>
+                        </div>
+                      )}
+                      {taskData.metrics.rewardPotential !== undefined && (
+                        <div>
+                          <p className="text-base font-bold text-slate-800">
+                            {(taskData.metrics.rewardPotential * 100).toFixed(0)}%
+                          </p>
+                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                            Reward
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Inline meta (time / effort / goal) */}
+                {(noteEstimatedTimeMin !== null ||
+                  noteEffortScore !== null ||
+                  noteGoalId ||
+                  isDelegatable) && (
+                  <div className="flex flex-wrap gap-3 mb-4 text-xs text-slate-500">
+                    {noteEstimatedTimeMin !== null && (
+                      <span>~{noteEstimatedTimeMin} min</span>
+                    )}
+                    {noteEffortScore !== null && (
+                      <span>Effort {noteEffortScore}/10</span>
+                    )}
+                    {noteGoalId && (
+                      <Link
+                        to="/note"
+                        search={{ p: noteGoalId }}
+                        className="text-blue-500 hover:opacity-80 transition-opacity"
+                      >
+                        Goal → {formatNoteLabel(noteGoalId)}
+                      </Link>
+                    )}
+                    {isDelegatable && (
+                      <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-500">
+                        delegatable
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <NoteBodyRenderer
+                  html={sanitizeHtml(note.html, sanitizeOptions)}
+                />
+              </>
+            )}
+          </SoftPanel>
+        </div>
+
+        {/* Meta rail */}
+        <div className="col-span-12 lg:col-span-4 space-y-4">
+          {note && (
+            <>
+              <NoteMetaRail
+                frontmatter={note.frontmatter}
+                lifecycle={note.lifecycle}
+                relatedNotes={relatedNotes}
+                path={note.path}
+              />
+
+              {/* Task review */}
+              {note.lifecycle.canReview && (
+                <SoftPanel title="Task Review">
+                  <div className="text-xs text-slate-400 mb-3">
+                    {note.lifecycle.reviewStatus
+                      ? `Current: ${note.lifecycle.reviewStatus}`
+                      : 'No review yet'}
+                  </div>
+                  <div className="flex gap-3 mb-3 flex-wrap">
+                    {['approve', 'needs_changes'].map((val) => (
+                      <label
+                        key={val}
+                        className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-700"
+                      >
+                        <input
+                          type="radio"
+                          name="review-decision"
+                          value={val}
+                          checked={reviewDecision === val}
+                          onChange={() => setReviewDecision(val)}
+                          className="accent-blue-500"
+                        />
+                        {val === 'approve' ? 'Approve' : 'Needs changes'}
+                      </label>
+                    ))}
+                  </div>
+                  <textarea
+                    className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:outline-none focus:border-blue-300 resize-none"
+                    placeholder="Add a short review comment"
+                    rows={3}
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                  />
+                  <PrimaryButton
+                    onClick={() => void handleReviewSubmit()}
+                    disabled={reviewSubmitting || lifecycleBusy !== null}
+                    className="mt-2 w-full"
+                  >
+                    {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+                  </PrimaryButton>
+                  {reviewMessage && (
+                    <p className="text-xs text-slate-400 mt-2">{reviewMessage}</p>
+                  )}
+                </SoftPanel>
+              )}
+
+              {/* Informational notes */}
+              {note.lifecycle.isTask &&
+                !note.lifecycle.canComplete &&
+                noteStatus === 'completed' && (
+                  <p className="text-xs text-slate-400 px-1">
+                    Completed tasks archive through the existing handler flow.
                   </p>
                 )}
-              </div>
-            )}
-            {lifecycleMessage && (
-              <p
-                className={`font-manrope text-xs mt-3 ${lifecycleError ? 'text-error' : 'text-on-surface-variant'}`}
-              >
-                {lifecycleMessage}
-              </p>
-            )}
-            {pendingPromotionExpiry && (
-              <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
-                Expires at {pendingPromotionExpiry}.
-              </p>
-            )}
-            {note.lifecycle.isTask &&
-              !note.lifecycle.canComplete &&
-              noteStatus === 'completed' && (
-                <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
-                  Completed tasks archive through the existing handler flow.
-                </p>
-              )}
-            {!note.lifecycle.isTask &&
-              note.lifecycle.source === 'canonical' && (
-                <p className="font-manrope text-[10px] text-on-surface-variant mt-1">
-                  Archive actions for canonical notes are not yet supported.
-                </p>
-              )}
-          </div>
-
-          {/* Context */}
-          <div className={`${panelClass} p-4 sm:p-5`}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
-                Context
-              </h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                metadata
-              </span>
-            </div>
-            <dl className="space-y-2">
-              {[
-                ['Path', note.path],
-                note.lifecycle.runId ? ['Run', note.lifecycle.runId] : null,
-                note.lifecycle.targetPath
-                  ? ['Target', note.lifecycle.targetPath]
-                  : null,
-                note.lifecycle.reviewStatus
-                  ? ['Review', note.lifecycle.reviewStatus]
-                  : null,
-              ]
-                .filter((x): x is [string, string] => x !== null)
-                .map(([dt, dd]) => (
-                  <div key={dt as string}>
-                    <dt className="font-manrope text-[9px] uppercase tracking-widest text-on-surface-variant">
-                      {dt as string}
-                    </dt>
-                    <dd className="font-manrope text-[11px] text-on-surface break-all">
-                      {dd as string}
-                    </dd>
-                  </div>
-                ))}
-            </dl>
-          </div>
-
-          {/* Related notes */}
-          <div className={`${panelClass} p-4 sm:p-5`}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-space-grotesk font-bold text-sm text-on-surface">
-                Related Notes
-              </h3>
-              <span className="font-manrope text-[10px] uppercase tracking-widest text-on-surface-variant">
-                graph
-              </span>
-            </div>
-            {relatedNotes.length === 0 ? (
-              <p className="font-manrope text-xs text-on-surface-variant">
-                No related notes found yet.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {relatedNotes.map((related) => (
-                  <Link
-                    key={related.path}
-                    to="/note"
-                    search={{ p: stripMarkdownExtension(related.path) }}
-                    className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/10 hover:border-primary/20 transition-all group"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-manrope text-xs font-medium text-on-surface truncate group-hover:text-primary transition-colors">
-                        {formatNoteLabel(
-                          stripMarkdownExtension(related.path)
-                            .split('/')
-                            .pop() || related.path
-                        )}
-                      </p>
-                      <p className="font-manrope text-[10px] text-on-surface-variant truncate">
-                        {stripMarkdownExtension(related.path)}
-                      </p>
-                    </div>
-                    <span className="font-manrope text-[10px] text-primary shrink-0">
-                      {Math.round((related.score || 0) * 100)}%
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </aside>
+              {!note.lifecycle.isTask &&
+                note.lifecycle.source === 'canonical' && (
+                  <p className="text-xs text-slate-400 px-1">
+                    Archive actions for canonical notes are not yet supported.
+                  </p>
+                )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="mt-10 pt-6 border-t border-outline-variant/20 flex items-center justify-between">
-        <div className="flex gap-6">
+      <footer className="pt-6 border-t border-slate-100 flex items-center justify-between">
+        <div className="flex gap-4">
           <Link
             to="/"
             search={{ q: undefined, collection: undefined }}
-            className="font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
           >
             ← Back to Vault
           </Link>
-          {note.collection === 'tasks' && (
+          {note?.collection === 'tasks' && (
             <Link
               to="/goals"
-              className="font-manrope text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
             >
               View Goals →
             </Link>
           )}
         </div>
-        <span className="font-manrope text-[10px] text-on-surface-variant truncate max-w-xs">
-          {note.path}
-        </span>
       </footer>
     </main>
   );

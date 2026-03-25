@@ -85,37 +85,22 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         <Link to="/" search={{ q: undefined, collection: undefined }} onClick={closeMenu}>
           Home
         </Link>
-        <Link
-          to="/projects"
-          onClick={closeMenu}
-        >
+        <Link to="/projects" onClick={closeMenu}>
           Projects
         </Link>
-        <Link
-          to="/avatar"
-          onClick={closeMenu}
-        >
+        <Link to="/avatar" onClick={closeMenu}>
           Avatar
         </Link>
         <a href={hueyAppUrl} onClick={closeMenu} className="navbar__huey-link">
           Huey
         </a>
-        <Link
-          to="/cod-status"
-          onClick={closeMenu}
-        >
+        <Link to="/cod-status" onClick={closeMenu}>
           COD
         </Link>
-        <Link
-          to="/inbox"
-          onClick={closeMenu}
-        >
+        <Link to="/inbox" search={{ view: undefined }} onClick={closeMenu}>
           Inbox
         </Link>
-        <Link
-          to="/knowledge"
-          onClick={closeMenu}
-        >
+        <Link to="/knowledge" onClick={closeMenu}>
           Knowledge
         </Link>
         <a

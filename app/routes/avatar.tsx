@@ -12,6 +12,7 @@ import {
   type CapacityInput,
   type VitalsInput,
 } from '../../src/lib/readiness-logic';
+import { ReadinessCard } from '../components/avatar'
 import { apiBadgeText } from '../../src/lib/avatar-logic';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,8 @@ function ReadinessHeader({
   loading,
   apiStatus,
   onRefresh,
+  capacityLabel,
+  timeBudgetLabel,
 }: {
   profile: ProfileData;
   readiness: ReadinessState;
@@ -57,6 +60,8 @@ function ReadinessHeader({
   loading: boolean;
   apiStatus: string;
   onRefresh: () => void;
+  capacityLabel: string;
+  timeBudgetLabel: string | null;
 }) {
   const nameIsReal =
     profile.name && profile.name !== 'Unknown' && profile.name !== 'Vault User';
@@ -80,13 +85,7 @@ function ReadinessHeader({
       </div>
 
       <div className="os-header__readiness">
-        <span
-          className={`readiness-badge readiness-badge--${readiness.level}`}
-          style={{ color: readiness.color, borderColor: readiness.color }}
-        >
-          {readiness.label}
-        </span>
-        <p className="os-header__desc">{readiness.description}</p>
+        <ReadinessCard readiness={readiness} capacityLabel={capacityLabel} timeBudgetLabel={timeBudgetLabel} />
         {flags.stagnation && (
           <span className="os-flag os-flag--warning">Stagnation detected</span>
         )}
@@ -327,6 +326,13 @@ function AvatarRoute() {
         loading={loading}
         apiStatus={apiStatus}
         onRefresh={refresh}
+        capacityLabel={(() => {
+          const parts: string[] = []
+          if (isMetricReal(capacity.focusCostMax)) parts.push(`Focus ≤ ${capacity.focusCostMax}`)
+          if (isMetricReal(capacity.effortScoreMax)) parts.push(`Effort ≤ ${capacity.effortScoreMax}`)
+          return parts.join(' · ') || 'No capacity set'
+        })()}
+        timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
       />
 
       {loading ? (

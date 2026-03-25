@@ -1,7 +1,7 @@
-import React from "react";
-import { createFileRoute, Link } from '@tanstack/react-router';
-import CODStatusPanel from "../../src/components/CODStatusPanel";
-import { codPageStyle } from "../../src/lib/cod-status-logic";
+import React from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import { PageFrame } from '../components/layout'
+import { CodModal } from '../components/cod'
 
 export const Route = createFileRoute('/cod-status')({
   component: CODStatusRoute,
@@ -9,18 +9,10 @@ export const Route = createFileRoute('/cod-status')({
 
 function CODStatusRoute() {
   return (
-    <main className="page cod-status-page" style={codPageStyle()}>
-      <header className="detail__header" style={{ paddingBottom: '24px' }}>
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">
-          ← Back to vault
-        </Link>
-        <h1>COD Status</h1>
-        <p className="lede">Execution readiness and constraints.</p>
-      </header>
-
-      <section className="cod-status-content">
-        <CODStatusPanel collapsed={false} />
-      </section>
+    <main className="space-y-6">
+      <PageFrame title="Readiness" subtitle="Can you work now, and under what constraints?">
+        <CodModal />
+      </PageFrame>
     </main>
-  );
+  )
 }

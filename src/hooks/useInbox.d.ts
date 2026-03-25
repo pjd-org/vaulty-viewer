@@ -54,7 +54,14 @@ export interface InboxMutationResult {
 
 export interface UseInboxResult {
   notes: InboxNote[]
+  workbenchNotes: InboxNote[]
+  archiveNotes: InboxNote[]
   runs: InboxRun[]
+  counts: {
+    queue: number
+    workbench: number
+    archive: number
+  }
   loading: boolean
   error: string | null
   apiStatus: 'online' | 'offline' | 'unknown'
