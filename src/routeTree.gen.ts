@@ -11,9 +11,8 @@
 // Import Routes
 
 import { Route as rootRoute } from './../app/routes/__root'
-import { Route as NoteImport } from './../app/routes/note'
-import { Route as ProjectsProjectIdImport } from './../app/routes/projects.$projectId'
 import { Route as ProjectsImport } from './../app/routes/projects'
+import { Route as NoteImport } from './../app/routes/note'
 import { Route as LoginImport } from './../app/routes/login'
 import { Route as KnowledgeImport } from './../app/routes/knowledge'
 import { Route as KanbanImport } from './../app/routes/kanban'
@@ -24,11 +23,18 @@ import { Route as CodStatusImport } from './../app/routes/cod-status'
 import { Route as AvatarImport } from './../app/routes/avatar'
 import { Route as IndexImport } from './../app/routes/index'
 import { Route as SessionIdImport } from './../app/routes/session.$id'
+import { Route as ProjectsProjectIdImport } from './../app/routes/projects.$projectId'
 import { Route as OauthConsentImport } from './../app/routes/oauth/consent'
 import { Route as KnowledgeSearchImport } from './../app/routes/knowledge.search'
 import { Route as KnowledgeGraphImport } from './../app/routes/knowledge.graph'
 
 // Create/Update Routes
+
+const ProjectsRoute = ProjectsImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const NoteRoute = NoteImport.update({
   id: '/note',
@@ -72,24 +78,6 @@ const GoalsRoute = GoalsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProjectsRoute = ProjectsImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ProjectsProjectIdRoute = ProjectsProjectIdImport.update({
-  id: '/projects/$projectId',
-  path: '/projects/$projectId',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const SessionIdRoute = SessionIdImport.update({
-  id: '/session/$id',
-  path: '/session/$id',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const CodStatusRoute = CodStatusImport.update({
   id: '/cod-status',
   path: '/cod-status',
@@ -106,6 +94,18 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const SessionIdRoute = SessionIdImport.update({
+  id: '/session/$id',
+  path: '/session/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProjectsProjectIdRoute = ProjectsProjectIdImport.update({
+  id: '/$projectId',
+  path: '/$projectId',
+  getParentRoute: () => ProjectsRoute,
 } as any)
 
 const OauthConsentRoute = OauthConsentImport.update({
@@ -158,27 +158,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoalsImport
       parentRoute: typeof rootRoute
     }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsImport
-      parentRoute: typeof rootRoute
-    }
-    '/projects/$projectId': {
-      id: '/projects/$projectId'
-      path: '/projects/$projectId'
-      fullPath: '/projects/$projectId'
-      preLoaderRoute: typeof ProjectsProjectIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/session/$id': {
-      id: '/session/$id'
-      path: '/session/$id'
-      fullPath: '/session/$id'
-      preLoaderRoute: typeof SessionIdImport
-      parentRoute: typeof rootRoute
-    }
     '/huey': {
       id: '/huey'
       path: '/huey'
@@ -221,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NoteImport
       parentRoute: typeof rootRoute
     }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsImport
+      parentRoute: typeof rootRoute
+    }
     '/knowledge/graph': {
       id: '/knowledge/graph'
       path: '/graph'
@@ -242,6 +228,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OauthConsentImport
       parentRoute: typeof rootRoute
     }
+    '/projects/$projectId': {
+      id: '/projects/$projectId'
+      path: '/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof ProjectsProjectIdImport
+      parentRoute: typeof ProjectsImport
+    }
+    '/session/$id': {
+      id: '/session/$id'
+      path: '/session/$id'
+      fullPath: '/session/$id'
+      preLoaderRoute: typeof SessionIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -261,6 +261,18 @@ const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
   KnowledgeRouteChildren,
 )
 
+interface ProjectsRouteChildren {
+  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+}
+
+const ProjectsRouteChildren: ProjectsRouteChildren = {
+  ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+}
+
+const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
+  ProjectsRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avatar': typeof AvatarRoute
@@ -272,12 +284,12 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
-  '/projects': typeof ProjectsRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/session/$id': typeof SessionIdRoute
+  '/projects': typeof ProjectsRouteWithChildren
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -291,12 +303,12 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
-  '/projects': typeof ProjectsRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/session/$id': typeof SessionIdRoute
+  '/projects': typeof ProjectsRouteWithChildren
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 
 export interface FileRoutesById {
@@ -311,12 +323,12 @@ export interface FileRoutesById {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/login': typeof LoginRoute
   '/note': typeof NoteRoute
-  '/projects': typeof ProjectsRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/session/$id': typeof SessionIdRoute
+  '/projects': typeof ProjectsRouteWithChildren
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 
 export interface FileRouteTypes {
@@ -333,11 +345,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/note'
     | '/projects'
-    | '/projects/$projectId'
-    | '/session/$id'
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/projects/$projectId'
+    | '/session/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -351,11 +363,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/note'
     | '/projects'
-    | '/projects/$projectId'
-    | '/session/$id'
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/projects/$projectId'
+    | '/session/$id'
   id:
     | '__root__'
     | '/'
@@ -369,11 +381,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/note'
     | '/projects'
-    | '/projects/$projectId'
-    | '/session/$id'
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/projects/$projectId'
+    | '/session/$id'
   fileRoutesById: FileRoutesById
 }
 
@@ -388,10 +400,9 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
   LoginRoute: typeof LoginRoute
   NoteRoute: typeof NoteRoute
-  ProjectsRoute: typeof ProjectsRoute
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
-  SessionIdRoute: typeof SessionIdRoute
+  ProjectsRoute: typeof ProjectsRouteWithChildren
   OauthConsentRoute: typeof OauthConsentRoute
+  SessionIdRoute: typeof SessionIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -405,10 +416,9 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRouteWithChildren,
   LoginRoute: LoginRoute,
   NoteRoute: NoteRoute,
-  ProjectsRoute: ProjectsRoute,
-  ProjectsProjectIdRoute: ProjectsProjectIdRoute,
-  SessionIdRoute: SessionIdRoute,
+  ProjectsRoute: ProjectsRouteWithChildren,
   OauthConsentRoute: OauthConsentRoute,
+  SessionIdRoute: SessionIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -431,7 +441,9 @@ export const routeTree = rootRoute
         "/knowledge",
         "/login",
         "/note",
-        "/oauth/consent"
+        "/projects",
+        "/oauth/consent",
+        "/session/$id"
       ]
     },
     "/": {
@@ -468,6 +480,12 @@ export const routeTree = rootRoute
     "/note": {
       "filePath": "note.tsx"
     },
+    "/projects": {
+      "filePath": "projects.tsx",
+      "children": [
+        "/projects/$projectId"
+      ]
+    },
     "/knowledge/graph": {
       "filePath": "knowledge.graph.tsx",
       "parent": "/knowledge"
@@ -478,6 +496,13 @@ export const routeTree = rootRoute
     },
     "/oauth/consent": {
       "filePath": "oauth/consent.tsx"
+    },
+    "/projects/$projectId": {
+      "filePath": "projects.$projectId.tsx",
+      "parent": "/projects"
+    },
+    "/session/$id": {
+      "filePath": "session.$id.tsx"
     }
   }
 }

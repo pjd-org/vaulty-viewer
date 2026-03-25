@@ -1,7 +1,7 @@
-import React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import useAvatar from "../../src/hooks/useAvatar";
-import VitalsPanel from "../../src/components/VitalsPanel";
+import React from 'react';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import useAvatar from '../../src/hooks/useAvatar';
+import VitalsPanel from '../../src/components/VitalsPanel';
 import {
   deriveReadiness,
   deriveCapacityGuidance,
@@ -11,8 +11,8 @@ import {
   type ReadinessState,
   type CapacityInput,
   type VitalsInput,
-} from "../../src/lib/readiness-logic";
-import { apiBadgeText } from "../../src/lib/avatar-logic";
+} from '../../src/lib/readiness-logic';
+import { apiBadgeText } from '../../src/lib/avatar-logic';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,25 +59,24 @@ function ReadinessHeader({
   onRefresh: () => void;
 }) {
   const nameIsReal =
-    profile.name &&
-    profile.name !== "Unknown" &&
-    profile.name !== "Vault User";
+    profile.name && profile.name !== 'Unknown' && profile.name !== 'Vault User';
   const titleIsReal =
     profile.title &&
-    profile.title !== "Vault User" &&
-    profile.title !== "Unknown";
+    profile.title !== 'Vault User' &&
+    profile.title !== 'Unknown';
 
   const lastUpdatedStr = updated
-    ? new Date(updated).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    ? new Date(updated).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : null;
 
   return (
     <header className="os-header">
       <div className="os-header__identity">
         {nameIsReal && <h1 className="os-header__name">{profile.name}</h1>}
-        {titleIsReal && (
-          <p className="os-header__title">{profile.title}</p>
-        )}
+        {titleIsReal && <p className="os-header__title">{profile.title}</p>}
       </div>
 
       <div className="os-header__readiness">
@@ -98,7 +97,9 @@ function ReadinessHeader({
 
       <div className="os-header__meta">
         {stale && lastUpdatedStr && (
-          <span className="os-stale">State may be stale — {lastUpdatedStr}</span>
+          <span className="os-stale">
+            State may be stale — {lastUpdatedStr}
+          </span>
         )}
         {!stale && lastUpdatedStr && (
           <span className="os-updated">Updated {lastUpdatedStr}</span>
@@ -123,11 +124,7 @@ function ReadinessHeader({
 // CapacityGroup
 // ---------------------------------------------------------------------------
 
-function CapacityGroup({
-  capacity,
-}: {
-  capacity: CapacityInput;
-}) {
+function CapacityGroup({ capacity }: { capacity: CapacityInput }) {
   const time = formatTimeBudget(capacity.timeBudgetMin);
   const guidance = deriveCapacityGuidance(capacity);
   const hasAny =
@@ -177,24 +174,18 @@ function ActionGuidancePanel({
 
   const tasksHref =
     focusParam !== undefined || effortParam !== undefined
-      ? `/?maxFocusCost=${focusParam ?? ""}&maxEffort=${effortParam ?? ""}`
-      : "/";
+      ? `/?maxFocusCost=${focusParam ?? ''}&maxEffort=${effortParam ?? ''}`
+      : '/';
 
   return (
     <section className="os-section action-guidance">
       <p className="os-section__label">What to do now</p>
-      <p className="action-guidance__text">
-        {readiness.description}
-      </p>
+      <p className="action-guidance__text">{readiness.description}</p>
       <div className="action-guidance__ctas">
         <Link
-          to="/session"
+          to="/"
+          search={{ session: '1' }}
           className="na-card__btn na-card__btn--start"
-          onClick={async (e) => {
-            // Navigate to focus page with session trigger open
-            e.preventDefault();
-            window.location.href = "/?session=1";
-          }}
         >
           Start {readiness.sessionType} session
           {budget > 0 && ` (${formatTimeBudget(Math.min(budget, 90))})`}
@@ -211,11 +202,7 @@ function ActionGuidancePanel({
 // ExecutionStats
 // ---------------------------------------------------------------------------
 
-function ExecutionStats({
-  vitals,
-}: {
-  vitals: Record<string, unknown>;
-}) {
+function ExecutionStats({ vitals }: { vitals: Record<string, unknown> }) {
   const tasksToday = (vitals.tasksCompletedToday as number) ?? 0;
   const sessionsWeek = (vitals.sessionsCompletedThisWeek as number) ?? 0;
 
@@ -259,20 +246,22 @@ function ProgressionSummary({
     streakUpdated &&
     (() => {
       const diff =
-        (Date.now() - new Date(streakUpdated).getTime()) / (1000 * 60 * 60 * 24);
+        (Date.now() - new Date(streakUpdated).getTime()) /
+        (1000 * 60 * 60 * 24);
       return diff <= 1;
     })();
 
   return (
     <div className="progression-summary">
       {streakDays > 0 && (
-        <span className={`chip ${isStreakActive ? "chip--score" : ""}`}>
-          {isStreakActive ? "🔥" : "○"} {streakDays}d streak
+        <span className={`chip ${isStreakActive ? 'chip--score' : ''}`}>
+          {isStreakActive ? '🔥' : '○'} {streakDays}d streak
         </span>
       )}
       {level > 0 && (
         <span className="chip chip--tag">
-          Level {level} · {currentXp.toLocaleString()} / {xpToNext.toLocaleString()} XP
+          Level {level} · {currentXp.toLocaleString()} /{' '}
+          {xpToNext.toLocaleString()} XP
         </span>
       )}
     </div>
@@ -283,7 +272,7 @@ function ProgressionSummary({
 // Route
 // ---------------------------------------------------------------------------
 
-export const Route = createFileRoute("/avatar")({
+export const Route = createFileRoute('/avatar')({
   component: AvatarRoute,
 });
 
@@ -311,13 +300,19 @@ function AvatarRoute() {
   return (
     <main className="page avatar-os-page">
       <nav className="breadcrumb">
-        <Link to="/" className="back-link">← Focus</Link>
+        <Link to="/" className="back-link">
+          ← Focus
+        </Link>
       </nav>
 
       {error && (
         <div className="focus-offline">
           {error}
-          <button onClick={refresh} className="os-refresh" style={{ marginLeft: 8 }}>
+          <button
+            onClick={refresh}
+            className="os-refresh"
+            style={{ marginLeft: 8 }}
+          >
             Retry
           </button>
         </div>

@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { apiFetch } from "../../src/utils/api";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { apiFetch } from '../../src/utils/api';
 import {
   normalizeNextAction,
   normalizeSessionSummary,
@@ -13,13 +13,13 @@ import {
   type NextAction,
   type ActiveSession,
   type SessionSummary,
-} from "../../src/lib/focus-logic";
+} from '../../src/lib/focus-logic';
 import {
   mergeHomepageApiStatus,
   homepageApiBadgeText,
-} from "../../src/lib/homepage-logic";
+} from '../../src/lib/homepage-logic';
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: FocusRoute,
 });
 
@@ -29,7 +29,9 @@ export const Route = createFileRoute("/")({
 
 function useFocusData() {
   const [nextActions, setNextActions] = useState<NextAction[]>([]);
-  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(
+    null
+  );
   const [recentSessions, setRecentSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiOnline, setApiOnline] = useState(true);
@@ -38,9 +40,9 @@ function useFocusData() {
     setLoading(true);
     try {
       const [actionsRes, sessionsRes, recentRes] = await Promise.all([
-        apiFetch("/api/v1/tasks/next-actions?max=10"),
-        apiFetch("/api/v1/sessions?status=active&limit=1"),
-        apiFetch("/api/v1/sessions?limit=3"),
+        apiFetch('/api/v1/tasks/next-actions?max=10'),
+        apiFetch('/api/v1/sessions?status=active&limit=1'),
+        apiFetch('/api/v1/sessions?limit=3'),
       ]);
       if (actionsRes.ok) {
         const body = await actionsRes.json();
@@ -55,13 +57,12 @@ function useFocusData() {
         const body = await sessionsRes.json();
         const sessions: ActiveSession[] =
           body.structuredContent?.sessions ?? body.sessions ?? [];
-        setActiveSession(
-          sessions.find((s) => s.status === "active") ?? null
-        );
+        setActiveSession(sessions.find((s) => s.status === 'active') ?? null);
       }
       if (recentRes.ok) {
         const body = await recentRes.json();
-        const raw: unknown[] = body.structuredContent?.sessions ?? body.sessions ?? [];
+        const raw: unknown[] =
+          body.structuredContent?.sessions ?? body.sessions ?? [];
         setRecentSessions(raw.map(normalizeSessionSummary));
       }
     } catch {
@@ -75,7 +76,14 @@ function useFocusData() {
     reload();
   }, [reload]);
 
-  return { nextActions, activeSession, recentSessions, loading, apiOnline, reload };
+  return {
+    nextActions,
+    activeSession,
+    recentSessions,
+    loading,
+    apiOnline,
+    reload,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -97,11 +105,21 @@ function CommandBar({ apiOnline }: { apiOnline: boolean }) {
   return (
     <nav className="cmd-bar" aria-label="Quick navigation">
       <div className="cmd-bar__links">
-        <Link to="/kanban" className="cmd-bar__link">Board</Link>
-        <Link to="/huey" className="cmd-bar__link">Huey</Link>
-        <Link to="/cod-status" className="cmd-bar__link">COD</Link>
-        <Link to="/goals" className="cmd-bar__link">Goals</Link>
-        <Link to="/avatar" className="cmd-bar__link">Avatar</Link>
+        <Link to="/kanban" className="cmd-bar__link">
+          Board
+        </Link>
+        <Link to="/huey" className="cmd-bar__link">
+          Huey
+        </Link>
+        <Link to="/cod-status" className="cmd-bar__link">
+          COD
+        </Link>
+        <Link to="/goals" className="cmd-bar__link">
+          Goals
+        </Link>
+        <Link to="/" search={{ session: '1' }} className="cmd-bar__link">
+          Avatar
+        </Link>
       </div>
       <StatusChip online={apiOnline} />
     </nav>
@@ -115,7 +133,12 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
       <p className="focus-section-label">Recent sessions</p>
       <div className="recent-sessions__list">
         {sessions.map((s) => (
-          <Link key={s.id} to={`/session/${s.id}`} className="recent-sessions__item">
+          <Link
+            key={s.id}
+            to={'/session/$id'}
+            params={{ id: s.id }}
+            className="recent-sessions__item"
+          >
             <span className="recent-sessions__title">
               {s.title ?? `Session ${s.id.slice(0, 6)}`}
             </span>
@@ -134,17 +157,25 @@ function GettingStartedCard() {
   return (
     <div className="focus-empty-card">
       <p className="focus-empty-card__title">Nothing ready to work on.</p>
-      <p className="focus-empty-card__desc">Start by planning, picking tasks, or asking Huey what to do next.</p>
+      <p className="focus-empty-card__desc">
+        Start by planning, picking tasks, or asking Huey what to do next.
+      </p>
       <div className="focus-empty-card__actions">
-        <Link to="/huey" className="pill pill--soft">Ask Huey →</Link>
-        <Link to="/kanban" className="pill pill--soft">Open Board →</Link>
-        <Link to="/goals" className="pill pill--ghost">View Goals →</Link>
+        <Link to="/huey" className="pill pill--soft">
+          Ask Huey →
+        </Link>
+        <Link to="/kanban" className="pill pill--soft">
+          Open Board →
+        </Link>
+        <Link to="/goals" className="pill pill--ghost">
+          View Goals →
+        </Link>
       </div>
     </div>
   );
 }
 
-
+function ActiveSessionBanner({
   session,
   onResume,
   onEnd,
@@ -154,7 +185,8 @@ function GettingStartedCard() {
   onEnd: () => void;
 }) {
   const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
-  const tasksDone = session.tasks?.filter((t) => t.status === "done").length ?? 0;
+  const tasksDone =
+    session.tasks?.filter((t) => t.status === 'done').length ?? 0;
   const tasksTotal = session.tasks?.length ?? 0;
 
   return (
@@ -177,7 +209,10 @@ function GettingStartedCard() {
         <button className="session-banner__btn" onClick={onResume}>
           Resume
         </button>
-        <button className="session-banner__btn session-banner__btn--end" onClick={onEnd}>
+        <button
+          className="session-banner__btn session-banner__btn--end"
+          onClick={onEnd}
+        >
           End
         </button>
       </div>
@@ -198,19 +233,23 @@ function TaskChips({ task }: { task: NextAction }) {
         <span className="chip chip--focus">f{task.focusCost}</span>
       )}
       {task.estimatedTimeMin > 0 && (
-        <span className="chip chip--time">{formatDuration(task.estimatedTimeMin)}</span>
+        <span className="chip chip--time">
+          {formatDuration(task.estimatedTimeMin)}
+        </span>
       )}
       {days !== null && days <= 7 && (
-        <span className={`chip chip--due${days <= 2 ? " chip--urgent" : ""}`}>
-          {days <= 0 ? "due today" : `due ${days}d`}
+        <span className={`chip chip--due${days <= 2 ? ' chip--urgent' : ''}`}>
+          {days <= 0 ? 'due today' : `due ${days}d`}
         </span>
       )}
       {blocked && <span className="chip chip--blocked">⚑ blocked</span>}
       {task.tags
-        .filter((t) => t !== "task")
+        .filter((t) => t !== 'task')
         .slice(0, 2)
         .map((t) => (
-          <span key={t} className="chip chip--tag">#{t}</span>
+          <span key={t} className="chip chip--tag">
+            #{t}
+          </span>
         ))}
     </div>
   );
@@ -230,10 +269,13 @@ function BestMoveCard({
   mutating: boolean;
 }) {
   return (
-    <article className={`na-card na-card--hero${isBlocked(task) ? " na-card--blocked" : ""}`}>
+    <article
+      className={`na-card na-card--hero${isBlocked(task) ? ' na-card--blocked' : ''}`}
+    >
       <div className="na-card__main">
         <Link
-          to={`/note/${encodeURIComponent(task.path)}`}
+          to="/note"
+          search={{ p: task.path }}
           className="na-card__title na-card__title--hero"
         >
           {task.title}
@@ -285,12 +327,9 @@ function NextActionCard({
   mutating: boolean;
 }) {
   return (
-    <article className={`na-card${isBlocked(task) ? " na-card--blocked" : ""}`}>
+    <article className={`na-card${isBlocked(task) ? ' na-card--blocked' : ''}`}>
       <div className="na-card__main">
-        <Link
-          to={`/note/${encodeURIComponent(task.path)}`}
-          className="na-card__title"
-        >
+        <Link to="/note" search={{ p: task.path }} className="na-card__title">
           {task.title}
         </Link>
         <TaskChips task={task} />
@@ -353,7 +392,9 @@ function StartSessionPanel({
     <div className="session-plan">
       <div className="session-plan__header">
         <span className="session-plan__title">Plan a session</span>
-        <button className="session-plan__close" onClick={onCancel}>×</button>
+        <button className="session-plan__close" onClick={onCancel}>
+          ×
+        </button>
       </div>
       <div className="session-plan__budget">
         <label className="session-plan__label">Duration</label>
@@ -361,7 +402,7 @@ function StartSessionPanel({
           {[30, 60, 90, 120].map((m) => (
             <button
               key={m}
-              className={`session-plan__budget-btn${budgetMin === m ? " session-plan__budget-btn--active" : ""}`}
+              className={`session-plan__budget-btn${budgetMin === m ? ' session-plan__budget-btn--active' : ''}`}
               onClick={() => onBudgetChange(m)}
             >
               {formatDuration(m)}
@@ -389,7 +430,7 @@ function StartSessionPanel({
           disabled={selected.size === 0}
           onClick={() => onStart(Array.from(selected))}
         >
-          Start Session ({selected.size} task{selected.size !== 1 ? "s" : ""})
+          Start Session ({selected.size} task{selected.size !== 1 ? 's' : ''})
         </button>
       </div>
     </div>
@@ -402,7 +443,14 @@ function StartSessionPanel({
 
 function FocusRoute() {
   const navigate = useNavigate();
-  const { nextActions, activeSession, recentSessions, loading, apiOnline, reload } = useFocusData();
+  const {
+    nextActions,
+    activeSession,
+    recentSessions,
+    loading,
+    apiOnline,
+    reload,
+  } = useFocusData();
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [sessionPanelOpen, setSessionPanelOpen] = useState(false);
   const [budgetMin, setBudgetMin] = useState(60);
@@ -420,14 +468,11 @@ function FocusRoute() {
     if (!task.path) return;
     setMutatingId(task.id);
     try {
-      await apiFetch(
-        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "in-progress" }),
-        }
-      );
+      await apiFetch(`/api/v1/tasks/${encodeURIComponent(task.path)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in-progress' }),
+      });
       reload();
     } finally {
       setMutatingId(null);
@@ -438,14 +483,11 @@ function FocusRoute() {
     if (!task.path) return;
     setMutatingId(task.id);
     try {
-      await apiFetch(
-        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "completed" }),
-        }
-      );
+      await apiFetch(`/api/v1/tasks/${encodeURIComponent(task.path)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
       reload();
     } finally {
       setMutatingId(null);
@@ -458,15 +500,17 @@ function FocusRoute() {
 
   const startSession = async (taskIds: string[]) => {
     try {
-      const res = await apiFetch("/cod/session/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await apiFetch('/cod/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskIds, budgetMin }),
       });
       if (res.ok) {
         const body = await res.json();
         const id =
-          body.structuredContent?.id ?? body.id ?? (body as Record<string, unknown>).sessionId;
+          body.structuredContent?.id ??
+          body.id ??
+          (body as Record<string, unknown>).sessionId;
         if (id) {
           await navigate({ to: `/session/${id}` });
           return;
@@ -483,10 +527,13 @@ function FocusRoute() {
     if (!activeSession) return;
     setEndingSession(true);
     try {
-      await apiFetch("/cod/session/end", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: activeSession.id, status: "completed" }),
+      await apiFetch('/cod/session/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: activeSession.id,
+          status: 'completed',
+        }),
       });
       reload();
     } finally {
@@ -499,7 +546,9 @@ function FocusRoute() {
       {activeSession && !endingSession && (
         <ActiveSessionBanner
           session={activeSession}
-          onResume={() => navigate({ to: `/session/${activeSession.id}` })}
+          onResume={() =>
+            navigate({ to: '/session/$id', params: { id: activeSession.id } })
+          }
           onEnd={endSession}
         />
       )}
@@ -579,11 +628,14 @@ function FocusRoute() {
               {nextActions.map((t) => (
                 <Link
                   key={t.id}
-                  to={`/note/${encodeURIComponent(t.path)}`}
+                  to="/note"
+                  search={{ p: t.path }}
                   className="focus-backlog__item"
                 >
                   <span className="focus-backlog__title">{t.title}</span>
-                  <span className="chip chip--score">◆ {formatScore(t.score)}</span>
+                  <span className="chip chip--score">
+                    ◆ {formatScore(t.score)}
+                  </span>
                 </Link>
               ))}
             </div>
