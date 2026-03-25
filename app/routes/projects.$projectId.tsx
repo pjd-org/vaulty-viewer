@@ -122,6 +122,28 @@ function useProjectDetail(projectId: string) {
 
 function ProjectDetailRoute() {
   const { projectId } = Route.useParams();
+
+  // Feature flag check (localStorage override). Default enabled.
+  const [featureEnabled, setFeatureEnabled] = useState(true);
+  useEffect(() => {
+    try {
+      const v = typeof window !== 'undefined' ? window.localStorage.getItem('viewer.feature.projects') : null;
+      if (v === 'false') setFeatureEnabled(false);
+    } catch (_) {
+      // ignore
+    }
+  }, []);
+
+  if (!featureEnabled) {
+    return (
+      <main className="space-y-6">
+        <PageFrame title="Project" subtitle="Feature disabled">
+          <EmptyState title="Projects feature disabled" description="Enable viewer.feature.projects to view this page." />
+        </PageFrame>
+      </main>
+    );
+  }
+
   const { allTasks, nextActions, projectNote, loading, apiOnline, reload, mutatingId, updateStatus } =
     useProjectDetail(projectId);
 
