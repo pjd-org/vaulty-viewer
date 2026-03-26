@@ -9,7 +9,7 @@ interface NoteBodyRendererProps {
 export function NoteBodyRenderer({ html, className = '' }: NoteBodyRendererProps) {
   return (
     <div
-      className={`note-content text-sm text-slate-700 leading-relaxed ${className}`}
+      className={`note-content text-sm text-neutral-700 leading-relaxed ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

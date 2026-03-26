@@ -3,10 +3,10 @@ import React from 'react'
 export type MetricVariant = 'default' | 'success' | 'warning' | 'danger'
 
 const metricValueColor: Record<MetricVariant, string> = {
-  default: 'text-slate-900',
-  success: 'text-green-600',
-  warning: 'text-amber-600',
-  danger: 'text-red-600',
+  default: 'text-neutral-900',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-danger',
 }
 
 export interface MetricLabelProps {
@@ -20,8 +20,8 @@ export function MetricLabel({ label, value, sublabel, variant = 'default' }: Met
   return (
     <div className="inline-block">
       <div className={`text-2xl font-semibold ${metricValueColor[variant]}`}>{value}</div>
-      <div className="text-xs text-slate-500 uppercase tracking-wide mt-0.5">{label}</div>
-      {sublabel && <div className="text-xs text-slate-400 mt-0.5">{sublabel}</div>}
+      <div className="text-xs text-neutral-500 uppercase tracking-wide mt-0.5">{label}</div>
+      {sublabel && <div className="text-xs text-neutral-400 mt-0.5">{sublabel}</div>}
     </div>
   )
 }
@@ -40,7 +40,7 @@ export function MetaRow({ items, className = '' }: MetaRowProps) {
   return (
     <div className={`flex items-center gap-3 flex-wrap ${className}`}>
       {items.map((item) => (
-        <span key={item.label} className="flex items-center gap-1 text-sm text-slate-500">
+        <span key={item.label} className="flex items-center gap-1 text-sm text-neutral-500">
           {item.icon && <span className="shrink-0">{item.icon}</span>}
           {item.label}
         </span>
@@ -56,7 +56,7 @@ export interface ReasonTextProps {
 
 export function ReasonText({ children, className = '' }: ReasonTextProps) {
   return (
-    <p className={`text-sm text-slate-500 italic leading-relaxed ${className}`}>
+    <p className={`text-sm text-neutral-500 italic leading-relaxed ${className}`}>
       {children}
     </p>
   )

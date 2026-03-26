@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { formatDuration, type NextAction } from '../../../src/lib/focus-logic'
-import { PrimaryButton, SecondaryButton, SegmentedControl } from '../ui'
+import { PrimaryButton, SecondaryButton, SegmentedControl, IconButton } from '../ui'
 
 interface SessionPlannerCardProps {
   tasks: NextAction[]
@@ -48,18 +48,17 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-900">Plan a session</p>
-        <button
-          type="button"
+        <p className="text-sm font-semibold text-neutral-900">Plan a session</p>
+        <IconButton
           onClick={() => setExpanded(false)}
-          className="text-slate-400 hover:text-slate-600 text-lg leading-none"
-        >
-          ×
-        </button>
+          label="Close"
+          icon={<span className="text-lg leading-none">×</span>}
+          className="text-neutral-400"
+        />
       </div>
 
       <div>
-        <p className="text-xs text-slate-500 mb-2">Duration</p>
+        <p className="text-xs text-neutral-500 mb-2">Duration</p>
         <SegmentedControl
           options={BUDGET_OPTIONS}
           value={budgetMin}
@@ -68,7 +67,7 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
       </div>
 
       <div>
-        <p className="text-xs text-slate-500 mb-2">Tasks</p>
+        <p className="text-xs text-neutral-500 mb-2">Tasks</p>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {tasks.map((t) => (
             <label key={t.id} className="flex items-center gap-3 text-sm cursor-pointer">
@@ -78,8 +77,8 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
                 onChange={() => toggle(t.id)}
                 className="rounded"
               />
-              <span className="flex-1 truncate text-slate-800">{t.title}</span>
-              <span className="text-xs text-slate-400 shrink-0">
+              <span className="flex-1 truncate text-neutral-900">{t.title}</span>
+              <span className="text-xs text-neutral-400 shrink-0">
                 {t.estimatedTimeMin > 0 ? formatDuration(t.estimatedTimeMin) : ''}
               </span>
             </label>

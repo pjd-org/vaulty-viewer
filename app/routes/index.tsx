@@ -94,8 +94,8 @@ function useFocusData() {
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-4 space-y-2">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+    <div className="rounded-[28px] border border-neutral-200 bg-surface p-4 space-y-2">
+      <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">
         Recent sessions
       </p>
       {sessions.map((s) => (
@@ -103,16 +103,16 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
           key={s.id}
           to={'/session/$id'}
           params={{ id: s.id }}
-          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-slate-50 transition-colors"
+          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-neutral-50 transition-colors"
         >
-          <span className="text-sm font-medium text-slate-800 truncate">
+          <span className="text-sm font-medium text-neutral-900 truncate">
             {s.title ?? `Session ${s.id.slice(0, 6)}`}
           </span>
           <div className="flex items-center gap-2 shrink-0 ml-3">
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-neutral-400">
               {formatSessionDuration(s.startedAt, s.endedAt)}
             </span>
-            <span className="text-xs text-slate-500 capitalize">{s.status}</span>
+            <span className="text-xs text-neutral-500 capitalize">{s.status}</span>
           </div>
         </Link>
       ))}
@@ -135,15 +135,15 @@ function ActiveSessionBanner({
   const tasksTotal = session.tasks?.length ?? 0;
 
   return (
-    <div className="rounded-[28px] bg-[#4f8cff]/5 border border-[#4f8cff]/20 p-4 flex items-center justify-between">
+    <div className="rounded-[28px] bg-primary/5 border border-primary/20 p-4 flex items-center justify-between">
       <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-[#4f8cff] uppercase tracking-wide">
+        <span className="text-xs font-semibold text-primary uppercase tracking-wide">
           Session active
         </span>
         {session.title && (
-          <span className="text-sm font-medium text-slate-900">{session.title}</span>
+          <span className="text-sm font-medium text-neutral-900">{session.title}</span>
         )}
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-neutral-500">
           {elapsed !== null && <>{elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}</>}
           {tasksTotal > 0 && <>{tasksDone}/{tasksTotal} tasks</>}
         </span>
@@ -271,7 +271,7 @@ function FocusRoute() {
       <PageFrame title="What now?">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <span className="text-sm text-slate-400">Loading…</span>
+            <span className="text-sm text-neutral-400">Loading…</span>
           </div>
         ) : visible.length === 0 ? (
           <EmptyState
@@ -334,8 +334,8 @@ function FocusRoute() {
         )}
       </PageFrame>
 
-      <details className="rounded-[28px] border border-slate-200 bg-white p-4 text-sm">
-        <summary className="text-xs text-slate-400 cursor-pointer select-none">
+      <details className="rounded-[28px] border border-neutral-200 bg-surface p-4 text-sm">
+        <summary className="text-xs text-neutral-400 cursor-pointer select-none">
           All tasks ({nextActions.length}) — debug
         </summary>
         <div className="mt-3 space-y-1">
@@ -344,10 +344,10 @@ function FocusRoute() {
               key={t.id}
               to="/note"
               search={{ p: t.path }}
-              className="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-neutral-50 transition-colors"
             >
-              <span className="text-sm text-slate-700 truncate">{t.title}</span>
-              <span className="text-xs text-slate-400 shrink-0 ml-3">
+              <span className="text-sm text-neutral-700 truncate">{t.title}</span>
+              <span className="text-xs text-neutral-400 shrink-0 ml-3">
                 {formatScore(t.score)}
               </span>
             </Link>

@@ -2,20 +2,20 @@ import React from 'react'
 
 const VARIANT_STYLES = {
   clear: {
-    container: 'bg-green-50 text-green-700 border-green-200',
-    dot: 'bg-green-500',
+    container: 'bg-success/10 text-success border-success/20',
+    dot: 'bg-success',
   },
   warn: {
-    container: 'bg-amber-50 text-amber-700 border-amber-200',
-    dot: 'bg-amber-500',
+    container: 'bg-warning/10 text-warning border-warning/20',
+    dot: 'bg-warning',
   },
   rest: {
-    container: 'bg-slate-100 text-slate-600 border-slate-200',
-    dot: 'bg-slate-400',
+    container: 'bg-neutral-100 text-neutral-600 border-neutral-200',
+    dot: 'bg-neutral-400',
   },
   stop: {
-    container: 'bg-red-50 text-red-600 border-red-200',
-    dot: 'bg-red-500',
+    container: 'bg-danger/10 text-danger border-danger/20',
+    dot: 'bg-danger',
   },
 } as const
 

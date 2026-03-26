@@ -32,7 +32,7 @@ export function CodActionRow({ actions, canWork, onCheckIn }: CodActionRowProps)
         }
         if (BROWSE_ACTIONS.has(label)) {
           return (
-            <a key={label} href="/" className="bg-slate-100 text-slate-700 rounded-xl px-4 py-2 text-sm font-medium hover:bg-slate-200 transition-colors inline-block">
+            <a key={label} href="/" className="text-primary hover:text-primary-2 underline-offset-2 hover:underline inline-block">
               {label}
             </a>
           )

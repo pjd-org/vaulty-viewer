@@ -42,7 +42,7 @@ function ProjectsIndex() {
     <PageFrame title="Projects">
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#4f8cff]" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
         </div>
       ) : isError ? (
         <EmptyState title="Failed to load projects" description="Try reloading the page." />

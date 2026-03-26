@@ -91,11 +91,11 @@ export function HueyContextRail({
       <div className="flex-1 min-h-0 overflow-y-auto">
         <SectionHeader title="Recent" className="mb-2" />
         {groups.length === 0 && (
-          <p className="text-xs text-slate-400">No history yet.</p>
+          <p className="text-xs text-neutral-400">No history yet.</p>
         )}
         {groups.map((group) => (
           <div key={group.label} className="mb-3">
-            <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+            <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">
               {group.label}
             </p>
             {group.items.map((thread) => (
@@ -106,8 +106,8 @@ export function HueyContextRail({
                 className={[
                   'w-full text-left text-sm truncate rounded-xl px-3 py-2 block transition-colors',
                   thread.id === activeThreadId
-                    ? 'bg-[#4f8cff]/10 text-[#4f8cff]'
-                    : 'text-slate-600 hover:bg-slate-100',
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-neutral-600 hover:bg-neutral-100',
                 ].join(' ')}
                 title={`${thread.title} · ${formatRelativeTime(thread.timestamp)}`}
               >

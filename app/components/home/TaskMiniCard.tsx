@@ -19,7 +19,7 @@ export function TaskMiniCard({ task, onStart, onComplete }: TaskMiniCardProps) {
         <Link
           to="/note"
           search={{ p: task.path }}
-          className="text-sm font-medium text-slate-900 hover:text-[#4f8cff] truncate block transition-colors"
+          className="text-sm font-medium text-neutral-900 hover:text-primary truncate block transition-colors"
         >
           {task.title}
         </Link>

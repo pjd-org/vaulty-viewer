@@ -32,8 +32,8 @@ export function SidebarRail() {
             className={[
               'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl transition-colors',
               isActive(to)
-                ? 'bg-[#4f8cff]/10 text-[#4f8cff]'
-                : 'text-slate-600 hover:bg-slate-100',
+                ? 'bg-primary/10 text-primary'
+                : 'text-neutral-600 hover:bg-neutral-100',
             ].join(' ')}
           >
             <span className="text-base leading-none">{icon}</span>
@@ -41,8 +41,8 @@ export function SidebarRail() {
           </Link>
         ))}
       </div>
-      <div className="pt-4 border-t border-slate-100">
-        <button className="flex items-center gap-3 px-3 py-2 text-xs text-slate-400 w-full rounded-xl hover:bg-slate-100 transition-colors">
+      <div className="pt-4 border-t border-neutral-100">
+        <button className="flex items-center gap-3 px-3 py-2 text-xs text-neutral-400 w-full rounded-xl hover:bg-neutral-100 transition-colors">
           <span className="text-base leading-none">⚙️</span>
           <span>Settings</span>
         </button>

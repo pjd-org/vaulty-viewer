@@ -24,7 +24,7 @@ export function ReadinessCard({ readiness, capacityLabel, timeBudgetLabel }: Rea
       >
         <span className="text-xl font-semibold">{readiness.label}</span>
       </div>
-      <p className="text-sm text-slate-500 mt-1 mb-5">{readiness.description}</p>
+      <p className="text-sm text-neutral-500 mt-1 mb-5">{readiness.description}</p>
 
       {metaItems.length > 0 && (
         <MetaRow items={metaItems} className="mb-5" />

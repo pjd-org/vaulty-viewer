@@ -135,7 +135,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         <PageFrame
           title="Project not found"
           actions={
-            <Link to="/projects" className="text-sm text-slate-500 hover:text-[#4f8cff] transition-colors">
+            <Link to="/projects" className="text-sm text-neutral-500 hover:text-primary transition-colors">
               ← Projects
             </Link>
           }
@@ -154,7 +154,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         title={project.title}
         subtitle={`${counts.done} / ${counts.total} tasks`}
         actions={
-          <Link to="/projects" className="text-sm text-slate-500 hover:text-[#4f8cff] transition-colors">
+          <Link to="/projects" className="text-sm text-neutral-500 hover:text-primary transition-colors">
             ← Projects
           </Link>
         }

@@ -14,7 +14,7 @@ export function SoftPanel({ title, subtitle, actions, className, children }: Sof
   return (
     <section
       className={[
-        'rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm',
+        'rounded-[28px] border border-neutral-200 bg-surface/90 p-6 shadow-sm',
         className ?? '',
       ].join(' ').trim()}
     >
@@ -22,10 +22,10 @@ export function SoftPanel({ title, subtitle, actions, className, children }: Sof
         <div className="flex justify-between items-center mb-5">
           <div>
             {title && (
-              <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+              <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
             )}
             {subtitle && (
-              <p className="text-sm text-slate-500">{subtitle}</p>
+              <p className="text-sm text-neutral-500">{subtitle}</p>
             )}
           </div>
           {actions && <div>{actions}</div>}

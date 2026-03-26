@@ -507,7 +507,7 @@ function NoteRoute() {
         <Link
           to="/"
           search={{ q: undefined, collection: undefined }}
-          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
         >
           ← Back to vault
         </Link>
@@ -536,7 +536,7 @@ function NoteRoute() {
                 <SecondaryButton
                   onClick={handleReject}
                   disabled={lc.busy !== null}
-                  className="text-red-600 hover:bg-red-50"
+                  className="text-danger hover:bg-red-50"
                 >
                   Reject
                 </SecondaryButton>
@@ -578,13 +578,13 @@ function NoteRoute() {
       {/* Lifecycle feedback */}
       {lc.message && (
         <p
-          className={`text-sm px-1 ${lc.isError ? 'text-red-500' : 'text-slate-500'}`}
+          className={`text-sm px-1 ${lc.isError ? 'text-red-500' : 'text-neutral-500'}`}
         >
           {lc.message}
         </p>
       )}
       {lc.pendingPromotionExpiry && (
-        <p className="text-xs text-slate-400 px-1">
+        <p className="text-xs text-neutral-400 px-1">
           Promotion window expires at {lc.pendingPromotionExpiry}.
         </p>
       )}
@@ -596,17 +596,17 @@ function NoteRoute() {
           <SoftPanel>
             {loading && (
               <div className="flex flex-col items-center justify-center py-16">
-                <div className="w-7 h-7 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin mb-3" />
-                <p className="text-sm text-slate-400">Loading note…</p>
+                <div className="w-7 h-7 rounded-full border-2 border-neutral-200 border-t-blue-500 animate-spin mb-3" />
+                <p className="text-sm text-neutral-400">Loading note…</p>
               </div>
             )}
             {!loading && error && (
               <div className="flex flex-col items-center justify-center py-16">
                 <span className="text-3xl mb-3">📄</span>
-                <h2 className="text-lg font-semibold text-slate-800 mb-1">
+                <h2 className="text-lg font-semibold text-neutral-900 mb-1">
                   Note not found
                 </h2>
-                <p className="text-sm text-slate-500 mb-4">{error}</p>
+                <p className="text-sm text-neutral-500 mb-4">{error}</p>
                 <div className="flex gap-3">
                   <PrimaryButton
                     onClick={() =>
@@ -628,9 +628,9 @@ function NoteRoute() {
               <>
                 {/* Task progress */}
                 {note.lifecycle.isTask && taskData?.metrics && (
-                  <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="mb-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-semibold text-slate-700">
+                      <span className="text-xs font-semibold text-neutral-700">
                         Task Progress
                       </span>
                       {taskData.metrics.currentMilestone !== undefined && (
@@ -650,30 +650,30 @@ function NoteRoute() {
                     <div className="grid grid-cols-3 gap-3 text-center">
                       {taskData.metrics.effortRemaining !== undefined && (
                         <div>
-                          <p className="text-base font-bold text-slate-800">
+                          <p className="text-base font-bold text-neutral-900">
                             {taskData.metrics.effortRemaining}
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
                             Effort Left
                           </p>
                         </div>
                       )}
                       {taskData.metrics.estimatedCompletionMin !== undefined && (
                         <div>
-                          <p className="text-base font-bold text-slate-800">
+                          <p className="text-base font-bold text-neutral-900">
                             {taskData.metrics.estimatedCompletionMin}m
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
                             Est. Time
                           </p>
                         </div>
                       )}
                       {taskData.metrics.rewardPotential !== undefined && (
                         <div>
-                          <p className="text-base font-bold text-slate-800">
+                          <p className="text-base font-bold text-neutral-900">
                             {(taskData.metrics.rewardPotential * 100).toFixed(0)}%
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
                             Reward
                           </p>
                         </div>
@@ -687,7 +687,7 @@ function NoteRoute() {
                   noteEffortScore !== null ||
                   noteGoalId ||
                   isDelegatable) && (
-                  <div className="flex flex-wrap gap-3 mb-4 text-xs text-slate-500">
+                  <div className="flex flex-wrap gap-3 mb-4 text-xs text-neutral-500">
                     {noteEstimatedTimeMin !== null && (
                       <span>~{noteEstimatedTimeMin} min</span>
                     )}
@@ -704,7 +704,7 @@ function NoteRoute() {
                       </Link>
                     )}
                     {isDelegatable && (
-                      <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-500">
+                      <span className="px-1.5 py-0.5 bg-neutral-100 rounded text-neutral-500">
                         delegatable
                       </span>
                     )}
@@ -733,7 +733,7 @@ function NoteRoute() {
               {/* Task review */}
               {note.lifecycle.canReview && (
                 <SoftPanel title="Task Review">
-                  <div className="text-xs text-slate-400 mb-3">
+                  <div className="text-xs text-neutral-400 mb-3">
                     {note.lifecycle.reviewStatus
                       ? `Current: ${note.lifecycle.reviewStatus}`
                       : 'No review yet'}
@@ -742,7 +742,7 @@ function NoteRoute() {
                     {['approve', 'needs_changes'].map((val) => (
                       <label
                         key={val}
-                        className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-700"
+                        className="flex items-center gap-1.5 cursor-pointer text-xs text-neutral-700"
                       >
                         <input
                           type="radio"
@@ -757,7 +757,7 @@ function NoteRoute() {
                     ))}
                   </div>
                   <textarea
-                    className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:outline-none focus:border-blue-300 resize-none"
+                    className="w-full bg-neutral-50 text-neutral-700 text-xs rounded-xl p-2.5 border border-neutral-200 focus:outline-none focus:border-blue-300 resize-none"
                     placeholder="Add a short review comment"
                     rows={3}
                     value={review.comment}
@@ -771,7 +771,7 @@ function NoteRoute() {
                     {review.submitting ? 'Submitting…' : 'Submit review'}
                   </PrimaryButton>
                   {review.message && (
-                    <p className="text-xs text-slate-400 mt-2">{review.message}</p>
+                    <p className="text-xs text-neutral-400 mt-2">{review.message}</p>
                   )}
                 </SoftPanel>
               )}
@@ -780,13 +780,13 @@ function NoteRoute() {
               {note.lifecycle.isTask &&
                 !note.lifecycle.canComplete &&
                 noteStatus === 'completed' && (
-                  <p className="text-xs text-slate-400 px-1">
+                  <p className="text-xs text-neutral-400 px-1">
                     Completed tasks archive through the existing handler flow.
                   </p>
                 )}
               {!note.lifecycle.isTask &&
                 note.lifecycle.source === 'canonical' && (
-                  <p className="text-xs text-slate-400 px-1">
+                  <p className="text-xs text-neutral-400 px-1">
                     Archive actions for canonical notes are not yet supported.
                   </p>
                 )}
@@ -796,19 +796,19 @@ function NoteRoute() {
       </div>
 
       {/* Footer */}
-      <footer className="pt-6 border-t border-slate-100 flex items-center justify-between">
+      <footer className="pt-6 border-t border-neutral-100 flex items-center justify-between">
         <div className="flex gap-4">
           <Link
             to="/"
             search={{ q: undefined, collection: undefined }}
-            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             ← Back to Vault
           </Link>
           {note?.collection === 'tasks' && (
             <Link
               to="/goals"
-              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
             >
               View Goals →
             </Link>

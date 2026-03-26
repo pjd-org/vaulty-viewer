@@ -1,9 +1,9 @@
 import React from 'react'
 
 const VARIANT_COLOR: Record<string, string> = {
-  ok: 'text-green-600',
-  warn: 'text-amber-600',
-  bad: 'text-red-600',
+  ok: 'text-success',
+  warn: 'text-warning',
+  bad: 'text-danger',
 }
 
 interface CodSignalItem {
@@ -21,8 +21,8 @@ export function CodSignalRow({ items }: CodSignalRowProps) {
     <div className="flex flex-col gap-2">
       {items.map(({ label, value, variant }) => (
         <div key={label} className="flex items-center justify-between gap-2">
-          <span className="text-sm text-slate-600">{label}</span>
-          <span className={`text-sm font-medium ${variant ? VARIANT_COLOR[variant] : 'text-slate-900'}`}>
+          <span className="text-sm text-neutral-600">{label}</span>
+          <span className={`text-sm font-medium ${variant ? VARIANT_COLOR[variant] : 'text-neutral-900'}`}>
             {value}
           </span>
         </div>

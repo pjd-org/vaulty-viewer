@@ -31,6 +31,34 @@
   --border-soft: var(--vault-border-soft);
   --font-xs: var(--vault-font-xs);
   --font-sm: var(--vault-font-sm);
+
+  /* Genie glass shorthand aliases */
+  --shadow-glass: var(--shadow-md);
+  --blur-glass:   var(--blur-lg);
+  --text-primary:   var(--color-text);
+  --text-secondary: var(--color-text-2);
+  --text-tertiary:  var(--color-text-3);
+}
+
+/* ── Genie utility classes ──────────────────────────────────────────────── */
+
+/* Glass card / panel — airy, translucent, soft-shadowed */
+.genie-glass {
+  background: var(--surface-base);
+  border: 1px solid var(--border-glass-default);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+}
+
+/* Pastel radial halo — position:relative + overflow:hidden required on parent */
+.genie-halo::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: var(--gradient-card-glow);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .material-symbols-outlined {

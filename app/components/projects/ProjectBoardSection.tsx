@@ -15,12 +15,12 @@ interface Column {
 }
 
 function TaskCard({ task, accent }: { task: KanbanTask; accent?: boolean }) {
-  const borderAccent = accent ? 'border-l-2 border-l-[#4f8cff]' : ''
+  const borderAccent = accent ? 'border-l-2 border-l-primary' : ''
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white px-4 py-3 mb-2 ${borderAccent}`}>
-      <p className="text-sm font-medium text-slate-800 leading-snug">{task.title}</p>
+    <div className={`rounded-xl border border-neutral-200 bg-surface px-4 py-3 mb-2 ${borderAccent}`}>
+      <p className="text-sm font-medium text-neutral-800 leading-snug">{task.title}</p>
       {task.estimatedTimeMin != null && task.estimatedTimeMin > 0 && (
-        <span className="mt-1.5 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
+        <span className="mt-1.5 inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-500">
           ⏱ {task.estimatedTimeMin}m
         </span>
       )}
@@ -57,7 +57,7 @@ export function ProjectBoardSection({ tasks }: ProjectBoardSectionProps) {
             subtitle={`${col.tasks.length} task${col.tasks.length !== 1 ? 's' : ''}`}
           />
           {col.tasks.length === 0 ? (
-            <p className="text-sm text-slate-400 py-2">—</p>
+            <p className="text-sm text-neutral-400 py-2">—</p>
           ) : (
             col.tasks.map((task) => (
               <TaskCard key={task.id} task={task} accent={col.accent} />

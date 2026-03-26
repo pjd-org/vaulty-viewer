@@ -181,8 +181,7 @@ function KnowledgeGraphRoute() {
             ref={svgRef}
             width={WIDTH}
             height={HEIGHT}
-            className="knowledge-graph__svg"
-            style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#f9fafb', display: 'block', maxWidth: '100%' }}
+            className="knowledge-graph__svg border border-neutral-200 rounded-lg bg-neutral-50 block max-w-full"
           >
             <g className="edges">
               {edges.map((e) => (
@@ -197,7 +196,7 @@ function KnowledgeGraphRoute() {
                   cy={n.y}
                   r={n.radius}
                   fill={n.color}
-                  style={{ cursor: 'pointer' }}
+                  className="cursor-pointer"
                   onMouseEnter={() => setTooltip({ x: n.x, y: n.y, title: n.title, audience: n.audience })}
                   onMouseLeave={() => setTooltip(null)}
                   onClick={() => navigate({ to: '/note', search: { p: n.id } })}

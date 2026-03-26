@@ -22,13 +22,13 @@ export function BestMoveCard({ task, onStart, onSkip, onComplete, mutating }: Be
       <Link
         to="/note"
         search={{ p: task.path }}
-        className="text-xl font-semibold text-slate-900 hover:text-[#4f8cff] transition-colors block"
+        className="text-xl font-semibold text-neutral-900 hover:text-primary transition-colors block"
       >
         {task.title}
       </Link>
 
       {task.description && (
-        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{task.description}</p>
+        <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{task.description}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-2 mt-3">

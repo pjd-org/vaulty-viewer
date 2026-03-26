@@ -129,11 +129,11 @@ function GoalsRoute() {
         <h1>🎯 Goal Progress</h1>
         <p className="lede">
           Track progress across all your goals and linked tasks. Data refreshes from Tasker API.
-          <span className={`api-badge api-badge--${apiStatus}`} style={{ marginLeft: 8 }}>
+          <span className={`api-badge api-badge--${apiStatus} ml-2`}>
             {apiStatus === 'online' ? 'API online' : apiStatus === 'offline' ? 'API offline' : 'API'}
           </span>
         </p>
-        <div className="quick-links" style={{ marginTop: 12, paddingTop: 12 }}>
+        <div className="quick-links mt-3 pt-3">
           <Link
             to="/"
             search={{ q: undefined, collection: undefined }}

@@ -18,7 +18,7 @@ export function PrimaryButton({ onClick, disabled, className = '', children }: B
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`bg-[#4f8cff] text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-[#3d7de8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`bg-primary text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-primary-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {children}
     </button>
@@ -31,7 +31,7 @@ export function SecondaryButton({ onClick, disabled, className = '', children }:
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`bg-slate-100 text-slate-700 rounded-xl px-4 py-2 text-sm font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`bg-neutral-100 text-neutral-700 rounded-xl px-4 py-2 text-sm font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {children}
     </button>
@@ -45,7 +45,7 @@ export function IconButton({ onClick, disabled, className = '', icon, label }: I
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`p-2 rounded-xl text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {label && <span className="sr-only">{label}</span>}
       {icon}

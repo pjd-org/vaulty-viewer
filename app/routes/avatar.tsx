@@ -309,8 +309,7 @@ function AvatarRoute() {
           {error}
           <button
             onClick={refresh}
-            className="os-refresh"
-            style={{ marginLeft: 8 }}
+            className="os-refresh ml-2"
           >
             Retry
           </button>
