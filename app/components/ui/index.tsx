@@ -12,3 +12,5 @@ export type { MetricLabelProps, MetaRowProps, MetaItem, ReasonTextProps, MetricV
 
 export { EmptyState } from './EmptyState'
 export type { EmptyStateProps } from './EmptyState'
+
+export { default as SkeletonCard } from './SkeletonCard'

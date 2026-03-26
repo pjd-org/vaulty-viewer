@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { AppShell, PageFrame, CardGrid } from '../components/layout';
+import { PageFrame, CardGrid } from '../components/layout';
 import ProjectCard from '../components/projects/ProjectCard';
-import { EmptyState } from '../components/ui/EmptyState';
+import { EmptyState } from '../components/ui';
 import { fetchProjects } from '../lib/api/projects';
 
-export default function ProjectsIndex() {
+export const Route = createFileRoute('/projects')({
+  component: ProjectsIndex,
+});
+
+function ProjectsIndex() {
   const [featureEnabled, setFeatureEnabled] = useState(true);
 
   useEffect(() => {
@@ -27,37 +32,35 @@ export default function ProjectsIndex() {
 
   if (!featureEnabled) {
     return (
-      <AppShell>
-        <PageFrame title="Projects">
-          <EmptyState title="Projects feature disabled" description="Enable viewer.feature.projects to view this page." />
-        </PageFrame>
-      </AppShell>
+      <PageFrame title="Projects">
+        <EmptyState title="Projects feature disabled" description="Enable viewer.feature.projects to view this page." />
+      </PageFrame>
     );
   }
 
   return (
-    <AppShell>
-      <PageFrame title="Projects">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#4f8cff]" />
-          </div>
-        ) : isError ? (
-          <EmptyState title="Failed to load projects" description="Try reloading the page." />
-        ) : !projects || projects.length === 0 ? (
-          <EmptyState title="No projects" description="Create a project to get started." />
-        ) : (
-          <CardGrid>
-            {projects.map((p) => (
-              <div key={p.id} className="col-span-1">
-                <a href={`/projects/${encodeURIComponent(p.id)}`} className="block">
-                  <ProjectCard project={p} />
-                </a>
-              </div>
-            ))}
-          </CardGrid>
-        )}
-      </PageFrame>
-    </AppShell>
+    <PageFrame title="Projects">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#4f8cff]" />
+        </div>
+      ) : isError ? (
+        <EmptyState title="Failed to load projects" description="Try reloading the page." />
+      ) : !projects || projects.length === 0 ? (
+        <EmptyState title="No projects" description="Create a project to get started." />
+      ) : (
+        <CardGrid>
+          {projects.map((p) => (
+            <div key={p.id} className="col-span-1">
+              <a href={`/projects/${encodeURIComponent(p.id)}`} className="block">
+                <ProjectCard project={p} />
+              </a>
+            </div>
+          ))}
+        </CardGrid>
+      )}
+    </PageFrame>
   );
 }
+
+export default ProjectsIndex;

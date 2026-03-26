@@ -11,6 +11,7 @@ export interface TaskDisplayMeta {
 
 // Project summary display
 export interface ProjectSummaryDisplay {
+  id: string
   title: string
   statusLabel: string
   statusVariant: 'success' | 'danger' | 'warning' | 'default'

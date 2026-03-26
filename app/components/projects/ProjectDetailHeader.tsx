@@ -1,8 +1,12 @@
 import React from 'react';
-import type { ProjectSummaryDisplay } from '../../types/display';
 import { PrimaryButton } from '../ui';
 
-export const ProjectDetailHeader: React.FC<{ project: ProjectSummaryDisplay }> = ({ project }) => {
+interface ProjectHeaderProps {
+  title: string;
+  bestMoveTitle?: string | null;
+}
+
+export const ProjectDetailHeader: React.FC<{ project: ProjectHeaderProps }> = ({ project }) => {
   return (
     <div className="rounded-2xl bg-white p-6 shadow flex items-center justify-between">
       <div>

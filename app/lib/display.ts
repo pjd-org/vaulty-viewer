@@ -99,6 +99,7 @@ export function toTaskDisplayMeta(task: {
 // ---------------------------------------------------------------------------
 
 export function toProjectSummaryDisplay(project: {
+  id?: string | null
   title?: string
   status?: string | null
   taskCount?: number | null
@@ -133,7 +134,7 @@ export function toProjectSummaryDisplay(project: {
 
   const bestMoveTitle = project.nextAction?.title ?? null
 
-  return { title, statusLabel, statusVariant, progressText, progressPercent, etaLabel, bestMoveTitle }
+  return { id: project.id ?? '', title, statusLabel, statusVariant, progressText, progressPercent, etaLabel, bestMoveTitle }
 }
 
 // ---------------------------------------------------------------------------

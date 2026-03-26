@@ -49,8 +49,12 @@ function ProjectDetailRoute() {
     );
   }
 
+  return <ProjectDetailContent projectId={projectId} />;
+}
+
+function ProjectDetailContent({ projectId }: { projectId: string }) {
   // Fetch project summary via TanStack Query
-  const { data: projectDisplay, isLoading: projectLoading, isError: projectError } = useQuery({
+  const { data: projectDisplay, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => fetchProjectById(projectId),
     enabled: !!projectId,
@@ -62,9 +66,7 @@ function ProjectDetailRoute() {
   const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks();
   const { data: nextActions = [] } = useNextActions();
   const updateStatusMutation = useUpdateTaskStatus();
-  const apiOnline = true;
-  const reload = () => queryClient.invalidateQueries(['tasks']);
-  const mutatingId = updateStatusMutation.isLoading ? 'mutating' : null;
+  const reload = () => queryClient.invalidateQueries({ queryKey: ['tasks'] });
   const updateStatus = (task: any, status: string) => updateStatusMutation.mutate({ path: task.path ?? task.id, status });
 
   const projectTasks = useMemo(
@@ -81,7 +83,7 @@ function ProjectDetailRoute() {
       return {
         id: projectDisplay.id,
         title: projectDisplay.title,
-        status: projectDisplay.statusVariant === 'completed' ? 'completed' : 'active',
+        status: projectDisplay.statusVariant === 'success' ? 'completed' : 'active',
         progress: (projectDisplay.progressPercent ?? 0) / 100,
         priority: derivedProject?.priority ?? 0,
         taskCounts: derivedProject?.taskCounts ?? {
@@ -161,12 +163,6 @@ function ProjectDetailRoute() {
           <div className="col-span-12 lg:col-span-8 space-y-6">
             <ProjectDetailHeader
               project={project}
-              taskCounts={{
-                todo: counts.todo,
-                inProgress: counts.inProgress,
-                done: counts.done,
-                blocked: counts.blocked,
-              }}
             />
             <ProjectBoardSection tasks={projectTasks} projectId={projectId} />
           </div>
