@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAllTasks, useNextActions, useUpdateTaskStatus } from "../lib/queries/tasks";
 import { apiFetch } from "../../src/utils/api";
 import {
   normalizeTask,
@@ -154,8 +155,14 @@ function ProjectDetailRoute() {
     { enabled: !!projectId, staleTime: 1000 * 60, retry: 1 }
   );
 
-  const { allTasks, nextActions, projectNote, loading, apiOnline, reload, mutatingId, updateStatus } =
-    useProjectDetail(projectId);
+  const queryClient = useQueryClient();
+  const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks();
+  const { data: nextActions = [] } = useNextActions();
+  const updateStatusMutation = useUpdateTaskStatus();
+  const apiOnline = true;
+  const reload = () => queryClient.invalidateQueries(['tasks']);
+  const mutatingId = updateStatusMutation.isLoading ? 'mutating' : null;
+  const updateStatus = (task: any, status: string) => updateStatusMutation.mutate({ path: task.path ?? task.id, status });
 
   const projectTasks = useMemo(
     () => getProjectTasks(allTasks, projectId),
@@ -208,7 +215,7 @@ function ProjectDetailRoute() {
     [projectTasks]
   );
 
-  const anyLoading = loading || projectLoading;
+  const anyLoading = tasksLoading || projectLoading;
 
   if (anyLoading) {
     return (
