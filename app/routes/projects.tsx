@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell, PageFrame, CardGrid } from '../components/layout';
 import ProjectCard from '../components/projects/ProjectCard';
-import EmptyState from '../components/ui/EmptyState';
+import { EmptyState } from '../components/ui/EmptyState';
 import { fetchProjects } from '../lib/api/projects';
 
 export default function ProjectsIndex() {
