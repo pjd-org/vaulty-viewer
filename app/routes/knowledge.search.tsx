@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { apiFetch } from '../../src/utils/api';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
@@ -22,15 +22,43 @@ type NoteRef = {
   status?: string;
 };
 
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+type SearchState = {
+  q: string;
+  mode: 'tag' | 'semantic';
+  results: NoteRef[];
+  searching: boolean;
+};
+
+type SearchAction =
+  | { type: 'SET_Q'; q: string }
+  | { type: 'SET_MODE'; mode: 'tag' | 'semantic' }
+  | { type: 'SEARCH_START' }
+  | { type: 'SEARCH_DONE'; results: NoteRef[] };
+
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case 'SET_Q': return { ...state, q: action.q };
+    case 'SET_MODE': return { ...state, mode: action.mode };
+    case 'SEARCH_START': return { ...state, searching: true };
+    case 'SEARCH_DONE': return { ...state, searching: false, results: action.results };
+  }
+}
+
 function KnowledgeSearchRoute() {
   const { q: initialQ, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate({ from: '/knowledge/search' });
 
-  const [q, setQ] = useState(initialQ);
-  const [mode, setMode] = useState<'tag' | 'semantic'>(initialMode);
-  const [results, setResults] = useState<NoteRef[]>([]);
+  const [{ q, mode, results, searching }, dispatch] = useReducer(searchReducer, {
+    q: initialQ,
+    mode: initialMode,
+    results: [],
+    searching: false,
+  });
   const [health, setHealth] = useState<GraphHealthReport | null>(null);
-  const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -42,26 +70,25 @@ function KnowledgeSearchRoute() {
 
   const doSearch = (query: string, searchMode: 'tag' | 'semantic') => {
     if (!query.trim()) {
-      setResults([]);
+      dispatch({ type: 'SEARCH_DONE', results: [] });
       return;
     }
-    setSearching(true);
+    dispatch({ type: 'SEARCH_START' });
     apiFetch(`/api/knowledge/search?q=${encodeURIComponent(query)}&mode=${searchMode}`)
       .then((r) => r.json())
-      .then((data) => setResults((data as { results: NoteRef[] }).results ?? []))
-      .catch(() => setResults([]))
-      .finally(() => setSearching(false));
+      .then((data) => dispatch({ type: 'SEARCH_DONE', results: (data as { results: NoteRef[] }).results ?? [] }))
+      .catch(() => dispatch({ type: 'SEARCH_DONE', results: [] }));
   };
 
   const handleQueryChange = (newQ: string) => {
-    setQ(newQ);
+    dispatch({ type: 'SET_Q', q: newQ });
     navigate({ search: { q: newQ, mode } });
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(newQ, mode), 300);
   };
 
   const handleModeChange = (newMode: 'tag' | 'semantic') => {
-    setMode(newMode);
+    dispatch({ type: 'SET_MODE', mode: newMode });
     navigate({ search: { q, mode: newMode } });
     doSearch(q, newMode);
   };

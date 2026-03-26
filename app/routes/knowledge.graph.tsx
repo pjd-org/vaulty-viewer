@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { apiFetch } from '../../src/utils/api';
 import KnowledgeHealthBanner, { type GraphHealthReport } from '../../src/components/KnowledgeHealthBanner';
@@ -110,10 +110,28 @@ function runLayout(nodes: SimNode[], links: Record<string, string[]>): SimNode[]
   return nodes;
 }
 
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+type GraphPageState = {
+  graph: GraphJson | null;
+  health: GraphHealthReport | null;
+  simNodes: SimNode[];
+};
+
+type GraphAction = { type: 'LOADED'; graph: GraphJson; health: GraphHealthReport | null; simNodes: SimNode[] };
+
+function graphPageReducer(_: GraphPageState, action: GraphAction): GraphPageState {
+  return { graph: action.graph, health: action.health, simNodes: action.simNodes };
+}
+
 function KnowledgeGraphRoute() {
-  const [graph, setGraph] = useState<GraphJson | null>(null);
-  const [health, setHealth] = useState<GraphHealthReport | null>(null);
-  const [simNodes, setSimNodes] = useState<SimNode[]>([]);
+  const [{ graph, health, simNodes }, dispatch] = useReducer(graphPageReducer, {
+    graph: null,
+    health: null,
+    simNodes: [],
+  });
   const [tooltip, setTooltip] = useState<{ x: number; y: number; title: string; audience: string | null } | null>(null);
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
@@ -124,13 +142,10 @@ function KnowledgeGraphRoute() {
       apiFetch('/api/knowledge/health').then((r) => r.json()),
     ]).then(([g, h]) => {
       const graphData = g as GraphJson;
-      setGraph(graphData);
-      setHealth(h as GraphHealthReport);
-      if (graphData.node_count > 0) {
-        const raw = buildSimNodes(graphData);
-        const laid = runLayout(raw, graphData.links);
-        setSimNodes(laid);
-      }
+      const simNodes = graphData.node_count > 0
+        ? runLayout(buildSimNodes(graphData), graphData.links)
+        : [];
+      dispatch({ type: 'LOADED', graph: graphData, health: h as GraphHealthReport, simNodes });
     }).catch(() => {});
   }, []);
 

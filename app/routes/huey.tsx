@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useReducer } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { apiFetch } from '../../src/utils/api'
 import {
@@ -63,6 +63,57 @@ function saveThread(record: ThreadRecord) {
 }
 
 // ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+type HueyState = {
+  threads: ThreadRecord[];
+  messages: ChatMessage[];
+  threadId: string;
+  sending: boolean;
+  activeIntent: IntentType | null;
+};
+
+type HueyAction =
+  | { type: 'THREADS_REFRESHED'; threads: ThreadRecord[] }
+  | { type: 'NEW_THREAD'; threadId: string }
+  | { type: 'SWITCH_THREAD'; threadId: string }
+  | { type: 'SEND_START'; userMsg: ChatMessage; threadId: string; threads: ThreadRecord[] }
+  | { type: 'SEND_DONE'; assistantMsg: ChatMessage; threadId: string }
+  | { type: 'SEND_FAIL'; errorMsg: ChatMessage }
+  | { type: 'SET_INTENT'; intent: IntentType | null };
+
+function hueyReducer(state: HueyState, action: HueyAction): HueyState {
+  switch (action.type) {
+    case 'THREADS_REFRESHED':
+      return { ...state, threads: action.threads };
+    case 'NEW_THREAD':
+      return { ...state, threadId: action.threadId, messages: [], activeIntent: null };
+    case 'SWITCH_THREAD':
+      return { ...state, threadId: action.threadId, messages: [], activeIntent: null };
+    case 'SEND_START':
+      return {
+        ...state,
+        sending: true,
+        threadId: action.threadId,
+        threads: action.threads,
+        messages: [...state.messages, action.userMsg],
+      };
+    case 'SEND_DONE':
+      return {
+        ...state,
+        sending: false,
+        threadId: action.threadId,
+        messages: [...state.messages, action.assistantMsg],
+      };
+    case 'SEND_FAIL':
+      return { ...state, sending: false, messages: [...state.messages, action.errorMsg] };
+    case 'SET_INTENT':
+      return { ...state, activeIntent: action.intent };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
 
@@ -80,14 +131,16 @@ function createMessage(role: ChatMessage['role'], content: string, meta?: string
 }
 
 function HueyRoute() {
-  const [threads, setThreads] = useState<ThreadRecord[]>(() => loadThreads())
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [threadId, setThreadId] = useState(() => `huey-thread-${Date.now()}`)
-  const [sending, setSending] = useState(false)
-  const [activeIntent, setActiveIntent] = useState<IntentType | null>(null)
+  const [{ threads, messages, threadId, sending, activeIntent }, dispatch] = useReducer(hueyReducer, {
+    threads: loadThreads(),
+    messages: [],
+    threadId: `huey-thread-${Date.now()}`,
+    sending: false,
+    activeIntent: null,
+  });
 
   useEffect(() => {
-    const refresh = () => setThreads(loadThreads())
+    const refresh = () => dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() })
     window.addEventListener('storage', refresh)
     window.addEventListener('huey-threads-updated', refresh)
     return () => {
@@ -97,15 +150,11 @@ function HueyRoute() {
   }, [])
 
   const newThread = useCallback(() => {
-    setThreadId(`huey-thread-${Date.now()}`)
-    setMessages([])
-    setActiveIntent(null)
+    dispatch({ type: 'NEW_THREAD', threadId: `huey-thread-${Date.now()}` })
   }, [])
 
   const switchThread = useCallback((id: string) => {
-    setThreadId(id)
-    setMessages([])
-    setActiveIntent(null)
+    dispatch({ type: 'SWITCH_THREAD', threadId: id })
   }, [])
 
   const handleSend = async (text: string) => {
@@ -126,6 +175,9 @@ function HueyRoute() {
       displayText = `[${template.label}] ${text}`
     }
 
+    let nextThreadId = threadId
+    let updatedThreads = threads
+
     // Persist thread to history on first message
     if (messages.length === 0) {
       const record: ThreadRecord = {
@@ -136,12 +188,16 @@ function HueyRoute() {
         timestamp: Date.now(),
       }
       saveThread(record)
-      setThreads(loadThreads())
+      updatedThreads = loadThreads()
       window.dispatchEvent(new Event('huey-threads-updated'))
     }
 
-    setMessages((prev) => [...prev, createMessage('user', displayText)])
-    setSending(true)
+    dispatch({
+      type: 'SEND_START',
+      userMsg: createMessage('user', displayText),
+      threadId,
+      threads: updatedThreads,
+    })
 
     try {
       const response = await apiFetch('/tensura/v1/supervisor/invoke', {
@@ -156,9 +212,6 @@ function HueyRoute() {
 
       let payload = (await response.json().catch(() => null)) as InvokeResponse | null
 
-      // If the primary request failed due to rate limits or server error, retry once
-      // with a conservative fallback model. This helps when the default model hits
-      // upstream rate limits or quota issues.
       if (!response.ok && (response.status === 429 || response.status >= 500)) {
         try {
           const fallbackBody = JSON.stringify({
@@ -174,12 +227,10 @@ function HueyRoute() {
           })
           payload = (await fallbackResp.json().catch(() => null)) as InvokeResponse | null
           if (fallbackResp.ok) {
-            // annotate that a fallback was used
             payload = { ...(payload || {}), result: payload?.result, threadId: payload?.threadId || payload?.thread_id || threadId }
           }
-        } catch (fallbackErr) {
-          // ignore and fall through to original error handling
-          // we'll report the original response below
+        } catch {
+          // ignore and fall through
         }
       }
 
@@ -187,8 +238,7 @@ function HueyRoute() {
         throw new Error(`Huey request failed (${response.status})`)
       }
 
-      const nextThreadId = payload?.threadId || payload?.thread_id || threadId
-      setThreadId(nextThreadId)
+      nextThreadId = payload?.threadId || payload?.thread_id || threadId
 
       const assistantText =
         payload?.result?.trim() ? payload.result : 'Huey responded without text.'
@@ -197,15 +247,14 @@ function HueyRoute() {
       if (payload?.next_action) metaParts.push(`Next: ${payload.next_action}`)
       if (payload?.tool_results_degraded) metaParts.push('⚠ Degraded tools')
 
-      setMessages((prev) => [
-        ...prev,
-        createMessage('assistant', assistantText, metaParts.join(' · ')),
-      ])
+      dispatch({
+        type: 'SEND_DONE',
+        assistantMsg: createMessage('assistant', assistantText, metaParts.join(' · ')),
+        threadId: nextThreadId,
+      })
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Huey request failed'
-      setMessages((prev) => [...prev, createMessage('system', `Request failed: ${msg}`)])
-    } finally {
-      setSending(false)
+      dispatch({ type: 'SEND_FAIL', errorMsg: createMessage('system', `Request failed: ${msg}`) })
     }
   }
 
@@ -219,7 +268,7 @@ function HueyRoute() {
           onNewThread={newThread}
           intentTemplates={INTENT_TEMPLATES}
           activeIntent={activeIntent}
-          onSelectIntent={(t) => setActiveIntent(activeIntent === t ? null : t)}
+          onSelectIntent={(t) => dispatch({ type: 'SET_INTENT', intent: activeIntent === t ? null : t })}
         />
       </div>
       <div className="flex-1 min-w-0">

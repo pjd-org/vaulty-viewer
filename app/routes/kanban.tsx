@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useReducer, useState } from "react";
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { apiFetch } from "../../src/utils/api";
 import {
@@ -16,15 +16,64 @@ export const Route = createFileRoute('/kanban')({
   component: KanbanRoute,
 })
 
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+type KanbanState = {
+  apiStatus: ApiStatus;
+  apiTasks: KanbanTask[];
+  mutatingTaskId: string | null;
+  draggingTaskId: string | null;
+};
+
+type KanbanAction =
+  | { type: 'TASKS_LOADED'; tasks: KanbanTask[] }
+  | { type: 'API_OFFLINE' }
+  | { type: 'MUTATE_START'; taskId: string }
+  | { type: 'MUTATE_DONE'; path: string; id: string; status: string; updatedPath: string }
+  | { type: 'MUTATE_FAIL' }
+  | { type: 'DRAG_START'; taskId: string }
+  | { type: 'DRAG_END' };
+
+function kanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
+  switch (action.type) {
+    case 'TASKS_LOADED':
+      return { ...state, apiTasks: action.tasks, apiStatus: 'online' };
+    case 'API_OFFLINE':
+      return { ...state, apiStatus: 'offline' };
+    case 'MUTATE_START':
+      return { ...state, mutatingTaskId: action.taskId };
+    case 'MUTATE_DONE':
+      return {
+        ...state,
+        apiStatus: 'online',
+        mutatingTaskId: null,
+        draggingTaskId: null,
+        apiTasks: state.apiTasks.map((t) =>
+          t.path === action.path || t.id === action.id
+            ? { ...t, status: action.status, path: action.updatedPath }
+            : t
+        ),
+      };
+    case 'MUTATE_FAIL':
+      return { ...state, apiStatus: 'offline', mutatingTaskId: null, draggingTaskId: null };
+    case 'DRAG_START':
+      return { ...state, draggingTaskId: action.taskId };
+    case 'DRAG_END':
+      return { ...state, draggingTaskId: null };
+  }
+}
+
 function KanbanRoute() {
-  const [apiStatus, setApiStatus] = useState<ApiStatus>("unknown");
-  const [apiTasks, setApiTasks] = useState<KanbanTask[]>([]);
+  const [{ apiStatus, apiTasks, mutatingTaskId, draggingTaskId }, dispatch] = useReducer(
+    kanbanReducer,
+    { apiStatus: 'unknown', apiTasks: [], mutatingTaskId: null, draggingTaskId: null },
+  );
   const [filterTag, setFilterTag] = useState("");
   const [filterProject, setFilterProject] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
   const [expandCompletedColumn, setExpandCompletedColumn] = useState(false);
-  const [mutatingTaskId, setMutatingTaskId] = useState<string | null>(null);
-  const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
 
   const tasks = apiTasks;
 
@@ -34,17 +83,16 @@ function KanbanRoute() {
         const res = await apiFetch('/api/v1/tasks');
         if (res.ok) {
           const body = await res.json();
-          const apiList = (body.structuredContent?.tasks || body.tasks || []).map((t: Parameters<typeof normalizeTask>[0]) =>
+          const tasks = (body.structuredContent?.tasks || body.tasks || []).map((t: Parameters<typeof normalizeTask>[0]) =>
             normalizeTask(t)
           );
-          setApiTasks(apiList);
-          setApiStatus("online");
+          dispatch({ type: 'TASKS_LOADED', tasks });
         } else {
-          setApiStatus("offline");
+          dispatch({ type: 'API_OFFLINE' });
         }
       } catch (err) {
         console.warn("[kanban] API unavailable, using static data", err);
-        setApiStatus("offline");
+        dispatch({ type: 'API_OFFLINE' });
       }
     };
     loadTasks();
@@ -100,7 +148,7 @@ function KanbanRoute() {
   const updateStatus = async (task: KanbanTask, status: string) => {
     if (!task.path) return;
     if (task.status === status) return;
-    setMutatingTaskId(task.id);
+    dispatch({ type: 'MUTATE_START', taskId: task.id });
     try {
       const res = await apiFetch(
         `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
@@ -111,48 +159,40 @@ function KanbanRoute() {
         }
       );
       if (!res.ok) {
-        setApiStatus("offline");
+        dispatch({ type: 'MUTATE_FAIL' });
         return;
       }
       const body = await res.json();
-      const updatedPath = body?.structuredContent?.path || task.path;
-      const updatedStatus = body?.structuredContent?.frontmatter?.status || status;
-      setApiTasks((prev) => {
-        const next = prev.length ? [...prev] : [...tasks];
-        return next.map((t) =>
-          t.path === task.path || t.id === task.id
-            ? { ...t, status: updatedStatus, path: updatedPath }
-            : t
-        );
+      dispatch({
+        type: 'MUTATE_DONE',
+        path: task.path,
+        id: task.id,
+        status: body?.structuredContent?.frontmatter?.status || status,
+        updatedPath: body?.structuredContent?.path || task.path,
       });
-      setApiStatus("online");
     } catch (err) {
       console.warn("[kanban] status update failed", err);
-      setApiStatus("offline");
-    } finally {
-      setMutatingTaskId(null);
-      setDraggingTaskId(null);
+      dispatch({ type: 'MUTATE_FAIL' });
     }
   };
 
   const handleDragStart = (task: KanbanTask) => {
     if (isReadOnly) return;
-    setDraggingTaskId(task.id);
+    dispatch({ type: 'DRAG_START', taskId: task.id });
   };
 
   const handleDragEnd = () => {
-    setDraggingTaskId(null);
+    dispatch({ type: 'DRAG_END' });
   };
 
   const handleDrop = (status: string) => {
     if (isReadOnly || !draggingTaskId) return;
-    const task =
-      apiTasks.find((t) => t.id === draggingTaskId) ||
-      tasks.find((t) => t.id === draggingTaskId);
+    const task = apiTasks.find((t) => t.id === draggingTaskId);
     if (task) {
       updateStatus(task, status);
+    } else {
+      dispatch({ type: 'DRAG_END' });
     }
-    setDraggingTaskId(null);
   };
 
   const allowDrop = (e: React.DragEvent) => {

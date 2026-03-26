@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { apiFetch } from '../../src/utils/api';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
@@ -51,24 +51,43 @@ function AudienceColumn({ audience, notes, loading }: { audience: string; notes:
   );
 }
 
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+type KnowledgeState = {
+  health: GraphHealthReport | null;
+  healthLoading: boolean;
+  audienceData: Record<string, NoteRef[]>;
+  notesLoading: boolean;
+};
+
+type KnowledgeAction =
+  | { type: 'HEALTH_LOADED'; health: GraphHealthReport | null }
+  | { type: 'NOTES_LOADED'; audienceData: Record<string, NoteRef[]> };
+
+function knowledgeReducer(state: KnowledgeState, action: KnowledgeAction): KnowledgeState {
+  switch (action.type) {
+    case 'HEALTH_LOADED':
+      return { ...state, health: action.health, healthLoading: false };
+    case 'NOTES_LOADED':
+      return { ...state, audienceData: action.audienceData, notesLoading: false };
+  }
+}
+
 function KnowledgeRoute() {
-  const [health, setHealth] = useState<GraphHealthReport | null>(null);
-  const [healthLoading, setHealthLoading] = useState(true);
-  const [audienceData, setAudienceData] = useState<Record<string, NoteRef[]>>({
-    human: [],
-    agent: [],
-    bubble: [],
-  });
-  const [notesLoading, setNotesLoading] = useState(true);
+  const [{ health, healthLoading, audienceData, notesLoading }, dispatch] = useReducer(
+    knowledgeReducer,
+    { health: null, healthLoading: true, audienceData: { human: [], agent: [], bubble: [] }, notesLoading: true },
+  );
   const [domainFilter, setDomainFilter] = useState('');
   const [maturityFilter, setMaturityFilter] = useState('');
 
   useEffect(() => {
     apiFetch('/api/knowledge/health')
       .then((r) => r.json())
-      .then((data) => setHealth(data as GraphHealthReport))
-      .catch(() => setHealth(null))
-      .finally(() => setHealthLoading(false));
+      .then((data) => dispatch({ type: 'HEALTH_LOADED', health: data as GraphHealthReport }))
+      .catch(() => dispatch({ type: 'HEALTH_LOADED', health: null }));
 
     const audiences = ['human', 'agent', 'bubble'] as const;
     Promise.all(
@@ -81,8 +100,7 @@ function KnowledgeRoute() {
     ).then((results) => {
       const map: Record<string, NoteRef[]> = {};
       for (const r of results) map[r.audience] = r.notes;
-      setAudienceData(map);
-      setNotesLoading(false);
+      dispatch({ type: 'NOTES_LOADED', audienceData: map });
     });
   }, []);
 

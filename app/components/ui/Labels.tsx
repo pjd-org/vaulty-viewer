@@ -39,8 +39,8 @@ export interface MetaRowProps {
 export function MetaRow({ items, className = '' }: MetaRowProps) {
   return (
     <div className={`flex items-center gap-3 flex-wrap ${className}`}>
-      {items.map((item, i) => (
-        <span key={i} className="flex items-center gap-1 text-sm text-slate-500">
+      {items.map((item) => (
+        <span key={item.label} className="flex items-center gap-1 text-sm text-slate-500">
           {item.icon && <span className="shrink-0">{item.icon}</span>}
           {item.label}
         </span>

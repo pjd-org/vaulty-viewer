@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 import useCODStatus from "../hooks/useCODStatus";
 import type { CODHumanStateFormData } from "../hooks/useCODStatus";
 import HumanStateForm from "./HumanStateForm";
@@ -393,17 +393,55 @@ function CODStatusBadge({ status, onClick }: { status: string; onClick: () => vo
 }
 
 // ============================================================================
+// Panel state
+// ============================================================================
+
+type PanelState = {
+  collapsed: boolean;
+  showForm: boolean;
+  advancedOpen: boolean;
+  profileChoice: string;
+  sessionStarting: boolean;
+};
+
+type PanelAction =
+  | { type: 'EXPAND' }
+  | { type: 'COLLAPSE' }
+  | { type: 'SHOW_FORM' }
+  | { type: 'HIDE_FORM' }
+  | { type: 'TOGGLE_ADVANCED' }
+  | { type: 'SET_PROFILE'; value: string }
+  | { type: 'SESSION_START' }
+  | { type: 'SESSION_DONE' };
+
+function panelReducer(state: PanelState, action: PanelAction): PanelState {
+  switch (action.type) {
+    case 'EXPAND': return { ...state, collapsed: false };
+    case 'COLLAPSE': return { ...state, collapsed: true };
+    case 'SHOW_FORM': return { ...state, showForm: true };
+    case 'HIDE_FORM': return { ...state, showForm: false };
+    case 'TOGGLE_ADVANCED': return { ...state, advancedOpen: !state.advancedOpen };
+    case 'SET_PROFILE': return { ...state, profileChoice: action.value };
+    case 'SESSION_START': return { ...state, sessionStarting: true };
+    case 'SESSION_DONE': return { ...state, sessionStarting: false };
+  }
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData = null }: CODStatusPanelProps) {
-  const [collapsed, setCollapsed] = useState(initialCollapsed);
-  const [showForm, setShowForm] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [profileChoice, setProfileChoice] = useState(() => {
-    if (typeof window === 'undefined') return 'auto';
-    return localStorage.getItem('codProfile') || 'auto';
-  });
+  const [{ collapsed, showForm, advancedOpen, profileChoice, sessionStarting }, dispatch] = useReducer(
+    panelReducer,
+    {
+      collapsed: initialCollapsed,
+      showForm: false,
+      advancedOpen: false,
+      profileChoice: typeof window !== 'undefined' ? (localStorage.getItem('codProfile') || 'auto') : 'auto',
+      sessionStarting: false,
+    },
+  );
   const navigate = useNavigate();
 
   const {
@@ -421,17 +459,15 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
     endSession,
   } = useCODStatus(staticData, profileChoice === 'auto' ? null : profileChoice);
 
-  const [sessionStarting, setSessionStarting] = useState(false);
-
   const handleProfileChange = (value: string) => {
-    setProfileChoice(value);
+    dispatch({ type: 'SET_PROFILE', value });
     if (typeof window !== 'undefined') localStorage.setItem('codProfile', value);
     refresh();
   };
 
   const handleUpdateHumanState = async (formData: CODHumanStateFormData) => {
     const result = await updateHumanState(formData);
-    if (result.success) setShowForm(false);
+    if (result.success) dispatch({ type: 'HIDE_FORM' });
   };
 
   const handleEndSession = async () => {
@@ -448,17 +484,17 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
 
   const handleQuickSession = async (budgetMin: number) => {
     if (budgetMin <= 0) return;
-    setSessionStarting(true);
+    dispatch({ type: 'SESSION_START' });
     try {
       await startSession({ budgetMin });
       await refresh();
     } finally {
-      setSessionStarting(false);
+      dispatch({ type: 'SESSION_DONE' });
     }
   };
 
   if (collapsed) {
-    return <CODStatusBadge status={validation.status} onClick={() => setCollapsed(false)} />;
+    return <CODStatusBadge status={validation.status} onClick={() => dispatch({ type: 'EXPAND' })} />;
   }
 
   // Derive display state from normalized data
@@ -479,7 +515,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
         <HumanStateForm
           currentState={normalizedHumanState}
           onSubmit={handleUpdateHumanState}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => dispatch({ type: 'HIDE_FORM' })}
           loading={updating}
         />
       </div>
@@ -502,7 +538,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
           </button>
           <button
             className="cod-button cod-button--icon"
-            onClick={() => setCollapsed(true)}
+            onClick={() => dispatch({ type: 'COLLAPSE' })}
             title="Collapse"
           >
             ✕
@@ -526,7 +562,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
         sessionStarting={sessionStarting}
         session={session}
         onStartSprint={handleQuickSession}
-        onCheckin={() => setShowForm(true)}
+        onCheckin={() => dispatch({ type: 'SHOW_FORM' })}
         onOpenTasks={() => navigate({ to: '/', search: { q: undefined, collection: undefined } })}
       />
 
@@ -553,7 +589,7 @@ export function CODStatusPanel({ collapsed: initialCollapsed = true, staticData 
       {/* 6. Advanced drawer */}
       <CodAdvancedDrawer
         open={advancedOpen}
-        onToggle={() => setAdvancedOpen(!advancedOpen)}
+        onToggle={() => dispatch({ type: 'TOGGLE_ADVANCED' })}
         session={session}
         onEnd={handleEndSession}
         onAbort={handleAbortSession}

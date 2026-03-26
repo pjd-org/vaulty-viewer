@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import sanitizeHtml from 'sanitize-html';
 import { apiFetch } from '../../src/utils/api';
@@ -74,63 +74,122 @@ export const Route = createFileRoute('/note')({
   component: NoteRoute,
 });
 
+// ---------------------------------------------------------------------------
+// State reducers
+// ---------------------------------------------------------------------------
+
+type NoteState = {
+  note: NoteRecord | null;
+  relatedNotes: RelatedNote[];
+  loading: boolean;
+  error: string | null;
+  taskData: TaskData | null;
+};
+type NoteAction =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_ERROR'; error: string }
+  | { type: 'LOAD_DONE'; note: NoteRecord; taskData: TaskData | null; relatedNotes: RelatedNote[] }
+  | { type: 'NOTE_UPDATED'; note: NoteRecord };
+function noteReducer(state: NoteState, action: NoteAction): NoteState {
+  switch (action.type) {
+    case 'LOAD_START': return { ...state, loading: true, error: null };
+    case 'LOAD_ERROR': return { ...state, loading: false, error: action.error };
+    case 'LOAD_DONE': return { loading: false, error: null, note: action.note, taskData: action.taskData, relatedNotes: action.relatedNotes };
+    case 'NOTE_UPDATED': return { ...state, note: action.note };
+  }
+}
+
+type LifecycleState = {
+  pendingPromotionToken: string;
+  pendingPromotionExpiry: string | null;
+  busy: 'promote' | 'reject' | 'complete' | null;
+  message: string | null;
+  isError: boolean;
+};
+type LifecycleAction =
+  | { type: 'RESET' }
+  | { type: 'BUSY'; op: 'promote' | 'reject' | 'complete' }
+  | { type: 'MESSAGE'; message: string; isError?: boolean }
+  | { type: 'DONE' }
+  | { type: 'ERROR'; message: string }
+  | { type: 'PROMOTION_PENDING'; token: string; expiresAt: string | null; message: string }
+  | { type: 'PROMOTION_CLEAR' }
+  | { type: 'PROMOTION_EXPIRED' };
+function lifecycleReducer(state: LifecycleState, action: LifecycleAction): LifecycleState {
+  switch (action.type) {
+    case 'RESET': return { pendingPromotionToken: '', pendingPromotionExpiry: null, busy: null, message: null, isError: false };
+    case 'BUSY': return { ...state, busy: action.op, message: null, isError: false };
+    case 'MESSAGE': return { ...state, message: action.message, isError: action.isError ?? false };
+    case 'DONE': return { ...state, busy: null };
+    case 'ERROR': return { ...state, busy: null, isError: true, message: action.message };
+    case 'PROMOTION_PENDING': return { ...state, pendingPromotionToken: action.token, pendingPromotionExpiry: action.expiresAt, message: action.message, isError: false };
+    case 'PROMOTION_CLEAR': return { ...state, pendingPromotionToken: '', pendingPromotionExpiry: null };
+    case 'PROMOTION_EXPIRED': return { ...state, pendingPromotionToken: '', pendingPromotionExpiry: null, message: 'Promote confirmation expired. Click Promote again to re-arm it.', isError: false };
+  }
+}
+
+type ReviewState = {
+  decision: string;
+  comment: string;
+  submitting: boolean;
+  message: string | null;
+};
+type ReviewAction =
+  | { type: 'SET_DECISION'; decision: string }
+  | { type: 'SET_COMMENT'; comment: string }
+  | { type: 'SUBMIT_START' }
+  | { type: 'SUBMIT_DONE'; message: string }
+  | { type: 'SUBMIT_FAIL'; message: string };
+function reviewReducer(state: ReviewState, action: ReviewAction): ReviewState {
+  switch (action.type) {
+    case 'SET_DECISION': return { ...state, decision: action.decision };
+    case 'SET_COMMENT': return { ...state, comment: action.comment };
+    case 'SUBMIT_START': return { ...state, submitting: true, message: null };
+    case 'SUBMIT_DONE': return { ...state, submitting: false, comment: '', message: action.message };
+    case 'SUBMIT_FAIL': return { ...state, submitting: false, message: action.message };
+  }
+}
+
 function NoteRoute() {
   const { p } = Route.useSearch();
   const navigate = useNavigate();
-  const [note, setNote] = useState<NoteRecord | null>(null);
-  const [relatedNotes, setRelatedNotes] = useState<RelatedNote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const [{ note, relatedNotes, loading, error, taskData }, dispatchNote] = useReducer(noteReducer, {
+    note: null, relatedNotes: [], loading: true, error: null, taskData: null,
+  });
+  const [lc, dispatchLc] = useReducer(lifecycleReducer, {
+    pendingPromotionToken: '', pendingPromotionExpiry: null, busy: null, message: null, isError: false,
+  });
+  const [review, dispatchReview] = useReducer(reviewReducer, {
+    decision: 'approve', comment: '', submitting: false, message: null,
+  });
   const [copied, setCopied] = useState(false);
-  const [taskData, setTaskData] = useState<TaskData | null>(null);
-  const [reviewDecision, setReviewDecision] = useState('approve');
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [reviewMessage, setReviewMessage] = useState<string | null>(null);
-  const [pendingPromotionToken, setPendingPromotionToken] = useState('');
-  const [pendingPromotionExpiry, setPendingPromotionExpiry] = useState<
-    string | null
-  >(null);
-  const [lifecycleBusy, setLifecycleBusy] = useState<
-    'promote' | 'reject' | 'complete' | null
-  >(null);
-  const [lifecycleMessage, setLifecycleMessage] = useState<string | null>(null);
-  const [lifecycleError, setLifecycleError] = useState(false);
 
   useEffect(() => {
-    if (!pendingPromotionExpiry) return undefined;
+    if (!lc.pendingPromotionExpiry) return undefined;
 
-    const expiresAtMs = Date.parse(pendingPromotionExpiry);
+    const expiresAtMs = Date.parse(lc.pendingPromotionExpiry);
     if (!Number.isFinite(expiresAtMs)) return undefined;
 
     const delayMs = Math.max(expiresAtMs - Date.now(), 0);
     const timer = window.setTimeout(() => {
-      setPendingPromotionToken('');
-      setPendingPromotionExpiry(null);
-      setLifecycleMessage(
-        'Promote confirmation expired. Click Promote again to re-arm it.'
-      );
+      dispatchLc({ type: 'PROMOTION_EXPIRED' });
     }, delayMs);
 
     return () => window.clearTimeout(timer);
-  }, [pendingPromotionExpiry]);
+  }, [lc.pendingPromotionExpiry]);
 
   useEffect(() => {
     const requestedPath = toNoteSearchPath(p);
 
     const fetchNote = async () => {
       if (!requestedPath) {
-        setError('No note path specified. Use ?p=folder/note-name');
-        setLoading(false);
+        dispatchNote({ type: 'LOAD_ERROR', error: 'No note path specified. Use ?p=folder/note-name' });
         return;
       }
 
-      setLoading(true);
-      setError(null);
-      setPendingPromotionToken('');
-      setPendingPromotionExpiry(null);
-      setLifecycleMessage(null);
-      setLifecycleError(false);
+      dispatchNote({ type: 'LOAD_START' });
+      dispatchLc({ type: 'RESET' });
 
       const apiPath = toApiNotePath(requestedPath);
       const encodedPath = encodeURIComponent(apiPath);
@@ -151,7 +210,7 @@ function NoteRoute() {
         const rawContent = getStringValue(structured.content) || '';
         const lifecycle = getLifecycleContext(resolvedPath, frontmatter);
 
-        setNote({
+        const loadedNote: NoteRecord = {
           path: resolvedPath,
           searchPath: stripMarkdownExtension(resolvedPath),
           title:
@@ -167,45 +226,39 @@ function NoteRoute() {
           html: renderNoteMarkdown(rawContent),
           frontmatter,
           lifecycle,
-        });
+        };
 
+        let loadedTaskData: TaskData | null = null;
         if (lifecycle.isTask) {
           try {
             const taskResponse = await apiFetch(`/api/v1/tasks/${encodedPath}`);
             if (taskResponse.ok) {
               const taskResult = await taskResponse.json();
-              setTaskData(taskResult.structuredContent || taskResult);
-            } else {
-              setTaskData(null);
+              loadedTaskData = taskResult.structuredContent || taskResult;
             }
           } catch {
-            setTaskData(null);
+            loadedTaskData = null;
           }
-        } else {
-          setTaskData(null);
         }
 
+        let loadedRelated: RelatedNote[] = [];
         try {
           const relatedResponse = await apiFetch(
             `/api/v1/graph/related/${encodedPath}?limit=8`
           );
           if (relatedResponse.ok) {
             const relatedResult = await relatedResponse.json();
-            setRelatedNotes(
-              (relatedResult?.structuredContent?.related ??
-                relatedResult?.related ??
-                []) as RelatedNote[]
-            );
-          } else {
-            setRelatedNotes([]);
+            loadedRelated = (relatedResult?.structuredContent?.related ??
+              relatedResult?.related ??
+              []) as RelatedNote[];
           }
         } catch {
-          setRelatedNotes([]);
+          loadedRelated = [];
         }
+
+        dispatchNote({ type: 'LOAD_DONE', note: loadedNote, taskData: loadedTaskData, relatedNotes: loadedRelated });
       } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
+        dispatchNote({ type: 'LOAD_ERROR', error: (err as Error).message });
       }
     };
 
@@ -249,15 +302,14 @@ function NoteRoute() {
 
   const handleReviewSubmit = async () => {
     if (!note) return;
-    setReviewSubmitting(true);
-    setReviewMessage(null);
+    dispatchReview({ type: 'SUBMIT_START' });
 
     try {
       const body = {
         path: note.path,
-        addHistoryNote: `Review (${reviewDecision}): ${reviewComment || 'No comment provided.'}`,
+        addHistoryNote: `Review (${review.decision}): ${review.comment || 'No comment provided.'}`,
         frontmatterPatch: {
-          review_status: reviewDecision,
+          review_status: review.decision,
           review_updated: new Date().toISOString(),
         },
       };
@@ -272,38 +324,25 @@ function NoteRoute() {
         throw new Error(errText || `HTTP ${res.status}`);
       }
 
-      setNote((current) => {
-        if (!current) return current;
-        const nextFrontmatter = {
-          ...current.frontmatter,
-          review_status: reviewDecision,
-          review_updated: new Date().toISOString(),
-        };
-        return {
-          ...current,
-          frontmatter: nextFrontmatter,
-          lifecycle: getLifecycleContext(current.path, nextFrontmatter),
-        };
-      });
-      setReviewMessage('Review recorded via Tasker API.');
-      setReviewComment('');
+      const nextFrontmatter = {
+        ...note.frontmatter,
+        review_status: review.decision,
+        review_updated: new Date().toISOString(),
+      };
+      dispatchNote({ type: 'NOTE_UPDATED', note: { ...note, frontmatter: nextFrontmatter, lifecycle: getLifecycleContext(note.path, nextFrontmatter) } });
+      dispatchReview({ type: 'SUBMIT_DONE', message: 'Review recorded via Tasker API.' });
     } catch (err) {
-      setReviewMessage(`Failed to record review: ${(err as Error).message}`);
-    } finally {
-      setReviewSubmitting(false);
+      dispatchReview({ type: 'SUBMIT_FAIL', message: `Failed to record review: ${(err as Error).message}` });
     }
   };
 
   const handlePromote = async () => {
     if (!note) return;
     if (!note.lifecycle.runId) {
-      setLifecycleError(true);
-      setLifecycleMessage('Missing run id for this staged note.');
+      dispatchLc({ type: 'MESSAGE', message: 'Missing run id for this staged note.', isError: true });
       return;
     }
-    setLifecycleBusy('promote');
-    setLifecycleMessage(null);
-    setLifecycleError(false);
+    dispatchLc({ type: 'BUSY', op: 'promote' });
 
     try {
       const res = await apiFetch(
@@ -312,7 +351,7 @@ function NoteRoute() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            token: pendingPromotionToken || undefined,
+            token: lc.pendingPromotionToken || undefined,
           }),
         }
       );
@@ -323,22 +362,17 @@ function NoteRoute() {
 
       const status = body?.structuredContent?.status ?? body?.status;
       if (status === 'pending_confirmation') {
-        const nextToken = body?.structuredContent?.token ?? body?.token;
-        setPendingPromotionToken(nextToken || '');
-        setPendingPromotionExpiry(
-          body?.structuredContent?.expiresAt ?? body?.expiresAt ?? null
-        );
-        setLifecycleMessage(
-          body?.structuredContent?.message ??
-            body?.message ??
-            'Confirmation armed. Click Promote again to confirm.'
-        );
+        dispatchLc({
+          type: 'PROMOTION_PENDING',
+          token: body?.structuredContent?.token ?? body?.token ?? '',
+          expiresAt: body?.structuredContent?.expiresAt ?? body?.expiresAt ?? null,
+          message: body?.structuredContent?.message ?? body?.message ?? 'Confirmation armed. Click Promote again to confirm.',
+        });
         return;
       }
 
-      setPendingPromotionToken('');
-      setPendingPromotionExpiry(null);
-      setLifecycleMessage('Promotion complete. Opening the canonical note.');
+      dispatchLc({ type: 'PROMOTION_CLEAR' });
+      dispatchLc({ type: 'MESSAGE', message: 'Promotion complete. Opening the canonical note.' });
       const targetPath = note.lifecycle.targetPath;
       if (targetPath) {
         navigate({
@@ -347,23 +381,19 @@ function NoteRoute() {
         });
       }
     } catch (err) {
-      setLifecycleError(true);
-      setLifecycleMessage((err as Error).message);
+      dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
-      setLifecycleBusy(null);
+      dispatchLc({ type: 'DONE' });
     }
   };
 
   const handleReject = async () => {
     if (!note) return;
     if (!note.lifecycle.runId) {
-      setLifecycleError(true);
-      setLifecycleMessage('Missing run id for this staged note.');
+      dispatchLc({ type: 'MESSAGE', message: 'Missing run id for this staged note.', isError: true });
       return;
     }
-    setLifecycleBusy('reject');
-    setLifecycleMessage(null);
-    setLifecycleError(false);
+    dispatchLc({ type: 'BUSY', op: 'reject' });
 
     try {
       const res = await apiFetch(
@@ -381,7 +411,7 @@ function NoteRoute() {
         body?.structuredContent?.quarantinedPath ??
         body?.quarantinedPath ??
         null;
-      setLifecycleMessage('Moved to rejected queue.');
+      dispatchLc({ type: 'MESSAGE', message: 'Moved to rejected queue.' });
       if (typeof quarantinedPath === 'string' && quarantinedPath.length > 0) {
         navigate({
           to: '/note',
@@ -389,18 +419,15 @@ function NoteRoute() {
         });
       }
     } catch (err) {
-      setLifecycleError(true);
-      setLifecycleMessage((err as Error).message);
+      dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
-      setLifecycleBusy(null);
+      dispatchLc({ type: 'DONE' });
     }
   };
 
   const handleCompleteTask = async () => {
     if (!note) return;
-    setLifecycleBusy('complete');
-    setLifecycleMessage(null);
-    setLifecycleError(false);
+    dispatchLc({ type: 'BUSY', op: 'complete' });
 
     try {
       const res = await apiFetch(
@@ -420,39 +447,27 @@ function NoteRoute() {
         getStringValue(body?.structuredContent?.path) ||
         getStringValue(body?.path) ||
         null;
-      setNote((current) => {
-        if (!current) return current;
-        const nextPath = updatedPath || current.path;
-        const nextFrontmatter = {
-          ...current.frontmatter,
-          status: 'completed',
-        };
-        return {
-          ...current,
-          frontmatter: nextFrontmatter,
-          path: nextPath,
-          searchPath: stripMarkdownExtension(nextPath),
-          lifecycle: getLifecycleContext(nextPath, nextFrontmatter),
-        };
+
+      const nextPath = updatedPath || note.path;
+      const nextFrontmatter = { ...note.frontmatter, status: 'completed' };
+      dispatchNote({
+        type: 'NOTE_UPDATED',
+        note: { ...note, frontmatter: nextFrontmatter, path: nextPath, searchPath: stripMarkdownExtension(nextPath), lifecycle: getLifecycleContext(nextPath, nextFrontmatter) },
       });
+
       if (updatedPath && updatedPath !== note.path) {
-        setLifecycleMessage(
-          'Task completed and archived. Opening the updated note location.'
-        );
+        dispatchLc({ type: 'MESSAGE', message: 'Task completed and archived. Opening the updated note location.' });
         navigate({
           to: '/note',
           search: { p: stripMarkdownExtension(updatedPath) },
         });
         return;
       }
-      setLifecycleMessage(
-        'Task completed. Handler-side archive rules will move it out of notes/tasks when the completion flow finishes.'
-      );
+      dispatchLc({ type: 'MESSAGE', message: 'Task completed. Handler-side archive rules will move it out of notes/tasks when the completion flow finishes.' });
     } catch (err) {
-      setLifecycleError(true);
-      setLifecycleMessage((err as Error).message);
+      dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
-      setLifecycleBusy(null);
+      dispatchLc({ type: 'DONE' });
     }
   };
 
@@ -512,15 +527,15 @@ function NoteRoute() {
               {note.lifecycle.canPromote && (
                 <PrimaryButton
                   onClick={handlePromote}
-                  disabled={lifecycleBusy !== null}
+                  disabled={lc.busy !== null}
                 >
-                  {pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
+                  {lc.pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
                 </PrimaryButton>
               )}
               {note.lifecycle.canReject && (
                 <SecondaryButton
                   onClick={handleReject}
-                  disabled={lifecycleBusy !== null}
+                  disabled={lc.busy !== null}
                   className="text-red-600 hover:bg-red-50"
                 >
                   Reject
@@ -529,7 +544,7 @@ function NoteRoute() {
               {note.lifecycle.canComplete && (
                 <SecondaryButton
                   onClick={handleCompleteTask}
-                  disabled={lifecycleBusy !== null}
+                  disabled={lc.busy !== null}
                 >
                   Complete &amp; Archive
                 </SecondaryButton>
@@ -561,16 +576,16 @@ function NoteRoute() {
       )}
 
       {/* Lifecycle feedback */}
-      {lifecycleMessage && (
+      {lc.message && (
         <p
-          className={`text-sm px-1 ${lifecycleError ? 'text-red-500' : 'text-slate-500'}`}
+          className={`text-sm px-1 ${lc.isError ? 'text-red-500' : 'text-slate-500'}`}
         >
-          {lifecycleMessage}
+          {lc.message}
         </p>
       )}
-      {pendingPromotionExpiry && (
+      {lc.pendingPromotionExpiry && (
         <p className="text-xs text-slate-400 px-1">
-          Promotion window expires at {pendingPromotionExpiry}.
+          Promotion window expires at {lc.pendingPromotionExpiry}.
         </p>
       )}
 
@@ -733,8 +748,8 @@ function NoteRoute() {
                           type="radio"
                           name="review-decision"
                           value={val}
-                          checked={reviewDecision === val}
-                          onChange={() => setReviewDecision(val)}
+                          checked={review.decision === val}
+                          onChange={() => dispatchReview({ type: 'SET_DECISION', decision: val })}
                           className="accent-blue-500"
                         />
                         {val === 'approve' ? 'Approve' : 'Needs changes'}
@@ -745,18 +760,18 @@ function NoteRoute() {
                     className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:outline-none focus:border-blue-300 resize-none"
                     placeholder="Add a short review comment"
                     rows={3}
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
+                    value={review.comment}
+                    onChange={(e) => dispatchReview({ type: 'SET_COMMENT', comment: e.target.value })}
                   />
                   <PrimaryButton
                     onClick={() => void handleReviewSubmit()}
-                    disabled={reviewSubmitting || lifecycleBusy !== null}
+                    disabled={review.submitting || lc.busy !== null}
                     className="mt-2 w-full"
                   >
-                    {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+                    {review.submitting ? 'Submitting…' : 'Submit review'}
                   </PrimaryButton>
-                  {reviewMessage && (
-                    <p className="text-xs text-slate-400 mt-2">{reviewMessage}</p>
+                  {review.message && (
+                    <p className="text-xs text-slate-400 mt-2">{review.message}</p>
                   )}
                 </SoftPanel>
               )}

@@ -1,6 +1,7 @@
 import React from 'react'
 
 interface NoteBodyRendererProps {
+  /** Must be sanitized by the caller before passing (e.g. via sanitize-html). */
   html: string
   className?: string
 }
