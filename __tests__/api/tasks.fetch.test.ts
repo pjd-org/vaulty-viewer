@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchAllTasks, fetchNextActions, updateTaskStatus } from '../../../app/lib/api/tasks';
+import { fetchAllTasks, fetchNextActions, updateTaskStatus } from '../../app/lib/api/tasks';
 
 describe('tasks API client', () => {
   it('fetchAllTasks parses tasks', async () => {

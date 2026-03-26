@@ -7,7 +7,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 describe('ProjectDetail (skeleton)', () => {
   it('shows skeleton when loading', async () => {
-    const { default: SkeletonCard } = await import('../../../app/components/ui/SkeletonCard');
+    const { default: SkeletonCard } = await import('../../app/components/ui/SkeletonCard');
     const qc = new QueryClient();
     const { container } = render(
       <QueryClientProvider client={qc}>

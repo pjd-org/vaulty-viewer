@@ -149,11 +149,13 @@ function ProjectDetailRoute() {
   }
 
   // Fetch project summary via TanStack Query
-  const { data: projectDisplay, isLoading: projectLoading, isError: projectError } = useQuery(
-    ['project', projectId],
-    () => fetchProjectById(projectId),
-    { enabled: !!projectId, staleTime: 1000 * 60, retry: 1 }
-  );
+  const { data: projectDisplay, isLoading: projectLoading, isError: projectError } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => fetchProjectById(projectId),
+    enabled: !!projectId,
+    staleTime: 1000 * 60,
+    retry: 1,
+  });
 
   const queryClient = useQueryClient();
   const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks();

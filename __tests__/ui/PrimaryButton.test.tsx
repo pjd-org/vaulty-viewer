@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { PrimaryButton } from '../app/components/ui/index';
+import { PrimaryButton } from '../../app/components/ui/index';
 
 describe('PrimaryButton', () => {
   it('renders children and default variant', () => {

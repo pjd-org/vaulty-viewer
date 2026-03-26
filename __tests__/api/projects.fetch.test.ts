@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchProjects, fetchProjectById } from '../../../app/lib/api/projects';
+import { fetchProjects, fetchProjectById } from '../../app/lib/api/projects';
 
 describe('projects API client', () => {
   const fake = [

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi } from 'vitest';
-import ProjectsIndex from '../../../app/routes/projects';
+import ProjectsIndex from '../../app/routes/projects';
 
 describe('ProjectsIndex', () => {
   it('renders projects from API', async () => {

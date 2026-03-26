@@ -18,7 +18,9 @@ export default function ProjectsIndex() {
     }
   }, []);
 
-  const { data: projects, isLoading, isError } = useQuery(['projects'], fetchProjects, {
+  const { data: projects, isLoading, isError } = useQuery({
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
     staleTime: 1000 * 60 * 1,
     retry: 1,
   });
