@@ -1,21 +1,20 @@
 import React from 'react'
+import { AppShell as GenieAppShell } from '@vault/ui'
 
 interface AppShellProps {
-  sidebar: React.ReactNode
+  /** Left rail slot — pass a <SidebarRail> */
+  rail?: React.ReactNode
+  /** Right context panel slot */
+  panel?: React.ReactNode
+  /** Show/hide right panel */
+  panelOpen?: boolean
   children: React.ReactNode
 }
 
-export function AppShell({ sidebar, children }: AppShellProps) {
+export function AppShell({ rail, panel, panelOpen = false, children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="mx-auto flex max-w-[1600px] gap-6 px-6 py-6">
-        <aside className="w-[240px] shrink-0 rounded-[28px] border border-neutral-200 bg-surface/80 p-4 shadow-sm backdrop-blur-md sticky top-6 h-fit">
-          {sidebar}
-        </aside>
-        <main className="min-w-0 flex-1 space-y-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <GenieAppShell rail={rail} panel={panel} panelOpen={panelOpen}>
+      {children}
+    </GenieAppShell>
   )
 }
