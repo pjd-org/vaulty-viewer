@@ -6,6 +6,7 @@ import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
 import { EmptyState } from '../components/ui';
 import { PageFrame } from '../components/layout';
+import { useInboxConverterMutation, type InboxConvertResult } from '../lib/queries/agents';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -41,6 +42,67 @@ function runToOriginSource(runType?: string): string {
   if (runType === 'signals_infer') return 'agent';
   if (runType === 'conversation') return 'llm';
   return runType ?? 'manual';
+}
+
+/* ─── Inline converter panel ─────────────────────────────────────────────── */
+
+function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
+  const { mutate, data, isPending, error, reset } = useInboxConverterMutation();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  if (!data && !isPending && !error) {
+    return (
+      <button
+        type="button"
+        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors"
+        onClick={() => mutate(rawText)}
+      >
+        ✦ Convert to task
+      </button>
+    );
+  }
+
+  if (isPending) {
+    return <span className="text-xs text-neutral-400 px-2 py-1">Converting…</span>;
+  }
+
+  if (error) {
+    return (
+      <span className="text-xs text-red-500 px-2 py-1">
+        Failed —{' '}
+        <button type="button" className="underline" onClick={() => { reset(); mutate(rawText); }}>
+          retry
+        </button>
+      </span>
+    );
+  }
+
+  if (data) {
+    return (
+      <div className="mt-2 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2 space-y-1">
+        <p className="text-xs font-semibold text-indigo-700">{data.title}</p>
+        <div className="flex flex-wrap gap-2 text-xs text-indigo-600">
+          <span>{data.duration}</span>
+          <span>·</span>
+          <span className="capitalize">{data.effort}</span>
+          <span>·</span>
+          <span className="capitalize">{data.type}</span>
+          {data.project && <><span>·</span><span>{data.project}</span></>}
+        </div>
+        <button
+          type="button"
+          className="text-xs text-neutral-400 hover:text-neutral-600 mt-1"
+          onClick={() => setDismissed(true)}
+        >
+          Dismiss
+        </button>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /* ─── Route ───────────────────────────────────────────────────────────────── */
@@ -228,22 +290,27 @@ function InboxRoute() {
                 />
               )}
               {activeView === 'queue' && (runs as Run[]).map((run) => (
-                <InboxItemCard
-                  key={run.runId}
-                  item={toInboxItemDisplay({
-                    title: run.runId,
-                    _source: runToOriginSource(run.runType),
-                    _run_id: run.runId,
-                    description: `${run.itemCount} item${run.itemCount !== 1 ? 's' : ''}${run.action ? ` · ${run.action}` : ''}`,
-                    status: (run.error || run.runType === 'signals_infer') ? 'blocked' : undefined,
-                  })}
-                  onInspect={() => {
-                    const p = run.items[0]?.targetPath ?? run.items[0]?.path;
-                    if (p) navigate({ to: '/note', search: { p: stripMarkdownExtension(p) } });
-                  }}
-                  onPromote={run.runType !== 'signals_infer' ? () => handleCommit(run.runId) : undefined}
-                  onReject={() => handleReject(run.runId)}
-                />
+                <div key={run.runId} className="space-y-1">
+                  <InboxItemCard
+                    item={toInboxItemDisplay({
+                      title: run.runId,
+                      _source: runToOriginSource(run.runType),
+                      _run_id: run.runId,
+                      description: `${run.itemCount} item${run.itemCount !== 1 ? 's' : ''}${run.action ? ` · ${run.action}` : ''}`,
+                      status: (run.error || run.runType === 'signals_infer') ? 'blocked' : undefined,
+                    })}
+                    onInspect={() => {
+                      const p = run.items[0]?.targetPath ?? run.items[0]?.path;
+                      if (p) navigate({ to: '/note', search: { p: stripMarkdownExtension(p) } });
+                    }}
+                    onPromote={run.runType !== 'signals_infer' ? () => handleCommit(run.runId) : undefined}
+                    onReject={() => handleReject(run.runId)}
+                  />
+                  <ConvertPanel
+                    runId={run.runId}
+                    rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
+                  />
+                </div>
               ))}
 
               {activeView === 'workbench' && (workbenchNotes as InboxNote[]).length === 0 && (
@@ -260,7 +327,7 @@ function InboxRoute() {
                     _source: note.source === 'extracted' ? 'agent' : 'manual',
                     _run_id: undefined,
                     description: undefined,
-                    createdAt: undefined,
+                    createdAt: (note.frontmatter?.created ?? note.frontmatter?.createdAt ?? null) as string | null | undefined,
                     status: note.status ?? undefined,
                   })}
                   onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(note.path) } })}
@@ -278,7 +345,7 @@ function InboxRoute() {
                     _source: note.source === 'extracted' ? 'agent' : 'manual',
                     _run_id: undefined,
                     description: undefined,
-                    createdAt: undefined,
+                    createdAt: (note.frontmatter?.created ?? note.frontmatter?.createdAt ?? null) as string | null | undefined,
                     status: note.status ?? undefined,
                   })}
                   onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(note.path) } })}
