@@ -82,6 +82,7 @@ function KnowledgeSearchRoute() {
 
   const handleQueryChange = (newQ: string) => {
     dispatch({ type: 'SET_Q', q: newQ });
+    // @ts-expect-error TanStack Router v1 same-route navigate types to never
     navigate({ search: { q: newQ, mode } });
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(newQ, mode), 300);
@@ -89,6 +90,7 @@ function KnowledgeSearchRoute() {
 
   const handleModeChange = (newMode: 'tag' | 'semantic') => {
     dispatch({ type: 'SET_MODE', mode: newMode });
+    // @ts-expect-error TanStack Router v1 same-route navigate types to never
     navigate({ search: { q, mode: newMode } });
     doSearch(q, newMode);
   };

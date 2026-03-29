@@ -6,6 +6,7 @@ export function QuickRouteGrid() {
     <div className="grid grid-cols-2 gap-3">
       <Link
         to="/work"
+        search={{}}
         className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">📁</div>
@@ -15,7 +16,7 @@ export function QuickRouteGrid() {
 
       <Link
         to="/inbox"
-        search={{ view: undefined }}
+        search={{}}
         className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">📥</div>
@@ -34,6 +35,7 @@ export function QuickRouteGrid() {
 
       <Link
         to="/knowledge"
+        search={{}}
         className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">🔍</div>

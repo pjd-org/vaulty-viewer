@@ -306,7 +306,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
       return
     }
 
-    void navigate({ to: '/' })
+    void navigate({ to: '/', search: {} })
   }, [navigate, onRequestClose])
 
   React.useEffect(() => {
@@ -333,7 +333,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
         </button>
         <main className="avatar-os-page route-modal-scroll route-modal-body">
           <nav className="breadcrumb">
-            <Link to="/" className="back-link">
+            <Link to="/" search={{}} className="back-link">
               ← Focus
             </Link>
           </nav>

@@ -64,7 +64,7 @@ function SessionRoute() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId: session.id, status }),
       });
-      await navigate({ to: "/" });
+      await navigate({ to: "/", search: {} });
     } finally {
       setEnding(false);
     }
@@ -83,7 +83,7 @@ function SessionRoute() {
       <main className="page focus-page">
         <div className="focus-empty">
           <p>Session not found.</p>
-          <Link to="/" className="pill pill--soft">← Back to Focus</Link>
+          <Link to="/" search={{}} className="pill pill--soft">← Back to Focus</Link>
         </div>
       </main>
     );
@@ -103,7 +103,7 @@ function SessionRoute() {
           <h1>{session.title ?? `Session ${id.slice(0, 8)}`}</h1>
         </div>
         <div className="focus-header__nav">
-          <Link to="/" className="pill pill--ghost">← Focus</Link>
+          <Link to="/" search={{}} className="pill pill--ghost">← Focus</Link>
         </div>
       </header>
 

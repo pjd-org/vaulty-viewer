@@ -24,7 +24,7 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
       return
     }
 
-    void navigate({ to: '/' })
+    void navigate({ to: '/', search: {} })
   }, [navigate, onRequestClose])
 
   React.useEffect(() => {

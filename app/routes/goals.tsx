@@ -123,7 +123,7 @@ function GoalsRoute() {
   return (
     <main className="page goals-page">
       <nav className="breadcrumb">
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="back-link">← Home</Link>
+        <Link to="/" search={{}} className="back-link">← Home</Link>
       </nav>
       
       <header className="page-header">

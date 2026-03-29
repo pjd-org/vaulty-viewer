@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
 import { type InboxView, type InboxNote, defaultInboxView } from '../../src/lib/inbox-logic';
-import { readEnumSearchParam } from '../../src/lib/routes/search-params';
+import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
 import { EmptyState } from '../components/ui';
@@ -109,9 +109,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 /* ─── Route ───────────────────────────────────────────────────────────────── */
 
 export const Route = createFileRoute('/inbox')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    view: readEnumSearchParam(search.view, ['queue', 'workbench', 'archive'] as const) as InboxView | undefined,
-  }),
+  validateSearch: inboxSearchParams,
   component: InboxRoute,
 });
 

@@ -36,7 +36,7 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="navbar__brand">
-        <Link to="/" search={{ q: undefined, collection: undefined }} className="navbar__logo">
+        <Link to="/" search={{}} className="navbar__logo">
           Vaulty Viewer
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         >
           Home
         </Link>
-        <Link to="/work" onClick={closeMenu} className={navLinkClass('/work')}>
+        <Link to="/work" search={{}} onClick={closeMenu} className={navLinkClass('/work')}>
           Work
         </Link>
         <button
@@ -91,13 +91,13 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         </button>
         <Link
           to="/inbox"
-          search={{ view: undefined }}
+          search={{}}
           onClick={closeMenu}
           className={navLinkClass('/inbox')}
         >
           Inbox
         </Link>
-        <Link to="/knowledge" onClick={closeMenu} className={navLinkClass('/knowledge')}>
+        <Link to="/knowledge" search={{}} onClick={closeMenu} className={navLinkClass('/knowledge')}>
           Knowledge
         </Link>
       </div>

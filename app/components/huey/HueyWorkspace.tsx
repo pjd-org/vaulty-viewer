@@ -38,11 +38,12 @@ function renderMarkdown(content: string): string {
 function PostResponseActions() {
   return (
     <div className="flex flex-wrap gap-3 mt-3">
-      <Link to="/" className="text-xs text-primary hover:underline">
+      <Link to="/" search={{}} className="text-xs text-primary hover:underline">
         View next actions →
       </Link>
       <Link
         to="/"
+        search={{}}
         className="text-xs text-primary hover:underline"
         onClick={() => { sessionStorage.setItem('huey-open-session', '1') }}
       >

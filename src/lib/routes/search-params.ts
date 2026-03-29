@@ -27,15 +27,26 @@ export function readEnumSearchParam<const T extends readonly string[]>(
 type S = Record<string, unknown>
 
 /** `/` — Home */
-export function homeSearchParams(s: S) {
+export function homeSearchParams(s: S): {
+  q?: string; collection?: string; session?: string; snapshot?: string; detailId?: string
+} {
   return {
+    q: readStringSearchParam(s.q),
+    collection: readStringSearchParam(s.collection),
+    session: readStringSearchParam(s.session),
     snapshot: readStringSearchParam(s.snapshot),
     detailId: readStringSearchParam(s.detailId),
   }
 }
 
 /** `/inbox` — `view` is the live field name; V3 extra fields additive */
-export function inboxSearchParams(s: S) {
+export function inboxSearchParams(s: S): {
+  view?: 'queue' | 'workbench' | 'archive';
+  rejectedTab?: 'user' | 'automated';
+  sort?: 'newest' | 'oldest' | 'confidence';
+  severity?: 'high' | 'medium' | 'low';
+  selectedId?: string;
+} {
   return {
     view: readEnumSearchParam(s.view, ['queue', 'workbench', 'archive'] as const),
     rejectedTab: readEnumSearchParam(s.rejectedTab, ['user', 'automated'] as const),
@@ -65,7 +76,9 @@ export function automationSearchParams(s: S) {
 }
 
 /** `/work` */
-export function workSearchParams(s: S) {
+export function workSearchParams(s: S): {
+  tab?: 'tasks' | 'projects' | 'dependencies'; status?: string; selectedId?: string
+} {
   return {
     tab: readEnumSearchParam(s.tab, ['tasks', 'projects', 'dependencies'] as const),
     status: readStringSearchParam(s.status),
@@ -74,7 +87,14 @@ export function workSearchParams(s: S) {
 }
 
 /** `/knowledge` */
-export function knowledgeSearchParams(s: S) {
+export function knowledgeSearchParams(s: S): {
+  tab?: 'notes' | 'views' | 'memories';
+  noteId?: string;
+  mode?: 'read' | 'edit';
+  templateId?: string;
+  memoryTab?: string;
+  projectId?: string;
+} {
   return {
     tab: readEnumSearchParam(s.tab, ['notes', 'views', 'memories'] as const),
     noteId: readStringSearchParam(s.noteId),

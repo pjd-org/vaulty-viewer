@@ -1,11 +1,13 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { knowledgeSearchParams } from '../../src/lib/routes/search-params';
 import { apiFetch } from '../../src/utils/api';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner, { type GraphHealthReport } from '../../src/components/KnowledgeHealthBanner';
 import { SkeletonCardGrid } from '../../src/components/Skeletons';
 
 export const Route = createFileRoute('/knowledge')({
+  validateSearch: knowledgeSearchParams,
   component: KnowledgeRoute,
 });
 

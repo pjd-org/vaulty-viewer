@@ -3,14 +3,10 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { ProjectsWorkspace } from '../components/projects'
 import { WorkspaceScaffold } from '../components/layout'
-import { readStringSearchParam } from '../../src/lib/routes/search-params'
+import { workSearchParams } from '../../src/lib/routes/search-params'
 
 export const Route = createFileRoute('/work')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    tab: readStringSearchParam(search.tab),
-    status: readStringSearchParam(search.status),
-    selectedId: readStringSearchParam(search.selectedId),
-  }),
+  validateSearch: workSearchParams,
   component: WorkRoute,
 })
 

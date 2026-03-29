@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useWhatNowQuery, useUpNextQuery } from '../lib/queries/agents';
 import type { TaskInput } from '../../src/lib/agent-prompts';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { homeSearchParams } from '../../src/lib/routes/search-params';
 import { apiFetch } from '../../src/utils/api';
 import {
   normalizeNextAction,
@@ -23,6 +24,7 @@ import {
 } from '../components/home';
 
 export const Route = createFileRoute('/')({
+  validateSearch: homeSearchParams,
   component: FocusRoute,
 });
 
@@ -307,7 +309,7 @@ function FocusRoute() {
                 <Link to="/huey">
                   <PrimaryButton>Ask Huey →</PrimaryButton>
                 </Link>
-                <Link to="/work">
+                <Link to="/work" search={{}}>
                   <SecondaryButton>Open Work →</SecondaryButton>
                 </Link>
               </div>

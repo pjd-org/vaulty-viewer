@@ -7,6 +7,7 @@ export const Route = createFileRoute('/projects')({
       throw redirect({
         to: '/work',
         replace: true,
+        search: {},
       })
     }
   },
