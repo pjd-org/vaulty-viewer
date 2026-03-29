@@ -1,8 +1,13 @@
 import * as React from 'react'
 import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
-import Navbar from '../../src/components/Navbar'
+import { AppShell, SidebarRail, TopCommandBar, VerificationRailHost } from '../components/layout'
+import { CommandHost, ModalHost } from '../components/shell'
 import { queryClient } from '../../src/query-client'
+import { NAV_OVERLAY_EVENT, type NavOverlay, type NavOverlayDetail } from '../../src/lib/nav-overlays'
+import { isShellHiddenPath } from '../../src/lib/routes/v3-routing'
+import { AvatarRoute } from './avatar'
+import { CODStatusRoute } from './cod-status'
 import appCss from '../../src/styles.css?url'
 
 export const Route = createRootRoute({
@@ -23,14 +28,53 @@ function RootComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const hideNavbar = pathname === '/login' || pathname === '/oauth/consent'
+  const [navOverlay, setNavOverlay] = React.useState<NavOverlay | null>(null)
+  const hideShell = isShellHiddenPath(pathname)
+  const routeHasOwnOverlay = pathname === '/avatar' || pathname === '/cod-status'
+
+  const closeNavOverlay = React.useCallback(() => {
+    setNavOverlay(null)
+  }, [])
+
+  React.useEffect(() => {
+    setNavOverlay(null)
+  }, [pathname])
+
+  React.useEffect(() => {
+    if (hideShell) return
+
+    const onOverlayEvent = (event: Event) => {
+      const detail = (event as CustomEvent<NavOverlayDetail>).detail
+      setNavOverlay(detail?.type ?? null)
+    }
+
+    window.addEventListener(NAV_OVERLAY_EVENT, onOverlayEvent as EventListener)
+    return () => window.removeEventListener(NAV_OVERLAY_EVENT, onOverlayEvent as EventListener)
+  }, [hideShell])
 
   return (
     <RootDocument>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen">
-          {!hideNavbar && <Navbar />}
-          <Outlet />
+          {hideShell ? (
+            <Outlet />
+          ) : (
+            <AppShell rail={<SidebarRail />}>
+              <div className="min-h-screen pb-10">
+                <TopCommandBar />
+                <Outlet />
+              </div>
+            </AppShell>
+          )}
+          {!hideShell && <VerificationRailHost />}
+          {!routeHasOwnOverlay && navOverlay === 'avatar' && (
+            <AvatarRoute onRequestClose={closeNavOverlay} />
+          )}
+          {!routeHasOwnOverlay && navOverlay === 'cod' && (
+            <CODStatusRoute onRequestClose={closeNavOverlay} />
+          )}
+          <CommandHost />
+          <ModalHost />
         </div>
       </QueryClientProvider>
     </RootDocument>

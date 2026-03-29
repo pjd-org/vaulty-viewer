@@ -1,4 +1,5 @@
 import { defineConfig } from '@tanstack/react-start/config'
+import path from 'node:path'
 
 const stripTrailingSlashes = (value: string) => value.replace(/\/+$/, '')
 
@@ -7,6 +8,13 @@ const apiProxyBase = stripTrailingSlashes(
 )
 
 export default defineConfig({
+  vite: {
+    resolve: {
+      alias: {
+        '@': path.resolve(import.meta.dirname, '.'),
+      },
+    },
+  },
   server: {
     // Runtime accepts this, but the current published config types lag behind.
     // Keep the explicit port until the TanStack Start typings catch up.

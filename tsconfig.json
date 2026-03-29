@@ -12,6 +12,10 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src", "app", "app.config.ts"],
   "references": [],
