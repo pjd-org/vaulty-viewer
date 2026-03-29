@@ -22,4 +22,24 @@ describe('projects API client', () => {
     expect(p).not.toBeNull();
     expect(p!.id).toBe('p1');
   });
+
+  it('filters template/archive placeholders from projects response', async () => {
+    const payload = {
+      projects: [
+        { id: '{{id}}', title: '{{title}}', path: '_system/templates/projects/project-template.md', status: 'active' },
+        { id: 'real', title: 'Real Project', path: 'notes/projects/real/real.md', status: 'paused' },
+        { id: 'archived', title: 'Archived', path: 'archive/legacy/old-project.md', status: 'active' },
+      ],
+    };
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve(payload) } as any)
+    );
+
+    const out = await fetchProjects();
+    expect(out).toHaveLength(1);
+    expect(out[0].id).toBe('real');
+    expect(out[0].title).toBe('Real Project');
+    expect(out[0].statusVariant).toBe('warning');
+  });
 });

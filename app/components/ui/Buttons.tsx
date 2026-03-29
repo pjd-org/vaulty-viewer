@@ -18,7 +18,7 @@ export function PrimaryButton({ onClick, disabled, className = '', children }: B
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`bg-primary text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-primary-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`btn-primary rounded-xl px-4 py-2 text-sm font-medium text-white transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
     >
       {children}
     </button>
@@ -31,7 +31,7 @@ export function SecondaryButton({ onClick, disabled, className = '', children }:
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`bg-neutral-100 text-neutral-700 rounded-xl px-4 py-2 text-sm font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
     >
       {children}
     </button>
@@ -45,7 +45,7 @@ export function IconButton({ onClick, disabled, className = '', icon, label }: I
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`p-2 rounded-xl text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`p-2 rounded-xl text-slate-500 hover:bg-white/70 hover:text-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
     >
       {label && <span className="sr-only">{label}</span>}
       {icon}

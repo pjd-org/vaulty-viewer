@@ -1,4 +1,7 @@
 export { ProjectCard } from './ProjectCard'
+export { ProjectDetailScene } from './ProjectDetailScene'
 export { ProjectDetailHeader } from './ProjectDetailHeader'
+export { ProjectTabPlaceholder } from './ProjectTabPlaceholder'
 export { BlockersRail } from './BlockersRail'
 export { ProjectBoardSection } from './ProjectBoardSection'
+export { ProjectsWorkspace } from './ProjectsWorkspace'

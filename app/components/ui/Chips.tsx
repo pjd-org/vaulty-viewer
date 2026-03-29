@@ -3,11 +3,13 @@ import React from 'react'
 export type ChipVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger'
 
 const variantClasses: Record<ChipVariant, string> = {
-  default: 'bg-neutral-100 text-neutral-600',
-  primary: 'bg-primary/10 text-primary',
-  success: 'bg-accent-mint/30 text-neutral-800',
-  warning: 'bg-accent-sun/30 text-neutral-800',
-  danger: 'bg-accent-rose/30 text-neutral-800',
+  default:
+    'bg-white/80 text-slate-600 border border-white/70 shadow-[0_4px_12px_rgba(15,23,42,0.04)]',
+  primary:
+    'bg-[linear-gradient(135deg,#11151d,#1c2230)] text-white border border-black/15 shadow-[0_8px_20px_rgba(15,23,42,0.2)]',
+  success: 'bg-accent-mint/45 text-neutral-800 border border-white/70',
+  warning: 'bg-accent-sun/45 text-neutral-800 border border-white/70',
+  danger: 'bg-accent-rose/45 text-neutral-800 border border-white/70',
 }
 
 export interface SoftChipProps {

@@ -17,9 +17,9 @@ function capitalize(s: string): string {
 }
 
 function formatRelativeAge(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Unknown age'
+  if (!dateStr) return ''
   const ms = Date.now() - Date.parse(dateStr)
-  if (isNaN(ms) || ms < 0) return 'Unknown age'
+  if (isNaN(ms) || ms < 0) return ''
   const sec = Math.floor(ms / 1000)
   if (sec < 60) return `${sec}s ago`
   const min = Math.floor(sec / 60)

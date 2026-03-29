@@ -10,8 +10,8 @@ const VARIANT_STYLES = {
     dot: 'bg-warning',
   },
   rest: {
-    container: 'bg-neutral-100 text-neutral-600 border-neutral-200',
-    dot: 'bg-neutral-400',
+    container: 'bg-white/70 text-slate-700 border-slate-300/70',
+    dot: 'bg-slate-500',
   },
   stop: {
     container: 'bg-danger/10 text-danger border-danger/20',

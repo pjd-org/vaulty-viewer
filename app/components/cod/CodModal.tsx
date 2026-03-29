@@ -67,12 +67,12 @@ export function CodModal() {
   }
 
   return (
-    <SoftPanel>
+    <SoftPanel variant="utility">
       {/* Header row */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <CodSeverityPill variant={display.severityVariant} label={display.severityLabel} />
-          <p className="mt-2 text-base font-medium text-neutral-900">{display.headline}</p>
+          <p className="mt-2 text-base font-medium text-slate-800">{display.headline}</p>
           {display.reasonText && (
             <ReasonText className="mt-1">{display.reasonText}</ReasonText>
           )}
@@ -95,11 +95,11 @@ export function CodModal() {
 
       {/* Two-col: constraints + signals */}
       <div className="grid grid-cols-2 gap-6 mt-6">
-        <div>
+        <div className="genie-surface genie-surface--utility p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={display.constraintItems} />
         </div>
-        <div>
+        <div className="genie-surface genie-surface--utility p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow items={display.signalItems} />
         </div>
@@ -107,8 +107,8 @@ export function CodModal() {
 
       {/* Why this status */}
       {codState.why.length > 0 && (
-        <details className="mt-6 rounded-xl border border-neutral-200">
-          <summary className="px-4 py-3 text-sm font-medium text-neutral-600 cursor-pointer select-none">
+        <details className="mt-6 rounded-xl genie-surface genie-surface--utility">
+          <summary className="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer select-none">
             Why this status
           </summary>
           <div className="px-4 pb-4 space-y-1">
@@ -120,8 +120,8 @@ export function CodModal() {
       )}
 
       {/* Human state form + debug — fully collapsed */}
-      <details className="mt-3 rounded-xl border border-neutral-200" open={showForm}>
-        <summary className="px-4 py-3 text-xs text-neutral-400 cursor-pointer select-none">
+      <details className="mt-3 rounded-xl genie-surface genie-surface--utility" open={showForm}>
+        <summary className="px-4 py-3 text-xs text-slate-500 cursor-pointer select-none">
           Update state / debug
         </summary>
         <div className="px-4 pb-4">

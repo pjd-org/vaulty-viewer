@@ -62,8 +62,8 @@ export function HueyContextRail({
   const groups = groupByDate(threads)
 
   return (
-    <SoftPanel className="h-full flex flex-col gap-4">
-      <PrimaryButton onClick={onNewThread} className="w-full justify-center">
+    <SoftPanel variant="utility" className="h-full flex flex-col gap-4 !p-5">
+      <PrimaryButton onClick={onNewThread} className="w-full justify-center rounded-full">
         New thread
       </PrimaryButton>
 
@@ -75,7 +75,7 @@ export function HueyContextRail({
               key={t.id}
               type="button"
               onClick={() => onSelectIntent(t.id)}
-              className="appearance-none"
+              className="appearance-none border-0 bg-transparent p-0 rounded-full"
               title={t.description}
             >
               <SoftChip
@@ -91,11 +91,11 @@ export function HueyContextRail({
       <div className="flex-1 min-h-0 overflow-y-auto">
         <SectionHeader title="Recent" className="mb-2" />
         {groups.length === 0 && (
-          <p className="text-xs text-neutral-400">No history yet.</p>
+          <p className="text-xs text-slate-400">No history yet.</p>
         )}
         {groups.map((group) => (
           <div key={group.label} className="mb-3">
-            <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">
+            <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">
               {group.label}
             </p>
             {group.items.map((thread) => (
@@ -104,10 +104,8 @@ export function HueyContextRail({
                 type="button"
                 onClick={() => onSelectThread(thread.id)}
                 className={[
-                  'w-full text-left text-sm truncate rounded-xl px-3 py-2 block transition-colors',
-                  thread.id === activeThreadId
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-neutral-600 hover:bg-neutral-100',
+                  'huey-thread-item w-full text-left text-sm truncate rounded-xl px-3 py-2.5 block transition-colors',
+                  thread.id === activeThreadId ? 'huey-thread-item--active' : 'huey-thread-item--idle',
                 ].join(' ')}
                 title={`${thread.title} · ${formatRelativeTime(thread.timestamp)}`}
               >

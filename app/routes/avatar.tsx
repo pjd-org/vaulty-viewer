@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import useAvatar from '../../src/hooks/useAvatar';
 import VitalsPanel from '../../src/components/VitalsPanel';
 import {
@@ -272,10 +272,15 @@ function ProgressionSummary({
 // ---------------------------------------------------------------------------
 
 export const Route = createFileRoute('/avatar')({
-  component: AvatarRoute,
+  component: () => <AvatarRoute />,
 });
 
-function AvatarRoute() {
+interface AvatarRouteProps {
+  onRequestClose?: () => void
+}
+
+export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
+  const navigate = useNavigate()
   const {
     avatar,
     loading,
@@ -295,84 +300,115 @@ function AvatarRoute() {
 
   const readiness = deriveReadiness(vitals, capacity);
   const stale = isStale(avatar.updated);
+  const closeOverlay = React.useCallback(() => {
+    if (onRequestClose) {
+      onRequestClose()
+      return
+    }
+
+    void navigate({ to: '/' })
+  }, [navigate, onRequestClose])
+
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeOverlay()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [closeOverlay])
 
   return (
-    <main className="page avatar-os-page">
-      <nav className="breadcrumb">
-        <Link to="/" className="back-link">
-          ← Focus
-        </Link>
-      </nav>
+    <div className="route-modal-overlay" onClick={closeOverlay}>
+      <section
+        className="route-modal-card route-modal-card--avatar genie-surface genie-surface--overlay"
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Avatar"
+      >
+        <button type="button" className="route-modal-close" onClick={closeOverlay} aria-label="Close avatar">
+          ✕
+        </button>
+        <main className="avatar-os-page route-modal-scroll route-modal-body">
+          <nav className="breadcrumb">
+            <Link to="/" className="back-link">
+              ← Focus
+            </Link>
+          </nav>
 
-      {error && (
-        <div className="focus-offline">
-          {error}
-          <button
-            onClick={refresh}
-            className="os-refresh ml-2"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <ReadinessHeader
-        profile={profile}
-        readiness={readiness}
-        flags={flags}
-        stale={stale}
-        updated={avatar.updated}
-        loading={loading}
-        apiStatus={apiStatus}
-        onRefresh={refresh}
-        capacityLabel={(() => {
-          const parts: string[] = []
-          if (isMetricReal(capacity.focusCostMax)) parts.push(`Focus ≤ ${capacity.focusCostMax}`)
-          if (isMetricReal(capacity.effortScoreMax)) parts.push(`Effort ≤ ${capacity.effortScoreMax}`)
-          return parts.join(' · ') || 'No capacity set'
-        })()}
-        timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
-      />
-
-      {loading ? (
-        <div className="focus-loading">Loading…</div>
-      ) : (
-        <>
-          <section className="os-section">
-            <p className="os-section__label">Vitals</p>
-            <VitalsPanel vitals={vitals} />
-          </section>
-
-          <CapacityGroup capacity={capacity} />
-
-          <ActionGuidancePanel readiness={readiness} capacity={capacity} />
-
-          <ExecutionStats vitals={vitals} />
-
-          <details className="avatar-progression">
-            <summary className="avatar-progression__summary">
-              Progression
-            </summary>
-            <ProgressionSummary
-              level={level}
-              currentXp={currentXp}
-              xpToNext={xpToNext}
-              progression={progression}
-            />
-          </details>
-
-          {avatar.updated && (
-            <div className="avatar-footer">
-              <a
-                href="/note/notes%2Fcore%2Favatar%2FAvatar"
-                className="avatar-link"
+          {error && (
+            <div className="focus-offline">
+              {error}
+              <button
+                onClick={refresh}
+                className="os-refresh ml-2"
               >
-                Open avatar note →
-              </a>
+                Retry
+              </button>
             </div>
           )}
-        </>
-      )}
-    </main>
+
+          <ReadinessHeader
+            profile={profile}
+            readiness={readiness}
+            flags={flags}
+            stale={stale}
+            updated={avatar.updated}
+            loading={loading}
+            apiStatus={apiStatus}
+            onRefresh={refresh}
+            capacityLabel={(() => {
+              const parts: string[] = []
+              if (isMetricReal(capacity.focusCostMax)) parts.push(`Focus ≤ ${capacity.focusCostMax}`)
+              if (isMetricReal(capacity.effortScoreMax)) parts.push(`Effort ≤ ${capacity.effortScoreMax}`)
+              return parts.join(' · ') || 'No capacity set'
+            })()}
+            timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
+          />
+
+          {loading ? (
+            <div className="focus-loading">Loading…</div>
+          ) : (
+            <>
+              <section className="os-section">
+                <p className="os-section__label">Vitals</p>
+                <VitalsPanel vitals={vitals} />
+              </section>
+
+              <CapacityGroup capacity={capacity} />
+
+              <ActionGuidancePanel readiness={readiness} capacity={capacity} />
+
+              <ExecutionStats vitals={vitals} />
+
+              <details className="avatar-progression">
+                <summary className="avatar-progression__summary">
+                  Progression
+                </summary>
+                <ProgressionSummary
+                  level={level}
+                  currentXp={currentXp}
+                  xpToNext={xpToNext}
+                  progression={progression}
+                />
+              </details>
+
+              {avatar.updated && (
+                <div className="avatar-footer">
+                  <a
+                    href="/note/notes%2Fcore%2Favatar%2FAvatar"
+                    className="avatar-link"
+                  >
+                    Open avatar note →
+                  </a>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </section>
+    </div>
   );
 }

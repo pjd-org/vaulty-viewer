@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import getApiBase, { apiFetch } from '../utils/api';
+import { useHydrated } from './useHydrated';
 
 /**
  * Default/mock COD status for static builds or when API unavailable
@@ -117,6 +118,7 @@ function computeValidation(humanState, session, avatarVitals = {}) {
 export function useCODStatus(staticData = null, profileOverride = null) {
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState(null);
+  const hydrated = useHydrated();
 
   // Get API URL helper
   const getApiUrl = useCallback(() => {
@@ -125,7 +127,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
   }, []);
 
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined';
+  const queryEnabled = hydrated;
 
   const initialData = useMemo(() => {
     if (staticData) {
@@ -151,7 +153,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     initialData,
     staleTime: 10_000,
     retry: 1,
-    refetchInterval: queryEnabled ? 60_000 : false,
+    refetchInterval: hydrated ? 60_000 : false,
     queryFn: async () => {
       const response = await apiFetch('/api/v1/cod/status');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -207,9 +209,9 @@ export function useCODStatus(staticData = null, profileOverride = null) {
   });
 
   const refresh = useCallback(async () => {
-    if (!queryEnabled) return;
+    if (!hydrated) return;
     await statusQuery.refetch();
-  }, [queryEnabled, statusQuery]);
+  }, [hydrated, statusQuery]);
 
   const updateHumanStateMutation = useMutation({
     mutationFn: async ({ newState }) => {
@@ -360,7 +362,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       : String(statusQuery.error)
     : null;
   const error = actionError || queryError;
-  const loading = queryEnabled ? statusQuery.isFetching : false;
+  const loading = !hydrated || statusQuery.isFetching;
   const updating =
     updateHumanStateMutation.isPending ||
     startSessionMutation.isPending ||

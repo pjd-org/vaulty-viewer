@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useReducer } from 'react'
+import { useStepExtractorQuery } from '../lib/queries/agents'
 import { createFileRoute } from '@tanstack/react-router'
 import { apiFetch } from '../../src/utils/api'
 import {
@@ -7,6 +8,7 @@ import {
   type IntentType,
   type ThreadRecord,
 } from '../../src/lib/huey-intents'
+import { useHydrated } from '../../src/hooks/useHydrated'
 import { HueyContextRail, HueyWorkspace } from '../components/huey'
 import type { ChatMessage } from '../components/huey'
 
@@ -29,6 +31,7 @@ type InvokeResponse = {
 
 const THREADS_STORAGE_KEY = 'huey-threads'
 const MAX_HISTORY = 40
+const INITIAL_THREAD_ID = 'huey-thread-initial'
 
 const INTENT_EMOJIS: Record<string, string> = {
   plan_next_step: '🧭',
@@ -60,6 +63,10 @@ function saveThread(record: ThreadRecord) {
   } catch {
     // ignore storage errors
   }
+}
+
+function createThreadId(): string {
+  return `huey-thread-${Date.now()}`
 }
 
 // ---------------------------------------------------------------------------
@@ -131,15 +138,23 @@ function createMessage(role: ChatMessage['role'], content: string, meta?: string
 }
 
 function HueyRoute() {
+  const hydrated = useHydrated()
   const [{ threads, messages, threadId, sending, activeIntent }, dispatch] = useReducer(hueyReducer, {
-    threads: loadThreads(),
+    threads: [],
     messages: [],
-    threadId: `huey-thread-${Date.now()}`,
+    threadId: INITIAL_THREAD_ID,
     sending: false,
     activeIntent: null,
   });
 
   useEffect(() => {
+    if (!hydrated) return
+    dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() })
+    dispatch({ type: 'NEW_THREAD', threadId: createThreadId() })
+  }, [hydrated])
+
+  useEffect(() => {
+    if (!hydrated) return
     const refresh = () => dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() })
     window.addEventListener('storage', refresh)
     window.addEventListener('huey-threads-updated', refresh)
@@ -147,10 +162,10 @@ function HueyRoute() {
       window.removeEventListener('storage', refresh)
       window.removeEventListener('huey-threads-updated', refresh)
     }
-  }, [])
+  }, [hydrated])
 
   const newThread = useCallback(() => {
-    dispatch({ type: 'NEW_THREAD', threadId: `huey-thread-${Date.now()}` })
+    dispatch({ type: 'NEW_THREAD', threadId: createThreadId() })
   }, [])
 
   const switchThread = useCallback((id: string) => {
@@ -175,13 +190,15 @@ function HueyRoute() {
       displayText = `[${template.label}] ${text}`
     }
 
-    let nextThreadId = threadId
+    const effectiveThreadId =
+      threadId === INITIAL_THREAD_ID ? createThreadId() : threadId
+    let nextThreadId = effectiveThreadId
     let updatedThreads = threads
 
     // Persist thread to history on first message
     if (messages.length === 0) {
       const record: ThreadRecord = {
-        id: threadId,
+        id: effectiveThreadId,
         title: displayText.slice(0, 60),
         intent: activeIntent,
         emoji: INTENT_EMOJIS[effectiveIntent] ?? '💬',
@@ -195,7 +212,7 @@ function HueyRoute() {
     dispatch({
       type: 'SEND_START',
       userMsg: createMessage('user', displayText),
-      threadId,
+      threadId: effectiveThreadId,
       threads: updatedThreads,
     })
 
@@ -204,7 +221,7 @@ function HueyRoute() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          threadId,
+          threadId: effectiveThreadId,
           mode: 'repo+spec',
           messages: [{ role: 'user', content: prompt }],
         }),
@@ -215,7 +232,7 @@ function HueyRoute() {
       if (!response.ok && (response.status === 429 || response.status >= 500)) {
         try {
           const fallbackBody = JSON.stringify({
-            threadId,
+            threadId: effectiveThreadId,
             mode: 'repo+spec',
             model: 'gpt-5-mini',
             messages: [{ role: 'user', content: prompt }],
@@ -227,7 +244,7 @@ function HueyRoute() {
           })
           payload = (await fallbackResp.json().catch(() => null)) as InvokeResponse | null
           if (fallbackResp.ok) {
-            payload = { ...(payload || {}), result: payload?.result, threadId: payload?.threadId || payload?.thread_id || threadId }
+            payload = { ...(payload || {}), result: payload?.result, threadId: payload?.threadId || payload?.thread_id || effectiveThreadId }
           }
         } catch {
           // ignore and fall through
@@ -238,7 +255,7 @@ function HueyRoute() {
         throw new Error(`Huey request failed (${response.status})`)
       }
 
-      nextThreadId = payload?.threadId || payload?.thread_id || threadId
+      nextThreadId = payload?.threadId || payload?.thread_id || effectiveThreadId
 
       const assistantText =
         payload?.result?.trim() ? payload.result : 'Huey responded without text.'
@@ -258,9 +275,16 @@ function HueyRoute() {
     }
   }
 
+  const lastAssistantText =
+    [...messages].reverse().find((m) => m.role === 'assistant')?.content ?? '';
+
+  const { data: extractedSteps } = useStepExtractorQuery(lastAssistantText, {
+    enabled: !sending && lastAssistantText.length > 80,
+  });
+
   return (
-    <main className="flex gap-6 h-[calc(100vh-7rem)]">
-      <div className="w-[240px] shrink-0">
+    <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
+      <div className="w-full lg:w-[250px] shrink-0">
         <HueyContextRail
           threads={threads}
           activeThreadId={threadId}
@@ -271,7 +295,7 @@ function HueyRoute() {
           onSelectIntent={(t) => dispatch({ type: 'SET_INTENT', intent: activeIntent === t ? null : t })}
         />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="w-full flex-1 min-w-0">
         <HueyWorkspace
           messages={messages}
           loading={sending}
@@ -280,7 +304,28 @@ function HueyRoute() {
           intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
         />
       </div>
+
+      {/* Step extractor panel — only shown when steps are available */}
+      {extractedSteps && extractedSteps.steps.length > 0 && (
+        <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
+          <div className="genie-surface genie-surface--utility rounded-[28px] p-4 space-y-3">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              Extracted steps
+            </p>
+            <ol className="space-y-2">
+              {extractedSteps.steps.map((step, i) => (
+                <li key={i} className="text-sm space-y-0.5">
+                  <p className="font-medium text-slate-800">{step.title}</p>
+                  <p className="text-slate-600">{step.action}</p>
+                  {step.expected_result && (
+                    <p className="text-xs text-slate-500">→ {step.expected_result}</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
-

@@ -4,7 +4,35 @@ const statusVariantMap: Record<string, ProjectSummaryDisplay['statusVariant']> =
   completed: 'success',
   active: 'default',
   'on-hold': 'warning',
+  paused: 'warning',
   blocked: 'danger',
+};
+
+const looksTemplated = (value: unknown) =>
+  typeof value === 'string' && value.includes('{{') && value.includes('}}');
+
+const shouldHideProject = (raw: Record<string, any>) => {
+  const path = typeof raw.path === 'string' ? raw.path : '';
+  const title = typeof raw.title === 'string' ? raw.title : '';
+  const id = typeof raw.id === 'string' ? raw.id : '';
+
+  if (
+    path.startsWith('_system/templates/') ||
+    path.startsWith('templates/') ||
+    path.includes('/templates/')
+  ) {
+    return true;
+  }
+
+  if (path.startsWith('archive/')) {
+    return true;
+  }
+
+  if (looksTemplated(title) || looksTemplated(id)) {
+    return true;
+  }
+
+  return false;
 };
 
 export async function fetchProjects(): Promise<ProjectSummaryDisplay[]> {
@@ -15,8 +43,10 @@ export async function fetchProjects(): Promise<ProjectSummaryDisplay[]> {
     throw new Error('Failed to fetch projects');
   }
   const body = await res.json();
-  const raw: any[] = body.structuredContent?.projects ?? body.projects ?? [];
-  return raw.map((r) => {
+  const raw: Record<string, any>[] = body.structuredContent?.projects ?? body.projects ?? [];
+  return raw
+    .filter((r) => !shouldHideProject(r))
+    .map((r) => {
     const progressPercent = (() => {
       if (typeof r.progress === 'number') return Math.round(r.progress * 100);
       if (typeof r.completedTaskCount === 'number' && typeof r.taskCount === 'number' && r.taskCount > 0) {

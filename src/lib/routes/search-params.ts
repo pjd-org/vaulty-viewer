@@ -34,10 +34,10 @@ export function homeSearchParams(s: S) {
   }
 }
 
-/** `/inbox` */
+/** `/inbox` — `view` is the live field name; V3 extra fields additive */
 export function inboxSearchParams(s: S) {
   return {
-    tab: readEnumSearchParam(s.tab, ['queue', 'workbench', 'archive'] as const),
+    view: readEnumSearchParam(s.view, ['queue', 'workbench', 'archive'] as const),
     rejectedTab: readEnumSearchParam(s.rejectedTab, ['user', 'automated'] as const),
     sort: readEnumSearchParam(s.sort, ['newest', 'oldest', 'confidence'] as const),
     severity: readEnumSearchParam(s.severity, ['high', 'medium', 'low'] as const),
@@ -45,10 +45,10 @@ export function inboxSearchParams(s: S) {
   }
 }
 
-/** `/actions` */
+/** `/actions` — sort values match live route; `simulatableOnly` is additive V3 field */
 export function actionsSearchParams(s: S) {
   return {
-    sort: readEnumSearchParam(s.sort, ['priority', 'newest', 'effort'] as const),
+    sort: readEnumSearchParam(s.sort, ['urgency', 'impact', 'confidence', 'source', 'reversibility'] as const),
     simulatableOnly: readBooleanSearchParam(s.simulatableOnly),
     selectedId: readStringSearchParam(s.selectedId),
   }
@@ -109,33 +109,40 @@ export function healthSearchParams(s: S) {
   }
 }
 
-/** `/graph` */
+/** `/graph` — live fields preserved; `focus` + `selectedId` are additive V3 fields */
 export function graphSearchParams(s: S) {
   return {
-    selectedId: readStringSearchParam(s.selectedId),
+    tab: readStringSearchParam(s.tab),
+    nodeId: readStringSearchParam(s.nodeId),
+    pathMode: readStringSearchParam(s.pathMode),
+    entityType: readStringSearchParam(s.entityType),
     focus: readStringSearchParam(s.focus),
+    selectedId: readStringSearchParam(s.selectedId),
   }
 }
 
-/** `/timeline` */
+/** `/timeline` — live fields preserved; `from`/`to` are additive V3 fields */
 export function timelineSearchParams(s: S) {
   return {
-    tab: readEnumSearchParam(s.tab, ['all', 'user', 'automated'] as const),
+    tab: readStringSearchParam(s.tab),
     selectedId: readStringSearchParam(s.selectedId),
+    live: readBooleanSearchParam(s.live),
+    eventType: readStringSearchParam(s.eventType),
     from: readStringSearchParam(s.from),
     to: readStringSearchParam(s.to),
   }
 }
 
-/** `/archive` */
+/** `/archive` — `source` preserved from live route; V3 fields additive */
 export function archiveSearchParams(s: S) {
   return {
-    tab: readEnumSearchParam(s.tab, ['all', 'user', 'automated'] as const),
+    tab: readStringSearchParam(s.tab),
+    selectedId: readStringSearchParam(s.selectedId),
+    source: readStringSearchParam(s.source),
     scope: readStringSearchParam(s.scope),
     from: readStringSearchParam(s.from),
     to: readStringSearchParam(s.to),
     eventType: readStringSearchParam(s.eventType),
-    selectedId: readStringSearchParam(s.selectedId),
     projectId: readStringSearchParam(s.projectId),
   }
 }

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import getApiBase, { apiFetch } from '../utils/api';
 import { splitInboxNotes, computeInboxCounts } from '../lib/inbox-logic';
+import { useHydrated } from './useHydrated';
 
 /**
  * Hook to manage the combined inbox view.
@@ -21,8 +22,9 @@ export function useInbox() {
   const [actionState, setActionState] = useState({});
   const [pendingConfirmations, setPendingConfirmations] = useState({});
   const queryClient = useQueryClient();
+  const hydrated = useHydrated();
   const base = getApiBase();
-  const queryEnabled = typeof window !== 'undefined';
+  const queryEnabled = hydrated;
   const queryKey = ['inbox', base];
 
   const clearPendingConfirmation = useCallback((runId) => {
@@ -49,15 +51,44 @@ export function useInbox() {
     staleTime: 10_000,
     retry: 1,
     queryFn: async () => {
-      const res = await apiFetch('/api/v1/inbox');
-      if (!res.ok) {
-        throw new Error(`API returned ${res.status}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12_000);
+
+      try {
+        const res = await apiFetch('/api/v1/inbox', {
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          throw new Error(`API returned ${res.status}`);
+        }
+
+        const body = await res.json().catch(() => ({}));
+        const structured = body?.structuredContent;
+        const notes = structured?.notes ?? body?.notes;
+        const runs = structured?.runs ?? body?.runs;
+
+        // Surface API auth/transport failures instead of silently rendering
+        // an empty inbox forever.
+        if (
+          !Array.isArray(notes) &&
+          !Array.isArray(runs) &&
+          typeof body?.error === 'string'
+        ) {
+          throw new Error(body.error);
+        }
+
+        return {
+          notes: Array.isArray(notes) ? notes : [],
+          runs: Array.isArray(runs) ? runs : [],
+        };
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          throw new Error('Inbox request timed out');
+        }
+        throw error;
+      } finally {
+        clearTimeout(timeout);
       }
-      const body = await res.json();
-      return {
-        notes: body?.structuredContent?.notes ?? body?.notes ?? [],
-        runs: body?.structuredContent?.runs ?? body?.runs ?? [],
-      };
     },
   });
 
@@ -224,7 +255,10 @@ export function useInbox() {
   const runs = inboxQuery.data?.runs || [];
   const { workbenchNotes, archiveNotes } = splitInboxNotes(notes);
   const counts = computeInboxCounts(runs, workbenchNotes, archiveNotes);
-  const loading = queryEnabled ? inboxQuery.isFetching : false;
+  const loading =
+    !hydrated ||
+    ((!inboxQuery.data || !Array.isArray(inboxQuery.data.notes)) &&
+      inboxQuery.isFetching);
   const error = inboxQuery.error
     ? inboxQuery.error instanceof Error
       ? inboxQuery.error.message

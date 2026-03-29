@@ -10,6 +10,8 @@ import { AvatarRoute } from './avatar'
 import { CODStatusRoute } from './cod-status'
 import appCss from '../../src/styles.css?url'
 
+const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true'
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -73,8 +75,8 @@ function RootComponent() {
           {!routeHasOwnOverlay && navOverlay === 'cod' && (
             <CODStatusRoute onRequestClose={closeNavOverlay} />
           )}
-          <CommandHost />
-          <ModalHost />
+          {SHELL_V3 && <CommandHost />}
+          {SHELL_V3 && <ModalHost />}
         </div>
       </QueryClientProvider>
     </RootDocument>

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import getApiBase, { apiFetch } from '../utils/api';
+import { useHydrated } from './useHydrated';
 
 /**
  * Default avatar state when API unavailable
@@ -66,7 +67,8 @@ export function useAvatar() {
   }, []);
 
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined';
+  const hydrated = useHydrated();
+  const queryEnabled = hydrated;
 
   const avatarQuery = useQuery({
     queryKey: ['avatar', apiUrl],
@@ -166,7 +168,7 @@ export function useAvatar() {
   });
 
   const avatar = avatarQuery.data || DEFAULT_AVATAR;
-  const loading = queryEnabled ? avatarQuery.isFetching : false;
+  const loading = !hydrated || avatarQuery.isFetching;
   const error = avatarQuery.error
     ? avatarQuery.error instanceof Error
       ? avatarQuery.error.message

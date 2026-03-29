@@ -14,12 +14,12 @@ export function TaskMiniCard({ task, onStart, onComplete }: TaskMiniCardProps) {
   const meta = toTaskDisplayMeta(task)
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center gap-4">
+    <div className="genie-surface genie-surface--elevated px-4 py-3 flex items-center gap-4 transition-transform duration-200 hover:-translate-y-0.5">
       <div className="flex-1 min-w-0">
         <Link
           to="/note"
           search={{ p: task.path }}
-          className="text-sm font-medium text-neutral-900 hover:text-primary truncate block transition-colors"
+          className="text-sm font-medium text-slate-800 hover:text-sky-700 truncate block transition-colors"
         >
           {task.title}
         </Link>

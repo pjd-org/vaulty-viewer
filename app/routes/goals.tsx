@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useGoals } from '../../src/hooks/useGoals';
 import GoalCard from '../../src/components/GoalCard';
 import { computeCounts, filterGoals, sortGoals, computeSummary } from '../../src/lib/goals-logic';
+import { dispatchNavOverlay } from '../../src/lib/nav-overlays';
 
 interface FilterTabsProps {
   filter: string;
@@ -143,10 +144,15 @@ function GoalsRoute() {
             <span className="quick-link__icon">📋</span>
             <span className="quick-link__label">Open Tasks</span>
           </Link>
-          <Link to="/avatar" className="quick-link" title="See avatar stats and goal impact">
+          <button
+            type="button"
+            className="quick-link"
+            title="See avatar stats and goal impact"
+            onClick={() => dispatchNavOverlay('avatar')}
+          >
             <span className="quick-link__icon">🧙</span>
             <span className="quick-link__label">Avatar Dashboard</span>
-          </Link>
+          </button>
           <button className="quick-link" onClick={refresh} title="Refresh from Tasker API">
             <span className="quick-link__icon">🔄</span>
             <span className="quick-link__label">{loading ? 'Refreshing…' : 'Refresh'}</span>

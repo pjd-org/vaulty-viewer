@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import getApiBase, { apiFetch } from '../utils/api';
+import { useHydrated } from './useHydrated';
 
 /**
  * Get API URL from window config or default to relative path
@@ -38,7 +39,8 @@ function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
  */
 export function useGoals() {
   const apiUrl = getApiUrl();
-  const queryEnabled = typeof window !== 'undefined';
+  const hydrated = useHydrated();
+  const queryEnabled = hydrated;
 
   const tasksQuery = useQuery({
     queryKey: ['goals', 'tasks', apiUrl],
@@ -54,7 +56,7 @@ export function useGoals() {
   });
 
   const tasks = tasksQuery.data || [];
-  const loading = queryEnabled ? tasksQuery.isFetching : false;
+  const loading = !hydrated || tasksQuery.isFetching;
   const error = tasksQuery.error
     ? tasksQuery.error instanceof Error
       ? tasksQuery.error.message

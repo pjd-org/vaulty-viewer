@@ -1,0 +1,15 @@
+### Browser `viewer` opened with pid 71664.
+- viewer:
+  - browser-type: firefox
+  - user-data-dir: <in-memory>
+  - headed: false
+---
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8080/');
+```
+### Page
+- Page URL: http://localhost:8080/login?return_to=/
+- Page Title: Vaulty Viewer
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-03-27T15-34-25-918Z.yml)

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
 import { type InboxView, type InboxNote, defaultInboxView } from '../../src/lib/inbox-logic';
+import { readEnumSearchParam } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
 import { EmptyState } from '../components/ui';
@@ -56,7 +57,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
     return (
       <button
         type="button"
-        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors"
+        className="text-xs text-slate-700 hover:text-slate-900 font-medium px-2 py-1 rounded-lg hover:bg-white/50 transition-colors"
         onClick={() => mutate(rawText)}
       >
         ✦ Convert to task
@@ -65,7 +66,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
   }
 
   if (isPending) {
-    return <span className="text-xs text-neutral-400 px-2 py-1">Converting…</span>;
+    return <span className="text-xs text-slate-400 px-2 py-1">Converting…</span>;
   }
 
   if (error) {
@@ -81,9 +82,9 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
   if (data) {
     return (
-      <div className="mt-2 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2 space-y-1">
-        <p className="text-xs font-semibold text-indigo-700">{data.title}</p>
-        <div className="flex flex-wrap gap-2 text-xs text-indigo-600">
+      <div className="mt-2 genie-surface genie-surface--utility rounded-xl px-3 py-2 space-y-1">
+        <p className="text-xs font-semibold text-slate-800">{data.title}</p>
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600">
           <span>{data.duration}</span>
           <span>·</span>
           <span className="capitalize">{data.effort}</span>
@@ -93,7 +94,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
         </div>
         <button
           type="button"
-          className="text-xs text-neutral-400 hover:text-neutral-600 mt-1"
+          className="text-xs text-slate-500 hover:text-slate-800 mt-1"
           onClick={() => setDismissed(true)}
         >
           Dismiss
@@ -109,9 +110,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
 export const Route = createFileRoute('/inbox')({
   validateSearch: (search: Record<string, unknown>) => ({
-    view: (['queue', 'workbench', 'archive'].includes(search.view as string)
-      ? search.view
-      : undefined) as InboxView | undefined,
+    view: readEnumSearchParam(search.view, ['queue', 'workbench', 'archive'] as const) as InboxView | undefined,
   }),
   component: InboxRoute,
 });
@@ -229,10 +228,12 @@ function InboxRoute() {
   );
 
   return (
-    <main className="p-6 space-y-6">
+    <main className="inbox-page p-6 space-y-6">
       {toastMsg && (
         <div
           className={`inbox-toast ${toastMsg.isError ? 'inbox-toast--error' : 'inbox-toast--ok'}`}
+          role="status"
+          aria-live="polite"
         >
           {toastMsg.msg}
         </div>
@@ -248,7 +249,7 @@ function InboxRoute() {
             </span>
             <button
               type="button"
-              className="btn btn--refresh"
+              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-white/80 disabled:opacity-60"
               onClick={refresh}
               disabled={loading || anyActionInFlight}
             >
@@ -358,4 +359,3 @@ function InboxRoute() {
     </main>
   );
 }
-

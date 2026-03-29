@@ -1,58 +1,127 @@
 import React from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { SidebarRail as GenieSidebarRail } from '@vault/ui'
+import { dispatchNavOverlay } from '../../../src/lib/nav-overlays'
+import {
+  VIEWER_OVERLAY_NAV,
+  VIEWER_PRIMARY_NAV,
+  VIEWER_UTILITY_NAV,
+} from '../../../src/lib/routes/v3-routing'
 
-const NAV_ITEMS = [
-  { label: 'Home',      icon: '🏠', to: '/'          as const },
-  { label: 'Projects',  icon: '📁', to: '/projects'  as const },
-  { label: 'Inbox',     icon: '📥', to: '/inbox'     as const },
-  { label: 'Huey',      icon: '🤖', to: '/huey'      as const },
-  { label: 'COD',       icon: '⚡', to: '/cod-status' as const },
-  { label: 'Knowledge', icon: '🧠', to: '/knowledge' as const },
-  { label: 'Avatar',    icon: '👤', to: '/avatar'    as const },
-] as const
+type NavTo = (typeof VIEWER_PRIMARY_NAV)[number]['to'] | (typeof VIEWER_UTILITY_NAV)[number]['to']
 
-type NavTo = (typeof NAV_ITEMS)[number]['to']
-
-function RailItem({ label, icon, to, active }: { label: string; icon: string; to: NavTo; active: boolean }) {
+function RailItem({
+  label,
+  shortLabel,
+  to,
+  active,
+}: {
+  label: string
+  shortLabel: string
+  to: NavTo
+  active: boolean
+}) {
   return (
     <Link
-      to={to}
+      to={to as never}
       title={label}
       aria-label={label}
       className={[
-        'flex items-center justify-center w-10 h-10 rounded-xl text-lg transition-colors',
+        'flex h-10 w-10 items-center justify-center rounded-2xl border text-[10px] font-semibold uppercase tracking-[0.18em] transition-all',
         active
-          ? 'bg-primary/10 text-primary'
-          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800',
+          ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
+          : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
       ].join(' ')}
     >
-      {icon}
+      {shortLabel}
     </Link>
   )
 }
 
-export function SidebarRail() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+function OverlayItem({
+  label,
+  shortLabel,
+  overlay,
+  active,
+}: {
+  label: string
+  shortLabel: string
+  overlay: 'avatar' | 'cod'
+  active: boolean
+}) {
+  const onClick = () => dispatchNavOverlay(overlay)
 
-  function isActive(to: NavTo): boolean {
-    if (to === '/') return pathname === '/'
-    return pathname.startsWith(to)
-  }
-
-  const navItems = NAV_ITEMS.map(({ label, icon, to }) => (
-    <RailItem key={to} label={label} icon={icon} to={to} active={isActive(to)} />
-  ))
-
-  const settingsItem = (
+  return (
     <button
-      title="Settings"
-      aria-label="Settings"
-      className="flex items-center justify-center w-10 h-10 rounded-xl text-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+      type="button"
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      className={[
+        'flex h-10 w-10 items-center justify-center rounded-2xl border text-[10px] font-semibold uppercase tracking-[0.18em] transition-all',
+        active
+          ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
+          : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
+      ].join(' ')}
     >
-      ⚙️
+      {shortLabel}
     </button>
   )
+}
 
-  return <GenieSidebarRail top={navItems} bottom={settingsItem} />
+export function SidebarRail() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+
+  const isActivePath = (to: NavTo): boolean => {
+    if (to === '/') return pathname === '/'
+    return pathname === to || pathname.startsWith(`${to}/`)
+  }
+
+  const topItems = VIEWER_PRIMARY_NAV.map((item) => (
+    <RailItem
+      key={item.to}
+      label={item.label}
+      shortLabel={item.shortLabel}
+      to={item.to}
+      active={isActivePath(item.to)}
+    />
+  ))
+
+  const bottomItems = (
+    <>
+      {VIEWER_UTILITY_NAV.map((item) => (
+        <RailItem
+          key={item.to}
+          label={item.label}
+          shortLabel={item.shortLabel}
+          to={item.to}
+          active={isActivePath(item.to)}
+        />
+      ))}
+      {VIEWER_OVERLAY_NAV.map((item) => (
+        <OverlayItem
+          key={item.overlay}
+          label={item.label}
+          shortLabel={item.shortLabel}
+          overlay={item.overlay}
+          active={pathname === `/${item.overlay === 'cod' ? 'cod-status' : item.overlay}`}
+        />
+      ))}
+    </>
+  )
+
+  return (
+    <GenieSidebarRail
+      logo={
+        <Link
+          to={'/' as never}
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-100"
+        >
+          V3
+        </Link>
+      }
+      top={topItems}
+      bottom={bottomItems}
+    />
+  )
 }

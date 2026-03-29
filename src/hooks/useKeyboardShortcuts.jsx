@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { dispatchNavOverlay } from '../lib/nav-overlays';
 
 /**
  * Keyboard shortcuts for power users.
@@ -68,10 +69,20 @@ export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
         const routes = {
           h: '/',
           k: '/kanban',
-          a: '/avatar',
           g: '/goals',
-          c: '/cod-status',
         };
+
+        if (e.key === 'a') {
+          e.preventDefault();
+          dispatchNavOverlay('avatar');
+          return;
+        }
+
+        if (e.key === 'c') {
+          e.preventDefault();
+          dispatchNavOverlay('cod');
+          return;
+        }
 
         if (routes[e.key]) {
           e.preventDefault();
@@ -154,10 +165,10 @@ export function KeyboardShortcutsHelp({ onClose }) {
           {shortcuts.map(({ keys, description }) => (
             <div key={description} className="keyboard-help__item">
               <span className="keyboard-help__keys">
-                {keys.map((key) => (
+                {keys.map((key, index) => (
                   <span key={key}>
                     <kbd className="keyboard-help__kbd">{key}</kbd>
-                    {i < keys.length - 1 && ' then '}
+                    {index < keys.length - 1 && ' then '}
                   </span>
                 ))}
               </span>

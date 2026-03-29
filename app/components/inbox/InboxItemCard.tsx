@@ -11,18 +11,22 @@ interface InboxItemCardProps {
 
 export function InboxItemCard({ item, onInspect, onPromote, onReject }: InboxItemCardProps) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-surface p-4 space-y-2">
+    <div className="genie-surface genie-surface--utility p-4 space-y-2 transition-transform duration-200 hover:-translate-y-0.5">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-sm font-semibold text-neutral-900 flex-1 min-w-0 truncate">
+        <span className="text-sm font-semibold text-slate-800 flex-1 min-w-0 truncate">
           {item.title}
         </span>
         <SoftChip label={item.originLabel} variant="default" />
         {item.isBlocked && <SoftChip label="Blocked" variant="danger" />}
-        <span className="text-xs text-neutral-400 shrink-0">{item.ageLabel}</span>
+        {item.ageLabel && (
+          <span className="text-xs text-slate-500 shrink-0" suppressHydrationWarning>
+            {item.ageLabel}
+          </span>
+        )}
       </div>
 
       {item.contextSnippet && (
-        <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2">
+        <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
           {item.contextSnippet}
         </p>
       )}
@@ -37,7 +41,7 @@ export function InboxItemCard({ item, onInspect, onPromote, onReject }: InboxIte
             icon={<span aria-hidden="true" className="text-base leading-none">×</span>}
             label="Reject"
             onClick={onReject}
-            className="text-slate-400 hover:text-red-500"
+            className="text-slate-500 hover:text-red-500"
           />
         )}
       </div>

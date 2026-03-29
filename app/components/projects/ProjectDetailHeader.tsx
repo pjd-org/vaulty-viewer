@@ -8,10 +8,10 @@ interface ProjectHeaderProps {
 
 export const ProjectDetailHeader: React.FC<{ project: ProjectHeaderProps }> = ({ project }) => {
   return (
-    <div className="rounded-2xl bg-surface p-6 shadow flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-semibold">{project.title}</h1>
-        <p className="text-sm text-neutral-500">{project.bestMoveTitle}</p>
+    <div className="genie-surface genie-surface--hero p-6 flex items-center justify-between">
+      <div className="genie-content">
+        <h1 className="text-2xl font-semibold text-slate-800">{project.title}</h1>
+        <p className="text-sm text-slate-600">{project.bestMoveTitle}</p>
       </div>
       <div>
         <PrimaryButton>Start</PrimaryButton>

@@ -64,7 +64,7 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
 
   if (!expanded) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+      <div className="genie-surface genie-surface--utility px-4 py-3">
         <SecondaryButton onClick={() => setExpanded(true)} className="w-full">
           Plan a session →
         </SecondaryButton>
@@ -73,19 +73,19 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4">
+    <div className="genie-surface genie-surface--elevated p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-neutral-900">Plan a session</p>
+        <p className="text-sm font-semibold text-slate-800">Plan a session</p>
         <IconButton
           onClick={() => { setExpanded(false); setAiEnabled(false) }}
           label="Close"
           icon={<span className="text-lg leading-none">×</span>}
-          className="text-neutral-400"
+          className="text-slate-400"
         />
       </div>
 
       <div>
-        <p className="text-xs text-neutral-500 mb-2">Duration</p>
+        <p className="text-xs text-slate-600 mb-2">Duration</p>
         <SegmentedControl
           options={BUDGET_OPTIONS}
           value={budgetMin}
@@ -95,24 +95,24 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
 
       {/* AI plan result */}
       {aiPlan && !aiLoading && (
-        <div className="rounded-xl bg-neutral-50 border border-neutral-200 p-3 space-y-2">
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">AI Session Plan</p>
-          <p className="text-xs text-neutral-600 italic">{aiPlan.expected_outcome}</p>
+        <div className="genie-surface genie-surface--utility rounded-xl p-3 space-y-2">
+          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">AI Session Plan</p>
+          <p className="text-xs text-slate-600 italic">{aiPlan.expected_outcome}</p>
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-neutral-900">
+            <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
               <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
               {aiPlan.main_task.title}
-              <span className="text-xs text-neutral-400 ml-auto">{aiPlan.main_task.duration}</span>
+              <span className="text-xs text-slate-500 ml-auto">{aiPlan.main_task.duration}</span>
             </div>
             {aiPlan.supporting_tasks.map((t) => (
-              <div key={t.id} className="flex items-center gap-2 text-sm text-neutral-700 pl-4">
+              <div key={t.id} className="flex items-center gap-2 text-sm text-slate-700 pl-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 shrink-0" />
                 {t.title}
-                <span className="text-xs text-neutral-400 ml-auto">{t.duration}</span>
+                <span className="text-xs text-slate-500 ml-auto">{t.duration}</span>
               </div>
             ))}
           </div>
-          <p className="text-xs text-neutral-400">Total: {aiPlan.total_time}</p>
+          <p className="text-xs text-slate-500">Total: {aiPlan.total_time}</p>
           <PrimaryButton onClick={handleUseAiPlan} className="w-full">
             Start this session
           </PrimaryButton>
@@ -122,7 +122,7 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
       {/* Manual task picker (shown when AI hasn't run or loaded) */}
       {!aiPlan && (
         <div>
-          <p className="text-xs text-neutral-500 mb-2">Tasks</p>
+          <p className="text-xs text-slate-600 mb-2">Tasks</p>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {tasks.map((t) => (
               <label key={t.id} className="flex items-center gap-3 text-sm cursor-pointer">
@@ -132,8 +132,8 @@ export function SessionPlannerCard({ tasks, onStart }: SessionPlannerCardProps) 
                   onChange={() => toggle(t.id)}
                   className="rounded"
                 />
-                <span className="flex-1 truncate text-neutral-900">{t.title}</span>
-                <span className="text-xs text-neutral-400 shrink-0">
+                <span className="flex-1 truncate text-slate-800">{t.title}</span>
+                <span className="text-xs text-slate-500 shrink-0">
                   {t.estimatedTimeMin > 0 ? formatDuration(t.estimatedTimeMin) : ''}
                 </span>
               </label>

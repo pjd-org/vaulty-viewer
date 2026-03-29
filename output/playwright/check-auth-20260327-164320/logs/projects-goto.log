@@ -1,0 +1,9 @@
+### Ran Playwright code
+```js
+await page.goto('http://localhost:8080/projects');
+```
+### Page
+- Page URL: http://localhost:8080/login?return_to=/projects
+- Page Title: Vaulty Viewer
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-03-27T15-43-25-798Z.yml)

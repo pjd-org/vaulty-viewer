@@ -18,17 +18,18 @@ export function BestMoveCard({ task, onStart, onSkip, onComplete, mutating }: Be
   const blocked = isBlocked(task)
 
   return (
-    <SoftPanel className="bg-gradient-to-br from-[#f8f9ff] to-white">
+    <SoftPanel variant="hero">
+      <div className="genie-content">
       <Link
         to="/note"
         search={{ p: task.path }}
-        className="text-xl font-semibold text-neutral-900 hover:text-primary transition-colors block"
+        className="text-xl font-semibold text-slate-800 hover:text-sky-700 transition-colors block"
       >
         {task.title}
       </Link>
 
       {task.description && (
-        <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{task.description}</p>
+        <p className="text-sm text-slate-600 mt-1 line-clamp-2">{task.description}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -39,7 +40,7 @@ export function BestMoveCard({ task, onStart, onSkip, onComplete, mutating }: Be
       </div>
 
       {blocked && (
-        <p className="text-xs text-amber-600 mt-2">This task has dependencies</p>
+        <p className="text-xs text-amber-700 mt-2">This task has dependencies</p>
       )}
 
       <div className="flex items-center gap-3 mt-4">
@@ -50,6 +51,7 @@ export function BestMoveCard({ task, onStart, onSkip, onComplete, mutating }: Be
           Mark done
         </SecondaryButton>
         <IconButton icon={<span>×</span>} label="Skip task" onClick={() => onSkip(task)} />
+      </div>
       </div>
     </SoftPanel>
   )
