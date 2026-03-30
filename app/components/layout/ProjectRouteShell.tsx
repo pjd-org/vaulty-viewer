@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 
-import { PROJECT_ROUTE_TABS } from '../../../src/lib/routes/v3-routing'
+import { PROJECT_ROUTE_TABS, getProjectTabPath } from '../../../src/lib/routes/v3-routing'
 import { PageContainer } from './PageContainer'
 import { PageFrame } from './PageFrame'
 import { SummaryRow, type SummaryRowItem } from './SummaryRow'
@@ -36,7 +36,7 @@ export function ProjectRouteShell({
         <div className="genie-surface genie-surface--utility rounded-[24px] p-2">
           <div className="flex flex-wrap gap-2">
             {PROJECT_ROUTE_TABS.map((tab) => {
-              const to = tab.to.replace('$slug', encodeURIComponent(slug))
+              const to = getProjectTabPath(slug, tab.to)
               const active =
                 pathname === to || (to !== `/project/${slug}` && pathname.startsWith(`${to}/`))
 

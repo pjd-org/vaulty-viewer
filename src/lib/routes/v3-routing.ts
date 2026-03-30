@@ -64,6 +64,15 @@ export const PROJECT_ROUTE_TABS = [
   { label: 'Settings', to: '/project/$slug/settings' },
 ] as const
 
+export type ProjectRouteTabPath = (typeof PROJECT_ROUTE_TABS)[number]['to']
+
+export function getProjectTabPath(
+  slug: string,
+  to: ProjectRouteTabPath = '/project/$slug',
+): string {
+  return to.replace('$slug', encodeURIComponent(slug))
+}
+
 export function getLegacyViewerRedirect(pathname: string): string | null {
   const normalized = pathname.replace(/\/+$/, '') || '/'
 
