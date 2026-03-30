@@ -381,7 +381,11 @@ function InboxRoute() {
                         ? () => handleCommit(run.runId)
                         : undefined
                     }
-                    onReject={run ? () => handleReject(run.runId) : undefined}
+                    onReject={
+                      run ? () => handleReject(run.runId)
+                      : item.sourceId ? () => handleReject(item.sourceId)
+                      : undefined
+                    }
                   />
                   {run && (
                     <ConvertPanel

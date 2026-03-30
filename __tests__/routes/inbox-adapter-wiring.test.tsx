@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockRouteState = vi.hoisted(() => ({
@@ -60,7 +60,34 @@ vi.mock('../../app/components/layout', () => ({
 }))
 
 vi.mock('../../app/components/inbox/InboxItemCard', () => ({
-  InboxItemCard: ({ item }: { item: { title: string } }) => <article>{item.title}</article>,
+  InboxItemCard: ({
+    item,
+    onInspect,
+    onPromote,
+    onReject,
+  }: {
+    item: { title: string }
+    onInspect: () => void
+    onPromote?: () => void
+    onReject?: () => void
+  }) => (
+    <article>
+      <span>{item.title}</span>
+      <button type="button" onClick={onInspect}>
+        {`Inspect ${item.title}`}
+      </button>
+      {onPromote ? (
+        <button type="button" onClick={onPromote}>
+          {`Promote ${item.title}`}
+        </button>
+      ) : null}
+      {onReject ? (
+        <button type="button" onClick={onReject}>
+          {`Reject ${item.title}`}
+        </button>
+      ) : null}
+    </article>
+  ),
 }))
 
 vi.mock('../../app/components/inbox/InboxViewSwitcher', () => ({
@@ -132,6 +159,7 @@ describe('inbox adapter wiring', () => {
     mockRouteState.search = { view: 'archive' }
     mockEnsureQueryData.mockReset()
     mockGetInboxSurfaceQueryOptions.mockClear()
+    mockRejectRun.mockReset()
     mockUseInbox.mockReturnValue({
       runs: [],
       workbenchNotes: [],
@@ -224,5 +252,15 @@ describe('inbox adapter wiring', () => {
     expect(screen.getByText('Archive (1)')).toBeTruthy()
     expect(screen.getByText('Human rejected proposal')).toBeTruthy()
     expect(screen.queryByText('No rejected notes')).toBeNull()
+  })
+
+  it('keeps reject wired for queue items when the matching run is missing', () => {
+    mockRouteState.search = { view: 'queue' }
+
+    render(<RouteComponent />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reject Proposal run' }))
+
+    expect(mockRejectRun).toHaveBeenCalledWith('run-1')
   })
 })
