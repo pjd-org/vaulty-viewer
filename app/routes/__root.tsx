@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppShell, SidebarRail, TopCommandBar, VerificationRailHost } from '../components/layout'
 import { CommandHost, ModalHost } from '../components/shell'
 import { queryClient } from '../../src/query-client'
@@ -12,7 +12,7 @@ import appCss from '../../src/styles.css?url'
 
 const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true'
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
