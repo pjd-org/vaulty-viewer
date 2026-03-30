@@ -160,7 +160,7 @@ function InboxRoute() {
   } = useInbox();
   const { data: surface, isLoading: surfaceLoading, error: surfaceError } = useInboxSurface();
 
-  const { view: viewParam } = Route.useSearch();
+  const { view: viewParam, rejectedTab } = Route.useSearch();
   const navigate = useNavigate();
 
   const [toastMsg, setToastMsg] = useState<ToastMsg | null>(null);
@@ -191,6 +191,10 @@ function InboxRoute() {
 
     return { queue, workbench, archive };
   }, [surfaceItems]);
+  const archiveItems = React.useMemo(() => {
+    if (!rejectedTab) return groupedItems.archive;
+    return groupedItems.archive.filter((item) => item.rejectionType === rejectedTab);
+  }, [groupedItems.archive, rejectedTab]);
   const counts = React.useMemo(
     () => ({
       queue: groupedItems.queue.length,
@@ -414,10 +418,19 @@ function InboxRoute() {
                 );
               })}
 
-              {activeView === 'archive' && groupedItems.archive.length === 0 && (
-                <EmptyState title="No rejected notes" description="The archive is empty." />
+              {activeView === 'archive' && archiveItems.length === 0 && (
+                <EmptyState
+                  title={
+                    rejectedTab === 'user'
+                      ? 'No user rejections'
+                      : rejectedTab === 'automated'
+                        ? 'No automated rejections'
+                        : 'No rejected notes'
+                  }
+                  description="The archive is empty for the selected rejection tab."
+                />
               )}
-              {activeView === 'archive' && groupedItems.archive.map((item) => {
+              {activeView === 'archive' && archiveItems.map((item) => {
                 const note = noteByPath.get(item.sourceId);
                 const notePath = note?.path ?? item.sourceId;
                 return (

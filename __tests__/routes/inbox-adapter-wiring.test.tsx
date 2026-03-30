@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockRouteState = vi.hoisted(() => ({
@@ -222,6 +222,24 @@ describe('inbox adapter wiring', () => {
           inboxBucket: 'rejected_user',
           rejectionType: 'user',
         },
+        {
+          id: 'signal:archive-auto-note',
+          title: 'Policy rejected proposal',
+          summary: 'Automated rejected note path',
+          kind: 'rejection',
+          severity: 'high',
+          surfacedBy: 'cod',
+          sourceType: 'note',
+          sourceId: 'inbox/rejected/automated-proposal.md',
+          surfacedAt: new Date(0).toISOString(),
+          whySurfaced: 'Automated rejection stays visible separately.',
+          reversibility: 'high',
+          allowedActions: [{ actionType: 'override', label: 'Override' }],
+          inboxBucket: 'rejected_automated',
+          rejectionType: 'automated',
+          rejectionReason: 'Policy threshold not met.',
+          rejectionSource: 'automated-policy',
+        },
       ],
       isLoading: false,
       error: null,
@@ -249,10 +267,27 @@ describe('inbox adapter wiring', () => {
 
     expect(screen.getByText('Queue (1)')).toBeTruthy()
     expect(screen.getByText('Workbench (1)')).toBeTruthy()
-    expect(screen.getByText('Archive (1)')).toBeTruthy()
+    expect(screen.getByText('Archive (2)')).toBeTruthy()
     expect(screen.getByText('Human rejected proposal')).toBeTruthy()
+    expect(screen.getByText('Policy rejected proposal')).toBeTruthy()
     expect(screen.queryByText('No rejected notes')).toBeNull()
   })
+
+  it.each([
+    ['user', 'Human rejected proposal', 'Policy rejected proposal'],
+    ['automated', 'Policy rejected proposal', 'Human rejected proposal'],
+  ])(
+    'keeps %s rejections separate in the archive view',
+    (rejectedTab, visibleTitle, hiddenTitle) => {
+      mockRouteState.search = { view: 'archive', rejectedTab: rejectedTab as 'user' | 'automated' }
+
+      const { container } = render(<RouteComponent />)
+      const view = within(container)
+
+      expect(view.getByText(visibleTitle)).toBeTruthy()
+      expect(view.queryByText(hiddenTitle)).toBeNull()
+    },
+  )
 
   it('keeps reject wired for queue items when the matching run is missing', () => {
     mockRouteState.search = { view: 'queue' }
