@@ -12,6 +12,7 @@ import { Route as ProjectTimelineRoute } from '../../app/routes/project.$slug.ti
 import { Route as ProjectDependenciesRoute } from '../../app/routes/project.$slug.dependencies'
 import { Route as ProjectRisksRoute } from '../../app/routes/project.$slug.risks'
 import { Route as ProjectSettingsRoute } from '../../app/routes/project.$slug.settings'
+import { Route as LegacyProjectRoute } from '../../app/routes/projects.$projectId'
 
 describe('project shell foundation', () => {
   it('builds canonical project tab paths from tab patterns', () => {
@@ -42,5 +43,24 @@ describe('project shell foundation', () => {
     ['settings', ProjectSettingsRoute],
   ])('project %s route validates canonical project search params', (_label, route) => {
     expect(route.options.validateSearch).toBe(projectSearchParams)
+  })
+
+  it('redirects legacy /projects/$projectId routes through canonical $slug params', () => {
+    try {
+      LegacyProjectRoute.options.beforeLoad?.({
+        params: { projectId: 'project/with-slash' },
+      } as never)
+    } catch (error) {
+      const redirect = error as { options?: Record<string, unknown> }
+      expect(redirect.options).toMatchObject({
+        to: '/project/$slug',
+        params: { slug: 'project/with-slash' },
+        search: { tab: undefined, selectedId: undefined, noteId: undefined },
+        replace: true,
+      })
+      return
+    }
+
+    throw new Error('Expected legacy project route to redirect')
   })
 })

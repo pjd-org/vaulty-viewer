@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 
 import { PROJECT_ROUTE_TABS, getProjectTabPath } from '../../../src/lib/routes/v3-routing'
+import { projectSearchParams } from '../../../src/lib/routes/search-params'
 import { PageContainer } from './PageContainer'
 import { PageFrame } from './PageFrame'
 import { SummaryRow, type SummaryRowItem } from './SummaryRow'
@@ -18,6 +19,9 @@ export function ProjectRouteShell({
   children,
 }: ProjectRouteShellProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const projectSearch = useRouterState({
+    select: (state) => projectSearchParams(state.location.search),
+  })
 
   return (
     <PageContainer>
@@ -26,7 +30,8 @@ export function ProjectRouteShell({
         subtitle="Scoped command center"
         actions={
           <Link
-            to={'/work' as never}
+            to="/work"
+            search={{ tab: undefined, status: undefined, selectedId: undefined }}
             className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-100"
           >
             Back to Work
@@ -43,7 +48,9 @@ export function ProjectRouteShell({
               return (
                 <Link
                   key={tab.label}
-                  to={to as never}
+                  to={tab.to}
+                  params={{ slug }}
+                  search={projectSearch}
                   className={[
                     'tab rounded-full px-4 py-2 text-sm font-medium transition-colors',
                     active ? 'active text-slate-100' : 'text-slate-300',

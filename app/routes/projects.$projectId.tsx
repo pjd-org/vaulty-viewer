@@ -4,7 +4,9 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute("/projects/$projectId")({
   beforeLoad: ({ params }) => {
     throw redirect({
-      to: `/project/${encodeURIComponent(params.projectId)}`,
+      to: '/project/$slug',
+      params: { slug: params.projectId },
+      search: { tab: undefined, selectedId: undefined, noteId: undefined },
       replace: true,
     });
   },
