@@ -8,6 +8,7 @@ import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
 import { EmptyState } from '../components/ui';
 import { PageFrame } from '../components/layout';
 import { useInboxConverterMutation, type InboxConvertResult } from '../lib/queries/agents';
+import { getInboxSurfaceQueryOptions, useInboxSurface, type InboxItem } from '../lib/viewer-adapter';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -43,6 +44,35 @@ function runToOriginSource(runType?: string): string {
   if (runType === 'signals_infer') return 'agent';
   if (runType === 'conversation') return 'llm';
   return runType ?? 'manual';
+}
+
+function isArchiveBucket(bucket: InboxItem['inboxBucket']) {
+  return bucket === 'rejected_user' || bucket === 'rejected_automated';
+}
+
+function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
+  const createdAt =
+    (note?.frontmatter?.created ?? note?.frontmatter?.createdAt ?? null) as
+      | string
+      | null
+      | undefined;
+  const source =
+    item.rejectionType === 'user' ? 'manual'
+    : note?.source === 'extracted' ? 'agent'
+    : run ? runToOriginSource(run.runType)
+    : item.inboxBucket === 'deferred' || item.inboxBucket === 'rejected_automated' ? 'agent'
+    : 'manual';
+
+  return toInboxItemDisplay({
+    title: item.title,
+    _source: source,
+    _run_id: run?.runId,
+    description: item.summary,
+    createdAt: createdAt ?? item.surfacedAt,
+    status:
+      note?.status
+      ?? (item.severity === 'high' || item.severity === 'critical' ? 'blocked' : undefined),
+  });
 }
 
 /* ─── Inline converter panel ─────────────────────────────────────────────── */
@@ -110,6 +140,9 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
 export const Route = createFileRoute('/inbox')({
   validateSearch: inboxSearchParams,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(getInboxSurfaceQueryOptions());
+  },
   component: InboxRoute,
 });
 
@@ -118,9 +151,6 @@ function InboxRoute() {
     runs,
     workbenchNotes,
     archiveNotes,
-    counts,
-    loading,
-    error,
     apiStatus,
     refresh,
     commitRun,
@@ -128,6 +158,7 @@ function InboxRoute() {
     actionState,
     pendingConfirmations,
   } = useInbox();
+  const { data: surface, isLoading: surfaceLoading, error: surfaceError } = useInboxSurface();
 
   const { view: viewParam } = Route.useSearch();
   const navigate = useNavigate();
@@ -138,6 +169,52 @@ function InboxRoute() {
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
   );
+  const surfaceItems = surface ?? [];
+  const groupedItems = React.useMemo(() => {
+    const queue: InboxItem[] = [];
+    const workbench: InboxItem[] = [];
+    const archive: InboxItem[] = [];
+
+    surfaceItems.forEach((item) => {
+      if (item.inboxBucket === 'deferred') {
+        workbench.push(item);
+        return;
+      }
+
+      if (isArchiveBucket(item.inboxBucket)) {
+        archive.push(item);
+        return;
+      }
+
+      queue.push(item);
+    });
+
+    return { queue, workbench, archive };
+  }, [surfaceItems]);
+  const counts = React.useMemo(
+    () => ({
+      queue: groupedItems.queue.length,
+      workbench: groupedItems.workbench.length,
+      archive: groupedItems.archive.length,
+    }),
+    [groupedItems]
+  );
+  const runById = React.useMemo(
+    () => new Map((runs as Run[]).map((run) => [run.runId, run])),
+    [runs]
+  );
+  const noteByPath = React.useMemo(
+    () => new Map(
+      [...(workbenchNotes as InboxNote[]), ...(archiveNotes as InboxNote[])]
+        .map((note) => [note.path, note] as const)
+    ),
+    [archiveNotes, workbenchNotes]
+  );
+  const loading = surfaceLoading && !surface;
+  const error =
+    surfaceError instanceof Error ? surfaceError.message
+    : typeof surfaceError === 'string' ? surfaceError
+    : null;
 
   // Determine active view: URL param → smart default → 'workbench'
   const activeView: InboxView =
@@ -282,74 +359,71 @@ function InboxRoute() {
             />
 
             <div className="mt-6 space-y-3">
-              {activeView === 'queue' && (runs as Run[]).length === 0 && (
+              {activeView === 'queue' && groupedItems.queue.length === 0 && (
                 <EmptyState
                   title="Queue is clear"
                   description="No staged proposals waiting. Continue in Workbench →"
                 />
               )}
-              {activeView === 'queue' && (runs as Run[]).map((run) => (
-                <div key={run.runId} className="space-y-1">
+              {activeView === 'queue' && groupedItems.queue.map((item) => {
+                const run = runById.get(item.sourceId);
+                const inspectPath = run?.items[0]?.targetPath ?? run?.items[0]?.path;
+                return (
+                <div key={item.id} className="space-y-1">
                   <InboxItemCard
-                    item={toInboxItemDisplay({
-                      title: run.runId,
-                      _source: runToOriginSource(run.runType),
-                      _run_id: run.runId,
-                      description: `${run.itemCount} item${run.itemCount !== 1 ? 's' : ''}${run.action ? ` · ${run.action}` : ''}`,
-                      status: (run.error || run.runType === 'signals_infer') ? 'blocked' : undefined,
-                    })}
+                    item={inboxItemToDisplay(item, undefined, run)}
                     onInspect={() => {
-                      const p = run.items[0]?.targetPath ?? run.items[0]?.path;
+                      const p = inspectPath;
                       if (p) navigate({ to: '/note', search: { p: stripMarkdownExtension(p) } });
                     }}
-                    onPromote={run.runType !== 'signals_infer' ? () => handleCommit(run.runId) : undefined}
-                    onReject={() => handleReject(run.runId)}
+                    onPromote={
+                      run && run.runType !== 'signals_infer'
+                        ? () => handleCommit(run.runId)
+                        : undefined
+                    }
+                    onReject={run ? () => handleReject(run.runId) : undefined}
                   />
-                  <ConvertPanel
-                    runId={run.runId}
-                    rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
-                  />
+                  {run && (
+                    <ConvertPanel
+                      runId={run.runId}
+                      rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
+                    />
+                  )}
                 </div>
-              ))}
+              )})}
 
-              {activeView === 'workbench' && (workbenchNotes as InboxNote[]).length === 0 && (
+              {activeView === 'workbench' && groupedItems.workbench.length === 0 && (
                 <EmptyState
                   title="No draft or active inbox notes"
                   description="New notes will appear here when they arrive."
                 />
               )}
-              {activeView === 'workbench' && (workbenchNotes as InboxNote[]).map((note) => (
-                <InboxItemCard
-                  key={note.path}
-                  item={toInboxItemDisplay({
-                    title: note.title || note.path.split('/').pop() || note.path,
-                    _source: note.source === 'extracted' ? 'agent' : 'manual',
-                    _run_id: undefined,
-                    description: undefined,
-                    createdAt: (note.frontmatter?.created ?? note.frontmatter?.createdAt ?? null) as string | null | undefined,
-                    status: note.status ?? undefined,
-                  })}
-                  onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(note.path) } })}
-                />
-              ))}
+              {activeView === 'workbench' && groupedItems.workbench.map((item) => {
+                const note = noteByPath.get(item.sourceId);
+                const notePath = note?.path ?? item.sourceId;
+                return (
+                  <InboxItemCard
+                    key={item.id}
+                    item={inboxItemToDisplay(item, note)}
+                    onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(notePath) } })}
+                  />
+                );
+              })}
 
-              {activeView === 'archive' && (archiveNotes as InboxNote[]).length === 0 && (
+              {activeView === 'archive' && groupedItems.archive.length === 0 && (
                 <EmptyState title="No rejected notes" description="The archive is empty." />
               )}
-              {activeView === 'archive' && (archiveNotes as InboxNote[]).map((note) => (
-                <InboxItemCard
-                  key={note.path}
-                  item={toInboxItemDisplay({
-                    title: note.title || note.path.split('/').pop() || note.path,
-                    _source: note.source === 'extracted' ? 'agent' : 'manual',
-                    _run_id: undefined,
-                    description: undefined,
-                    createdAt: (note.frontmatter?.created ?? note.frontmatter?.createdAt ?? null) as string | null | undefined,
-                    status: note.status ?? undefined,
-                  })}
-                  onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(note.path) } })}
-                />
-              ))}
+              {activeView === 'archive' && groupedItems.archive.map((item) => {
+                const note = noteByPath.get(item.sourceId);
+                const notePath = note?.path ?? item.sourceId;
+                return (
+                  <InboxItemCard
+                    key={item.id}
+                    item={inboxItemToDisplay(item, note)}
+                    onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(notePath) } })}
+                  />
+                );
+              })}
             </div>
           </>
         )}
