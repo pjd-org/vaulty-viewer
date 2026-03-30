@@ -16,9 +16,6 @@ export default defineConfig({
     },
   },
   server: {
-    // Runtime accepts this, but the current published config types lag behind.
-    // Keep the explicit port until the TanStack Start typings catch up.
-    // @ts-expect-error port is supported at runtime
     port: 8000,
     routeRules: {
       // Keep browser requests on same-origin `/api/*` and proxy them internally.
