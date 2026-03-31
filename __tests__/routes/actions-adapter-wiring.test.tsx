@@ -154,7 +154,7 @@ const actionsSurface: ActionsSurfacePayload = {
       },
     },
   ],
-  recentVerifications: [
+  verificationRail: [
     {
       id: 'verification-1',
       actionId: 'action-1',

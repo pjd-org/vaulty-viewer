@@ -52,12 +52,19 @@ describe('project shell foundation', () => {
       } as never)
     } catch (error) {
       const redirect = error as { options?: Record<string, unknown> }
-      expect(redirect.options).toMatchObject({
-        to: '/project/$slug',
-        params: { slug: 'project/with-slash' },
-        search: { tab: undefined, selectedId: undefined, noteId: undefined },
-        replace: true,
-      })
+        expect(redirect.options).toMatchObject({
+          to: '/project/$slug',
+          params: { slug: 'project/with-slash' },
+          search: {
+            tab: undefined,
+            selectedId: undefined,
+            noteId: undefined,
+            mode: undefined,
+            templateId: undefined,
+            memoryTab: undefined,
+          },
+          replace: true,
+        })
       return
     }
 

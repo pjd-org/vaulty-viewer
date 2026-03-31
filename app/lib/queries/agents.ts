@@ -68,7 +68,7 @@ export function useWhatNowQuery(
     queryFn: () => invokeAgent<WhatNowResult>(prompt, model),
     enabled,
     staleTime: 1000 * 60 * 5, // 5 min — task selection doesn't change that fast
-    retry: 1,
+    retry: 0,
   });
 }
 
@@ -100,7 +100,7 @@ export function useUpNextQuery(
     queryFn: () => invokeAgent<UpNextResult>(prompt, model),
     enabled,
     staleTime: 1000 * 60 * 5,
-    retry: 1,
+    retry: 0,
   });
 }
 
@@ -130,7 +130,7 @@ export function useStepExtractorQuery(
     queryFn: () => invokeAgent<StepExtractorResult>(prompt, model),
     enabled,
     staleTime: Infinity, // response text is immutable once set
-    retry: 1,
+    retry: 0,
   });
 }
 
@@ -185,7 +185,7 @@ export function useSessionPlannerQuery(
     queryFn: () => invokeAgent<SessionPlanResult>(prompt, model),
     enabled,
     staleTime: 1000 * 60 * 10,
-    retry: 1,
+    retry: 0,
   });
 }
 
@@ -210,6 +210,6 @@ export function useSystemSummarizerQuery(
     queryFn: () => invokeAgent<SystemSummaryResult>(prompt, model),
     enabled,
     staleTime: 1000 * 60 * 5,
-    retry: 1,
+    retry: 0,
   });
 }

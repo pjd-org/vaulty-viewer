@@ -31,9 +31,22 @@ interface NoteMetaRailProps {
   lifecycle: NoteLifecycle
   relatedNotes: RelatedNote[]
   path?: string
+  workspaceLink?: boolean
+  workspaceTo?: string
+  workspaceParams?: Record<string, string>
+  workspaceSearch?: Record<string, unknown>
 }
 
-export function NoteMetaRail({ frontmatter, lifecycle, relatedNotes, path }: NoteMetaRailProps) {
+export function NoteMetaRail({
+  frontmatter,
+  lifecycle,
+  relatedNotes,
+  path,
+  workspaceLink = false,
+  workspaceTo,
+  workspaceParams,
+  workspaceSearch,
+}: NoteMetaRailProps) {
   const rawStatus = getStringValue(frontmatter.status)
   const priority = getNumberValue(frontmatter.priority)
   const dueDate = getStringValue(frontmatter.dueDate) ?? getStringValue(frontmatter.due_date)
@@ -125,8 +138,13 @@ export function NoteMetaRail({ frontmatter, lifecycle, relatedNotes, path }: Not
               return (
                 <Link
                   key={related.path}
-                  to="/note"
-                  search={{ p: slug }}
+                  to={workspaceLink ? (workspaceTo ?? '/knowledge') : '/note'}
+                  params={workspaceLink ? workspaceParams : undefined}
+                  search={
+                    workspaceLink
+                      ? { ...(workspaceSearch ?? {}), noteId: slug }
+                      : { p: slug }
+                  }
                   className="block p-2.5 rounded-xl border border-slate-100 bg-neutral-50 hover:bg-blue-50 hover:border-blue-100 transition-all group"
                 >
                   <p className="text-xs font-medium text-neutral-700 truncate group-hover:text-blue-700">

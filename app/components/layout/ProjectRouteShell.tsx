@@ -5,23 +5,37 @@ import { PROJECT_ROUTE_TABS, getProjectTabPath } from '../../../src/lib/routes/v
 import { projectSearchParams } from '../../../src/lib/routes/search-params'
 import { PageContainer } from './PageContainer'
 import { PageFrame } from './PageFrame'
+import { ProjectRouteShellProvider } from './ProjectRouteContext'
 import { SummaryRow, type SummaryRowItem } from './SummaryRow'
+import type { ProjectSurfacePayload } from '../../lib/viewer-adapter'
 
 interface ProjectRouteShellProps {
   slug: string
   summaryItems?: readonly SummaryRowItem[]
+  projectSurface?: ProjectSurfacePayload | null
   children: React.ReactNode
 }
 
 export function ProjectRouteShell({
   slug,
   summaryItems = [],
+  projectSurface = null,
   children,
 }: ProjectRouteShellProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const projectSearch = useRouterState({
     select: (state) => projectSearchParams(state.location.search),
   })
+  const projectPath = `/project/${encodeURIComponent(slug)}`
+  const shellContext = React.useMemo(
+    () => ({
+      projectId: slug,
+      projectPath,
+      summaryItems,
+      projectSurface,
+    }),
+    [projectPath, projectSurface, slug, summaryItems],
+  )
 
   return (
     <PageContainer>
@@ -64,7 +78,7 @@ export function ProjectRouteShell({
         </div>
 
         <SummaryRow items={summaryItems} />
-        {children}
+        <ProjectRouteShellProvider value={shellContext}>{children}</ProjectRouteShellProvider>
       </PageFrame>
     </PageContainer>
   )

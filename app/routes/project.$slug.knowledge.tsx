@@ -1,7 +1,7 @@
 import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ProjectTabPlaceholder } from '../components/projects'
+import { ProjectKnowledgeLaneShell } from '../components/projects'
 import { projectSearchParams } from '../../src/lib/routes/search-params'
 
 export const Route = createFileRoute('/project/$slug/knowledge')({
@@ -10,10 +10,18 @@ export const Route = createFileRoute('/project/$slug/knowledge')({
 })
 
 function ProjectKnowledgeRoute() {
+  const { slug } = Route.useParams()
+  const { tab, selectedId, noteId, mode, templateId, memoryTab } = Route.useSearch()
+
   return (
-    <ProjectTabPlaceholder
-      title="Project Knowledge"
-      description="Scoped notes, memories, and COD-selected context for this project will render here."
+    <ProjectKnowledgeLaneShell
+      slug={slug}
+      tab={tab}
+      selectedId={selectedId}
+      noteId={noteId}
+      mode={mode}
+      templateId={templateId}
+      memoryTab={memoryTab}
     />
   )
 }

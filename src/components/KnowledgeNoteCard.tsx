@@ -8,6 +8,11 @@ interface KnowledgeNoteCardProps {
   domain?: string;
   tags?: string[];
   status?: string;
+  workspaceLink?: boolean;
+  workspaceTo?: string;
+  workspaceParams?: Record<string, string>;
+  selected?: boolean;
+  workspaceSearch?: Record<string, unknown>;
 }
 
 const audienceColor: Record<string, string> = {
@@ -22,12 +27,36 @@ const maturityColor: Record<string, string> = {
   deprecated: 'bg-error/10 text-error',
 };
 
-export function KnowledgeNoteCard({ path, title, audience, domain, tags, status }: KnowledgeNoteCardProps) {
+export function KnowledgeNoteCard({
+  path,
+  title,
+  audience,
+  domain,
+  tags,
+  status,
+  workspaceLink = false,
+  workspaceTo,
+  workspaceParams,
+  selected = false,
+  workspaceSearch,
+}: KnowledgeNoteCardProps) {
+  const to = workspaceLink ? (workspaceTo ?? '/knowledge') : '/note'
+  const search = workspaceLink
+    ? { ...(workspaceSearch ?? {}), noteId: path }
+    : { p: path }
+
   return (
-    <Link
-      to="/note"
-      search={{ p: path }}
-      className="group block p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 hover:border-primary/30 hover:shadow-vault-sm transition-all duration-[var(--vault-duration-snappy)]"
+      <Link
+        to={to}
+        params={workspaceLink ? workspaceParams : undefined}
+        search={search}
+        aria-current={selected ? 'page' : undefined}
+        className={[
+        'group block p-4 rounded-xl border transition-all duration-[var(--vault-duration-snappy)]',
+        selected
+          ? 'border-primary/40 bg-primary/5 shadow-vault-sm'
+          : 'bg-surface-container-lowest border-outline-variant/10 hover:border-primary/30 hover:shadow-vault-sm',
+      ].join(' ')}
     >
       {/* Badges row */}
       <div className="flex items-center gap-1.5 flex-wrap mb-3">

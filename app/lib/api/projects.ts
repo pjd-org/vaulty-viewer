@@ -1,3 +1,4 @@
+import { apiFetch } from '../../../src/utils/api';
 import type { ProjectSummaryDisplay } from '../../types/display';
 
 const statusVariantMap: Record<string, ProjectSummaryDisplay['statusVariant']> = {
@@ -38,7 +39,7 @@ const shouldHideProject = (raw: Record<string, any>) => {
 export async function fetchProjects(): Promise<ProjectSummaryDisplay[]> {
   // Fetch project list from backend API. The backend may return either
   // { structuredContent: { projects: [...] } } or { projects: [...] }.
-  const res = await fetch('/api/v1/projects');
+  const res = await apiFetch('/api/v1/projects');
   if (!res.ok) {
     throw new Error('Failed to fetch projects');
   }
@@ -74,4 +75,13 @@ export async function fetchProjectById(id: string): Promise<ProjectSummaryDispla
   // Basic implementation: fetch all projects and find by id. Backends may offer a dedicated endpoint later.
   const all = await fetchProjects();
   return all.find((p) => p.id === id || p.id === decodeURIComponent(id)) ?? null;
+}
+
+export function getProjectQueryOptions(id: string) {
+  return {
+    queryKey: ['project', id] as const,
+    queryFn: () => fetchProjectById(id),
+    staleTime: 60_000,
+    retry: 1,
+  };
 }

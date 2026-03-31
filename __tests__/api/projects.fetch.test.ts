@@ -1,5 +1,24 @@
-import { describe, it, expect, vi } from 'vitest';
-import { fetchProjects, fetchProjectById } from '../../app/lib/api/projects';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  fetchProjects,
+  fetchProjectById,
+  getProjectQueryOptions,
+} from '../../app/lib/api/projects';
+
+const originalEnv = { ...process.env };
+const originalWindow = globalThis.window;
+const originalFetch = globalThis.fetch;
+
+beforeEach(() => {
+  process.env = { ...originalEnv };
+  delete globalThis.window;
+});
+
+afterEach(() => {
+  process.env = { ...originalEnv };
+  globalThis.window = originalWindow;
+  globalThis.fetch = originalFetch;
+});
 
 describe('projects API client', () => {
   const fake = [
@@ -21,6 +40,27 @@ describe('projects API client', () => {
     const p = await fetchProjectById('p1');
     expect(p).not.toBeNull();
     expect(p!.id).toBe('p1');
+  });
+
+  it('exposes a stable query key for project preloading', () => {
+    expect(getProjectQueryOptions('p1').queryKey).toEqual(['project', 'p1']);
+  });
+
+  it('uses the configured server API base for SSR fetches', async () => {
+    delete process.env.VAULT_API_URL;
+    process.env.API_PROXY_URL = 'http://127.0.0.1:4300';
+    delete process.env.VIEWER_INTERNAL_APP_API_KEY;
+    delete process.env.AUTH_MCP_API_KEY;
+
+    const mockFetch = vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ projects: fake }) } as any)
+    );
+    global.fetch = mockFetch as typeof fetch;
+
+    await fetchProjects();
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0]?.[0]).toBe('http://127.0.0.1:4300/api/v1/projects');
   });
 
   it('filters template/archive placeholders from projects response', async () => {

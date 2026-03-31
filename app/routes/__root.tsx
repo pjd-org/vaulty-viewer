@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouter, useRouterState } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider, dehydrate, type DehydratedState } from '@tanstack/react-query'
 import { AppShell, SidebarRail, TopCommandBar, VerificationRailHost } from '../components/layout'
 import { CommandHost, ModalHost } from '../components/shell'
-import { queryClient } from '../../src/query-client'
+import { serializeDehydratedQueryState } from '../../src/query-client'
 import { NAV_OVERLAY_EVENT, type NavOverlay, type NavOverlayDetail } from '../../src/lib/nav-overlays'
 import { isShellHiddenPath } from '../../src/lib/routes/v3-routing'
 import { AvatarRoute } from './avatar'
@@ -27,6 +27,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 })
 
 function RootComponent() {
+  const router = useRouter()
+  const queryClient = router.options.context.queryClient
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
@@ -54,8 +56,11 @@ function RootComponent() {
     return () => window.removeEventListener(NAV_OVERLAY_EVENT, onOverlayEvent as EventListener)
   }, [hideShell])
 
+  const dehydratedState =
+    typeof window === 'undefined' ? dehydrate(queryClient) : undefined
+
   return (
-    <RootDocument>
+    <RootDocument dehydratedState={dehydratedState}>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen">
           {hideShell ? (
@@ -83,7 +88,17 @@ function RootComponent() {
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({
+  children,
+  dehydratedState,
+}: {
+  children: React.ReactNode
+  dehydratedState?: DehydratedState
+}) {
+  const hydrationScript = dehydratedState
+    ? `window.__VIEWER_DEHYDRATED_STATE__=${serializeDehydratedQueryState(dehydratedState)};`
+    : ''
+
   return (
     <html lang="en">
       <head>
@@ -91,6 +106,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: hydrationScript }} />
         <Scripts />
       </body>
     </html>

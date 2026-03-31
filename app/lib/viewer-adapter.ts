@@ -194,7 +194,7 @@ export interface InboxItem extends PressureSignal {
 
 export interface ActionsSurfacePayload {
   recommendations: Recommendation[]
-  recentVerifications: VerificationOutcome[]
+  verificationRail: VerificationOutcome[]
 }
 
 export interface ProjectSurfacePayload {
@@ -452,7 +452,7 @@ export function buildActionsSurfacePayload(tasks: NextAction[]): ActionsSurfaceP
   const recommendations = tasks.map(taskRecommendation)
   return {
     recommendations,
-    recentVerifications: [],
+    verificationRail: [],
   }
 }
 

@@ -160,11 +160,23 @@ describe('search-param schemas — canonical validateSearch contracts', () => {
   })
 
   describe('projectSearchParams (/project/:slug)', () => {
-    it('parses tab, selectedId, noteId', () => {
-      expect(projectSearchParams({ tab: 'tasks', selectedId: 's1', noteId: 'note-2' })).toEqual({
+    it('parses tab, selectedId, noteId, and lane extras', () => {
+      expect(
+        projectSearchParams({
+          tab: 'tasks',
+          selectedId: 's1',
+          noteId: 'note-2',
+          mode: 'edit',
+          templateId: 'tmpl-1',
+          memoryTab: 'recent',
+        }),
+      ).toEqual({
         tab: 'tasks',
         selectedId: 's1',
         noteId: 'note-2',
+        mode: 'edit',
+        templateId: 'tmpl-1',
+        memoryTab: 'recent',
       })
     })
   })

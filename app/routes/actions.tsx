@@ -69,7 +69,7 @@ function ActionsRoute() {
 
   const selected =
     recommendations.find((item) => item.id === selectedId) ?? recommendations[0]
-  const verificationCount = surface?.recentVerifications.length ?? 0
+  const verificationCount = surface?.verificationRail.length ?? 0
   const setSearch = React.useCallback(
     (next: {
       sort?: 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility'
@@ -156,7 +156,7 @@ function ActionsRoute() {
     },
     {
       label: 'Verification',
-      value: surface?.recentVerifications.length ? 'Active' : 'Ready',
+        value: surface?.verificationRail.length ? 'Active' : 'Ready',
       detail: 'Feedback loop reserved for mutation outcomes',
     },
   ]
@@ -318,7 +318,7 @@ function ActionsRoute() {
                 </p>
                 {verificationCount > 0 ? (
                   <div className="mt-3 space-y-2">
-                    {surface?.recentVerifications.map((item) => (
+                    {surface?.verificationRail.map((item) => (
                       <article
                         key={item.id}
                         className="rounded-[14px] border border-white/10 bg-white/5 p-3"

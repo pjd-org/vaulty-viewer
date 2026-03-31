@@ -173,5 +173,8 @@ export function projectSearchParams(s: S) {
     tab: readStringSearchParam(s.tab),
     selectedId: readStringSearchParam(s.selectedId),
     noteId: readStringSearchParam(s.noteId),
+    mode: readEnumSearchParam(s.mode, ['read', 'edit'] as const),
+    templateId: readStringSearchParam(s.templateId),
+    memoryTab: readStringSearchParam(s.memoryTab),
   }
 }

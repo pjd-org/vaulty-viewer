@@ -8,6 +8,10 @@ import {
   type IntentType,
   type ThreadRecord,
 } from '../../src/lib/huey-intents'
+import {
+  buildHueyAgentServerRunPath,
+  parseHueyAgentServerRunResponse,
+} from '../../src/lib/huey-agent-server'
 import { useHydrated } from '../../src/hooks/useHydrated'
 import { HueyContextRail, HueyWorkspace } from '../components/huey'
 import type { ChatMessage } from '../components/huey'
@@ -21,6 +25,16 @@ type InvokeResponse = {
   result?: string
   threadId?: string
   thread_id?: string
+  thread?: {
+    id?: string
+  }
+  run?: {
+    output?: {
+      result?: string
+      next_action?: string | null
+      tool_results_degraded?: boolean
+    }
+  }
   next_action?: string | null
   tool_results_degraded?: boolean
 }
@@ -217,14 +231,15 @@ function HueyRoute() {
     })
 
     try {
-      const response = await apiFetch('/tensura/v1/supervisor/invoke', {
+      const requestBody = {
+        thread_id: effectiveThreadId,
+        mode: 'repo+spec',
+        messages: [{ role: 'user', content: prompt }],
+      }
+      const response = await apiFetch(buildHueyAgentServerRunPath(effectiveThreadId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          threadId: effectiveThreadId,
-          mode: 'repo+spec',
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       let payload = (await response.json().catch(() => null)) as InvokeResponse | null
@@ -232,19 +247,28 @@ function HueyRoute() {
       if (!response.ok && (response.status === 429 || response.status >= 500)) {
         try {
           const fallbackBody = JSON.stringify({
-            threadId: effectiveThreadId,
+            ...requestBody,
             mode: 'repo+spec',
             model: 'gpt-5-mini',
-            messages: [{ role: 'user', content: prompt }],
           })
-          const fallbackResp = await apiFetch('/tensura/v1/supervisor/invoke', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: fallbackBody,
-          })
+          const fallbackResp = await apiFetch(
+            buildHueyAgentServerRunPath(effectiveThreadId),
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: fallbackBody,
+            }
+          )
           payload = (await fallbackResp.json().catch(() => null)) as InvokeResponse | null
           if (fallbackResp.ok) {
-            payload = { ...(payload || {}), result: payload?.result, threadId: payload?.threadId || payload?.thread_id || effectiveThreadId }
+            payload = {
+              ...(payload || {}),
+              threadId:
+                payload?.threadId ||
+                payload?.thread_id ||
+                payload?.thread?.id ||
+                effectiveThreadId,
+            }
           }
         } catch {
           // ignore and fall through
@@ -255,18 +279,12 @@ function HueyRoute() {
         throw new Error(`Huey request failed (${response.status})`)
       }
 
-      nextThreadId = payload?.threadId || payload?.thread_id || effectiveThreadId
-
-      const assistantText =
-        payload?.result?.trim() ? payload.result : 'Huey responded without text.'
-
-      const metaParts = [`Thread ${nextThreadId}`]
-      if (payload?.next_action) metaParts.push(`Next: ${payload.next_action}`)
-      if (payload?.tool_results_degraded) metaParts.push('⚠ Degraded tools')
+      const parsed = parseHueyAgentServerRunResponse(payload, effectiveThreadId)
+      nextThreadId = parsed.threadId
 
       dispatch({
         type: 'SEND_DONE',
-        assistantMsg: createMessage('assistant', assistantText, metaParts.join(' · ')),
+        assistantMsg: createMessage('assistant', parsed.assistantText, parsed.meta),
         threadId: nextThreadId,
       })
     } catch (err) {

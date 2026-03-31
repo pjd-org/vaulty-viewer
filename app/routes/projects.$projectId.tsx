@@ -6,7 +6,14 @@ export const Route = createFileRoute("/projects/$projectId")({
     throw redirect({
       to: '/project/$slug',
       params: { slug: params.projectId },
-      search: { tab: undefined, selectedId: undefined, noteId: undefined },
+      search: {
+        tab: undefined,
+        selectedId: undefined,
+        noteId: undefined,
+        mode: undefined,
+        templateId: undefined,
+        memoryTab: undefined,
+      },
       replace: true,
     });
   },

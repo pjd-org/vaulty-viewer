@@ -56,6 +56,14 @@ describe('viewer adapter builders', () => {
     expect(payload.recommendations[0].scoreBreakdown.impact).toBeGreaterThan(0)
   })
 
+  it('uses the shared verification rail contract for actions surfaces', () => {
+    const payload = buildActionsSurfacePayload(sampleTasks)
+    const surface = payload as Record<string, unknown>
+
+    expect('verificationRail' in surface).toBe(true)
+    expect('recentVerifications' in surface).toBe(false)
+  })
+
   it('keeps user and automated rejections separated', () => {
     const archiveNotes: InboxNote[] = [
       {

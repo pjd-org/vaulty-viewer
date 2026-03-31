@@ -1,8 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAllTasks, fetchNextActions, updateTaskStatus } from '../api/tasks';
 
+export function getAllTasksQueryOptions() {
+  return {
+    queryKey: ['tasks'] as const,
+    queryFn: fetchAllTasks,
+    staleTime: 1000 * 60,
+    retry: 1,
+  };
+}
+
 export function useAllTasks() {
-  return useQuery({ queryKey: ['tasks'], queryFn: fetchAllTasks, staleTime: 1000 * 60, retry: 1 });
+  return useQuery(getAllTasksQueryOptions());
 }
 
 export function useNextActions() {
