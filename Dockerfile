@@ -13,7 +13,7 @@ RUN corepack enable && corepack prepare pnpm@10.27.0 --activate
 # Resolve local workspace dependency (@vault/ui -> ../../packages/ui)
 COPY packages/ui /packages/ui
 COPY apps/viewer/package.json apps/viewer/pnpm-lock.yaml apps/viewer/pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 COPY apps/viewer .
 RUN pnpm run build
@@ -26,6 +26,7 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8000
 
+COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/.output /app/.output
 
 EXPOSE 8000
