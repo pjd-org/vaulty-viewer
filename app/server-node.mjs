@@ -8,6 +8,32 @@
 import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
 import { Buffer } from 'node:buffer';
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const CLIENT_DIR = join(__dirname, '../dist/client');
+const VIEWER_PREFIX = '/_viewer/';
+
+/** Minimal MIME map for Vite build output. */
+const MIME = {
+  '.js':    'application/javascript; charset=utf-8',
+  '.mjs':   'application/javascript; charset=utf-8',
+  '.css':   'text/css; charset=utf-8',
+  '.html':  'text/html; charset=utf-8',
+  '.json':  'application/json; charset=utf-8',
+  '.svg':   'image/svg+xml',
+  '.png':   'image/png',
+  '.jpg':   'image/jpeg',
+  '.jpeg':  'image/jpeg',
+  '.ico':   'image/x-icon',
+  '.woff':  'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf':   'font/ttf',
+  '.eot':   'application/vnd.ms-fontobject',
+  '.map':   'application/json',
+};
 
 const { default: app } = await import('../dist/server/server.js');
 
@@ -15,6 +41,30 @@ const HOST = process.env.HOST ?? '0.0.0.0';
 const PORT = Number(process.env.PORT ?? 8000);
 
 const httpServer = createServer(async (req, res) => {
+  // ── Static asset serving for /_viewer/ prefix ─────────────────────────────
+  // Vite builds client assets into dist/client/ with base='/_viewer/'.
+  // Strip the prefix and serve directly from the filesystem so the SSR
+  // handler never has to render asset paths.
+  if (req.url?.startsWith(VIEWER_PREFIX)) {
+    const rel = req.url.slice(VIEWER_PREFIX.length).split('?')[0]; // strip query
+    const filePath = join(CLIENT_DIR, rel);
+    if (existsSync(filePath) && statSync(filePath).isFile()) {
+      const ext = extname(filePath).toLowerCase();
+      const mime = MIME[ext] ?? 'application/octet-stream';
+      // Content-hashed assets are safe to cache indefinitely.
+      const isHashed = /\.[a-f0-9]{8,}\./.test(rel);
+      res.writeHead(200, {
+        'Content-Type': mime,
+        'Cache-Control': isHashed
+          ? 'public, max-age=31536000, immutable'
+          : 'no-cache',
+      });
+      createReadStream(filePath).pipe(res);
+      return;
+    }
+    // Asset not found — fall through to SSR (will likely 404).
+  }
+
   const host = req.headers.host ?? `${HOST}:${PORT}`;
   const url = `http://${host}${req.url}`;
 
