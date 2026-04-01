@@ -18,17 +18,6 @@ export function createRouter(options?: { queryClient?: QueryClient }) {
   });
 }
 
-export const router = createRouter({
-  queryClient:
-    typeof window === 'undefined'
-      ? createQueryClient()
-      : getBrowserQueryClient(),
-});
-
-export function getRouter() {
-  return router;
-}
-
 declare module '@tanstack/react-router' {
   interface Register {
     router: ReturnType<typeof createRouter>;
