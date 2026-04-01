@@ -9,8 +9,10 @@ export async function fetchAllTasks(): Promise<KanbanTask[]> {
   return raw.map((r: any) => normalizeTask(r));
 }
 
-export async function fetchNextActions(): Promise<Array<{ id: string; title: string; path: string }>> {
-  const res = await fetch('/api/v1/tasks/next-actions?max=50');
+export async function fetchNextActions(): Promise<
+  Array<{ id: string; title: string; path: string }>
+> {
+  const res = await apiFetch('/api/v1/tasks/next-actions?max=50');
   if (!res.ok) throw new Error('Failed to fetch next actions');
   const body = await res.json();
   const raw = body.structuredContent?.tasks ?? body.tasks ?? [];

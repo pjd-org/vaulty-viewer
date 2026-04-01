@@ -1,38 +1,190 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
 
-export type ModalId = string | null
+export type ModalId = string | null;
+
+type LayoutDensity = 'compact' | 'comfortable' | 'spacious';
+type RightPanelMode = 'hidden' | 'peek' | 'pinned';
+type DetailPanelMode = 'collapsed' | 'split' | 'overlay';
+type SurfaceKey =
+  | 'home'
+  | 'inbox'
+  | 'actions'
+  | 'automation'
+  | 'knowledge'
+  | 'project'
+  | 'timeline';
 
 interface UIState {
-  // Command palette
-  commandPaletteOpen: boolean
-  openCommandPalette: () => void
-  closeCommandPalette: () => void
-  toggleCommandPalette: () => void
-
-  // Modal host
-  activeModal: ModalId
-  openModal: (id: string) => void
-  closeModal: () => void
-
-  // Verification rail
-  verificationRailPinned: boolean
-  setVerificationRailPinned: (pinned: boolean) => void
-  toggleVerificationRailPinned: () => void
+  layout: {
+    leftSidebarCollapsed: boolean;
+    rightPanelMode: RightPanelMode;
+    density: LayoutDensity;
+    activeSurface: SurfaceKey;
+    mobileNavOpen: boolean;
+  };
+  command: {
+    paletteOpen: boolean;
+    query: string;
+    highlightedIndex: number;
+    suggestions: string[];
+    recentCommands: string[];
+    draft: string;
+  };
+  filters: Record<string, Record<string, unknown>>;
+  selection: { entityId: string | null; entityType: string | null };
+  detailPanel: {
+    mode: DetailPanelMode;
+    pinned: boolean;
+    fallbackContent: string | null;
+  };
+  verification: {
+    items: string[];
+    latestId: string | null;
+    visible: boolean;
+    pinned: boolean;
+    phase: 'idle' | 'pending' | 'resolved' | 'failed';
+  };
+  activeModal: ModalId;
+  inbox: {
+    currentBucket: string | null;
+    bulkSelection: string[];
+    actionSafetyGate: boolean;
+  };
+  actions: {
+    evaluationMode: string;
+    simulationPreviewOpen: boolean;
+    submissionPending: boolean;
+  };
+  automation: {
+    autoRefresh: boolean;
+    activeSubview: string | null;
+    inspectionDrawerOpen: boolean;
+  };
+  knowledge: {
+    activeTab: string;
+    noteEditorMode: 'read' | 'edit';
+    rawFrontmatterMode: boolean;
+    currentNoteId: string | null;
+    currentTemplateId: string | null;
+    noteDraft: string;
+    templateDraft: string;
+    compareRevisionId: string | null;
+  };
+  project: {
+    currentProjectSlug: string | null;
+    activeTab: string | null;
+    scopedQuickCreateType: string | null;
+    showOnlyProjectLinkedContent: boolean;
+  };
+  timeline: {
+    liveMode: boolean;
+    playbackWindow: string | null;
+    selectedEventDetailMode: string | null;
+  };
+  openCommandPalette: () => void;
+  closeCommandPalette: () => void;
+  toggleCommandPalette: () => void;
+  openModal: (id: string) => void;
+  closeModal: () => void;
+  setVerificationVisible: (visible: boolean) => void;
+  setVerificationPhase: (
+    phase: 'idle' | 'pending' | 'resolved' | 'failed',
+    latestId?: string | null
+  ) => void;
+  setVerificationRailPinned: (pinned: boolean) => void;
+  toggleVerificationRailPinned: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  commandPaletteOpen: false,
-  openCommandPalette: () => set({ commandPaletteOpen: true }),
-  closeCommandPalette: () => set({ commandPaletteOpen: false }),
-  toggleCommandPalette: () =>
-    set((s) => ({ commandPaletteOpen: !s.commandPaletteOpen })),
-
+  layout: {
+    leftSidebarCollapsed: false,
+    rightPanelMode: 'peek',
+    density: 'comfortable',
+    activeSurface: 'home',
+    mobileNavOpen: false,
+  },
+  command: {
+    paletteOpen: false,
+    query: '',
+    highlightedIndex: 0,
+    suggestions: [],
+    recentCommands: [],
+    draft: '',
+  },
+  filters: {},
+  selection: { entityId: null, entityType: null },
+  detailPanel: { mode: 'split', pinned: false, fallbackContent: null },
+  verification: {
+    items: [],
+    latestId: null,
+    visible: true,
+    pinned: false,
+    phase: 'idle',
+  },
   activeModal: null,
+  inbox: { currentBucket: null, bulkSelection: [], actionSafetyGate: false },
+  actions: {
+    evaluationMode: 'ranked',
+    simulationPreviewOpen: false,
+    submissionPending: false,
+  },
+  automation: {
+    autoRefresh: false,
+    activeSubview: null,
+    inspectionDrawerOpen: false,
+  },
+  knowledge: {
+    activeTab: 'notes',
+    noteEditorMode: 'read',
+    rawFrontmatterMode: false,
+    currentNoteId: null,
+    currentTemplateId: null,
+    noteDraft: '',
+    templateDraft: '',
+    compareRevisionId: null,
+  },
+  project: {
+    currentProjectSlug: null,
+    activeTab: null,
+    scopedQuickCreateType: null,
+    showOnlyProjectLinkedContent: false,
+  },
+  timeline: {
+    liveMode: true,
+    playbackWindow: null,
+    selectedEventDetailMode: null,
+  },
+  openCommandPalette: () =>
+    set((state) => ({ command: { ...state.command, paletteOpen: true } })),
+  closeCommandPalette: () =>
+    set((state) => ({ command: { ...state.command, paletteOpen: false } })),
+  toggleCommandPalette: () =>
+    set((state) => ({
+      command: { ...state.command, paletteOpen: !state.command.paletteOpen },
+    })),
   openModal: (id) => set({ activeModal: id }),
   closeModal: () => set({ activeModal: null }),
-
-  verificationRailPinned: false,
-  setVerificationRailPinned: (pinned) => set({ verificationRailPinned: pinned }),
+  setVerificationVisible: (visible) =>
+    set((state) => ({ verification: { ...state.verification, visible } })),
+  setVerificationPhase: (phase, latestId) =>
+    set((state) => ({
+      verification: {
+        ...state.verification,
+        phase,
+        latestId:
+          typeof latestId === 'undefined'
+            ? state.verification.latestId
+            : latestId,
+        visible: true,
+      },
+    })),
+  setVerificationRailPinned: (pinned) =>
+    set((state) => ({ verification: { ...state.verification, pinned } })),
   toggleVerificationRailPinned: () =>
-    set((s) => ({ verificationRailPinned: !s.verificationRailPinned })),
-}))
+    set((state) => ({
+      verification: {
+        ...state.verification,
+        pinned: !state.verification.pinned,
+      },
+    })),
+}));
