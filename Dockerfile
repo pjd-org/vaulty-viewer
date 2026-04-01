@@ -26,9 +26,14 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8000
 
+# Runtime needs node_modules for external imports in dist/server/server.js
+# (react, @tanstack/react-router, etc. are not bundled)
 COPY --from=build /app/node_modules /app/node_modules
-COPY --from=build /app/.output /app/.output
+# Vite SSR build output (client assets + server render module)
+COPY --from=build /app/dist /app/dist
+# Node.js HTTP adapter — adapts the WinterCG { fetch } export to http.createServer
+COPY --from=build /app/app/server-node.mjs /app/app/server-node.mjs
 
 EXPOSE 8000
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["node", "app/server-node.mjs"]

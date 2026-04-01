@@ -21,14 +21,13 @@ export function createRouter(options?: { queryClient?: QueryClient }) {
 let _router: ReturnType<typeof createRouter> | undefined;
 
 /**
- * Client-only singleton accessor required by @tanstack/start-client-core hydration.
- * Server-side callers must use createRouter() directly to get a per-request instance.
+ * Router accessor.
+ * - Client: singleton (hydration requires a stable reference)
+ * - Server: fresh instance per call (no shared state across requests)
  */
 export function getRouter() {
   if (typeof window === 'undefined') {
-    throw new Error(
-      'getRouter() is client-only. Use createRouter() per request on the server.'
-    );
+    return createRouter();
   }
   if (!_router) {
     _router = createRouter();
