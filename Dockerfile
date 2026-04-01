@@ -13,7 +13,7 @@ RUN corepack enable && corepack prepare pnpm@10.27.0 --activate
 # Resolve local workspace dependency (@vault/ui -> ../../packages/ui)
 COPY packages/ui /packages/ui
 COPY apps/viewer/package.json apps/viewer/pnpm-lock.yaml apps/viewer/pnpm-workspace.yaml ./
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY apps/viewer .
 RUN pnpm run build

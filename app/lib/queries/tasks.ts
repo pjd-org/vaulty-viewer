@@ -35,11 +35,11 @@ export function useNextActions() {
 
 export function useUpdateTaskStatus() {
   const qc = useQueryClient();
-  const setVerificationPhase = useUIStore.getState().setVerificationPhase;
+  const setVerificationPhase = useUIStore((s) => s.setVerificationPhase);
   return useMutation({
     mutationFn: ({ path, status }: { path: string; status: string }) =>
       updateTaskStatus(path, status),
-    onMutate: async (variables) => {
+    onMutate: (variables) => {
       setVerificationPhase('pending', variables.path);
     },
     onSuccess: async (_result, variables) => {

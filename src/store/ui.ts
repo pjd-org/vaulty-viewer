@@ -38,7 +38,6 @@ interface UIState {
     fallbackContent: string | null;
   };
   verification: {
-    items: string[];
     latestId: string | null;
     visible: boolean;
     pinned: boolean;
@@ -115,9 +114,8 @@ export const useUIStore = create<UIState>((set) => ({
   selection: { entityId: null, entityType: null },
   detailPanel: { mode: 'split', pinned: false, fallbackContent: null },
   verification: {
-    items: [],
     latestId: null,
-    visible: true,
+    visible: false,
     pinned: false,
     phase: 'idle',
   },
@@ -166,7 +164,7 @@ export const useUIStore = create<UIState>((set) => ({
   closeModal: () => set({ activeModal: null }),
   setVerificationVisible: (visible) =>
     set((state) => ({ verification: { ...state.verification, visible } })),
-  setVerificationPhase: (phase, latestId) =>
+  setVerificationPhase: (phase, latestId) => {
     set((state) => ({
       verification: {
         ...state.verification,
@@ -175,9 +173,21 @@ export const useUIStore = create<UIState>((set) => ({
           typeof latestId === 'undefined'
             ? state.verification.latestId
             : latestId,
-        visible: true,
+        visible: phase !== 'idle',
       },
-    })),
+    }));
+    if (phase === 'resolved' || phase === 'failed') {
+      setTimeout(() => {
+        set((state) => ({
+          verification: {
+            ...state.verification,
+            phase: 'idle',
+            visible: false,
+          },
+        }));
+      }, 3000);
+    }
+  },
   setVerificationRailPinned: (pinned) =>
     set((state) => ({ verification: { ...state.verification, pinned } })),
   toggleVerificationRailPinned: () =>

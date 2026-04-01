@@ -51,7 +51,8 @@
   "packageManager": "pnpm@10.27.0",
   "pnpm": {
     "overrides": {
-      "@tanstack/react-router": "1.167.5"
+      "@tanstack/react-router": "1.167.5",
+      "@tanstack/router-core": "1.168.9"
     }
   }
 }
