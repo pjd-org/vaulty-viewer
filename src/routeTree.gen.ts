@@ -8,324 +8,324 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './../app/routes/__root';
-import { Route as WorkRouteImport } from './../app/routes/work';
-import { Route as TimelineRouteImport } from './../app/routes/timeline';
-import { Route as SettingsRouteImport } from './../app/routes/settings';
-import { Route as ProjectsRouteImport } from './../app/routes/projects';
-import { Route as PortfolioRouteImport } from './../app/routes/portfolio';
-import { Route as NoteRouteImport } from './../app/routes/note';
-import { Route as LoginRouteImport } from './../app/routes/login';
-import { Route as KnowledgeRouteImport } from './../app/routes/knowledge';
-import { Route as KanbanRouteImport } from './../app/routes/kanban';
-import { Route as InboxRouteImport } from './../app/routes/inbox';
-import { Route as HueyRouteImport } from './../app/routes/huey';
-import { Route as HealthRouteImport } from './../app/routes/health';
-import { Route as GraphRouteImport } from './../app/routes/graph';
-import { Route as GoalsRouteImport } from './../app/routes/goals';
-import { Route as CodStatusRouteImport } from './../app/routes/cod-status';
-import { Route as BubbleRouteImport } from './../app/routes/bubble';
-import { Route as AvatarRouteImport } from './../app/routes/avatar';
-import { Route as AutomationRouteImport } from './../app/routes/automation';
-import { Route as ArchiveRouteImport } from './../app/routes/archive';
-import { Route as ActionsRouteImport } from './../app/routes/actions';
-import { Route as IndexRouteImport } from './../app/routes/index';
-import { Route as SessionIdRouteImport } from './../app/routes/session.$id';
-import { Route as ProjectsProjectIdRouteImport } from './../app/routes/projects.$projectId';
-import { Route as ProjectSlugRouteImport } from './../app/routes/project.$slug';
-import { Route as OauthConsentRouteImport } from './../app/routes/oauth/consent';
-import { Route as KnowledgeSearchRouteImport } from './../app/routes/knowledge.search';
-import { Route as KnowledgeGraphRouteImport } from './../app/routes/knowledge.graph';
-import { Route as ProjectSlugTimelineRouteImport } from './../app/routes/project.$slug.timeline';
-import { Route as ProjectSlugTasksRouteImport } from './../app/routes/project.$slug.tasks';
-import { Route as ProjectSlugSettingsRouteImport } from './../app/routes/project.$slug.settings';
-import { Route as ProjectSlugRisksRouteImport } from './../app/routes/project.$slug.risks';
-import { Route as ProjectSlugKnowledgeRouteImport } from './../app/routes/project.$slug.knowledge';
-import { Route as ProjectSlugDependenciesRouteImport } from './../app/routes/project.$slug.dependencies';
-import { Route as ProjectSlugAutomationRouteImport } from './../app/routes/project.$slug.automation';
+import { Route as rootRouteImport } from './../app/routes/__root'
+import { Route as WorkRouteImport } from './../app/routes/work'
+import { Route as TimelineRouteImport } from './../app/routes/timeline'
+import { Route as SettingsRouteImport } from './../app/routes/settings'
+import { Route as ProjectsRouteImport } from './../app/routes/projects'
+import { Route as PortfolioRouteImport } from './../app/routes/portfolio'
+import { Route as NoteRouteImport } from './../app/routes/note'
+import { Route as LoginRouteImport } from './../app/routes/login'
+import { Route as KnowledgeRouteImport } from './../app/routes/knowledge'
+import { Route as KanbanRouteImport } from './../app/routes/kanban'
+import { Route as InboxRouteImport } from './../app/routes/inbox'
+import { Route as HueyRouteImport } from './../app/routes/huey'
+import { Route as HealthRouteImport } from './../app/routes/health'
+import { Route as GraphRouteImport } from './../app/routes/graph'
+import { Route as GoalsRouteImport } from './../app/routes/goals'
+import { Route as CodStatusRouteImport } from './../app/routes/cod-status'
+import { Route as BubbleRouteImport } from './../app/routes/bubble'
+import { Route as AvatarRouteImport } from './../app/routes/avatar'
+import { Route as AutomationRouteImport } from './../app/routes/automation'
+import { Route as ArchiveRouteImport } from './../app/routes/archive'
+import { Route as ActionsRouteImport } from './../app/routes/actions'
+import { Route as IndexRouteImport } from './../app/routes/index'
+import { Route as SessionIdRouteImport } from './../app/routes/session.$id'
+import { Route as ProjectsProjectIdRouteImport } from './../app/routes/projects.$projectId'
+import { Route as ProjectSlugRouteImport } from './../app/routes/project.$slug'
+import { Route as OauthConsentRouteImport } from './../app/routes/oauth/consent'
+import { Route as KnowledgeSearchRouteImport } from './../app/routes/knowledge.search'
+import { Route as KnowledgeGraphRouteImport } from './../app/routes/knowledge.graph'
+import { Route as ProjectSlugTimelineRouteImport } from './../app/routes/project.$slug.timeline'
+import { Route as ProjectSlugTasksRouteImport } from './../app/routes/project.$slug.tasks'
+import { Route as ProjectSlugSettingsRouteImport } from './../app/routes/project.$slug.settings'
+import { Route as ProjectSlugRisksRouteImport } from './../app/routes/project.$slug.risks'
+import { Route as ProjectSlugKnowledgeRouteImport } from './../app/routes/project.$slug.knowledge'
+import { Route as ProjectSlugDependenciesRouteImport } from './../app/routes/project.$slug.dependencies'
+import { Route as ProjectSlugAutomationRouteImport } from './../app/routes/project.$slug.automation'
 
 const WorkRoute = WorkRouteImport.update({
   id: '/work',
   path: '/work',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const TimelineRoute = TimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const NoteRoute = NoteRouteImport.update({
   id: '/note',
   path: '/note',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const KnowledgeRoute = KnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const KanbanRoute = KanbanRouteImport.update({
   id: '/kanban',
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const HueyRoute = HueyRouteImport.update({
   id: '/huey',
   path: '/huey',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const GraphRoute = GraphRouteImport.update({
   id: '/graph',
   path: '/graph',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const GoalsRoute = GoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const CodStatusRoute = CodStatusRouteImport.update({
   id: '/cod-status',
   path: '/cod-status',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const BubbleRoute = BubbleRouteImport.update({
   id: '/bubble',
   path: '/bubble',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AvatarRoute = AvatarRouteImport.update({
   id: '/avatar',
   path: '/avatar',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AutomationRoute = AutomationRouteImport.update({
   id: '/automation',
   path: '/automation',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ArchiveRoute = ArchiveRouteImport.update({
   id: '/archive',
   path: '/archive',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ActionsRoute = ActionsRouteImport.update({
   id: '/actions',
   path: '/actions',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SessionIdRoute = SessionIdRouteImport.update({
   id: '/session/$id',
   path: '/session/$id',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/$projectId',
   path: '/$projectId',
   getParentRoute: () => ProjectsRoute,
-} as any);
+} as any)
 const ProjectSlugRoute = ProjectSlugRouteImport.update({
   id: '/project/$slug',
   path: '/project/$slug',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const OauthConsentRoute = OauthConsentRouteImport.update({
   id: '/oauth/consent',
   path: '/oauth/consent',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const KnowledgeSearchRoute = KnowledgeSearchRouteImport.update({
   id: '/search',
   path: '/search',
   getParentRoute: () => KnowledgeRoute,
-} as any);
+} as any)
 const KnowledgeGraphRoute = KnowledgeGraphRouteImport.update({
   id: '/graph',
   path: '/graph',
   getParentRoute: () => KnowledgeRoute,
-} as any);
+} as any)
 const ProjectSlugTimelineRoute = ProjectSlugTimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugTasksRoute = ProjectSlugTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugSettingsRoute = ProjectSlugSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugRisksRoute = ProjectSlugRisksRouteImport.update({
   id: '/risks',
   path: '/risks',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugKnowledgeRoute = ProjectSlugKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugDependenciesRoute = ProjectSlugDependenciesRouteImport.update({
   id: '/dependencies',
   path: '/dependencies',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 const ProjectSlugAutomationRoute = ProjectSlugAutomationRouteImport.update({
   id: '/automation',
   path: '/automation',
   getParentRoute: () => ProjectSlugRoute,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/actions': typeof ActionsRoute;
-  '/archive': typeof ArchiveRoute;
-  '/automation': typeof AutomationRoute;
-  '/avatar': typeof AvatarRoute;
-  '/bubble': typeof BubbleRoute;
-  '/cod-status': typeof CodStatusRoute;
-  '/goals': typeof GoalsRoute;
-  '/graph': typeof GraphRoute;
-  '/health': typeof HealthRoute;
-  '/huey': typeof HueyRoute;
-  '/inbox': typeof InboxRoute;
-  '/kanban': typeof KanbanRoute;
-  '/knowledge': typeof KnowledgeRouteWithChildren;
-  '/login': typeof LoginRoute;
-  '/note': typeof NoteRoute;
-  '/portfolio': typeof PortfolioRoute;
-  '/projects': typeof ProjectsRouteWithChildren;
-  '/settings': typeof SettingsRoute;
-  '/timeline': typeof TimelineRoute;
-  '/work': typeof WorkRoute;
-  '/knowledge/graph': typeof KnowledgeGraphRoute;
-  '/knowledge/search': typeof KnowledgeSearchRoute;
-  '/oauth/consent': typeof OauthConsentRoute;
-  '/project/$slug': typeof ProjectSlugRouteWithChildren;
-  '/projects/$projectId': typeof ProjectsProjectIdRoute;
-  '/session/$id': typeof SessionIdRoute;
-  '/project/$slug/automation': typeof ProjectSlugAutomationRoute;
-  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute;
-  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute;
-  '/project/$slug/risks': typeof ProjectSlugRisksRoute;
-  '/project/$slug/settings': typeof ProjectSlugSettingsRoute;
-  '/project/$slug/tasks': typeof ProjectSlugTasksRoute;
-  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute;
+  '/': typeof IndexRoute
+  '/actions': typeof ActionsRoute
+  '/archive': typeof ArchiveRoute
+  '/automation': typeof AutomationRoute
+  '/avatar': typeof AvatarRoute
+  '/bubble': typeof BubbleRoute
+  '/cod-status': typeof CodStatusRoute
+  '/goals': typeof GoalsRoute
+  '/graph': typeof GraphRoute
+  '/health': typeof HealthRoute
+  '/huey': typeof HueyRoute
+  '/inbox': typeof InboxRoute
+  '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
+  '/login': typeof LoginRoute
+  '/note': typeof NoteRoute
+  '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/work': typeof WorkRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/project/$slug': typeof ProjectSlugRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
+  '/project/$slug/automation': typeof ProjectSlugAutomationRoute
+  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute
+  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute
+  '/project/$slug/risks': typeof ProjectSlugRisksRoute
+  '/project/$slug/settings': typeof ProjectSlugSettingsRoute
+  '/project/$slug/tasks': typeof ProjectSlugTasksRoute
+  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/actions': typeof ActionsRoute;
-  '/archive': typeof ArchiveRoute;
-  '/automation': typeof AutomationRoute;
-  '/avatar': typeof AvatarRoute;
-  '/bubble': typeof BubbleRoute;
-  '/cod-status': typeof CodStatusRoute;
-  '/goals': typeof GoalsRoute;
-  '/graph': typeof GraphRoute;
-  '/health': typeof HealthRoute;
-  '/huey': typeof HueyRoute;
-  '/inbox': typeof InboxRoute;
-  '/kanban': typeof KanbanRoute;
-  '/knowledge': typeof KnowledgeRouteWithChildren;
-  '/login': typeof LoginRoute;
-  '/note': typeof NoteRoute;
-  '/portfolio': typeof PortfolioRoute;
-  '/projects': typeof ProjectsRouteWithChildren;
-  '/settings': typeof SettingsRoute;
-  '/timeline': typeof TimelineRoute;
-  '/work': typeof WorkRoute;
-  '/knowledge/graph': typeof KnowledgeGraphRoute;
-  '/knowledge/search': typeof KnowledgeSearchRoute;
-  '/oauth/consent': typeof OauthConsentRoute;
-  '/project/$slug': typeof ProjectSlugRouteWithChildren;
-  '/projects/$projectId': typeof ProjectsProjectIdRoute;
-  '/session/$id': typeof SessionIdRoute;
-  '/project/$slug/automation': typeof ProjectSlugAutomationRoute;
-  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute;
-  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute;
-  '/project/$slug/risks': typeof ProjectSlugRisksRoute;
-  '/project/$slug/settings': typeof ProjectSlugSettingsRoute;
-  '/project/$slug/tasks': typeof ProjectSlugTasksRoute;
-  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute;
+  '/': typeof IndexRoute
+  '/actions': typeof ActionsRoute
+  '/archive': typeof ArchiveRoute
+  '/automation': typeof AutomationRoute
+  '/avatar': typeof AvatarRoute
+  '/bubble': typeof BubbleRoute
+  '/cod-status': typeof CodStatusRoute
+  '/goals': typeof GoalsRoute
+  '/graph': typeof GraphRoute
+  '/health': typeof HealthRoute
+  '/huey': typeof HueyRoute
+  '/inbox': typeof InboxRoute
+  '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
+  '/login': typeof LoginRoute
+  '/note': typeof NoteRoute
+  '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/work': typeof WorkRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/project/$slug': typeof ProjectSlugRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
+  '/project/$slug/automation': typeof ProjectSlugAutomationRoute
+  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute
+  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute
+  '/project/$slug/risks': typeof ProjectSlugRisksRoute
+  '/project/$slug/settings': typeof ProjectSlugSettingsRoute
+  '/project/$slug/tasks': typeof ProjectSlugTasksRoute
+  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/actions': typeof ActionsRoute;
-  '/archive': typeof ArchiveRoute;
-  '/automation': typeof AutomationRoute;
-  '/avatar': typeof AvatarRoute;
-  '/bubble': typeof BubbleRoute;
-  '/cod-status': typeof CodStatusRoute;
-  '/goals': typeof GoalsRoute;
-  '/graph': typeof GraphRoute;
-  '/health': typeof HealthRoute;
-  '/huey': typeof HueyRoute;
-  '/inbox': typeof InboxRoute;
-  '/kanban': typeof KanbanRoute;
-  '/knowledge': typeof KnowledgeRouteWithChildren;
-  '/login': typeof LoginRoute;
-  '/note': typeof NoteRoute;
-  '/portfolio': typeof PortfolioRoute;
-  '/projects': typeof ProjectsRouteWithChildren;
-  '/settings': typeof SettingsRoute;
-  '/timeline': typeof TimelineRoute;
-  '/work': typeof WorkRoute;
-  '/knowledge/graph': typeof KnowledgeGraphRoute;
-  '/knowledge/search': typeof KnowledgeSearchRoute;
-  '/oauth/consent': typeof OauthConsentRoute;
-  '/project/$slug': typeof ProjectSlugRouteWithChildren;
-  '/projects/$projectId': typeof ProjectsProjectIdRoute;
-  '/session/$id': typeof SessionIdRoute;
-  '/project/$slug/automation': typeof ProjectSlugAutomationRoute;
-  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute;
-  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute;
-  '/project/$slug/risks': typeof ProjectSlugRisksRoute;
-  '/project/$slug/settings': typeof ProjectSlugSettingsRoute;
-  '/project/$slug/tasks': typeof ProjectSlugTasksRoute;
-  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/actions': typeof ActionsRoute
+  '/archive': typeof ArchiveRoute
+  '/automation': typeof AutomationRoute
+  '/avatar': typeof AvatarRoute
+  '/bubble': typeof BubbleRoute
+  '/cod-status': typeof CodStatusRoute
+  '/goals': typeof GoalsRoute
+  '/graph': typeof GraphRoute
+  '/health': typeof HealthRoute
+  '/huey': typeof HueyRoute
+  '/inbox': typeof InboxRoute
+  '/kanban': typeof KanbanRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
+  '/login': typeof LoginRoute
+  '/note': typeof NoteRoute
+  '/portfolio': typeof PortfolioRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/work': typeof WorkRoute
+  '/knowledge/graph': typeof KnowledgeGraphRoute
+  '/knowledge/search': typeof KnowledgeSearchRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/project/$slug': typeof ProjectSlugRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/session/$id': typeof SessionIdRoute
+  '/project/$slug/automation': typeof ProjectSlugAutomationRoute
+  '/project/$slug/dependencies': typeof ProjectSlugDependenciesRoute
+  '/project/$slug/knowledge': typeof ProjectSlugKnowledgeRoute
+  '/project/$slug/risks': typeof ProjectSlugRisksRoute
+  '/project/$slug/settings': typeof ProjectSlugSettingsRoute
+  '/project/$slug/tasks': typeof ProjectSlugTasksRoute
+  '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/actions'
@@ -360,8 +360,8 @@ export interface FileRouteTypes {
     | '/project/$slug/risks'
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
-    | '/project/$slug/timeline';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/project/$slug/timeline'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/actions'
@@ -396,7 +396,7 @@ export interface FileRouteTypes {
     | '/project/$slug/risks'
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
-    | '/project/$slug/timeline';
+    | '/project/$slug/timeline'
   id:
     | '__root__'
     | '/'
@@ -432,313 +432,313 @@ export interface FileRouteTypes {
     | '/project/$slug/risks'
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
-    | '/project/$slug/timeline';
-  fileRoutesById: FileRoutesById;
+    | '/project/$slug/timeline'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  ActionsRoute: typeof ActionsRoute;
-  ArchiveRoute: typeof ArchiveRoute;
-  AutomationRoute: typeof AutomationRoute;
-  AvatarRoute: typeof AvatarRoute;
-  BubbleRoute: typeof BubbleRoute;
-  CodStatusRoute: typeof CodStatusRoute;
-  GoalsRoute: typeof GoalsRoute;
-  GraphRoute: typeof GraphRoute;
-  HealthRoute: typeof HealthRoute;
-  HueyRoute: typeof HueyRoute;
-  InboxRoute: typeof InboxRoute;
-  KanbanRoute: typeof KanbanRoute;
-  KnowledgeRoute: typeof KnowledgeRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
-  NoteRoute: typeof NoteRoute;
-  PortfolioRoute: typeof PortfolioRoute;
-  ProjectsRoute: typeof ProjectsRouteWithChildren;
-  SettingsRoute: typeof SettingsRoute;
-  TimelineRoute: typeof TimelineRoute;
-  WorkRoute: typeof WorkRoute;
-  OauthConsentRoute: typeof OauthConsentRoute;
-  ProjectSlugRoute: typeof ProjectSlugRouteWithChildren;
-  SessionIdRoute: typeof SessionIdRoute;
+  IndexRoute: typeof IndexRoute
+  ActionsRoute: typeof ActionsRoute
+  ArchiveRoute: typeof ArchiveRoute
+  AutomationRoute: typeof AutomationRoute
+  AvatarRoute: typeof AvatarRoute
+  BubbleRoute: typeof BubbleRoute
+  CodStatusRoute: typeof CodStatusRoute
+  GoalsRoute: typeof GoalsRoute
+  GraphRoute: typeof GraphRoute
+  HealthRoute: typeof HealthRoute
+  HueyRoute: typeof HueyRoute
+  InboxRoute: typeof InboxRoute
+  KanbanRoute: typeof KanbanRoute
+  KnowledgeRoute: typeof KnowledgeRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  NoteRoute: typeof NoteRoute
+  PortfolioRoute: typeof PortfolioRoute
+  ProjectsRoute: typeof ProjectsRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
+  TimelineRoute: typeof TimelineRoute
+  WorkRoute: typeof WorkRoute
+  OauthConsentRoute: typeof OauthConsentRoute
+  ProjectSlugRoute: typeof ProjectSlugRouteWithChildren
+  SessionIdRoute: typeof SessionIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/work': {
-      id: '/work';
-      path: '/work';
-      fullPath: '/work';
-      preLoaderRoute: typeof WorkRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/work'
+      path: '/work'
+      fullPath: '/work'
+      preLoaderRoute: typeof WorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/timeline': {
-      id: '/timeline';
-      path: '/timeline';
-      fullPath: '/timeline';
-      preLoaderRoute: typeof TimelineRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
-      id: '/settings';
-      path: '/settings';
-      fullPath: '/settings';
-      preLoaderRoute: typeof SettingsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects': {
-      id: '/projects';
-      path: '/projects';
-      fullPath: '/projects';
-      preLoaderRoute: typeof ProjectsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portfolio': {
-      id: '/portfolio';
-      path: '/portfolio';
-      fullPath: '/portfolio';
-      preLoaderRoute: typeof PortfolioRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/note': {
-      id: '/note';
-      path: '/note';
-      fullPath: '/note';
-      preLoaderRoute: typeof NoteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/note'
+      path: '/note'
+      fullPath: '/note'
+      preLoaderRoute: typeof NoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
-      id: '/login';
-      path: '/login';
-      fullPath: '/login';
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/knowledge': {
-      id: '/knowledge';
-      path: '/knowledge';
-      fullPath: '/knowledge';
-      preLoaderRoute: typeof KnowledgeRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof KnowledgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kanban': {
-      id: '/kanban';
-      path: '/kanban';
-      fullPath: '/kanban';
-      preLoaderRoute: typeof KanbanRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inbox': {
-      id: '/inbox';
-      path: '/inbox';
-      fullPath: '/inbox';
-      preLoaderRoute: typeof InboxRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/huey': {
-      id: '/huey';
-      path: '/huey';
-      fullPath: '/huey';
-      preLoaderRoute: typeof HueyRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/huey'
+      path: '/huey'
+      fullPath: '/huey'
+      preLoaderRoute: typeof HueyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/health': {
-      id: '/health';
-      path: '/health';
-      fullPath: '/health';
-      preLoaderRoute: typeof HealthRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/graph': {
-      id: '/graph';
-      path: '/graph';
-      fullPath: '/graph';
-      preLoaderRoute: typeof GraphRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/graph'
+      path: '/graph'
+      fullPath: '/graph'
+      preLoaderRoute: typeof GraphRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/goals': {
-      id: '/goals';
-      path: '/goals';
-      fullPath: '/goals';
-      preLoaderRoute: typeof GoalsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cod-status': {
-      id: '/cod-status';
-      path: '/cod-status';
-      fullPath: '/cod-status';
-      preLoaderRoute: typeof CodStatusRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/cod-status'
+      path: '/cod-status'
+      fullPath: '/cod-status'
+      preLoaderRoute: typeof CodStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bubble': {
-      id: '/bubble';
-      path: '/bubble';
-      fullPath: '/bubble';
-      preLoaderRoute: typeof BubbleRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/bubble'
+      path: '/bubble'
+      fullPath: '/bubble'
+      preLoaderRoute: typeof BubbleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/avatar': {
-      id: '/avatar';
-      path: '/avatar';
-      fullPath: '/avatar';
-      preLoaderRoute: typeof AvatarRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/avatar'
+      path: '/avatar'
+      fullPath: '/avatar'
+      preLoaderRoute: typeof AvatarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/automation': {
-      id: '/automation';
-      path: '/automation';
-      fullPath: '/automation';
-      preLoaderRoute: typeof AutomationRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/archive': {
-      id: '/archive';
-      path: '/archive';
-      fullPath: '/archive';
-      preLoaderRoute: typeof ArchiveRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/archive'
+      path: '/archive'
+      fullPath: '/archive'
+      preLoaderRoute: typeof ArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/actions': {
-      id: '/actions';
-      path: '/actions';
-      fullPath: '/actions';
-      preLoaderRoute: typeof ActionsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/actions'
+      path: '/actions'
+      fullPath: '/actions'
+      preLoaderRoute: typeof ActionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$id': {
-      id: '/session/$id';
-      path: '/session/$id';
-      fullPath: '/session/$id';
-      preLoaderRoute: typeof SessionIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/session/$id'
+      path: '/session/$id'
+      fullPath: '/session/$id'
+      preLoaderRoute: typeof SessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId': {
-      id: '/projects/$projectId';
-      path: '/$projectId';
-      fullPath: '/projects/$projectId';
-      preLoaderRoute: typeof ProjectsProjectIdRouteImport;
-      parentRoute: typeof ProjectsRoute;
-    };
+      id: '/projects/$projectId'
+      path: '/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof ProjectsProjectIdRouteImport
+      parentRoute: typeof ProjectsRoute
+    }
     '/project/$slug': {
-      id: '/project/$slug';
-      path: '/project/$slug';
-      fullPath: '/project/$slug';
-      preLoaderRoute: typeof ProjectSlugRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/project/$slug'
+      path: '/project/$slug'
+      fullPath: '/project/$slug'
+      preLoaderRoute: typeof ProjectSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oauth/consent': {
-      id: '/oauth/consent';
-      path: '/oauth/consent';
-      fullPath: '/oauth/consent';
-      preLoaderRoute: typeof OauthConsentRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/knowledge/search': {
-      id: '/knowledge/search';
-      path: '/search';
-      fullPath: '/knowledge/search';
-      preLoaderRoute: typeof KnowledgeSearchRouteImport;
-      parentRoute: typeof KnowledgeRoute;
-    };
+      id: '/knowledge/search'
+      path: '/search'
+      fullPath: '/knowledge/search'
+      preLoaderRoute: typeof KnowledgeSearchRouteImport
+      parentRoute: typeof KnowledgeRoute
+    }
     '/knowledge/graph': {
-      id: '/knowledge/graph';
-      path: '/graph';
-      fullPath: '/knowledge/graph';
-      preLoaderRoute: typeof KnowledgeGraphRouteImport;
-      parentRoute: typeof KnowledgeRoute;
-    };
+      id: '/knowledge/graph'
+      path: '/graph'
+      fullPath: '/knowledge/graph'
+      preLoaderRoute: typeof KnowledgeGraphRouteImport
+      parentRoute: typeof KnowledgeRoute
+    }
     '/project/$slug/timeline': {
-      id: '/project/$slug/timeline';
-      path: '/timeline';
-      fullPath: '/project/$slug/timeline';
-      preLoaderRoute: typeof ProjectSlugTimelineRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/timeline'
+      path: '/timeline'
+      fullPath: '/project/$slug/timeline'
+      preLoaderRoute: typeof ProjectSlugTimelineRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/tasks': {
-      id: '/project/$slug/tasks';
-      path: '/tasks';
-      fullPath: '/project/$slug/tasks';
-      preLoaderRoute: typeof ProjectSlugTasksRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/tasks'
+      path: '/tasks'
+      fullPath: '/project/$slug/tasks'
+      preLoaderRoute: typeof ProjectSlugTasksRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/settings': {
-      id: '/project/$slug/settings';
-      path: '/settings';
-      fullPath: '/project/$slug/settings';
-      preLoaderRoute: typeof ProjectSlugSettingsRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/settings'
+      path: '/settings'
+      fullPath: '/project/$slug/settings'
+      preLoaderRoute: typeof ProjectSlugSettingsRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/risks': {
-      id: '/project/$slug/risks';
-      path: '/risks';
-      fullPath: '/project/$slug/risks';
-      preLoaderRoute: typeof ProjectSlugRisksRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/risks'
+      path: '/risks'
+      fullPath: '/project/$slug/risks'
+      preLoaderRoute: typeof ProjectSlugRisksRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/knowledge': {
-      id: '/project/$slug/knowledge';
-      path: '/knowledge';
-      fullPath: '/project/$slug/knowledge';
-      preLoaderRoute: typeof ProjectSlugKnowledgeRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/knowledge'
+      path: '/knowledge'
+      fullPath: '/project/$slug/knowledge'
+      preLoaderRoute: typeof ProjectSlugKnowledgeRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/dependencies': {
-      id: '/project/$slug/dependencies';
-      path: '/dependencies';
-      fullPath: '/project/$slug/dependencies';
-      preLoaderRoute: typeof ProjectSlugDependenciesRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/dependencies'
+      path: '/dependencies'
+      fullPath: '/project/$slug/dependencies'
+      preLoaderRoute: typeof ProjectSlugDependenciesRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
     '/project/$slug/automation': {
-      id: '/project/$slug/automation';
-      path: '/automation';
-      fullPath: '/project/$slug/automation';
-      preLoaderRoute: typeof ProjectSlugAutomationRouteImport;
-      parentRoute: typeof ProjectSlugRoute;
-    };
+      id: '/project/$slug/automation'
+      path: '/automation'
+      fullPath: '/project/$slug/automation'
+      preLoaderRoute: typeof ProjectSlugAutomationRouteImport
+      parentRoute: typeof ProjectSlugRoute
+    }
   }
 }
 
 interface KnowledgeRouteChildren {
-  KnowledgeGraphRoute: typeof KnowledgeGraphRoute;
-  KnowledgeSearchRoute: typeof KnowledgeSearchRoute;
+  KnowledgeGraphRoute: typeof KnowledgeGraphRoute
+  KnowledgeSearchRoute: typeof KnowledgeSearchRoute
 }
 
 const KnowledgeRouteChildren: KnowledgeRouteChildren = {
   KnowledgeGraphRoute: KnowledgeGraphRoute,
   KnowledgeSearchRoute: KnowledgeSearchRoute,
-};
+}
 
 const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
-  KnowledgeRouteChildren
-);
+  KnowledgeRouteChildren,
+)
 
 interface ProjectsRouteChildren {
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute;
+  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
 }
 
 const ProjectsRouteChildren: ProjectsRouteChildren = {
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
-};
+}
 
 const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
-  ProjectsRouteChildren
-);
+  ProjectsRouteChildren,
+)
 
 interface ProjectSlugRouteChildren {
-  ProjectSlugAutomationRoute: typeof ProjectSlugAutomationRoute;
-  ProjectSlugDependenciesRoute: typeof ProjectSlugDependenciesRoute;
-  ProjectSlugKnowledgeRoute: typeof ProjectSlugKnowledgeRoute;
-  ProjectSlugRisksRoute: typeof ProjectSlugRisksRoute;
-  ProjectSlugSettingsRoute: typeof ProjectSlugSettingsRoute;
-  ProjectSlugTasksRoute: typeof ProjectSlugTasksRoute;
-  ProjectSlugTimelineRoute: typeof ProjectSlugTimelineRoute;
+  ProjectSlugAutomationRoute: typeof ProjectSlugAutomationRoute
+  ProjectSlugDependenciesRoute: typeof ProjectSlugDependenciesRoute
+  ProjectSlugKnowledgeRoute: typeof ProjectSlugKnowledgeRoute
+  ProjectSlugRisksRoute: typeof ProjectSlugRisksRoute
+  ProjectSlugSettingsRoute: typeof ProjectSlugSettingsRoute
+  ProjectSlugTasksRoute: typeof ProjectSlugTasksRoute
+  ProjectSlugTimelineRoute: typeof ProjectSlugTimelineRoute
 }
 
 const ProjectSlugRouteChildren: ProjectSlugRouteChildren = {
@@ -749,11 +749,11 @@ const ProjectSlugRouteChildren: ProjectSlugRouteChildren = {
   ProjectSlugSettingsRoute: ProjectSlugSettingsRoute,
   ProjectSlugTasksRoute: ProjectSlugTasksRoute,
   ProjectSlugTimelineRoute: ProjectSlugTimelineRoute,
-};
+}
 
 const ProjectSlugRouteWithChildren = ProjectSlugRoute._addFileChildren(
-  ProjectSlugRouteChildren
-);
+  ProjectSlugRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -780,17 +780,17 @@ const rootRouteChildren: RootRouteChildren = {
   OauthConsentRoute: OauthConsentRoute,
   ProjectSlugRoute: ProjectSlugRouteWithChildren,
   SessionIdRoute: SessionIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { createRouter } from './router.tsx';
-import type { startInstance } from './start.ts';
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof createRouter>>;
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }
