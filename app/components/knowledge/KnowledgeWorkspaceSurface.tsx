@@ -1,48 +1,55 @@
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useReducer, useState } from 'react';
 
-import { apiFetch } from '../../../src/utils/api'
-import KnowledgeNoteCard from '../../../src/components/KnowledgeNoteCard'
-import KnowledgeHealthBanner, { type GraphHealthReport } from '../../../src/components/KnowledgeHealthBanner'
-import { SkeletonCardGrid } from '../../../src/components/Skeletons'
-import { KnowledgeWorkspacePane } from './KnowledgeWorkspacePane'
+import { apiFetch } from '../../../src/utils/api';
+import KnowledgeNoteCard from '../../../src/components/KnowledgeNoteCard';
+import KnowledgeHealthBanner, {
+  type GraphHealthReport,
+} from '../../../src/components/KnowledgeHealthBanner';
+import { SkeletonCardGrid } from '../../../src/components/Skeletons';
+import { KnowledgeWorkspacePane } from './KnowledgeWorkspacePane';
+import { useKnowledgeSurface } from '../../lib/viewer-adapter';
 
 type NoteRef = {
-  path: string
-  title: string
-  type?: string
-  audience?: string | null
-  domain?: string
-  tags?: string[]
-  status?: string
-}
+  path: string;
+  title: string;
+  type?: string;
+  audience?: string | null;
+  domain?: string;
+  tags?: string[];
+  status?: string;
+};
 
-type AudienceData = { audience: string; notes: NoteRef[] }
+type AudienceData = { audience: string; notes: NoteRef[] };
 
 interface KnowledgeWorkspaceSurfaceProps {
-  noteId?: string
-  mode?: 'read' | 'edit'
-  projectId?: string
-  templateId?: string
-  memoryTab?: string
-  workspaceSearch?: Record<string, unknown>
-  workspaceTo?: string
-  workspaceParams?: Record<string, string>
+  noteId?: string;
+  mode?: 'read' | 'edit';
+  projectId?: string;
+  templateId?: string;
+  memoryTab?: string;
+  workspaceSearch?: Record<string, unknown>;
+  workspaceTo?: string;
+  workspaceParams?: Record<string, string>;
 }
 
 function getAllDomains(notes: NoteRef[]): string[] {
-  const domains = new Set<string>()
+  const domains = new Set<string>();
   for (const note of notes) {
-    if (note.domain) domains.add(note.domain)
+    if (note.domain) domains.add(note.domain);
   }
-  return Array.from(domains).sort()
+  return Array.from(domains).sort();
 }
 
-function filterNotes(notes: NoteRef[], domain: string, maturity: string): NoteRef[] {
+function filterNotes(
+  notes: NoteRef[],
+  domain: string,
+  maturity: string
+): NoteRef[] {
   return notes.filter((n) => {
-    if (domain && n.domain !== domain) return false
-    if (maturity && n.status !== maturity) return false
-    return true
-  })
+    if (domain && n.domain !== domain) return false;
+    if (maturity && n.status !== maturity) return false;
+    return true;
+  });
 }
 
 function AudienceColumn({
@@ -54,17 +61,19 @@ function AudienceColumn({
   workspaceTo,
   workspaceParams,
 }: {
-  audience: string
-  notes: NoteRef[]
-  loading: boolean
-  selectedNoteId?: string
-  workspaceSearch?: Record<string, unknown>
-  workspaceTo?: string
-  workspaceParams?: Record<string, string>
+  audience: string;
+  notes: NoteRef[];
+  loading: boolean;
+  selectedNoteId?: string;
+  workspaceSearch?: Record<string, unknown>;
+  workspaceTo?: string;
+  workspaceParams?: Record<string, string>;
 }) {
-  if (loading) return <SkeletonCardGrid count={3} />
+  if (loading) return <SkeletonCardGrid count={3} />;
   if (notes.length === 0) {
-    return <p className="knowledge-col__empty">No {audience} knowledge notes yet.</p>
+    return (
+      <p className="knowledge-col__empty">No {audience} knowledge notes yet.</p>
+    );
   }
   return (
     <div className="knowledge-col__notes">
@@ -80,7 +89,7 @@ function AudienceColumn({
         />
       ))}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -88,22 +97,29 @@ function AudienceColumn({
 // ---------------------------------------------------------------------------
 
 type KnowledgeState = {
-  health: GraphHealthReport | null
-  healthLoading: boolean
-  audienceData: Record<string, NoteRef[]>
-  notesLoading: boolean
-}
+  health: GraphHealthReport | null;
+  healthLoading: boolean;
+  audienceData: Record<string, NoteRef[]>;
+  notesLoading: boolean;
+};
 
 type KnowledgeAction =
   | { type: 'HEALTH_LOADED'; health: GraphHealthReport | null }
-  | { type: 'NOTES_LOADED'; audienceData: Record<string, NoteRef[]> }
+  | { type: 'NOTES_LOADED'; audienceData: Record<string, NoteRef[]> };
 
-function knowledgeReducer(state: KnowledgeState, action: KnowledgeAction): KnowledgeState {
+function knowledgeReducer(
+  state: KnowledgeState,
+  action: KnowledgeAction
+): KnowledgeState {
   switch (action.type) {
     case 'HEALTH_LOADED':
-      return { ...state, health: action.health, healthLoading: false }
+      return { ...state, health: action.health, healthLoading: false };
     case 'NOTES_LOADED':
-      return { ...state, audienceData: action.audienceData, notesLoading: false }
+      return {
+        ...state,
+        audienceData: action.audienceData,
+        notesLoading: false,
+      };
   }
 }
 
@@ -117,43 +133,71 @@ export function KnowledgeWorkspaceSurface({
   workspaceTo,
   workspaceParams,
 }: KnowledgeWorkspaceSurfaceProps) {
-  const [{ health, healthLoading, audienceData, notesLoading }, dispatch] = useReducer(
-    knowledgeReducer,
-    { health: null, healthLoading: true, audienceData: { human: [], agent: [], bubble: [] }, notesLoading: true },
-  )
-  const [domainFilter, setDomainFilter] = useState('')
-  const [maturityFilter, setMaturityFilter] = useState('')
+  const [{ health, healthLoading, audienceData, notesLoading }, dispatch] =
+    useReducer(knowledgeReducer, {
+      health: null,
+      healthLoading: true,
+      audienceData: { human: [], agent: [], bubble: [] },
+      notesLoading: true,
+    });
+  const [domainFilter, setDomainFilter] = useState('');
+  const [maturityFilter, setMaturityFilter] = useState('');
+
+  const { data: adapterData, isLoading: adapterLoading } =
+    useKnowledgeSurface();
 
   useEffect(() => {
     apiFetch('/api/knowledge/health')
       .then((r) => r.json())
-      .then((data) => dispatch({ type: 'HEALTH_LOADED', health: data as GraphHealthReport }))
-      .catch(() => dispatch({ type: 'HEALTH_LOADED', health: null }))
+      .then((data) =>
+        dispatch({ type: 'HEALTH_LOADED', health: data as GraphHealthReport })
+      )
+      .catch(() => dispatch({ type: 'HEALTH_LOADED', health: null }));
 
-    const audiences = ['human', 'agent', 'bubble'] as const
+    const audiences = ['human', 'agent', 'bubble'] as const;
     Promise.all(
       audiences.map((a) =>
         apiFetch(`/api/knowledge/by-audience?audience=${a}`)
           .then((r) => r.json())
           .then((data) => data as AudienceData)
-          .catch(() => ({ audience: a, notes: [] } as AudienceData))
+          .catch(() => ({ audience: a, notes: [] }) as AudienceData)
       )
     ).then((results) => {
-      const map: Record<string, NoteRef[]> = {}
-      for (const r of results) map[r.audience] = r.notes
-      dispatch({ type: 'NOTES_LOADED', audienceData: map })
-    })
-  }, [])
+      const map: Record<string, NoteRef[]> = {};
+      for (const r of results) map[r.audience] = r.notes;
+      dispatch({ type: 'NOTES_LOADED', audienceData: map });
+    });
+  }, []);
 
-  const allNotes = [...(audienceData.human ?? []), ...(audienceData.agent ?? []), ...(audienceData.bubble ?? [])]
-  const allDomains = getAllDomains(allNotes)
+  const allNotes = [
+    ...(audienceData.human ?? []),
+    ...(audienceData.agent ?? []),
+    ...(audienceData.bubble ?? []),
+  ];
+  const allDomains = getAllDomains(allNotes);
 
-  const filteredHuman = filterNotes(audienceData.human ?? [], domainFilter, maturityFilter)
-  const filteredAgent = filterNotes(audienceData.agent ?? [], domainFilter, maturityFilter)
-  const filteredBubble = filterNotes(audienceData.bubble ?? [], domainFilter, maturityFilter)
-  const allVisibleNotes = [...filteredHuman, ...filteredAgent, ...filteredBubble]
-  const workspaceNoteId = noteId ?? allVisibleNotes[0]?.path
-  const targetTo = workspaceTo ?? '/knowledge'
+  const filteredHuman = filterNotes(
+    audienceData.human ?? [],
+    domainFilter,
+    maturityFilter
+  );
+  const filteredAgent = filterNotes(
+    audienceData.agent ?? [],
+    domainFilter,
+    maturityFilter
+  );
+  const filteredBubble = filterNotes(
+    audienceData.bubble ?? [],
+    domainFilter,
+    maturityFilter
+  );
+  const allVisibleNotes = [
+    ...filteredHuman,
+    ...filteredAgent,
+    ...filteredBubble,
+  ];
+  const workspaceNoteId = noteId ?? allVisibleNotes[0]?.path;
+  const targetTo = workspaceTo ?? '/knowledge';
 
   return (
     <>
@@ -170,7 +214,9 @@ export function KnowledgeWorkspaceSurface({
             >
               <option value="">All domains</option>
               {allDomains.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
 
@@ -236,6 +282,63 @@ export function KnowledgeWorkspaceSurface({
           workspaceSearch={workspaceSearch}
         />
       </div>
+
+      {/* ── Adapter context rail ──────────────────────────────────── */}
+      {adapterLoading ? (
+        <aside
+          className="knowledge-adapter-rail"
+          data-testid="knowledge-adapter-loading"
+        >
+          <p className="text-sm text-neutral-400">Loading adapter context…</p>
+        </aside>
+      ) : adapterData ? (
+        <aside className="knowledge-adapter-rail space-y-4 mt-4">
+          {adapterData.selectedContext.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                Active context
+              </h3>
+              <ul className="space-y-1">
+                {adapterData.selectedContext.map((ctx) => (
+                  <li key={ctx.id} className="text-sm text-neutral-700">
+                    {ctx.title}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {adapterData.suggestedTemplates.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                Suggested templates
+              </h3>
+              <ul className="space-y-1">
+                {adapterData.suggestedTemplates.map((tmpl) => (
+                  <li key={tmpl.id} className="text-sm text-neutral-700">
+                    {tmpl.title}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {adapterData.suggestedActions.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                Suggested actions
+              </h3>
+              <ul className="space-y-1">
+                {adapterData.suggestedActions.map((action, idx) => (
+                  <li key={idx} className="text-sm text-neutral-700">
+                    {action.label}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </aside>
+      ) : null}
     </>
-  )
+  );
 }
