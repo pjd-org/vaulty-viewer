@@ -25,6 +25,7 @@
     --input: var(--color-input-bg);
     --ring: var(--color-primary);
     --radius: var(--vault-radius);
+    --radius-shadcn: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
