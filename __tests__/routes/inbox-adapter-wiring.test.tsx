@@ -1,25 +1,36 @@
-import React from 'react'
-import { fireEvent, render, screen, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import React from 'react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRouteState = vi.hoisted(() => ({
-  search: { view: 'archive' as 'queue' | 'workbench' | 'archive' | undefined },
-}))
+  search: {
+    view: 'archive' as 'queue' | 'workbench' | 'archive' | undefined,
+    rejectedTab: undefined as 'user' | 'automated' | undefined,
+    selectedId: undefined as string | undefined,
+    severity: undefined as 'high' | 'medium' | 'low' | undefined,
+  },
+}));
 
-const mockNavigate = vi.hoisted(() => vi.fn())
-const mockEnsureQueryData = vi.hoisted(() => vi.fn())
-const mockRefresh = vi.hoisted(() => vi.fn())
-const mockCommitRun = vi.hoisted(() => vi.fn())
-const mockRejectRun = vi.hoisted(() => vi.fn())
-const mockUseInbox = vi.hoisted(() => vi.fn())
-const mockUseInboxSurface = vi.hoisted(() => vi.fn())
+const mockNavigate = vi.hoisted(() => vi.fn());
+const mockEnsureQueryData = vi.hoisted(() => vi.fn());
+const mockRefresh = vi.hoisted(() => vi.fn());
+const mockCommitRun = vi.hoisted(() => vi.fn());
+const mockRejectRun = vi.hoisted(() => vi.fn());
+const mockUseInbox = vi.hoisted(() => vi.fn());
+const mockUseInboxSurface = vi.hoisted(() => vi.fn());
 const mockInboxSurfaceQueryOptions = vi.hoisted(() => ({
   queryKey: ['viewer-adapter', 'inbox-surface'],
   queryFn: vi.fn(),
-}))
+}));
 const mockGetInboxSurfaceQueryOptions = vi.hoisted(() =>
-  vi.fn(() => mockInboxSurfaceQueryOptions),
-)
+  vi.fn(() => mockInboxSurfaceQueryOptions)
+);
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
@@ -27,37 +38,50 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => mockRouteState.search,
   }),
   useNavigate: () => mockNavigate,
-}))
+}));
 
 vi.mock('../../src/hooks/useInbox', () => ({
   useInbox: () => mockUseInbox(),
-}))
+}));
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
   getInboxSurfaceQueryOptions: () => mockGetInboxSurfaceQueryOptions(),
   useInboxSurface: () => mockUseInboxSurface(),
-}))
+}));
 
 vi.mock('../../app/components/layout', () => ({
-  PageFrame: ({
+  WorkspaceScaffold: ({
     title,
     subtitle,
     actions,
-    children,
+    primary,
+    aside,
+    primaryTitle,
+    asideTitle,
   }: {
-    title: string
-    subtitle?: string
-    actions?: React.ReactNode
-    children: React.ReactNode
+    title: string;
+    subtitle?: string;
+    actions?: React.ReactNode;
+    primary: React.ReactNode;
+    aside: React.ReactNode;
+    primaryTitle: string;
+    asideTitle: string;
   }) => (
     <section>
       <h1>{title}</h1>
       {subtitle ? <p>{subtitle}</p> : null}
-      {actions}
-      {children}
+      <div data-testid="inbox-toolbar">{actions}</div>
+      <div data-testid="inbox-primary">
+        <h2>{primaryTitle}</h2>
+        {primary}
+      </div>
+      <aside data-testid="inbox-aside">
+        <h2>{asideTitle}</h2>
+        {aside}
+      </aside>
     </section>
   ),
-}))
+}));
 
 vi.mock('../../app/components/inbox/InboxItemCard', () => ({
   InboxItemCard: ({
@@ -66,10 +90,10 @@ vi.mock('../../app/components/inbox/InboxItemCard', () => ({
     onPromote,
     onReject,
   }: {
-    item: { title: string }
-    onInspect: () => void
-    onPromote?: () => void
-    onReject?: () => void
+    item: { title: string };
+    onInspect: () => void;
+    onPromote?: () => void;
+    onReject?: () => void;
   }) => (
     <article>
       <span>{item.title}</span>
@@ -88,13 +112,13 @@ vi.mock('../../app/components/inbox/InboxItemCard', () => ({
       ) : null}
     </article>
   ),
-}))
+}));
 
 vi.mock('../../app/components/inbox/InboxViewSwitcher', () => ({
   InboxViewSwitcher: ({
     counts,
   }: {
-    counts: { queue: number; workbench: number; archive: number }
+    counts: { queue: number; workbench: number; archive: number };
   }) => (
     <div>
       <span>{`Queue (${counts.queue})`}</span>
@@ -102,22 +126,22 @@ vi.mock('../../app/components/inbox/InboxViewSwitcher', () => ({
       <span>{`Archive (${counts.archive})`}</span>
     </div>
   ),
-}))
+}));
 
 vi.mock('../../app/components/ui', () => ({
   EmptyState: ({
     title,
     description,
   }: {
-    title: string
-    description?: string
+    title: string;
+    description?: string;
   }) => (
     <div>
       <h2>{title}</h2>
       {description ? <p>{description}</p> : null}
     </div>
   ),
-}))
+}));
 
 vi.mock('../../app/lib/display', () => ({
   toInboxItemDisplay: ({
@@ -126,10 +150,10 @@ vi.mock('../../app/lib/display', () => ({
     description,
     status,
   }: {
-    title?: string
-    _run_id?: string
-    description?: string
-    status?: string
+    title?: string;
+    _run_id?: string;
+    description?: string;
+    status?: string;
   }) => ({
     title: title ?? 'Untitled',
     originLabel: 'Mock',
@@ -138,7 +162,7 @@ vi.mock('../../app/lib/display', () => ({
     contextSnippet: description ?? null,
     actions: _run_id ? ['promote'] : [],
   }),
-}))
+}));
 
 vi.mock('../../app/lib/queries/agents', () => ({
   useInboxConverterMutation: () => ({
@@ -148,18 +172,27 @@ vi.mock('../../app/lib/queries/agents', () => ({
     error: null,
     reset: vi.fn(),
   }),
-}))
+}));
 
-import { Route } from '../../app/routes/inbox'
+import { Route } from '../../app/routes/inbox';
 
-const RouteComponent = Route.options.component as React.ComponentType
+const RouteComponent = Route.options.component as React.ComponentType;
 
 describe('inbox adapter wiring', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
-    mockRouteState.search = { view: 'archive' }
-    mockEnsureQueryData.mockReset()
-    mockGetInboxSurfaceQueryOptions.mockClear()
-    mockRejectRun.mockReset()
+    mockRouteState.search = {
+      view: 'archive',
+      rejectedTab: undefined,
+      selectedId: undefined,
+      severity: undefined,
+    };
+    mockEnsureQueryData.mockReset();
+    mockGetInboxSurfaceQueryOptions.mockClear();
+    mockRejectRun.mockReset();
     mockUseInbox.mockReturnValue({
       runs: [],
       workbenchNotes: [],
@@ -173,7 +206,7 @@ describe('inbox adapter wiring', () => {
       rejectRun: mockRejectRun,
       actionState: {},
       pendingConfirmations: {},
-    })
+    });
     mockUseInboxSurface.mockReturnValue({
       data: [
         {
@@ -243,35 +276,36 @@ describe('inbox adapter wiring', () => {
       ],
       isLoading: false,
       error: null,
-    })
-  })
+    });
+  });
 
   it('preloads the inbox adapter surface in the route loader', async () => {
-    expect(typeof Route.options.loader).toBe('function')
+    expect(typeof Route.options.loader).toBe('function');
 
-    await Route.options.loader?.({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (Route.options.loader as any)?.({
       context: {
         queryClient: {
           ensureQueryData: mockEnsureQueryData,
         },
       },
-    } as never)
+    });
 
     expect(mockEnsureQueryData).toHaveBeenCalledWith(
-      mockInboxSurfaceQueryOptions,
-    )
-  })
+      mockInboxSurfaceQueryOptions
+    );
+  });
 
   it('renders archive content and counts from the adapter surface', () => {
-    render(<RouteComponent />)
+    render(<RouteComponent />);
 
-    expect(screen.getByText('Queue (1)')).toBeTruthy()
-    expect(screen.getByText('Workbench (1)')).toBeTruthy()
-    expect(screen.getByText('Archive (2)')).toBeTruthy()
-    expect(screen.getByText('Human rejected proposal')).toBeTruthy()
-    expect(screen.getByText('Policy rejected proposal')).toBeTruthy()
-    expect(screen.queryByText('No rejected notes')).toBeNull()
-  })
+    expect(screen.getByText('Queue (1)')).toBeTruthy();
+    expect(screen.getByText('Workbench (1)')).toBeTruthy();
+    expect(screen.getByText('Archive (2)')).toBeTruthy();
+    expect(screen.getByText('Human rejected proposal')).toBeTruthy();
+    expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
+    expect(screen.queryByText('No rejected notes')).toBeNull();
+  });
 
   it.each([
     ['user', 'Human rejected proposal', 'Policy rejected proposal'],
@@ -279,23 +313,72 @@ describe('inbox adapter wiring', () => {
   ])(
     'keeps %s rejections separate in the archive view',
     (rejectedTab, visibleTitle, hiddenTitle) => {
-      mockRouteState.search = { view: 'archive', rejectedTab: rejectedTab as 'user' | 'automated' }
+      mockRouteState.search = {
+        view: 'archive',
+        rejectedTab: rejectedTab as 'user' | 'automated',
+        selectedId: undefined,
+        severity: undefined,
+      };
 
-      const { container } = render(<RouteComponent />)
-      const view = within(container)
+      const { container } = render(<RouteComponent />);
+      const view = within(container);
 
-      expect(view.getByText(visibleTitle)).toBeTruthy()
-      expect(view.queryByText(hiddenTitle)).toBeNull()
-    },
-  )
+      expect(view.getByText(visibleTitle)).toBeTruthy();
+      expect(view.queryByText(hiddenTitle)).toBeNull();
+    }
+  );
 
   it('keeps reject wired for queue items when the matching run is missing', () => {
-    mockRouteState.search = { view: 'queue' }
+    mockRouteState.search = {
+      view: 'queue',
+      rejectedTab: undefined,
+      selectedId: undefined,
+      severity: undefined,
+    };
 
-    render(<RouteComponent />)
+    render(<RouteComponent />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reject Proposal run' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Reject Proposal run' })
+    );
 
-    expect(mockRejectRun).toHaveBeenCalledWith('run-1')
-  })
-})
+    expect(mockRejectRun).toHaveBeenCalledWith('run-1');
+  });
+
+  it('uses WorkspaceScaffold with a right-rail aside panel', () => {
+    render(<RouteComponent />);
+    // WorkspaceScaffold mock renders data-testid="inbox-aside"
+    expect(screen.getByTestId('inbox-aside')).toBeTruthy();
+    expect(screen.getByTestId('inbox-primary')).toBeTruthy();
+  });
+
+  it('Inspect wires selectedId into the URL', () => {
+    mockRouteState.search = {
+      view: 'queue',
+      rejectedTab: undefined,
+      selectedId: undefined,
+      severity: undefined,
+    };
+    render(<RouteComponent />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Inspect Proposal run' })
+    );
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: expect.objectContaining({ selectedId: 'signal:run-1' }),
+      })
+    );
+  });
+
+  it('renders the detail panel content when selectedId matches a queue item', () => {
+    mockRouteState.search = {
+      view: 'queue',
+      rejectedTab: undefined,
+      selectedId: 'signal:run-1',
+      severity: undefined,
+    };
+    render(<RouteComponent />);
+    const aside = screen.getByTestId('inbox-aside');
+    expect(within(aside).getByText('Proposal run')).toBeTruthy();
+  });
+});

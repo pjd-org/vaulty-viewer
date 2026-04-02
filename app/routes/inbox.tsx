@@ -1,14 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
-import { type InboxView, type InboxNote, defaultInboxView } from '../../src/lib/inbox-logic';
+import {
+  type InboxView,
+  type InboxNote,
+  defaultInboxView,
+} from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
 import { EmptyState } from '../components/ui';
-import { PageFrame } from '../components/layout';
-import { useInboxConverterMutation, type InboxConvertResult } from '../lib/queries/agents';
-import { getInboxSurfaceQueryOptions, useInboxSurface, type InboxItem } from '../lib/viewer-adapter';
+import { WorkspaceScaffold } from '../components/layout';
+import {
+  useInboxConverterMutation,
+  type InboxConvertResult,
+} from '../lib/queries/agents';
+import {
+  getInboxSurfaceQueryOptions,
+  useInboxSurface,
+  type InboxItem,
+} from '../lib/viewer-adapter';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -51,17 +62,20 @@ function isArchiveBucket(bucket: InboxItem['inboxBucket']) {
 }
 
 function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
-  const createdAt =
-    (note?.frontmatter?.created ?? note?.frontmatter?.createdAt ?? null) as
-      | string
-      | null
-      | undefined;
+  const createdAt = (note?.frontmatter?.created ??
+    note?.frontmatter?.createdAt ??
+    null) as string | null | undefined;
   const source =
-    item.rejectionType === 'user' ? 'manual'
-    : note?.source === 'extracted' ? 'agent'
-    : run ? runToOriginSource(run.runType)
-    : item.inboxBucket === 'deferred' || item.inboxBucket === 'rejected_automated' ? 'agent'
-    : 'manual';
+    item.rejectionType === 'user'
+      ? 'manual'
+      : note?.source === 'extracted'
+        ? 'agent'
+        : run
+          ? runToOriginSource(run.runType)
+          : item.inboxBucket === 'deferred' ||
+              item.inboxBucket === 'rejected_automated'
+            ? 'agent'
+            : 'manual';
 
   return toInboxItemDisplay({
     title: item.title,
@@ -70,8 +84,10 @@ function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
     description: item.summary,
     createdAt: createdAt ?? item.surfacedAt,
     status:
-      note?.status
-      ?? (item.severity === 'high' || item.severity === 'critical' ? 'blocked' : undefined),
+      note?.status ??
+      (item.severity === 'high' || item.severity === 'critical'
+        ? 'blocked'
+        : undefined),
   });
 }
 
@@ -96,14 +112,23 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
   }
 
   if (isPending) {
-    return <span className="text-xs text-slate-400 px-2 py-1">Converting…</span>;
+    return (
+      <span className="text-xs text-slate-400 px-2 py-1">Converting…</span>
+    );
   }
 
   if (error) {
     return (
       <span className="text-xs text-red-500 px-2 py-1">
         Failed —{' '}
-        <button type="button" className="underline" onClick={() => { reset(); mutate(rawText); }}>
+        <button
+          type="button"
+          className="underline"
+          onClick={() => {
+            reset();
+            mutate(rawText);
+          }}
+        >
           retry
         </button>
       </span>
@@ -120,7 +145,12 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
           <span className="capitalize">{data.effort}</span>
           <span>·</span>
           <span className="capitalize">{data.type}</span>
-          {data.project && <><span>·</span><span>{data.project}</span></>}
+          {data.project && (
+            <>
+              <span>·</span>
+              <span>{data.project}</span>
+            </>
+          )}
         </div>
         <button
           type="button"
@@ -135,6 +165,124 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
   return null;
 }
+
+/* ─── Detail Panel ───────────────────────────────────────────────────────── */
+
+function InboxDetailPanel({
+  item,
+  run,
+  onPromote,
+  onReject,
+  onClose,
+}: {
+  item: InboxItem;
+  run?: Run;
+  onPromote?: () => void;
+  onReject?: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="space-y-4 text-sm">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-semibold text-slate-800 text-base leading-snug">
+          {item.title}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="shrink-0 text-slate-400 hover:text-slate-700 text-xs px-2 py-1 rounded"
+          aria-label="Close detail panel"
+        >
+          ✕
+        </button>
+      </div>
+
+      {item.summary && (
+        <p className="text-slate-600 leading-relaxed">{item.summary}</p>
+      )}
+
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Why surfaced
+        </p>
+        <p className="text-slate-600">
+          {item.whySurfaced ?? 'No explanation provided.'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Severity
+          </p>
+          <p className="mt-1 capitalize text-slate-700">
+            {item.severity ?? '—'}
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Bucket
+          </p>
+          <p className="mt-1 text-slate-700">{item.inboxBucket}</p>
+        </div>
+        {item.rejectionReason && (
+          <div className="col-span-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Rejection reason
+            </p>
+            <p className="mt-1 text-slate-700">{item.rejectionReason}</p>
+          </div>
+        )}
+      </div>
+
+      {run && (
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Run
+          </p>
+          <p className="text-slate-600 font-mono text-xs">{run.runId}</p>
+          {run.action && <p className="text-slate-500 text-xs">{run.action}</p>}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+        {onPromote && (
+          <button
+            type="button"
+            onClick={onPromote}
+            className="rounded-full bg-slate-900 text-white text-xs font-semibold px-4 py-2 hover:bg-slate-700 transition-colors"
+          >
+            Promote
+          </button>
+        )}
+        {onReject && (
+          <button
+            type="button"
+            onClick={onReject}
+            className="rounded-full border border-red-200 text-red-600 text-xs font-semibold px-4 py-2 hover:bg-red-50 transition-colors"
+          >
+            Reject
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Filter bar ─────────────────────────────────────────────────────────── */
+
+const SEVERITY_OPTIONS = [
+  { value: '', label: 'All' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+] as const;
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'confidence', label: 'Confidence' },
+] as const;
 
 /* ─── Route ───────────────────────────────────────────────────────────────── */
 
@@ -158,9 +306,18 @@ function InboxRoute() {
     actionState,
     pendingConfirmations,
   } = useInbox();
-  const { data: surface, isLoading: surfaceLoading, error: surfaceError } = useInboxSurface();
+  const {
+    data: surface,
+    isLoading: surfaceLoading,
+    error: surfaceError,
+  } = useInboxSurface();
 
-  const { view: viewParam, rejectedTab } = Route.useSearch();
+  const {
+    view: viewParam,
+    rejectedTab,
+    selectedId,
+    severity,
+  } = Route.useSearch();
   const navigate = useNavigate();
 
   const [toastMsg, setToastMsg] = useState<ToastMsg | null>(null);
@@ -170,12 +327,18 @@ function InboxRoute() {
     (s) => s === 'committing' || s === 'rejecting'
   );
   const surfaceItems = surface ?? [];
+
+  const filteredSurfaceItems = React.useMemo(() => {
+    if (!severity) return surfaceItems;
+    return surfaceItems.filter((item) => item.severity === severity);
+  }, [surfaceItems, severity]);
+
   const groupedItems = React.useMemo(() => {
     const queue: InboxItem[] = [];
     const workbench: InboxItem[] = [];
     const archive: InboxItem[] = [];
 
-    surfaceItems.forEach((item) => {
+    filteredSurfaceItems.forEach((item) => {
       if (item.inboxBucket === 'deferred') {
         workbench.push(item);
         return;
@@ -190,11 +353,15 @@ function InboxRoute() {
     });
 
     return { queue, workbench, archive };
-  }, [surfaceItems]);
+  }, [filteredSurfaceItems]);
+
   const archiveItems = React.useMemo(() => {
     if (!rejectedTab) return groupedItems.archive;
-    return groupedItems.archive.filter((item) => item.rejectionType === rejectedTab);
+    return groupedItems.archive.filter(
+      (item) => item.rejectionType === rejectedTab
+    );
   }, [groupedItems.archive, rejectedTab]);
+
   const counts = React.useMemo(
     () => ({
       queue: groupedItems.queue.length,
@@ -203,22 +370,30 @@ function InboxRoute() {
     }),
     [groupedItems]
   );
+
   const runById = React.useMemo(
     () => new Map((runs as Run[]).map((run) => [run.runId, run])),
     [runs]
   );
+
   const noteByPath = React.useMemo(
-    () => new Map(
-      [...(workbenchNotes as InboxNote[]), ...(archiveNotes as InboxNote[])]
-        .map((note) => [note.path, note] as const)
-    ),
+    () =>
+      new Map(
+        [
+          ...(workbenchNotes as InboxNote[]),
+          ...(archiveNotes as InboxNote[]),
+        ].map((note) => [note.path, note] as const)
+      ),
     [archiveNotes, workbenchNotes]
   );
+
   const loading = surfaceLoading && !surface;
   const error =
-    surfaceError instanceof Error ? surfaceError.message
-    : typeof surfaceError === 'string' ? surfaceError
-    : null;
+    surfaceError instanceof Error
+      ? surfaceError.message
+      : typeof surfaceError === 'string'
+        ? surfaceError
+        : null;
 
   // Determine active view: URL param → smart default → 'workbench'
   const activeView: InboxView =
@@ -229,6 +404,22 @@ function InboxRoute() {
       navigate({ to: '/inbox', search: { view: v }, replace: true });
     },
     [navigate]
+  );
+
+  const setSelectedId = useCallback(
+    (id: string | undefined) => {
+      navigate({
+        to: '/inbox',
+        search: {
+          view: viewParam,
+          rejectedTab,
+          severity,
+          selectedId: id,
+        },
+        replace: true,
+      });
+    },
+    [navigate, viewParam, rejectedTab, severity]
   );
 
   const toast = useCallback((msg: string, isError = false) => {
@@ -289,7 +480,9 @@ function InboxRoute() {
       try {
         const result = await rejectRun(runId);
         const rawErrors = result?.structuredContent?.errors ?? 0;
-        const errorCount = Array.isArray(rawErrors) ? rawErrors.length : rawErrors;
+        const errorCount = Array.isArray(rawErrors)
+          ? rawErrors.length
+          : rawErrors;
         if (errorCount > 0) {
           toast(
             `Partial rejection: ${errorCount} item${errorCount !== 1 ? 's' : ''} could not be removed — refreshing`,
@@ -306,8 +499,225 @@ function InboxRoute() {
     [rejectRun, refresh, toast]
   );
 
+  // Find the selected item across all buckets
+  const selectedItem = React.useMemo(
+    () =>
+      selectedId
+        ? surfaceItems.find((item) => item.id === selectedId)
+        : undefined,
+    [selectedId, surfaceItems]
+  );
+  const selectedRun = selectedItem
+    ? runById.get(selectedItem.sourceId)
+    : undefined;
+
+  /* ─── toolbar ─────────────────────────────────────────────────────────── */
+
+  const toolbar = (
+    <div className="flex flex-wrap items-end gap-3">
+      <span className={`api-badge api-badge--${apiStatus}`}>
+        {apiStatus === 'online'
+          ? 'API online'
+          : apiStatus === 'offline'
+            ? 'API offline'
+            : 'API'}
+      </span>
+      <button
+        type="button"
+        className="btn-secondary rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-white/80 disabled:opacity-60"
+        onClick={refresh}
+        disabled={loading || anyActionInFlight}
+      >
+        {loading ? 'Loading…' : '↻ Refresh'}
+      </button>
+    </div>
+  );
+
+  /* ─── filter bar ──────────────────────────────────────────────────────── */
+
+  const filterBar = (
+    <div className="flex flex-wrap items-center gap-3 mb-4">
+      <div className="flex items-center gap-1.5">
+        <label
+          htmlFor="inbox-severity"
+          className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 shrink-0"
+        >
+          Severity
+        </label>
+        <select
+          id="inbox-severity"
+          value={severity ?? ''}
+          onChange={(e) =>
+            navigate({
+              to: '/inbox',
+              search: {
+                view: activeView,
+                rejectedTab,
+                selectedId,
+                severity:
+                  (e.target.value as 'high' | 'medium' | 'low') || undefined,
+              },
+              replace: true,
+            })
+          }
+          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-400"
+        >
+          {SEVERITY_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+
+  /* ─── primary list ────────────────────────────────────────────────────── */
+
+  const primaryContent = (
+    <>
+      {loading && (
+        <div className="inbox-state">
+          <div className="inbox-spinner" />
+          <span>Loading inbox…</span>
+        </div>
+      )}
+
+      {!loading && error && (
+        <div className="inbox-state inbox-state--error">
+          <strong>Could not reach the API.</strong>
+          <span>{error}</span>
+          <button type="button" className="btn btn--refresh" onClick={refresh}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          <InboxViewSwitcher
+            view={activeView}
+            onChange={setView}
+            counts={counts}
+          />
+          {filterBar}
+
+          <div className="mt-2 space-y-3">
+            {activeView === 'queue' && groupedItems.queue.length === 0 && (
+              <EmptyState
+                title="Queue is clear"
+                description="No staged proposals waiting. Continue in Workbench →"
+              />
+            )}
+            {activeView === 'queue' &&
+              groupedItems.queue.map((item) => {
+                const run = runById.get(item.sourceId);
+                return (
+                  <div key={item.id} className="space-y-1">
+                    <InboxItemCard
+                      item={inboxItemToDisplay(item, undefined, run)}
+                      onInspect={() => setSelectedId(item.id)}
+                      onPromote={
+                        run && run.runType !== 'signals_infer'
+                          ? () => handleCommit(run.runId)
+                          : undefined
+                      }
+                      onReject={
+                        run
+                          ? () => handleReject(run.runId)
+                          : item.sourceId
+                            ? () => handleReject(item.sourceId)
+                            : undefined
+                      }
+                    />
+                    {run && (
+                      <ConvertPanel
+                        runId={run.runId}
+                        rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+
+            {activeView === 'workbench' &&
+              groupedItems.workbench.length === 0 && (
+                <EmptyState
+                  title="No draft or active inbox notes"
+                  description="New notes will appear here when they arrive."
+                />
+              )}
+            {activeView === 'workbench' &&
+              groupedItems.workbench.map((item) => {
+                const note = noteByPath.get(item.sourceId);
+                const notePath = note?.path ?? item.sourceId;
+                return (
+                  <InboxItemCard
+                    key={item.id}
+                    item={inboxItemToDisplay(item, note)}
+                    onInspect={() => setSelectedId(item.id)}
+                  />
+                );
+              })}
+
+            {activeView === 'archive' && archiveItems.length === 0 && (
+              <EmptyState
+                title={
+                  rejectedTab === 'user'
+                    ? 'No user rejections'
+                    : rejectedTab === 'automated'
+                      ? 'No automated rejections'
+                      : 'No rejected notes'
+                }
+                description="The archive is empty for the selected rejection tab."
+              />
+            )}
+            {activeView === 'archive' &&
+              archiveItems.map((item) => {
+                const note = noteByPath.get(item.sourceId);
+                return (
+                  <InboxItemCard
+                    key={item.id}
+                    item={inboxItemToDisplay(item, note)}
+                    onInspect={() => setSelectedId(item.id)}
+                  />
+                );
+              })}
+          </div>
+        </>
+      )}
+    </>
+  );
+
+  /* ─── aside detail panel ──────────────────────────────────────────────── */
+
+  const asideContent = selectedItem ? (
+    <InboxDetailPanel
+      item={selectedItem}
+      run={selectedRun}
+      onClose={() => setSelectedId(undefined)}
+      onPromote={
+        selectedRun && selectedRun.runType !== 'signals_infer'
+          ? () => handleCommit(selectedRun.runId)
+          : undefined
+      }
+      onReject={
+        selectedRun
+          ? () => handleReject(selectedRun.runId)
+          : selectedItem.sourceId
+            ? () => handleReject(selectedItem.sourceId)
+            : undefined
+      }
+    />
+  ) : (
+    <EmptyState
+      title="Select an item to inspect"
+      description="Source context, rejection reason, and actions will appear here."
+    />
+  );
+
   return (
-    <main className="inbox-page p-6 space-y-6">
+    <>
       {toastMsg && (
         <div
           className={`inbox-toast ${toastMsg.isError ? 'inbox-toast--error' : 'inbox-toast--ok'}`}
@@ -317,134 +727,17 @@ function InboxRoute() {
           {toastMsg.msg}
         </div>
       )}
-
-      <PageFrame
+      <WorkspaceScaffold
         title="Inbox"
         subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
-        actions={
-          <>
-            <span className={`api-badge api-badge--${apiStatus}`}>
-              {apiStatus === 'online' ? 'API online' : apiStatus === 'offline' ? 'API offline' : 'API'}
-            </span>
-            <button
-              type="button"
-              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-white/80 disabled:opacity-60"
-              onClick={refresh}
-              disabled={loading || anyActionInFlight}
-            >
-              {loading ? 'Loading…' : '↻ Refresh'}
-            </button>
-          </>
-        }
-      >
-        {loading && (
-          <div className="inbox-state">
-            <div className="inbox-spinner" />
-            <span>Loading inbox…</span>
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className="inbox-state inbox-state--error">
-            <strong>Could not reach the API.</strong>
-            <span>{error}</span>
-            <button type="button" className="btn btn--refresh" onClick={refresh}>
-              Retry
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && (
-          <>
-            <InboxViewSwitcher
-              view={activeView}
-              onChange={setView}
-              counts={counts}
-            />
-
-            <div className="mt-6 space-y-3">
-              {activeView === 'queue' && groupedItems.queue.length === 0 && (
-                <EmptyState
-                  title="Queue is clear"
-                  description="No staged proposals waiting. Continue in Workbench →"
-                />
-              )}
-              {activeView === 'queue' && groupedItems.queue.map((item) => {
-                const run = runById.get(item.sourceId);
-                const inspectPath = run?.items[0]?.targetPath ?? run?.items[0]?.path;
-                return (
-                <div key={item.id} className="space-y-1">
-                  <InboxItemCard
-                    item={inboxItemToDisplay(item, undefined, run)}
-                    onInspect={() => {
-                      const p = inspectPath;
-                      if (p) navigate({ to: '/note', search: { p: stripMarkdownExtension(p) } });
-                    }}
-                    onPromote={
-                      run && run.runType !== 'signals_infer'
-                        ? () => handleCommit(run.runId)
-                        : undefined
-                    }
-                    onReject={
-                      run ? () => handleReject(run.runId)
-                      : item.sourceId ? () => handleReject(item.sourceId)
-                      : undefined
-                    }
-                  />
-                  {run && (
-                    <ConvertPanel
-                      runId={run.runId}
-                      rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
-                    />
-                  )}
-                </div>
-              )})}
-
-              {activeView === 'workbench' && groupedItems.workbench.length === 0 && (
-                <EmptyState
-                  title="No draft or active inbox notes"
-                  description="New notes will appear here when they arrive."
-                />
-              )}
-              {activeView === 'workbench' && groupedItems.workbench.map((item) => {
-                const note = noteByPath.get(item.sourceId);
-                const notePath = note?.path ?? item.sourceId;
-                return (
-                  <InboxItemCard
-                    key={item.id}
-                    item={inboxItemToDisplay(item, note)}
-                    onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(notePath) } })}
-                  />
-                );
-              })}
-
-              {activeView === 'archive' && archiveItems.length === 0 && (
-                <EmptyState
-                  title={
-                    rejectedTab === 'user'
-                      ? 'No user rejections'
-                      : rejectedTab === 'automated'
-                        ? 'No automated rejections'
-                        : 'No rejected notes'
-                  }
-                  description="The archive is empty for the selected rejection tab."
-                />
-              )}
-              {activeView === 'archive' && archiveItems.map((item) => {
-                const note = noteByPath.get(item.sourceId);
-                const notePath = note?.path ?? item.sourceId;
-                return (
-                  <InboxItemCard
-                    key={item.id}
-                    item={inboxItemToDisplay(item, note)}
-                    onInspect={() => navigate({ to: '/note', search: { p: stripMarkdownExtension(notePath) } })}
-                  />
-                );
-              })}
-            </div>
-          </>
-        )}
-      </PageFrame>
-    </main>
+        actions={toolbar}
+        primaryTitle="Triage Queue"
+        primarySubtitle="Sorted by COD rank, filtered by severity."
+        primary={primaryContent}
+        asideTitle="Item Detail"
+        asideSubtitle="Source context and allowed actions."
+        aside={asideContent}
+      />
+    </>
   );
 }
