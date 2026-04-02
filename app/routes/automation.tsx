@@ -13,6 +13,8 @@ export const Route = createFileRoute('/automation')({
 function AutomationRoute() {
   const { data, isLoading } = useQuery({
     queryKey: ['automation'],
+    // TODO: queryFn always returns null — data is permanently null until the runtime adapter is wired.
+    // isLoading is unreachable after first tick. Replace when the automation adapter is ready.
     queryFn: async () => null,
     staleTime: 30_000,
   });

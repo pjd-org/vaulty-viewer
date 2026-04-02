@@ -12,8 +12,10 @@ export const Route = createFileRoute('/work')({
 });
 
 function WorkRoute() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: _isLoading } = useQuery({
     queryKey: ['work'],
+    // TODO: queryFn always returns null — data is permanently null until the runtime adapter is wired.
+    // isLoading is unreachable after first tick. Replace when the work adapter is ready.
     queryFn: async () => null,
     staleTime: 30_000,
   });
@@ -41,7 +43,7 @@ function WorkRoute() {
       primary={
         <>
           <ProjectsWorkspace />
-          {!isLoading && data == null && (
+          {data == null && (
             <div data-testid="work-empty-state" className="mt-4 space-y-2">
               <p className="text-sm font-medium text-neutral-600">
                 Task and dependency data not yet connected.

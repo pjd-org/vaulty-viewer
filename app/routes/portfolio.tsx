@@ -13,6 +13,8 @@ export const Route = createFileRoute('/portfolio')({
 function PortfolioRoute() {
   const { data, isLoading } = useQuery({
     queryKey: ['portfolio'],
+    // TODO: queryFn always returns null — data is permanently null until the runtime adapter is wired.
+    // isLoading is unreachable after first tick. Replace when the portfolio adapter is ready.
     queryFn: async () => null,
     staleTime: 30_000,
   });

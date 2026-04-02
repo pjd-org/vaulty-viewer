@@ -114,11 +114,6 @@ describe('knowledge adapter wiring', () => {
     expect(screen.getByText('Active context note beta')).toBeTruthy();
   });
 
-  it('renders suggestedTemplates from the adapter', () => {
-    render(<KnowledgeWorkspaceSurface />);
-    expect(screen.getByText('Decision template')).toBeTruthy();
-  });
-
   it('renders suggestedActions from the adapter', () => {
     render(<KnowledgeWorkspaceSurface />);
     expect(screen.getByText('Link this note')).toBeTruthy();

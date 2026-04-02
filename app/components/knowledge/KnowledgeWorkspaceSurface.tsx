@@ -273,72 +273,69 @@ export function KnowledgeWorkspaceSurface({
           </div>
         </section>
 
-        <KnowledgeWorkspacePane
-          noteId={workspaceNoteId}
-          mode={mode}
-          projectId={projectId}
-          templateId={templateId}
-          memoryTab={memoryTab}
-          workspaceSearch={workspaceSearch}
-        />
+        {/* ── Right column: workspace pane + adapter context rail ── */}
+        <div className="space-y-4">
+          <KnowledgeWorkspacePane
+            noteId={workspaceNoteId}
+            mode={mode}
+            projectId={projectId}
+            templateId={templateId}
+            memoryTab={memoryTab}
+            workspaceSearch={workspaceSearch}
+          />
+
+          {/* ── Adapter context rail ────────────────────────────── */}
+          {adapterLoading ? (
+            <aside
+              className="knowledge-adapter-rail"
+              data-testid="knowledge-adapter-loading"
+            >
+              <p className="text-sm text-neutral-400">
+                Loading adapter context…
+              </p>
+            </aside>
+          ) : adapterData ? (
+            <aside className="knowledge-adapter-rail space-y-4">
+              {adapterData.selectedContext.length > 0 && (
+                <section>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                    Active context
+                  </h3>
+                  <ul className="space-y-1">
+                    {adapterData.selectedContext.map((ctx) => (
+                      <li key={ctx.id} className="text-sm text-neutral-700">
+                        {ctx.title}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {/* TODO: linkedEntities render deferred — present in payload, Phase 6 will surface them. */}
+
+              {/* suggestedTemplates intentionally omitted — always [] until API returns template metadata. */}
+
+              {adapterData.suggestedActions.length > 0 && (
+                <section>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                    Suggested actions
+                  </h3>
+                  <ul className="space-y-1">
+                    {adapterData.suggestedActions.map((action) => (
+                      <li
+                        key={`${action.actionType}-${action.label}`}
+                        className="text-sm text-neutral-700"
+                      >
+                        {action.label}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </aside>
+          ) : null}
+        </div>
       </div>
-
-      {/* ── Adapter context rail ──────────────────────────────────── */}
-      {adapterLoading ? (
-        <aside
-          className="knowledge-adapter-rail"
-          data-testid="knowledge-adapter-loading"
-        >
-          <p className="text-sm text-neutral-400">Loading adapter context…</p>
-        </aside>
-      ) : adapterData ? (
-        <aside className="knowledge-adapter-rail space-y-4 mt-4">
-          {adapterData.selectedContext.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-                Active context
-              </h3>
-              <ul className="space-y-1">
-                {adapterData.selectedContext.map((ctx) => (
-                  <li key={ctx.id} className="text-sm text-neutral-700">
-                    {ctx.title}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {adapterData.suggestedTemplates.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-                Suggested templates
-              </h3>
-              <ul className="space-y-1">
-                {adapterData.suggestedTemplates.map((tmpl) => (
-                  <li key={tmpl.id} className="text-sm text-neutral-700">
-                    {tmpl.title}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {adapterData.suggestedActions.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
-                Suggested actions
-              </h3>
-              <ul className="space-y-1">
-                {adapterData.suggestedActions.map((action, idx) => (
-                  <li key={idx} className="text-sm text-neutral-700">
-                    {action.label}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </aside>
-      ) : null}
     </>
   );
 }

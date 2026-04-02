@@ -13,6 +13,8 @@ export const Route = createFileRoute('/bubble')({
 function BubbleRoute() {
   const { data, isLoading } = useQuery({
     queryKey: ['bubble'],
+    // TODO: queryFn always returns null — data is permanently null until the runtime adapter is wired.
+    // isLoading is unreachable after first tick. Replace when the bubble adapter is ready.
     queryFn: async () => null,
     staleTime: 30_000,
   });

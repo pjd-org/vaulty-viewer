@@ -838,11 +838,19 @@ export function buildKnowledgeSurfacePayload(source: {
     title: n.title ?? n.id,
   }));
 
+  // Derive open-source actions from the first 3 context notes.
+  // TODO: when the API returns template metadata, populate suggestedTemplates here.
+  const suggestedActions: AdapterActionRef[] = notes.slice(0, 3).map((n) => ({
+    actionType: 'open_source' as const,
+    label: `Open "${n.title ?? n.id}"`,
+  }));
+
   return {
     selectedContext,
     linkedEntities,
+    // TODO: populate suggestedTemplates once template metadata is available from the API.
     suggestedTemplates: [],
-    suggestedActions: [],
+    suggestedActions,
   };
 }
 

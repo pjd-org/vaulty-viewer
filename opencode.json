@@ -1,0 +1,70 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "huelow",
+  "permission": {
+    "*": "ask",
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "lsp": "allow",
+    "question": "allow",
+    "skill": "allow",
+    "task": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "external_directory": "ask",
+    "doom_loop": "ask",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "pnpm -C * typecheck*": "allow",
+      "pnpm -C * test*": "allow",
+      "pnpm -C * build*": "allow",
+      "pnpm -w exec eslint*": "allow",
+      "pytest*": "allow",
+      "python3 -m pytest*": "allow",
+      "python -m pytest*": "allow"
+    },
+    "edit": {
+      "*": "ask",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "write": {
+      "*": "ask",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    }
+  },
+  "mcp": {
+    "vaulty": {
+      "type": "remote",
+      "url": "http://localhost:4000/mcp",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer {env:AUTH_MCP_API_KEY}"
+      }
+    }
+  },
+  "agent": {
+    "huelow": {
+      "mode": "primary",
+      "description": "Repo-connected control layer for the Vaulty monorepo",
+      "prompt": "{file:./.github/copilot-instructions.md}",
+      "temperature": 0.1,
+      "permission": {
+        "vaulty*": "allow"
+      }
+    }
+  }
+}
