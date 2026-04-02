@@ -869,3 +869,69 @@ export function useKnowledgeSurface(initialData?: KnowledgeSurfacePayload) {
     initialData,
   });
 }
+
+// ─── Query Invalidation Helpers ───────────────────────────────────────────────
+// Spec: doc/context/viewer-v3/QUERY-KEY-INVALIDATION-DOC.md
+
+type InvalidationContext = { projectId?: string };
+
+interface QueryClientLike {
+  invalidateQueries: (queryKey: { queryKey: unknown[] }) => void;
+}
+
+function inv(qc: QueryClientLike, key: unknown[]) {
+  qc.invalidateQueries({ queryKey: key });
+}
+
+/**
+ * Invalidate the affected queries after a mutation completes.
+ * Rules per domain follow QUERY-KEY-INVALIDATION-DOC.md.
+ */
+export function invalidateQueriesForDomain(
+  queryClient: QueryClientLike,
+  domain: MutationDomain,
+  ctx: InvalidationContext
+): void {
+  switch (domain) {
+    case 'automation':
+      inv(queryClient, ['automation']);
+      inv(queryClient, ['viewer-adapter', 'verification']);
+      if (ctx.projectId) {
+        inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
+      }
+      break;
+
+    case 'work':
+      inv(queryClient, ['work']);
+      // home surface re-ranks when task pressure changes
+      inv(queryClient, ['viewer-adapter', 'home-surface']);
+      if (ctx.projectId) {
+        inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
+      }
+      break;
+
+    case 'knowledge':
+      inv(queryClient, ['viewer-adapter', 'knowledge-surface']);
+      inv(queryClient, ['knowledge']);
+      if (ctx.projectId) {
+        inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
+      }
+      break;
+
+    case 'portfolio':
+      inv(queryClient, ['portfolio']);
+      break;
+
+    case 'bubble':
+      inv(queryClient, ['bubble']);
+      break;
+
+    case 'health':
+      inv(queryClient, ['health']);
+      break;
+
+    case 'timeline':
+      inv(queryClient, ['timeline']);
+      break;
+  }
+}
