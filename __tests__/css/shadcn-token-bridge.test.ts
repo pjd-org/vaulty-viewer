@@ -62,6 +62,26 @@ function firstTokenValue(css: string, prop: string): string | null {
 
 const layerBase = getLayerBase(bridgeCss);
 
+/**
+ * CSS outside @layer base — the unlayered portion that wins the cascade.
+ * Unlayered :root declarations have higher specificity than @layer base,
+ * so this is the slice that determines effective custom-property values.
+ */
+const afterLayerBase = (() => {
+  const layerBaseStart = bridgeCss.indexOf('@layer base');
+  if (layerBaseStart === -1) return bridgeCss;
+  let i = bridgeCss.indexOf('{', layerBaseStart);
+  if (i === -1) return bridgeCss;
+  let depth = 1;
+  i++;
+  while (i < bridgeCss.length && depth > 0) {
+    if (bridgeCss[i] === '{') depth++;
+    else if (bridgeCss[i] === '}') depth--;
+    i++;
+  }
+  return bridgeCss.slice(0, layerBaseStart) + bridgeCss.slice(i);
+})();
+
 // Sanity-check: layerBase must contain the known bridge entries; if empty the
 // brace-counter failed and all guard tests below would be false-green.
 describe('getLayerBase sanity', () => {
@@ -147,34 +167,25 @@ describe('radius token separation guard', () => {
     expect(bridgeCss).not.toMatch(/--radius\s*:\s*0\.5rem/);
   });
 
+  it('--radius is var(--vault-radius) in the unlayered :root (wins the cascade over @layer base)', () => {
+    // Unlayered :root has higher specificity than @layer base.
+    // This is the definition that actually takes effect — guard it directly.
+    expect(afterLayerBase).toMatch(/--radius\s*:\s*var\(--vault-radius\)/);
+  });
+
   it('tailwind borderRadius.shadcn references var(--radius-shadcn), not var(--radius)', () => {
     expect(tailwindCfg).toMatch(/shadcn\s*:\s*['"]var\(--radius-shadcn\)['"]/);
   });
 });
 
-describe('P9 muted collision guard (--muted-text must not shadow --muted)', () => {
+describe('P9 muted leakage guard (--muted must not be defined outside @layer base)', () => {
   it('--muted is defined only inside @layer base — not in any unlayered :root block', () => {
-    // Strip the @layer base block using the same brace-counter used above,
-    // then assert --muted: does not appear anywhere in the remainder.
-    const layerBaseStart = bridgeCss.indexOf('@layer base');
-    const afterLayerBase =
-      layerBaseStart === -1
-        ? bridgeCss
-        : (() => {
-            let i = bridgeCss.indexOf('{', layerBaseStart);
-            let depth = 1;
-            i++;
-            while (i < bridgeCss.length && depth > 0) {
-              if (bridgeCss[i] === '{') depth++;
-              else if (bridgeCss[i] === '}') depth--;
-              i++;
-            }
-            // Everything before + everything after the @layer base block
-            return bridgeCss.slice(0, layerBaseStart) + bridgeCss.slice(i);
-          })();
-    // --muted: must not appear outside @layer base as a CSS property declaration.
-    // Use a lookbehind for whitespace/semicolon/open-brace to avoid false
-    // matches on class names like `.run-card--muted:hover`.
-    expect(afterLayerBase).not.toMatch(/(?<=[\s;{])--muted\s*:(?![\w-])/);
+    // Use the module-level afterLayerBase (everything before + after @layer base).
+    // Lookbehind requires a CSS property-declaration context (whitespace, semicolon,
+    // or open-brace immediately before --muted). This correctly excludes class names
+    // like `.run-card--muted:hover` whose preceding char is `-`, not in [\s;{].
+    // No negative lookahead needed: `\s*:` already excludes `--muted-foreground:`
+    // because `-` (not space or colon) follows `--muted` in that case.
+    expect(afterLayerBase).not.toMatch(/(?<=[\s;{])--muted\s*:/);
   });
 });
