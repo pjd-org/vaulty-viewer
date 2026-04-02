@@ -173,20 +173,11 @@ export const useUIStore = create<UIState>((set) => ({
           typeof latestId === 'undefined'
             ? state.verification.latestId
             : latestId,
+        // visible stays true for pending/resolved/failed; only idle hides the rail.
+        // Verification must remain visible until explicitly dismissed — never auto-toast.
         visible: phase !== 'idle',
       },
     }));
-    if (phase === 'resolved' || phase === 'failed') {
-      setTimeout(() => {
-        set((state) => ({
-          verification: {
-            ...state.verification,
-            phase: 'idle',
-            visible: false,
-          },
-        }));
-      }, 3000);
-    }
   },
   setVerificationRailPinned: (pinned) =>
     set((state) => ({ verification: { ...state.verification, pinned } })),
