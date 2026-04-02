@@ -90,15 +90,16 @@ function createThreadId(): string {
 // State
 // ---------------------------------------------------------------------------
 
-type HueyState = {
+export type HueyState = {
   threads: ThreadRecord[];
   messages: ChatMessage[];
   threadId: string;
   sending: boolean;
+  cancelled: boolean;
   activeIntent: IntentType | null;
 };
 
-type HueyAction =
+export type HueyAction =
   | { type: 'THREADS_REFRESHED'; threads: ThreadRecord[] }
   | { type: 'NEW_THREAD'; threadId: string }
   | { type: 'SWITCH_THREAD'; threadId: string }
@@ -110,9 +111,11 @@ type HueyAction =
     }
   | { type: 'SEND_DONE'; assistantMsg: ChatMessage; threadId: string }
   | { type: 'SEND_FAIL'; errorMsg: ChatMessage }
-  | { type: 'SET_INTENT'; intent: IntentType | null };
+  | { type: 'SET_INTENT'; intent: IntentType | null }
+  | { type: 'CANCEL' }
+  | { type: 'CANCEL_CLEAR' };
 
-function hueyReducer(state: HueyState, action: HueyAction): HueyState {
+export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
   switch (action.type) {
     case 'THREADS_REFRESHED':
       return { ...state, threads: action.threads };
@@ -122,6 +125,7 @@ function hueyReducer(state: HueyState, action: HueyAction): HueyState {
         threadId: action.threadId,
         messages: [],
         activeIntent: null,
+        cancelled: false,
       };
     case 'SWITCH_THREAD':
       return {
@@ -129,11 +133,13 @@ function hueyReducer(state: HueyState, action: HueyAction): HueyState {
         threadId: action.threadId,
         messages: [],
         activeIntent: null,
+        cancelled: false,
       };
     case 'SEND_START':
       return {
         ...state,
         sending: true,
+        cancelled: false,
         threadId: action.threadId,
         threads: action.threads,
         messages: [...state.messages, action.userMsg],
@@ -153,6 +159,10 @@ function hueyReducer(state: HueyState, action: HueyAction): HueyState {
       };
     case 'SET_INTENT':
       return { ...state, activeIntent: action.intent };
+    case 'CANCEL':
+      return { ...state, sending: false, cancelled: true };
+    case 'CANCEL_CLEAR':
+      return { ...state, cancelled: false };
   }
 }
 
@@ -179,14 +189,22 @@ function createMessage(
 
 function HueyRoute() {
   const hydrated = useHydrated();
+  const abortRef = React.useRef<AbortController | null>(null);
   const [{ threads, messages, threadId, sending, activeIntent }, dispatch] =
     useReducer(hueyReducer, {
       threads: [],
       messages: [],
       threadId: INITIAL_THREAD_ID,
       sending: false,
+      cancelled: false,
       activeIntent: null,
     });
+
+  const handleCancel = React.useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    dispatch({ type: 'CANCEL' });
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -216,6 +234,12 @@ function HueyRoute() {
 
   const handleSend = async (text: string) => {
     if (!text.trim() || sending) return;
+
+    // Arm a fresh AbortController for this request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    dispatch({ type: 'CANCEL_CLEAR' });
 
     const effectiveIntent = activeIntent ?? 'freeform';
     const template = getTemplate(effectiveIntent);
@@ -270,6 +294,7 @@ function HueyRoute() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
+          signal: controller.signal,
         }
       );
 
@@ -290,6 +315,7 @@ function HueyRoute() {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: fallbackBody,
+              signal: controller.signal,
             }
           );
           payload = (await fallbackResp
@@ -330,11 +356,17 @@ function HueyRoute() {
         threadId: nextThreadId,
       });
     } catch (err) {
+      // Swallow abort errors silently — user intentionally cancelled
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       const msg = err instanceof Error ? err.message : 'Huey request failed';
       dispatch({
         type: 'SEND_FAIL',
         errorMsg: createMessage('system', `Request failed: ${msg}`),
       });
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
     }
   };
 
@@ -369,6 +401,7 @@ function HueyRoute() {
             messages={messages}
             loading={sending}
             onSend={handleSend}
+            onCancel={handleCancel}
             activeIntent={activeIntent}
             intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
           />
