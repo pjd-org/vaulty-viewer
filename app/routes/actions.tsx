@@ -1,79 +1,84 @@
-import React from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import React from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
-import { WorkspaceScaffold } from '../components/layout'
-import { EmptyState } from '../components/ui'
+import { WorkspaceScaffold } from '../components/layout';
+import { EmptyState } from '../components/ui';
 import {
   getActionsSurfaceQueryOptions,
   useActionsSurface,
-} from '../lib/viewer-adapter'
-import { actionsSearchParams } from '../../src/lib/routes/search-params'
+} from '../lib/viewer-adapter';
+import { actionsSearchParams } from '../../src/lib/routes/search-params';
+import { useUIStore } from '../../src/store/ui';
 
 const REVERB_RANK: Record<'low' | 'medium' | 'high', number> = {
   low: 0,
   medium: 1,
   high: 2,
-}
+};
 
 export const Route = createFileRoute('/actions')({
   validateSearch: actionsSearchParams,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getActionsSurfaceQueryOptions())
+    await context.queryClient.ensureQueryData(getActionsSurfaceQueryOptions());
   },
   component: ActionsRoute,
-})
+});
 
 function ActionsRoute() {
-  const { sort, simulatableOnly, selectedId } = Route.useSearch()
-  const { data: surface, isLoading, error } = useActionsSurface()
-  const navigate = useNavigate()
-  const currentSort = sort ?? 'urgency'
-  const allRecommendations = surface?.recommendations ?? []
+  const { sort, simulatableOnly, selectedId } = Route.useSearch();
+  const { data: surface, isLoading, error } = useActionsSurface();
+  const navigate = useNavigate();
+  const currentSort = sort ?? 'urgency';
+  const allRecommendations = surface?.recommendations ?? [];
 
   const recommendations = React.useMemo(() => {
-    const base = allRecommendations
+    const base = allRecommendations;
     const filtered = simulatableOnly
       ? base.filter((item) => item.reversibility === 'high')
-      : base
+      : base;
 
-    const sorted = [...filtered]
+    const sorted = [...filtered];
     switch (currentSort) {
       case 'impact':
-        sorted.sort((a, b) => b.scoreBreakdown.impact - a.scoreBreakdown.impact)
-        break
+        sorted.sort(
+          (a, b) => b.scoreBreakdown.impact - a.scoreBreakdown.impact
+        );
+        break;
       case 'confidence':
-        sorted.sort((a, b) => b.confidence - a.confidence)
-        break
+        sorted.sort((a, b) => b.confidence - a.confidence);
+        break;
       case 'reversibility':
         sorted.sort(
           (a, b) =>
             REVERB_RANK[b.reversibility] - REVERB_RANK[a.reversibility] ||
-            b.score - a.score,
-        )
-        break
+            b.score - a.score
+        );
+        break;
       case 'source':
         sorted.sort(
           (a, b) =>
             b.sourceSignalIds.length - a.sourceSignalIds.length ||
             b.sourceEntities.length - a.sourceEntities.length ||
-            b.score - a.score,
-        )
-        break
+            b.score - a.score
+        );
+        break;
       default:
-        sorted.sort((a, b) => b.score - a.score)
-        break
+        sorted.sort((a, b) => b.score - a.score);
+        break;
     }
 
-    return sorted
-  }, [allRecommendations, simulatableOnly, currentSort])
+    return sorted;
+  }, [allRecommendations, simulatableOnly, currentSort]);
 
   const selected =
-    recommendations.find((item) => item.id === selectedId) ?? recommendations[0]
-  const verificationCount = surface?.verificationRail.length ?? 0
+    recommendations.find((item) => item.id === selectedId) ??
+    recommendations[0];
+  const verificationCount = surface?.verificationRail.length ?? 0;
+  const verificationPhase = useUIStore((s) => s.verification.phase);
   const setSearch = React.useCallback(
     (next: {
-      sort?: 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility'
-      simulatableOnly?: boolean
+      sort?: 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility';
+      simulatableOnly?: boolean;
     }) => {
       navigate({
         to: '/actions',
@@ -83,10 +88,10 @@ function ActionsRoute() {
           selectedId,
         },
         replace: true,
-      })
+      });
     },
-    [navigate, selectedId],
-  )
+    [navigate, selectedId]
+  );
 
   const toolbar = (
     <div className="flex flex-wrap items-end gap-4">
@@ -97,7 +102,12 @@ function ActionsRoute() {
           value={currentSort}
           onChange={(event) =>
             setSearch({
-              sort: event.target.value as 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility',
+              sort: event.target.value as
+                | 'urgency'
+                | 'impact'
+                | 'confidence'
+                | 'source'
+                | 'reversibility',
               simulatableOnly,
             })
           }
@@ -126,13 +136,16 @@ function ActionsRoute() {
         <span>Simulatable only</span>
       </label>
       <div className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-right text-xs text-slate-300">
-        <p>Showing {recommendations.length} of {allRecommendations.length} recommendations</p>
+        <p>
+          Showing {recommendations.length} of {allRecommendations.length}{' '}
+          recommendations
+        </p>
         <p className="mt-1 font-medium text-slate-100">
           Selected: {selected?.title ?? 'None'}
         </p>
       </div>
     </div>
-  )
+  );
 
   const summaryItems = [
     {
@@ -143,23 +156,23 @@ function ActionsRoute() {
     {
       label: 'High impact',
       value: String(
-        recommendations.filter((item) => item.scoreBreakdown.impact >= 7).length,
+        recommendations.filter((item) => item.scoreBreakdown.impact >= 7).length
       ),
       detail: 'Strong leverage right now',
     },
     {
       label: 'Low friction',
       value: String(
-        recommendations.filter((item) => item.reversibility === 'high').length,
+        recommendations.filter((item) => item.reversibility === 'high').length
       ),
       detail: 'Safe quick-command candidates',
     },
     {
       label: 'Verification',
-        value: surface?.verificationRail.length ? 'Active' : 'Ready',
+      value: surface?.verificationRail.length ? 'Active' : 'Ready',
       detail: 'Feedback loop reserved for mutation outcomes',
     },
-  ]
+  ];
 
   return (
     <WorkspaceScaffold
@@ -192,7 +205,7 @@ function ActionsRoute() {
         ) : (
           <div className="space-y-3">
             {recommendations.map((item) => {
-              const active = item.id === selected?.id
+              const active = item.id === selected?.id;
               return (
                 <article
                   key={item.id}
@@ -208,7 +221,9 @@ function ActionsRoute() {
                       <h3 className="text-base font-semibold text-slate-100">
                         {item.title}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-300">{item.summary}</p>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {item.summary}
+                      </p>
                     </div>
                     <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
                       {item.actionType.replace('_', ' ')}
@@ -219,7 +234,9 @@ function ActionsRoute() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                         Why now
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">{item.whyNow}</p>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {item.whyNow}
+                      </p>
                     </div>
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -243,7 +260,7 @@ function ActionsRoute() {
                     </div>
                   </div>
                 </article>
-              )
+              );
             })}
           </div>
         )
@@ -268,14 +285,19 @@ function ActionsRoute() {
                   Score breakdown
                 </p>
                 <div className="mt-3 space-y-2">
-                  {Object.entries(selected.scoreBreakdown).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between gap-3">
-                      <span className="text-slate-400 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1')}
-                      </span>
-                      <span className="text-slate-200">{value}</span>
-                    </div>
-                  ))}
+                  {Object.entries(selected.scoreBreakdown).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-slate-400 capitalize">
+                          {key.replace(/([A-Z])/g, ' $1')}
+                        </span>
+                        <span className="text-slate-200">{value}</span>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
               <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
@@ -316,6 +338,14 @@ function ActionsRoute() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Verification preview
                 </p>
+                {verificationPhase === 'pending' && (
+                  <p className="mt-3 text-sm text-sky-300">Verifying…</p>
+                )}
+                {verificationPhase === 'failed' && (
+                  <p className="mt-3 text-sm text-red-400">
+                    Verification failed.
+                  </p>
+                )}
                 {verificationCount > 0 ? (
                   <div className="mt-3 space-y-2">
                     {surface?.verificationRail.map((item) => (
@@ -382,5 +412,5 @@ function ActionsRoute() {
         )
       }
     />
-  )
+  );
 }

@@ -1,26 +1,38 @@
-import React from 'react'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import React from 'react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ActionsSurfacePayload } from '../../app/lib/viewer-adapter'
+import type { ActionsSurfacePayload } from '../../app/lib/viewer-adapter';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {
-    sort: 'impact' as 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility' | undefined,
+    sort: 'impact' as
+      | 'urgency'
+      | 'impact'
+      | 'confidence'
+      | 'source'
+      | 'reversibility'
+      | undefined,
     simulatableOnly: true as boolean | undefined,
     selectedId: 'action-1' as string | undefined,
   },
-}))
+}));
 
-const mockNavigate = vi.hoisted(() => vi.fn())
-const mockEnsureQueryData = vi.hoisted(() => vi.fn())
-const mockUseActionsSurface = vi.hoisted(() => vi.fn())
+const mockNavigate = vi.hoisted(() => vi.fn());
+const mockEnsureQueryData = vi.hoisted(() => vi.fn());
+const mockUseActionsSurface = vi.hoisted(() => vi.fn());
 const mockGetActionsSurfaceQueryOptions = vi.hoisted(() =>
   vi.fn(() => ({
     queryKey: ['viewer-adapter', 'actions-surface'],
     queryFn: vi.fn(),
-  })),
-)
+  }))
+);
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
@@ -28,12 +40,12 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => mockRouteState.search,
   }),
   useNavigate: () => mockNavigate,
-}))
+}));
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
   getActionsSurfaceQueryOptions: () => mockGetActionsSurfaceQueryOptions(),
   useActionsSurface: () => mockUseActionsSurface(),
-}))
+}));
 
 vi.mock('../../app/components/layout', () => ({
   WorkspaceScaffold: ({
@@ -47,15 +59,15 @@ vi.mock('../../app/components/layout', () => ({
     asideSubtitle,
     aside,
   }: {
-    title: string
-    subtitle?: string
-    actions?: React.ReactNode
-    primaryTitle: string
-    primarySubtitle?: string
-    primary: React.ReactNode
-    asideTitle: string
-    asideSubtitle?: string
-    aside: React.ReactNode
+    title: string;
+    subtitle?: string;
+    actions?: React.ReactNode;
+    primaryTitle: string;
+    primarySubtitle?: string;
+    primary: React.ReactNode;
+    asideTitle: string;
+    asideSubtitle?: string;
+    aside: React.ReactNode;
   }) => (
     <section>
       <h1>{title}</h1>
@@ -73,33 +85,50 @@ vi.mock('../../app/components/layout', () => ({
       </aside>
     </section>
   ),
-}))
+}));
 
 vi.mock('../../app/components/ui', () => ({
   EmptyState: ({
     title,
     description,
   }: {
-    title: string
-    description?: string
+    title: string;
+    description?: string;
   }) => (
     <div>
       <h3>{title}</h3>
       {description ? <p>{description}</p> : null}
     </div>
   ),
-}))
+}));
 
-import { Route } from '../../app/routes/actions'
+const mockVerificationPhase = vi.hoisted(() => ({
+  current: 'idle' as 'idle' | 'pending' | 'resolved' | 'failed',
+}));
 
-const RouteComponent = Route.options.component as React.ComponentType
+vi.mock('../../src/store/ui', () => ({
+  useUIStore: (selector: (s: unknown) => unknown) =>
+    selector({
+      verification: {
+        phase: mockVerificationPhase.current,
+        visible: false,
+        pinned: false,
+        latestId: null,
+      },
+    }),
+}));
+
+import { Route } from '../../app/routes/actions';
+
+const RouteComponent = Route.options.component as React.ComponentType;
 
 const actionsSurface: ActionsSurfacePayload = {
   recommendations: [
     {
       id: 'action-1',
       title: 'Unblock deploy pipeline',
-      summary: 'Restore the failing pipeline so the release path is usable again.',
+      summary:
+        'Restore the failing pipeline so the release path is usable again.',
       actionType: 'create_task',
       surfacedBy: 'cod',
       sourceSignalIds: ['signal-1', 'signal-2'],
@@ -115,7 +144,8 @@ const actionsSurface: ActionsSurfacePayload = {
         reversibility: 8,
         confidence: 9,
       },
-      whyNow: 'Resolving this item should remove immediate friction in the queue.',
+      whyNow:
+        'Resolving this item should remove immediate friction in the queue.',
       expectedEffect: 'Progress moves forward for rent-stability-pantin.',
       confidence: 0.92,
       reversibility: 'high',
@@ -166,7 +196,7 @@ const actionsSurface: ActionsSurfacePayload = {
       summary: 'Adapter verification completed.',
     },
   ],
-}
+};
 
 describe('actions adapter wiring', () => {
   beforeEach(() => {
@@ -174,48 +204,55 @@ describe('actions adapter wiring', () => {
       sort: 'impact',
       simulatableOnly: true,
       selectedId: 'action-1',
-    }
-    mockNavigate.mockReset()
-    mockEnsureQueryData.mockReset()
-    mockGetActionsSurfaceQueryOptions.mockClear()
+    };
+    mockNavigate.mockReset();
+    mockEnsureQueryData.mockReset();
+    mockGetActionsSurfaceQueryOptions.mockClear();
+    mockVerificationPhase.current = 'idle';
     mockUseActionsSurface.mockReturnValue({
       data: actionsSurface,
       isLoading: false,
       error: null,
-    })
-  })
+    });
+  });
 
   afterEach(() => {
-    cleanup()
-  })
+    cleanup();
+  });
 
   it('renders the action toolbar and explainable detail rail', () => {
-    render(<RouteComponent />)
+    render(<RouteComponent />);
 
-    expect(screen.getByRole('heading', { name: 'Actions' })).toBeTruthy()
-    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('impact')
+    expect(screen.getByRole('heading', { name: 'Actions' })).toBeTruthy();
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe(
+      'impact'
+    );
     expect(
-      (screen.getByRole('checkbox', { name: 'Simulatable only' }) as HTMLInputElement).checked,
-    ).toBe(true)
-    expect(screen.getByText('Showing 1 of 2 recommendations')).toBeTruthy()
-    expect(screen.queryByText('Polish project shell')).toBeNull()
+      (
+        screen.getByRole('checkbox', {
+          name: 'Simulatable only',
+        }) as HTMLInputElement
+      ).checked
+    ).toBe(true);
+    expect(screen.getByText('Showing 1 of 2 recommendations')).toBeTruthy();
+    expect(screen.queryByText('Polish project shell')).toBeNull();
 
-    expect(screen.getByText('Source signals')).toBeTruthy()
-    expect(screen.getByText('signal-1')).toBeTruthy()
-    expect(screen.getByText('signal-2')).toBeTruthy()
-    expect(screen.getByText('Verification preview')).toBeTruthy()
-    expect(screen.getByText('Adapter verification completed.')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Execute' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Simulate' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Defer' })).toBeTruthy()
-  })
+    expect(screen.getByText('Source signals')).toBeTruthy();
+    expect(screen.getByText('signal-1')).toBeTruthy();
+    expect(screen.getByText('signal-2')).toBeTruthy();
+    expect(screen.getByText('Verification preview')).toBeTruthy();
+    expect(screen.getByText('Adapter verification completed.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Execute' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Simulate' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Defer' })).toBeTruthy();
+  });
 
   it('updates the route search when the toolbar changes', () => {
-    render(<RouteComponent />)
+    render(<RouteComponent />);
 
     fireEvent.change(screen.getByRole('combobox'), {
       target: { value: 'confidence' },
-    })
+    });
 
     expect(mockNavigate).toHaveBeenLastCalledWith({
       to: '/actions',
@@ -225,9 +262,9 @@ describe('actions adapter wiring', () => {
         selectedId: 'action-1',
       },
       replace: true,
-    })
+    });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Simulatable only' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Simulatable only' }));
 
     expect(mockNavigate).toHaveBeenLastCalledWith({
       to: '/actions',
@@ -237,6 +274,18 @@ describe('actions adapter wiring', () => {
         selectedId: 'action-1',
       },
       replace: true,
-    })
-  })
-})
+    });
+  });
+
+  it('shows a pending indicator when verification phase is pending', () => {
+    mockVerificationPhase.current = 'pending';
+    render(<RouteComponent />);
+    expect(screen.getByText('Verifying…')).toBeTruthy();
+  });
+
+  it('shows a failed indicator when verification phase is failed', () => {
+    mockVerificationPhase.current = 'failed';
+    render(<RouteComponent />);
+    expect(screen.getByText('Verification failed.')).toBeTruthy();
+  });
+});

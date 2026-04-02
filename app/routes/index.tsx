@@ -14,20 +14,18 @@ import {
   type ActiveSession,
   type SessionSummary,
 } from '../../src/lib/focus-logic';
-import {
-  SectionHeader,
-  WorkspaceScaffold,
-} from '../components/layout';
+import { SectionHeader, WorkspaceScaffold } from '../components/layout';
 import { EmptyState, PrimaryButton, SecondaryButton } from '../components/ui';
 import {
   getHomeSurfaceQueryOptions,
   useHomeSurface,
 } from '../lib/viewer-adapter';
+import { useUIStore } from '../../src/store/ui';
 
 export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getHomeSurfaceQueryOptions())
+    await context.queryClient.ensureQueryData(getHomeSurfaceQueryOptions());
   },
   component: FocusRoute,
 });
@@ -120,7 +118,9 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
             <span className="text-xs text-slate-500">
               {formatSessionDuration(s.startedAt, s.endedAt)}
             </span>
-            <span className="text-xs text-slate-600 capitalize">{s.status}</span>
+            <span className="text-xs text-slate-600 capitalize">
+              {s.status}
+            </span>
           </div>
         </Link>
       ))}
@@ -149,11 +149,21 @@ function ActiveSessionBanner({
           Session active
         </span>
         {session.title && (
-          <span className="text-sm font-medium text-slate-800">{session.title}</span>
+          <span className="text-sm font-medium text-slate-800">
+            {session.title}
+          </span>
         )}
         <span className="text-xs text-slate-600">
-          {elapsed !== null && <>{elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}</>}
-          {tasksTotal > 0 && <>{tasksDone}/{tasksTotal} tasks</>}
+          {elapsed !== null && (
+            <>
+              {elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}
+            </>
+          )}
+          {tasksTotal > 0 && (
+            <>
+              {tasksDone}/{tasksTotal} tasks
+            </>
+          )}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -171,15 +181,13 @@ function ActiveSessionBanner({
 function FocusRoute() {
   const navigate = useNavigate();
   const { q, collection, session, snapshot, detailId } = Route.useSearch();
+  const { nextActions, activeSession, recentSessions, loading, reload } =
+    useFocusData();
   const {
-    nextActions,
-    activeSession,
-    recentSessions,
-    loading,
-    reload,
-  } = useFocusData();
-  const { data: surface, isLoading: surfaceLoading, error: surfaceError } =
-    useHomeSurface();
+    data: surface,
+    isLoading: surfaceLoading,
+    error: surfaceError,
+  } = useHomeSurface();
   const [endingSession, setEndingSession] = useState(false);
 
   // Map next actions to TaskInput for agent hooks
@@ -197,9 +205,12 @@ function FocusRoute() {
     [nextActions]
   );
 
-  const { data: whatNow, isError: whatNowFailed } = useWhatNowQuery(agentTasks, {
-    enabled: !loading && agentTasks.length > 0,
-  });
+  const { data: whatNow, isError: whatNowFailed } = useWhatNowQuery(
+    agentTasks,
+    {
+      enabled: !loading && agentTasks.length > 0,
+    }
+  );
   const { data: upNext, isError: upNextFailed } = useUpNextQuery(agentTasks, {
     enabled: !loading && agentTasks.length > 0,
   });
@@ -226,6 +237,7 @@ function FocusRoute() {
   const decisionQueue = surface?.decisionQueue ?? [];
   const immediateActions = surface?.immediateActions ?? [];
   const verificationRail = surface?.verificationRail ?? [];
+  const verificationPhase = useUIStore((s) => s.verification.phase);
   const snapshots = surface?.snapshots ?? {
     automation: [],
     knowledge: [],
@@ -241,17 +253,22 @@ function FocusRoute() {
   const summaryItems = [
     {
       label: 'Pressure',
-      value: surfaceLoading && !surface ? 'Loading' : String(pressureBand.length),
+      value:
+        surfaceLoading && !surface ? 'Loading' : String(pressureBand.length),
       detail: 'Highest-pressure signals',
     },
     {
       label: 'Queue',
-      value: surfaceLoading && !surface ? 'Loading' : String(decisionQueue.length),
+      value:
+        surfaceLoading && !surface ? 'Loading' : String(decisionQueue.length),
       detail: 'COD-ranked next moves',
     },
     {
       label: 'Immediate',
-      value: surfaceLoading && !surface ? 'Loading' : String(immediateActions.length),
+      value:
+        surfaceLoading && !surface
+          ? 'Loading'
+          : String(immediateActions.length),
       detail: 'Low-friction interventions',
     },
     {
@@ -502,7 +519,9 @@ function FocusRoute() {
                       <p className="font-medium text-slate-700">
                         {whatNow.rationale}
                       </p>
-                      <p className="text-xs text-slate-500">{whatNow.why_now}</p>
+                      <p className="text-xs text-slate-500">
+                        {whatNow.why_now}
+                      </p>
                     </div>
                   ) : null}
                   {upNext ? (
@@ -511,7 +530,10 @@ function FocusRoute() {
                         {upNext.flow_label ?? 'Up next'}
                       </p>
                       {upNext.steps.slice(0, 3).map((step) => (
-                        <p key={step.id} className="mt-1 text-sm text-slate-700">
+                        <p
+                          key={step.id}
+                          className="mt-1 text-sm text-slate-700"
+                        >
                           {step.title}
                         </p>
                       ))}
@@ -542,6 +564,12 @@ function FocusRoute() {
         aside={
           <div className="space-y-6">
             <section className="space-y-3">
+              {verificationPhase === 'pending' && (
+                <p className="text-sm text-sky-300">Verifying…</p>
+              )}
+              {verificationPhase === 'failed' && (
+                <p className="text-sm text-red-400">Verification failed.</p>
+              )}
               {verificationRail.length > 0 ? (
                 <div className="space-y-3">
                   {verificationRail.map((item) => (
@@ -564,8 +592,12 @@ function FocusRoute() {
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                         {item.improved ? <span>Improved</span> : null}
-                        {item.followUpNeeded ? <span>Follow-up needed</span> : null}
-                        {item.resolvedAt ? <span>{item.resolvedAt}</span> : null}
+                        {item.followUpNeeded ? (
+                          <span>Follow-up needed</span>
+                        ) : null}
+                        {item.resolvedAt ? (
+                          <span>{item.resolvedAt}</span>
+                        ) : null}
                       </div>
                     </article>
                   ))}
@@ -621,7 +653,9 @@ function FocusRoute() {
                       <p className="text-sm font-semibold text-slate-100">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">{item.summary}</p>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {item.summary}
+                      </p>
                       <p className="mt-3 text-xs text-slate-400">
                         {item.reasonSelected}
                       </p>

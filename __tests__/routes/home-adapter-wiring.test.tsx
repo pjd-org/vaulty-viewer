@@ -1,24 +1,24 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter'
+import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
-}))
+}));
 
-const mockNavigate = vi.hoisted(() => vi.fn())
-const mockEnsureQueryData = vi.hoisted(() => vi.fn())
-const mockUseHomeSurface = vi.hoisted(() => vi.fn())
-const mockUseWhatNowQuery = vi.hoisted(() => vi.fn())
-const mockUseUpNextQuery = vi.hoisted(() => vi.fn())
+const mockNavigate = vi.hoisted(() => vi.fn());
+const mockEnsureQueryData = vi.hoisted(() => vi.fn());
+const mockUseHomeSurface = vi.hoisted(() => vi.fn());
+const mockUseWhatNowQuery = vi.hoisted(() => vi.fn());
+const mockUseUpNextQuery = vi.hoisted(() => vi.fn());
 const mockGetHomeSurfaceQueryOptions = vi.hoisted(() =>
   vi.fn(() => ({
     queryKey: ['viewer-adapter', 'home-surface'],
     queryFn: vi.fn(),
-  })),
-)
+  }))
+);
 const mockApiFetch = vi.hoisted(() =>
   vi.fn(async (url: string) => {
     if (url.includes('/api/v1/tasks/next-actions')) {
@@ -41,7 +41,7 @@ const mockApiFetch = vi.hoisted(() =>
             },
           ],
         }),
-      }
+      };
     }
 
     if (url.includes('/api/v1/sessions?status=active&limit=1')) {
@@ -66,7 +66,7 @@ const mockApiFetch = vi.hoisted(() =>
             },
           ],
         }),
-      }
+      };
     }
 
     if (url.includes('/api/v1/sessions?limit=3')) {
@@ -83,15 +83,15 @@ const mockApiFetch = vi.hoisted(() =>
             },
           ],
         }),
-      }
+      };
     }
 
     return {
       ok: false,
       json: async () => ({}),
-    }
-  }),
-)
+    };
+  })
+);
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
@@ -105,26 +105,30 @@ vi.mock('@tanstack/react-router', () => ({
     search: _search,
     ...props
   }: {
-    children: React.ReactNode
-    to?: string
-    search?: Record<string, unknown>
-    [key: string]: unknown
-  }) => <a href={typeof to === 'string' ? to : '#'} {...props}>{children}</a>,
-}))
+    children: React.ReactNode;
+    to?: string;
+    search?: Record<string, unknown>;
+    [key: string]: unknown;
+  }) => (
+    <a href={typeof to === 'string' ? to : '#'} {...props}>
+      {children}
+    </a>
+  ),
+}));
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
   getHomeSurfaceQueryOptions: () => mockGetHomeSurfaceQueryOptions(),
   useHomeSurface: () => mockUseHomeSurface(),
-}))
+}));
 
 vi.mock('../../app/lib/queries/agents', () => ({
   useWhatNowQuery: () => mockUseWhatNowQuery(),
   useUpNextQuery: () => mockUseUpNextQuery(),
-}))
+}));
 
 vi.mock('../../src/utils/api', () => ({
   apiFetch: (...args: unknown[]) => mockApiFetch(...args),
-}))
+}));
 
 vi.mock('../../app/components/home', () => ({
   BestMoveCard: ({ task }: { task: { title: string } }) => (
@@ -135,11 +139,27 @@ vi.mock('../../app/components/home', () => ({
   ),
   QuickRouteGrid: () => <div>Legacy quick routes</div>,
   SessionPlannerCard: () => <div>Legacy session planner</div>,
-}))
+}));
 
-import { Route } from '../../app/routes/index'
+const mockVerificationPhase = vi.hoisted(() => ({
+  current: 'idle' as 'idle' | 'pending' | 'resolved' | 'failed',
+}));
 
-const RouteComponent = Route.options.component as React.ComponentType
+vi.mock('../../src/store/ui', () => ({
+  useUIStore: (selector: (s: unknown) => unknown) =>
+    selector({
+      verification: {
+        phase: mockVerificationPhase.current,
+        visible: false,
+        pinned: false,
+        latestId: null,
+      },
+    }),
+}));
+
+import { Route } from '../../app/routes/index';
+
+const RouteComponent = Route.options.component as React.ComponentType;
 
 const homeSurface: HomeSurfacePayload = {
   pressureBand: [
@@ -291,23 +311,24 @@ const homeSurface: HomeSurfacePayload = {
       linkedEntities: [],
     },
   ],
-}
+};
 
 describe('home adapter wiring', () => {
   beforeEach(() => {
-    mockRouteState.search = {}
-    mockNavigate.mockReset()
-    mockEnsureQueryData.mockReset()
-    mockEnsureQueryData.mockResolvedValue(undefined)
-    mockGetHomeSurfaceQueryOptions.mockClear()
-    mockUseHomeSurface.mockReset()
+    mockRouteState.search = {};
+    mockNavigate.mockReset();
+    mockEnsureQueryData.mockReset();
+    mockEnsureQueryData.mockResolvedValue(undefined);
+    mockGetHomeSurfaceQueryOptions.mockClear();
+    mockVerificationPhase.current = 'idle';
+    mockUseHomeSurface.mockReset();
     mockUseHomeSurface.mockReturnValue({
       data: homeSurface,
       isLoading: false,
       error: null,
       isError: false,
-    })
-    mockUseWhatNowQuery.mockReset()
+    });
+    mockUseWhatNowQuery.mockReset();
     mockUseWhatNowQuery.mockReturnValue({
       data: {
         best_task_id: 'legacy-task-1',
@@ -316,20 +337,20 @@ describe('home adapter wiring', () => {
         why_now: 'Legacy why now',
       },
       isError: false,
-    })
-    mockUseUpNextQuery.mockReset()
+    });
+    mockUseUpNextQuery.mockReset();
     mockUseUpNextQuery.mockReturnValue({
       data: {
         flow_label: 'Legacy flow',
         steps: [],
       },
       isError: false,
-    })
-    mockApiFetch.mockClear()
-  })
+    });
+    mockApiFetch.mockClear();
+  });
 
   it('preloads the home adapter surface in the route loader', async () => {
-    expect(typeof Route.options.loader).toBe('function')
+    expect(typeof Route.options.loader).toBe('function');
 
     await Route.options.loader?.({
       context: {
@@ -337,28 +358,44 @@ describe('home adapter wiring', () => {
           ensureQueryData: mockEnsureQueryData,
         },
       },
-    } as never)
+    } as never);
 
-    expect(mockEnsureQueryData).toHaveBeenCalledTimes(1)
+    expect(mockEnsureQueryData).toHaveBeenCalledTimes(1);
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface'],
-    })
-  })
+    });
+  });
 
   it('renders the home adapter surface from the route component', () => {
-    render(<RouteComponent />)
+    render(<RouteComponent />);
 
-    expect(mockUseHomeSurface).toHaveBeenCalledTimes(1)
-    expect(screen.getByText('Pressure Band')).toBeTruthy()
-    expect(screen.getByText('Decision Queue')).toBeTruthy()
-    expect(screen.getByText('Immediate Interventions')).toBeTruthy()
-    expect(screen.getByText('Verification Rail')).toBeTruthy()
-    expect(screen.getByText('Snapshot Grid')).toBeTruthy()
-    expect(screen.getByText('Context Tail')).toBeTruthy()
-    expect(screen.getByText('Adapter pressure spike', { selector: 'h3' })).toBeTruthy()
-    expect(screen.getByText('Adapter decision one', { selector: 'h3' })).toBeTruthy()
+    expect(mockUseHomeSurface).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Pressure Band')).toBeTruthy();
+    expect(screen.getByText('Decision Queue')).toBeTruthy();
+    expect(screen.getByText('Immediate Interventions')).toBeTruthy();
+    expect(screen.getByText('Verification Rail')).toBeTruthy();
+    expect(screen.getByText('Snapshot Grid')).toBeTruthy();
+    expect(screen.getByText('Context Tail')).toBeTruthy();
     expect(
-      screen.getByText('Adapter context tail item', { selector: 'p' }),
-    ).toBeTruthy()
-  })
-})
+      screen.getByText('Adapter pressure spike', { selector: 'h3' })
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Adapter decision one', { selector: 'h3' })
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Adapter context tail item', { selector: 'p' })
+    ).toBeTruthy();
+  });
+
+  it('shows a pending indicator when verification phase is pending', () => {
+    mockVerificationPhase.current = 'pending';
+    render(<RouteComponent />);
+    expect(screen.getByText('Verifying…')).toBeTruthy();
+  });
+
+  it('shows a failed indicator when verification phase is failed', () => {
+    mockVerificationPhase.current = 'failed';
+    render(<RouteComponent />);
+    expect(screen.getByText('Verification failed.')).toBeTruthy();
+  });
+});
