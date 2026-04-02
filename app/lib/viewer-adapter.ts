@@ -236,6 +236,15 @@ export interface ActionsSurfacePayload {
   verificationRail: VerificationOutcome[];
 }
 
+// Knowledge surface — active authoring workspace context
+// Spec: doc/context/viewer-v3/COD-VIEWER-ADAPTER-SPEC.md — Knowledge surface
+export interface KnowledgeSurfacePayload {
+  selectedContext: ContextCandidate[];
+  linkedEntities: AdapterEntityRef[];
+  suggestedTemplates: AdapterEntityRef[];
+  suggestedActions: AdapterActionRef[];
+}
+
 export interface ProjectSurfacePayload {
   projectId: string;
   pressureBand: PressureSignal[];
@@ -801,6 +810,62 @@ export function useProjectSurface(
   return useQuery({
     ...getProjectSurfaceQueryOptions(projectId),
     enabled: !!projectId,
+    initialData,
+  });
+}
+
+// ─── Knowledge Surface ────────────────────────────────────────────────────────
+
+export function buildKnowledgeSurfacePayload(source: {
+  notes?: { id: string; title?: string; path?: string }[];
+}): KnowledgeSurfacePayload {
+  const notes = source.notes ?? [];
+
+  const selectedContext: ContextCandidate[] = notes.slice(0, 5).map((n) => ({
+    id: n.id,
+    contextType: 'note',
+    title: n.title ?? n.id,
+    summary: '',
+    sourceId: n.id,
+    sourcePath: n.path,
+    reasonSelected: 'Recently active in the knowledge workspace.',
+    linkedEntities: [],
+  }));
+
+  const linkedEntities: AdapterEntityRef[] = notes.slice(0, 10).map((n) => ({
+    id: n.id,
+    type: 'note',
+    title: n.title ?? n.id,
+  }));
+
+  return {
+    selectedContext,
+    linkedEntities,
+    suggestedTemplates: [],
+    suggestedActions: [],
+  };
+}
+
+export function getKnowledgeSurfaceQueryOptions() {
+  return {
+    queryKey: ['viewer-adapter', 'knowledge-surface'] as const,
+    queryFn: async (): Promise<KnowledgeSurfacePayload> => {
+      const res = await apiFetch('/api/v1/notes');
+      if (!res.ok)
+        throw new Error(`Failed to fetch knowledge surface: ${res.status}`);
+      const body = await res.json();
+      const notes: { id: string; title?: string; path?: string }[] =
+        body?.structuredContent?.notes ?? body?.notes ?? [];
+      return buildKnowledgeSurfacePayload({ notes });
+    },
+    staleTime: 60_000,
+    retry: 1,
+  };
+}
+
+export function useKnowledgeSurface(initialData?: KnowledgeSurfacePayload) {
+  return useQuery({
+    ...getKnowledgeSurfaceQueryOptions(),
     initialData,
   });
 }
