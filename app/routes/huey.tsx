@@ -282,7 +282,7 @@ function HueyRoute() {
           const fallbackBody = JSON.stringify({
             ...requestBody,
             mode: 'repo+spec',
-            model: 'gpt-5-mini',
+            model: 'gpt-4o-mini',
           });
           const fallbackResp = await apiFetch(
             buildHueyAgentServerRunPath(effectiveThreadId),
