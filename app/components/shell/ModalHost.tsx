@@ -1,16 +1,16 @@
-import React from 'react'
-import * as Dialog from '@radix-ui/react-dialog'
-import { useUIStore } from '../../../src/store/ui'
-import { cn } from '../../../src/lib/cn'
+import React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { useUIStore } from '../../../src/store/ui';
+import { cn } from '../../../src/lib/utils';
 
 interface ModalHostProps {
   /** Slot map: modal id → content to render */
-  modals?: Record<string, React.ReactNode>
+  modals?: Record<string, React.ReactNode>;
 }
 
 interface UIState {
-  activeModal: string | null
-  closeModal: () => void
+  activeModal: string | null;
+  closeModal: () => void;
 }
 
 /**
@@ -25,13 +25,16 @@ interface UIState {
  * when activeModal === 'custom'.
  */
 export function ModalHost({ modals = {} }: ModalHostProps) {
-  const activeModal = useUIStore((s: UIState) => s.activeModal)
-  const closeModal = useUIStore((s: UIState) => s.closeModal)
+  const activeModal = useUIStore((s: UIState) => s.activeModal);
+  const closeModal = useUIStore((s: UIState) => s.closeModal);
 
-  const content = activeModal ? modals[activeModal] ?? null : null
+  const content = activeModal ? (modals[activeModal] ?? null) : null;
 
   return (
-    <Dialog.Root open={activeModal !== null} onOpenChange={(v) => !v && closeModal()}>
+    <Dialog.Root
+      open={activeModal !== null}
+      onOpenChange={(v) => !v && closeModal()}
+    >
       {content && (
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
@@ -43,7 +46,7 @@ export function ModalHost({ modals = {} }: ModalHostProps) {
               'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
               'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
               'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
-              'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+              'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]'
             )}
           >
             {content}
@@ -60,5 +63,5 @@ export function ModalHost({ modals = {} }: ModalHostProps) {
         </Dialog.Portal>
       )}
     </Dialog.Root>
-  )
+  );
 }

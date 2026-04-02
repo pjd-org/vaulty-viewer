@@ -15,7 +15,7 @@ import {
   VIEWER_PRIMARY_NAV,
   VIEWER_UTILITY_NAV,
 } from '../../../src/lib/routes/v3-routing';
-import { cn } from '../../../src/lib/cn';
+import { cn } from '../../../src/lib/utils';
 
 interface UIState {
   command: {
