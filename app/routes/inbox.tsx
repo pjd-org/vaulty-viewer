@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
 import {
@@ -38,11 +39,6 @@ interface Run {
   templateRef?: string;
   items: RunItem[];
   error?: string;
-}
-
-interface ToastMsg {
-  msg: string;
-  isError: boolean;
 }
 
 /* ─── helpers ────────────────────────────────────────────────────────────── */
@@ -320,9 +316,6 @@ function InboxRoute() {
   } = Route.useSearch();
   const navigate = useNavigate();
 
-  const [toastMsg, setToastMsg] = useState<ToastMsg | null>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
   );
@@ -422,18 +415,6 @@ function InboxRoute() {
     [navigate, viewParam, rejectedTab, severity]
   );
 
-  const toast = useCallback((msg: string, isError = false) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToastMsg({ msg, isError });
-    toastTimerRef.current = setTimeout(() => setToastMsg(null), 4000);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
-
   const handleCommit = useCallback(
     async (runId: string) => {
       try {
@@ -458,10 +439,11 @@ function InboxRoute() {
           if (committed > 0) parts.push(`${committed} committed`);
           if (rejected > 0) parts.push(`${rejected} rejected`);
           if (failed > 0) parts.push(`${failed} failed`);
-          toast(
-            `Partial commit (${parts.join(', ')}) — refreshing`,
-            committed === 0
-          );
+          if (committed === 0) {
+            toast.error(`Partial commit (${parts.join(', ')}) — refreshing`);
+          } else {
+            toast(`Partial commit (${parts.join(', ')}) — refreshing`);
+          }
           refresh();
         } else {
           toast(
@@ -469,10 +451,10 @@ function InboxRoute() {
           );
         }
       } catch (err) {
-        toast((err as Error).message ?? 'Commit failed', true);
+        toast.error((err as Error).message ?? 'Commit failed');
       }
     },
-    [commitRun, refresh, toast]
+    [commitRun, refresh]
   );
 
   const handleReject = useCallback(
@@ -484,19 +466,18 @@ function InboxRoute() {
           ? rawErrors.length
           : rawErrors;
         if (errorCount > 0) {
-          toast(
-            `Partial rejection: ${errorCount} item${errorCount !== 1 ? 's' : ''} could not be removed — refreshing`,
-            true
+          toast.error(
+            `Partial rejection: ${errorCount} item${errorCount !== 1 ? 's' : ''} could not be removed — refreshing`
           );
           refresh();
         } else {
           toast(`Rejected run ${runId}`);
         }
       } catch (err) {
-        toast((err as Error).message ?? 'Reject failed', true);
+        toast.error((err as Error).message ?? 'Reject failed');
       }
     },
-    [rejectRun, refresh, toast]
+    [rejectRun, refresh]
   );
 
   // Find the selected item across all buckets
@@ -717,27 +698,16 @@ function InboxRoute() {
   );
 
   return (
-    <>
-      {toastMsg && (
-        <div
-          className={`inbox-toast ${toastMsg.isError ? 'inbox-toast--error' : 'inbox-toast--ok'}`}
-          role="status"
-          aria-live="polite"
-        >
-          {toastMsg.msg}
-        </div>
-      )}
-      <WorkspaceScaffold
-        title="Inbox"
-        subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
-        actions={toolbar}
-        primaryTitle="Triage Queue"
-        primarySubtitle="Sorted by COD rank, filtered by severity."
-        primary={primaryContent}
-        asideTitle="Item Detail"
-        asideSubtitle="Source context and allowed actions."
-        aside={asideContent}
-      />
-    </>
+    <WorkspaceScaffold
+      title="Inbox"
+      subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
+      actions={toolbar}
+      primaryTitle="Triage Queue"
+      primarySubtitle="Sorted by COD rank, filtered by severity."
+      primary={primaryContent}
+      asideTitle="Item Detail"
+      asideSubtitle="Source context and allowed actions."
+      aside={asideContent}
+    />
   );
 }
