@@ -19,6 +19,7 @@ import {
   VerificationRailHost,
 } from '../components/layout';
 import { CommandHost, ModalHost } from '../components/shell';
+import { Toaster } from '../components/ui/sonner';
 import { serializeDehydratedQueryState } from '../../src/query-client';
 import {
   NAV_OVERLAY_EVENT,
@@ -111,6 +112,7 @@ function RootComponent() {
           {SHELL_V3 && <ModalHost />}
         </div>
       </QueryClientProvider>
+      <Toaster />
     </RootDocument>
   );
 }
