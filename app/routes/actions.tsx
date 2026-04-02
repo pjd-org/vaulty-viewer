@@ -75,17 +75,19 @@ function ActionsRoute() {
     recommendations[0];
   const verificationCount = surface?.verificationRail.length ?? 0;
   const verificationPhase = useUIStore((s) => s.verification.phase);
+  const setVerificationPhase = useUIStore((s) => s.setVerificationPhase);
   const setSearch = React.useCallback(
     (next: {
       sort?: 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility';
       simulatableOnly?: boolean;
+      selectedId?: string;
     }) => {
       navigate({
         to: '/actions',
         search: {
           sort: next.sort,
           simulatableOnly: next.simulatableOnly,
-          selectedId,
+          selectedId: 'selectedId' in next ? next.selectedId : selectedId,
         },
         replace: true,
       });
@@ -383,6 +385,7 @@ function ActionsRoute() {
                   <button
                     type="button"
                     disabled={!selected.mutationRef}
+                    onClick={() => setVerificationPhase('pending', selected.id)}
                     className="rounded-full border border-sky-300/30 bg-sky-400/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Execute
@@ -390,12 +393,20 @@ function ActionsRoute() {
                   <button
                     type="button"
                     disabled={selected.reversibility !== 'high'}
+                    onClick={() => setVerificationPhase('pending', selected.id)}
                     className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Simulate
                   </button>
                   <button
                     type="button"
+                    onClick={() =>
+                      setSearch({
+                        sort: currentSort,
+                        simulatableOnly,
+                        selectedId: undefined,
+                      })
+                    }
                     className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition"
                   >
                     Defer

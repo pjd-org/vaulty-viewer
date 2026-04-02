@@ -105,6 +105,8 @@ vi.mock('../../app/components/ui', () => ({
 const mockVerificationPhase = vi.hoisted(() => ({
   current: 'idle' as 'idle' | 'pending' | 'resolved' | 'failed',
 }));
+const mockSetVerificationPhase = vi.hoisted(() => vi.fn());
+const mockActionsSimulationPreviewOpen = vi.hoisted(() => ({ current: false }));
 
 vi.mock('../../src/store/ui', () => ({
   useUIStore: (selector: (s: unknown) => unknown) =>
@@ -115,6 +117,10 @@ vi.mock('../../src/store/ui', () => ({
         pinned: false,
         latestId: null,
       },
+      actions: {
+        simulationPreviewOpen: mockActionsSimulationPreviewOpen.current,
+      },
+      setVerificationPhase: mockSetVerificationPhase,
     }),
 }));
 
@@ -209,6 +215,8 @@ describe('actions adapter wiring', () => {
     mockEnsureQueryData.mockReset();
     mockGetActionsSurfaceQueryOptions.mockClear();
     mockVerificationPhase.current = 'idle';
+    mockActionsSimulationPreviewOpen.current = false;
+    mockSetVerificationPhase.mockReset();
     mockUseActionsSurface.mockReturnValue({
       data: actionsSurface,
       isLoading: false,
@@ -287,5 +295,33 @@ describe('actions adapter wiring', () => {
     mockVerificationPhase.current = 'failed';
     render(<RouteComponent />);
     expect(screen.getByText('Verification failed.')).toBeTruthy();
+  });
+
+  it('Execute button sets verification phase to pending', () => {
+    render(<RouteComponent />);
+    fireEvent.click(screen.getByRole('button', { name: 'Execute' }));
+    expect(mockSetVerificationPhase).toHaveBeenCalledWith(
+      'pending',
+      'action-1'
+    );
+  });
+
+  it('Simulate button opens simulation preview in UIStore', () => {
+    render(<RouteComponent />);
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate' }));
+    expect(mockSetVerificationPhase).toHaveBeenCalledWith(
+      'pending',
+      'action-1'
+    );
+  });
+
+  it('Defer button navigates to /actions without selectedId', () => {
+    render(<RouteComponent />);
+    fireEvent.click(screen.getByRole('button', { name: 'Defer' }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/actions',
+      search: expect.objectContaining({ selectedId: undefined }),
+      replace: true,
+    });
   });
 });
