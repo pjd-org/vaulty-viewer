@@ -1,10 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../../src/utils/api';
+import {
+  useSessionDetail,
+  invalidateQueriesForDomain,
+} from '../lib/viewer-adapter';
 import {
   elapsedMinutes,
   formatDuration,
-  type ActiveSession,
   type SessionTask,
 } from '../../src/lib/focus-logic';
 
@@ -15,62 +19,75 @@ export const Route = createFileRoute('/session/$id')({
 function SessionRoute() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const [session, setSession] = useState<ActiveSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [ending, setEnding] = useState(false);
-  const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/api/v1/sessions/${encodeURIComponent(id)}`);
-      if (res.ok) {
-        const body = await res.json();
-        setSession(body.structuredContent?.session ?? body.session ?? null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const { data: session, isLoading, error } = useSessionDetail(id);
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  const updateTaskStatus = async (task: SessionTask, status: string) => {
-    if (!task.path) return;
-    setMutatingId(task.id);
-    try {
-      await apiFetch(`/api/v1/tasks/${encodeURIComponent(task.path)}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({
+      taskPath,
+      status,
+    }: {
+      taskPath: string;
+      status: string;
+    }) => {
+      const res = await apiFetch(
+        `/api/v1/tasks/${encodeURIComponent(taskPath)}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        }
+      );
+      if (!res.ok)
+        throw new Error(`Failed to update task status: ${res.status}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'detail', id],
       });
-      reload();
-    } finally {
-      setMutatingId(null);
-    }
-  };
+      invalidateQueriesForDomain(queryClient, 'work', {});
+    },
+  });
 
-  const endSession = async (status: 'completed' | 'aborted') => {
-    if (!session) return;
-    setEnding(true);
-    try {
-      await apiFetch('/api/v1/cod/session/end', {
+  const endSessionMutation = useMutation({
+    mutationFn: async (status: 'completed' | 'aborted') => {
+      const res = await apiFetch('/api/v1/cod/session/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: session.id, status }),
+        body: JSON.stringify({ sessionId: session?.id ?? id, status }),
       });
-      await navigate({ to: '/', search: {} });
-    } finally {
-      setEnding(false);
-    }
-  };
+      if (!res.ok) throw new Error(`Failed to end session: ${res.status}`);
+    },
+    onSuccess: () => {
+      invalidateQueriesForDomain(queryClient, 'work', {});
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      navigate({ to: '/', search: {} });
+    },
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="page focus-page">
         <div className="focus-loading">Loading session…</div>
+      </main>
+    );
+  }
+
+  if (error) {
+    const is404 = error.message.includes('not found');
+    return (
+      <main className="page focus-page">
+        <div className="focus-empty" role="alert">
+          <p>
+            {is404
+              ? 'Session not found.'
+              : `Failed to load session: ${error.message}`}
+          </p>
+          <Link to="/" search={{}} className="pill pill--soft">
+            ← Back to Focus
+          </Link>
+        </div>
       </main>
     );
   }
@@ -95,6 +112,11 @@ function SessionRoute() {
   const skipped = session.tasks?.filter((t) => t.status === 'skipped') ?? [];
   const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
 
+  const handleUpdateTask = (task: SessionTask, status: string) => {
+    if (!task.path) return;
+    updateTaskMutation.mutate({ taskPath: task.path, status });
+  };
+
   return (
     <main className="page focus-page">
       <header className="focus-header">
@@ -108,6 +130,15 @@ function SessionRoute() {
           </Link>
         </div>
       </header>
+
+      {(updateTaskMutation.error || endSessionMutation.error) && (
+        <div className="session-error" role="alert">
+          <p>
+            {updateTaskMutation.error?.message ??
+              endSessionMutation.error?.message}
+          </p>
+        </div>
+      )}
 
       <div className="session-meta">
         {elapsed !== null && <span className="chip">{elapsed}m elapsed</span>}
@@ -124,9 +155,12 @@ function SessionRoute() {
             <SessionTaskCard
               key={t.id}
               task={t}
-              onDone={() => updateTaskStatus(t, 'completed')}
-              onSkip={() => updateTaskStatus(t, 'skipped')}
-              mutating={mutatingId === t.id}
+              onDone={() => handleUpdateTask(t, 'completed')}
+              onSkip={() => handleUpdateTask(t, 'skipped')}
+              mutating={
+                updateTaskMutation.isPending &&
+                updateTaskMutation.variables?.taskPath === t.path
+              }
               hero
             />
           ))}
@@ -141,9 +175,12 @@ function SessionRoute() {
               <SessionTaskCard
                 key={t.id}
                 task={t}
-                onDone={() => updateTaskStatus(t, 'completed')}
-                onSkip={() => updateTaskStatus(t, 'skipped')}
-                mutating={mutatingId === t.id}
+                onDone={() => handleUpdateTask(t, 'completed')}
+                onSkip={() => handleUpdateTask(t, 'skipped')}
+                mutating={
+                  updateTaskMutation.isPending &&
+                  updateTaskMutation.variables?.taskPath === t.path
+                }
               />
             ))}
           </div>
@@ -173,15 +210,15 @@ function SessionRoute() {
       <div className="session-footer">
         <button
           className="na-card__btn na-card__btn--done"
-          onClick={() => endSession('completed')}
-          disabled={ending}
+          onClick={() => endSessionMutation.mutate('completed')}
+          disabled={endSessionMutation.isPending}
         >
           End Session
         </button>
         <button
           className="na-card__btn na-card__btn--skip"
-          onClick={() => endSession('aborted')}
-          disabled={ending}
+          onClick={() => endSessionMutation.mutate('aborted')}
+          disabled={endSessionMutation.isPending}
         >
           Abort
         </button>

@@ -1,31 +1,15 @@
-import React, { useEffect, useReducer, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { apiFetch } from '../../src/utils/api';
-import KnowledgeHealthBanner, {
-  type GraphHealthReport,
-} from '../../src/components/KnowledgeHealthBanner';
+import {
+  useKnowledgeGraph,
+  useKnowledgeHealth,
+  type GraphJson,
+} from '../lib/viewer-adapter';
+import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
 
 export const Route = createFileRoute('/knowledge/graph')({
   component: KnowledgeGraphRoute,
 });
-
-type GraphNode = {
-  title: string;
-  type?: string;
-  tags?: string[];
-  status?: string;
-  audience?: string | null;
-};
-type GraphJson = {
-  generated: string;
-  node_count: number;
-  edge_count: number;
-  nodes: Record<string, GraphNode>;
-  links: Record<string, string[]>;
-  backlinks: Record<string, string[]>;
-  by_audience: { human: string[]; agent: string[]; bubble: string[] };
-  unresolved_links: Record<string, string[]>;
-};
 
 const AUDIENCE_COLOR: Record<string, string> = {
   human: '#3b82f6',
@@ -123,40 +107,14 @@ function runLayout(
   return nodes;
 }
 
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-
-type GraphPageState = {
-  graph: GraphJson | null;
-  health: GraphHealthReport | null;
-  simNodes: SimNode[];
-};
-
-type GraphAction = {
-  type: 'LOADED';
-  graph: GraphJson;
-  health: GraphHealthReport | null;
-  simNodes: SimNode[];
-};
-
-function graphPageReducer(
-  _: GraphPageState,
-  action: GraphAction
-): GraphPageState {
-  return {
-    graph: action.graph,
-    health: action.health,
-    simNodes: action.simNodes,
-  };
-}
-
 function KnowledgeGraphRoute() {
-  const [{ graph, health, simNodes }, dispatch] = useReducer(graphPageReducer, {
-    graph: null,
-    health: null,
-    simNodes: [],
-  });
+  const {
+    data: graph,
+    isLoading: graphLoading,
+    error: graphError,
+  } = useKnowledgeGraph();
+  const { data: health } = useKnowledgeHealth();
+
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
@@ -166,26 +124,10 @@ function KnowledgeGraphRoute() {
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
 
-  useEffect(() => {
-    Promise.all([
-      apiFetch('/api/v1/knowledge/graph').then((r) => r.json()),
-      apiFetch('/api/v1/knowledge/health').then((r) => r.json()),
-    ])
-      .then(([g, h]) => {
-        const graphData = g as GraphJson;
-        const simNodes =
-          graphData.node_count > 0
-            ? runLayout(buildSimNodes(graphData), graphData.links)
-            : [];
-        dispatch({
-          type: 'LOADED',
-          graph: graphData,
-          health: h as GraphHealthReport,
-          simNodes,
-        });
-      })
-      .catch(() => {});
-  }, []);
+  const simNodes = useMemo(() => {
+    if (!graph || graph.node_count === 0) return [];
+    return runLayout(buildSimNodes(graph), graph.links);
+  }, [graph]);
 
   const edges: Array<{
     x1: number;
@@ -219,7 +161,14 @@ function KnowledgeGraphRoute() {
         <h1>Knowledge Graph</h1>
       </header>
 
-      <KnowledgeHealthBanner health={health} loading={graph === null} />
+      <KnowledgeHealthBanner health={health ?? null} loading={graphLoading} />
+
+      {graphError && (
+        <div className="knowledge-graph__error" role="alert">
+          <p>Failed to load the knowledge graph.</p>
+          <p className="knowledge-graph__error-detail">{graphError.message}</p>
+        </div>
+      )}
 
       {graph?.node_count === 0 && (
         <p className="knowledge-graph__empty">

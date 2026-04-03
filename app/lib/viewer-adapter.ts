@@ -11,6 +11,15 @@ import {
 } from '../../src/lib/focus-logic';
 import { splitInboxNotes, type InboxNote } from '../../src/lib/inbox-logic';
 import type { ProjectSummary } from '../../src/lib/projects-logic';
+import {
+  validateNextActionsResponse,
+  validateSessionsResponse,
+  validateSessionDetailResponse,
+  validateActiveSession,
+  validateInboxResponse,
+  validateGraphJson,
+  validateGraphHealth,
+} from './api-validation';
 export type AdapterEntityType =
   | 'task'
   | 'project'
@@ -809,8 +818,7 @@ export async function fetchRichNextActions(max = 25): Promise<NextAction[]> {
   const res = await apiFetch(`/api/v1/tasks/next-actions?max=${max}`);
   if (!res.ok) throw new Error(`Failed to fetch next actions: ${res.status}`);
   const body = await res.json();
-  const raw: Record<string, unknown>[] =
-    body.structuredContent?.tasks ?? body.tasks ?? [];
+  const raw = validateNextActionsResponse(body);
   return raw.map(normalizeNextAction);
 }
 
@@ -841,17 +849,13 @@ async function fetchInboxSurfaceSource() {
   const res = await apiFetch('/api/v1/inbox');
   if (!res.ok) throw new Error(`Failed to fetch inbox: ${res.status}`);
   const body = await res.json();
-  const structured = body?.structuredContent;
-  const notes = Array.isArray(structured?.notes ?? body?.notes)
-    ? (structured?.notes ?? body?.notes)
-    : [];
-  const runs = Array.isArray(structured?.runs ?? body?.runs)
-    ? (structured?.runs ?? body?.runs)
-    : [];
-  const { workbenchNotes, archiveNotes } = splitInboxNotes(notes);
+  const { notes, runs } = validateInboxResponse(body);
+  const { workbenchNotes, archiveNotes } = splitInboxNotes(
+    notes as InboxNote[]
+  );
 
   return {
-    runs,
+    runs: runs as Array<Record<string, unknown>>,
     workbenchNotes,
     archiveNotes,
   };
@@ -914,6 +918,146 @@ export function useProjectSurface(
     ...getProjectSurfaceQueryOptions(projectId),
     enabled: !!projectId,
     initialData,
+  });
+}
+
+// ─── Knowledge Graph & Health ─────────────────────────────────────────────────
+
+export type GraphNode = {
+  title: string;
+  type?: string;
+  tags?: string[];
+  status?: string;
+  audience?: string | null;
+};
+
+export type GraphJson = {
+  generated: string;
+  node_count: number;
+  edge_count: number;
+  nodes: Record<string, GraphNode>;
+  links: Record<string, string[]>;
+  backlinks: Record<string, string[]>;
+  by_audience: { human: string[]; agent: string[]; bubble: string[] };
+  unresolved_links: Record<string, string[]>;
+};
+
+export type GraphHealthReport = {
+  graph_generated: string;
+  is_stale: boolean;
+  node_count: number;
+  edge_count: number;
+  by_audience: { human: number; agent: number; bubble: number };
+  unresolved_link_count: number;
+};
+
+export type KnowledgeNoteRef = {
+  path: string;
+  title: string;
+  type?: string;
+  audience?: string | null;
+  domain?: string;
+  tags?: string[];
+  status?: string;
+};
+
+export function getKnowledgeGraphQueryOptions() {
+  return {
+    queryKey: ['viewer-adapter', 'knowledge-graph'] as const,
+    queryFn: async (): Promise<GraphJson> => {
+      const res = await apiFetch('/api/v1/knowledge/graph');
+      if (!res.ok)
+        throw new Error(`Failed to fetch knowledge graph: ${res.status}`);
+      const body = await res.json();
+      validateGraphJson(body);
+      return body as GraphJson;
+    },
+    staleTime: 120_000,
+    retry: 1,
+  };
+}
+
+export function useKnowledgeGraph() {
+  return useQuery(getKnowledgeGraphQueryOptions());
+}
+
+export function getKnowledgeHealthQueryOptions() {
+  return {
+    queryKey: ['viewer-adapter', 'knowledge-health'] as const,
+    queryFn: async (): Promise<GraphHealthReport> => {
+      const res = await apiFetch('/api/v1/knowledge/health');
+      if (!res.ok)
+        throw new Error(`Failed to fetch knowledge health: ${res.status}`);
+      const body = await res.json();
+      validateGraphHealth(body);
+      return body as GraphHealthReport;
+    },
+    staleTime: 60_000,
+    retry: 1,
+  };
+}
+
+export function useKnowledgeHealth() {
+  return useQuery(getKnowledgeHealthQueryOptions());
+}
+
+export function getKnowledgeSearchQueryOptions(
+  query: string,
+  mode: 'tag' | 'semantic'
+) {
+  return {
+    queryKey: ['viewer-adapter', 'knowledge-search', query, mode] as const,
+    queryFn: async (): Promise<KnowledgeNoteRef[]> => {
+      if (!query.trim()) return [];
+      const res = await apiFetch(
+        `/api/v1/knowledge/search?q=${encodeURIComponent(query)}&mode=${mode}`
+      );
+      if (!res.ok) throw new Error(`Failed to search knowledge: ${res.status}`);
+      const body = await res.json();
+      return (body as { results: KnowledgeNoteRef[] }).results ?? [];
+    },
+    staleTime: 30_000,
+    retry: 1,
+    enabled: query.trim().length > 0,
+  };
+}
+
+export function useKnowledgeSearch(query: string, mode: 'tag' | 'semantic') {
+  return useQuery(getKnowledgeSearchQueryOptions(query, mode));
+}
+
+// ─── Session Detail ───────────────────────────────────────────────────────────
+
+export function getSessionDetailQueryOptions(sessionId: string) {
+  return {
+    queryKey: ['sessions', 'detail', sessionId] as const,
+    queryFn: async (): Promise<ActiveSession | null> => {
+      const res = await apiFetch(
+        `/api/v1/sessions/${encodeURIComponent(sessionId)}`
+      );
+      if (!res.ok)
+        throw new Error(
+          res.status === 404
+            ? `Session not found: ${sessionId}`
+            : `Failed to fetch session: ${res.status}`
+        );
+      const body = await res.json();
+      const raw = validateSessionDetailResponse(body);
+      return validateActiveSession(raw);
+    },
+    staleTime: 15_000,
+    retry: (failureCount: number, error: Error) => {
+      // Don't retry 404s
+      if (error.message.includes('not found')) return false;
+      return failureCount < 2;
+    },
+  };
+}
+
+export function useSessionDetail(sessionId: string) {
+  return useQuery({
+    ...getSessionDetailQueryOptions(sessionId),
+    enabled: !!sessionId,
   });
 }
 
@@ -988,11 +1132,14 @@ export function getActiveSessionQueryOptions() {
     queryKey: ['sessions', 'active'] as const,
     queryFn: async (): Promise<ActiveSession | null> => {
       const res = await apiFetch('/api/v1/sessions?status=active&limit=1');
-      if (!res.ok) return null;
+      if (!res.ok)
+        throw new Error(`Failed to fetch active session: ${res.status}`);
       const body = await res.json();
-      const sessions: ActiveSession[] =
-        body.structuredContent?.sessions ?? body.sessions ?? [];
-      return sessions.find((s) => s.status === 'active') ?? null;
+      const sessions = validateSessionsResponse(body);
+      const active = (sessions as ActiveSession[]).find(
+        (s) => s.status === 'active'
+      );
+      return active ? validateActiveSession(active) : null;
     },
     staleTime: 30_000,
     retry: 1,
@@ -1008,10 +1155,10 @@ export function getRecentSessionsQueryOptions(limit = 3) {
     queryKey: ['sessions', 'recent', limit] as const,
     queryFn: async (): Promise<SessionSummary[]> => {
       const res = await apiFetch(`/api/v1/sessions?limit=${limit}`);
-      if (!res.ok) return [];
+      if (!res.ok)
+        throw new Error(`Failed to fetch recent sessions: ${res.status}`);
       const body = await res.json();
-      const raw: unknown[] =
-        body.structuredContent?.sessions ?? body.sessions ?? [];
+      const raw = validateSessionsResponse(body);
       return raw.map(normalizeSessionSummary);
     },
     staleTime: 30_000,
@@ -1060,6 +1207,13 @@ export function invalidateQueriesForDomain(
       inv(queryClient, ['viewer-adapter', 'home-surface']);
       // actions surface re-ranks when task status changes
       inv(queryClient, ['viewer-adapter', 'actions-surface']);
+      // inbox derives from task-adjacent data — keep it fresh
+      inv(queryClient, ['viewer-adapter', 'inbox-surface']);
+      inv(queryClient, ['inbox']);
+      // task queries used by various surfaces
+      inv(queryClient, ['tasks']);
+      // session data reflects task status changes
+      inv(queryClient, ['sessions']);
       if (ctx.projectId) {
         inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
       }

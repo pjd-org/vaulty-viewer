@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '../../src/store/ui';
 import {
@@ -24,17 +25,25 @@ export function useMutationWithVerification<
   const queryClient = useQueryClient();
   const setVerificationPhase = useUIStore((s) => s.setVerificationPhase);
 
+  // Keep refs to latest values so mutation callbacks never read stale closures
+  const actionIdRef = useRef(actionId);
+  actionIdRef.current = actionId;
+  const projectIdRef = useRef(projectId);
+  projectIdRef.current = projectId;
+
   return useMutation<TData, Error, TVariables>({
     mutationFn,
     onMutate: async () => {
-      setVerificationPhase('pending', actionId);
+      setVerificationPhase('pending', actionIdRef.current);
     },
     onSuccess: () => {
-      setVerificationPhase('resolved', actionId);
-      invalidateQueriesForDomain(queryClient, domain, { projectId });
+      setVerificationPhase('resolved', actionIdRef.current);
+      invalidateQueriesForDomain(queryClient, domain, {
+        projectId: projectIdRef.current,
+      });
     },
     onError: () => {
-      setVerificationPhase('failed', actionId);
+      setVerificationPhase('failed', actionIdRef.current);
     },
   });
 }

@@ -9,14 +9,15 @@ export const Route = createFileRoute('/knowledge')({
 });
 
 function KnowledgeRoute() {
-  const { tab, noteId, mode, templateId, memoryTab, projectId } = Route.useSearch()
+  const { tab, noteId, mode, templateId, memoryTab, projectId } =
+    Route.useSearch();
   const workspaceSearch = {
     tab: tab ?? 'notes',
     ...(mode ? { mode } : {}),
     ...(templateId ? { templateId } : {}),
     ...(memoryTab ? { memoryTab } : {}),
     ...(projectId ? { projectId } : {}),
-  }
+  };
 
   return (
     <main className="page">
@@ -31,7 +32,12 @@ function KnowledgeRoute() {
           <div className="flex flex-wrap gap-2">
             <Link
               to="/knowledge/search"
-              search={((prev: Record<string, unknown>) => ({ ...prev, mode: 'semantic' })) as never}
+              search={
+                ((prev: Record<string, unknown>) => ({
+                  ...prev,
+                  searchMode: 'semantic',
+                })) as never
+              }
               className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700"
             >
               Search
