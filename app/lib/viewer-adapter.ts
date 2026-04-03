@@ -4,6 +4,7 @@ import { apiFetch } from '../../src/utils/api';
 import {
   normalizeNextAction,
   type NextAction,
+  type CodScoreBreakdown,
 } from '../../src/lib/focus-logic';
 import { splitInboxNotes, type InboxNote } from '../../src/lib/inbox-logic';
 import type { ProjectSummary } from '../../src/lib/projects-logic';
@@ -332,9 +333,11 @@ function taskSignal(task: NextAction): PressureSignal {
       operation: 'create_task',
       targetId: task.id,
     },
-    confidence: task.score
+    confidence: task.scoreBreakdown
       ? Math.min(0.95, Math.max(0.4, task.score / 10))
-      : 0.5,
+      : task.score
+        ? Math.min(0.95, Math.max(0.4, task.score / 10))
+        : 0.5,
     reversibility: reversibilityFromTask(task),
     allowedActions: [
       {
@@ -361,7 +364,103 @@ function taskSignal(task: NextAction): PressureSignal {
 
 function taskRecommendation(task: NextAction): Recommendation {
   const reversibility = reversibilityFromTask(task);
-  const breakdown: ScoreBreakdown = {
+  const cod = task.scoreBreakdown;
+  const breakdown: ScoreBreakdown = cod
+    ? buildCodBreakdown(task, cod, reversibility)
+    : buildFallbackBreakdown(task, reversibility);
+
+  return {
+    id: `action:${task.id}`,
+    title: task.title,
+    summary: task.description ?? 'Recommended next move from the active queue.',
+    actionType: 'create_task',
+    surfacedBy: 'cod',
+    sourceSignalIds: [`signal:${task.id}`],
+    sourceEntities: [taskEntity(task)],
+    projectId: task.projectId,
+    score: task.score,
+    scoreBreakdown: breakdown,
+    whyNow: cod
+      ? buildCodWhyNow(task, cod)
+      : Array.isArray(task.blockers) && task.blockers.length > 0
+        ? 'Resolving this item should remove immediate friction in the queue.'
+        : (task.estimatedTimeMin ?? 0) <= 45
+          ? 'It is short enough to create momentum without expensive context switching.'
+          : 'It sits high in the queue and carries meaningful leverage right now.',
+    expectedEffect: task.projectId
+      ? `Progress moves forward for ${task.projectId}.`
+      : 'The visible queue should become clearer after execution.',
+    confidence: cod
+      ? Math.min(0.95, Math.max(0.4, task.score / 10))
+      : Math.min(0.95, Math.max(0.35, (task.score || 5) / 10)),
+    reversibility,
+    state: reversibility === 'high' ? 'ready' : 'proposed',
+    mutationRef: {
+      domain: 'work',
+      operation: 'create_task',
+      targetId: task.id,
+    },
+  };
+}
+
+/** Build ScoreBreakdown from real COD pipeline data */
+function buildCodBreakdown(
+  task: NextAction,
+  cod: CodScoreBreakdown,
+  reversibility: 'high' | 'medium' | 'low'
+): ScoreBreakdown {
+  const urgency = clampScore(
+    cod.timeFactor !== undefined
+      ? Math.round(cod.timeFactor * 10)
+      : task.priority
+  );
+  const impact = clampScore(
+    cod.compoundScore !== undefined
+      ? Math.round(cod.compoundScore * 10)
+      : task.score
+  );
+  const blockageRemoval =
+    Array.isArray(task.blockers) && task.blockers.length > 0 ? 9 : 4;
+  const rev = reversibility === 'high' ? 8 : reversibility === 'medium' ? 5 : 2;
+  const confidence = clampScore(
+    cod.adhdStartability !== undefined
+      ? Math.round(cod.adhdStartability * 10)
+      : (task.score || task.priority || 5) * 0.9
+  );
+  const total = clampScore(urgency + impact + blockageRemoval, 30);
+  const normalizedTotal = Math.min(1, Math.max(0, total / 30));
+
+  const reasons: string[] = [];
+  if (cod.goalAligned) reasons.push('Goal-aligned');
+  if (cod.compoundReasons?.length)
+    reasons.push(...cod.compoundReasons.slice(0, 2));
+  if (cod.adhdReasons?.length) reasons.push(...cod.adhdReasons.slice(0, 2));
+  if (cod.moneyBoost && cod.moneyBoost > 1)
+    reasons.push('Financial priority boost');
+  if (cod.bubblePenalty && cod.bubblePenalty > 0)
+    reasons.push('Bubble constraint applied');
+
+  return {
+    urgency,
+    impact,
+    blockageRemoval,
+    reversibility: rev,
+    confidence,
+    total,
+    normalizedTotal,
+    explanation:
+      reasons.length > 0
+        ? reasons.join('. ') + '.'
+        : 'Ranked by the COD pipeline with goal, time, and compound scoring.',
+  };
+}
+
+/** Build ScoreBreakdown from local heuristics (fallback when COD unavailable) */
+function buildFallbackBreakdown(
+  task: NextAction,
+  reversibility: 'high' | 'medium' | 'low'
+): ScoreBreakdown {
+  return {
     urgency: clampScore(task.priority),
     impact: clampScore(task.score),
     blockageRemoval:
@@ -384,36 +483,34 @@ function taskRecommendation(task: NextAction): Recommendation {
         ? 'Blocked work gets extra weight because clearing it can unblock downstream items.'
         : 'Higher priority and leverage push the recommendation upward.',
   };
+}
 
-  return {
-    id: `action:${task.id}`,
-    title: task.title,
-    summary: task.description ?? 'Recommended next move from the active queue.',
-    actionType: 'create_task',
-    surfacedBy: 'cod',
-    sourceSignalIds: [`signal:${task.id}`],
-    sourceEntities: [taskEntity(task)],
-    projectId: task.projectId,
-    score: task.score,
-    scoreBreakdown: breakdown,
-    whyNow:
-      Array.isArray(task.blockers) && task.blockers.length > 0
-        ? 'Resolving this item should remove immediate friction in the queue.'
-        : (task.estimatedTimeMin ?? 0) <= 45
-          ? 'It is short enough to create momentum without expensive context switching.'
-          : 'It sits high in the queue and carries meaningful leverage right now.',
-    expectedEffect: task.projectId
-      ? `Progress moves forward for ${task.projectId}.`
-      : 'The visible queue should become clearer after execution.',
-    confidence: Math.min(0.95, Math.max(0.35, (task.score || 5) / 10)),
-    reversibility,
-    state: reversibility === 'high' ? 'ready' : 'proposed',
-    mutationRef: {
-      domain: 'work',
-      operation: 'create_task',
-      targetId: task.id,
-    },
-  };
+/** Build whyNow text from real COD signals */
+function buildCodWhyNow(task: NextAction, cod: CodScoreBreakdown): string {
+  const parts: string[] = [];
+  if (cod.goalAligned) parts.push('aligned with active goals');
+  if (cod.timeDueInDays !== undefined && cod.timeDueInDays <= 2)
+    parts.push(
+      `due in ${cod.timeDueInDays} day${cod.timeDueInDays === 1 ? '' : 's'}`
+    );
+  if (cod.adhdStartability !== undefined && cod.adhdStartability >= 0.7)
+    parts.push('high startability for current state');
+  if (cod.compoundScore !== undefined && cod.compoundScore >= 0.5)
+    parts.push('compound leverage from streak or habit');
+  if (Array.isArray(task.blockers) && task.blockers.length > 0)
+    parts.push('resolving this clears downstream blockers');
+
+  if (parts.length > 0) {
+    return (
+      parts[0].charAt(0).toUpperCase() +
+      parts[0].slice(1) +
+      (parts.length > 1 ? ', and ' + parts.slice(1).join(', ') : '') +
+      '.'
+    );
+  }
+  return (task.estimatedTimeMin ?? 0) <= 45
+    ? 'Short enough to create momentum without expensive context switching.'
+    : 'Sits high in the queue and carries meaningful leverage right now.';
 }
 
 function noteRejectionType(note: InboxNote): 'user' | 'automated' {

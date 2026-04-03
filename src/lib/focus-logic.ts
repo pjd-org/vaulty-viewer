@@ -14,6 +14,25 @@ export interface NextAction {
   goalId?: string;
   description?: string;
   blockers?: unknown[];
+  /** Real COD score breakdown when served by MCP task_next_actions (undefined in local_fallback mode) */
+  scoreBreakdown?: CodScoreBreakdown;
+}
+
+/** Score breakdown from the real COD ranking pipeline (packages/cod) */
+export interface CodScoreBreakdown {
+  goalWeight?: number;
+  goalAligned?: boolean;
+  timeFactor?: number;
+  timeFlags?: string[];
+  timeDueInDays?: number;
+  compoundScore?: number;
+  compoundReasons?: string[];
+  adhdStartability?: number;
+  adhdPayoff?: number;
+  adhdDopamineROI?: number;
+  adhdReasons?: string[];
+  moneyBoost?: number;
+  bubblePenalty?: number;
 }
 
 export interface ActiveSession {
@@ -42,14 +61,21 @@ export function normalizeNextAction(raw: Record<string, unknown>): NextAction {
     priority: Number(raw.priority ?? 0),
     effortScore: Number(raw.effortScore ?? raw.effort_score ?? 5),
     focusCost: Number(raw.focusCost ?? raw.focus_cost ?? 3),
-    estimatedTimeMin: Number(raw.estimatedTimeMin ?? raw.estimated_time_min ?? 0),
+    estimatedTimeMin: Number(
+      raw.estimatedTimeMin ?? raw.estimated_time_min ?? 0
+    ),
     status: String(raw.status ?? 'todo'),
     tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
     dueDate: typeof raw.dueDate === 'string' ? raw.dueDate : undefined,
     projectId: typeof raw.projectId === 'string' ? raw.projectId : undefined,
     goalId: typeof raw.goalId === 'string' ? raw.goalId : undefined,
-    description: typeof raw.description === 'string' ? raw.description : undefined,
+    description:
+      typeof raw.description === 'string' ? raw.description : undefined,
     blockers: Array.isArray(raw.blockers) ? raw.blockers : [],
+    scoreBreakdown:
+      raw.scoreBreakdown && typeof raw.scoreBreakdown === 'object'
+        ? (raw.scoreBreakdown as CodScoreBreakdown)
+        : undefined,
   };
 }
 
@@ -101,16 +127,21 @@ export function normalizeSessionSummary(raw: unknown): SessionSummary {
   return {
     id: String(r.id ?? r.sessionId ?? ''),
     title: typeof r.title === 'string' ? r.title : undefined,
-    status: (['planned', 'active', 'completed', 'aborted'].includes(r.status as string)
-      ? r.status as SessionSummary['status']
-      : 'planned'),
+    status: ['planned', 'active', 'completed', 'aborted'].includes(
+      r.status as string
+    )
+      ? (r.status as SessionSummary['status'])
+      : 'planned',
     startedAt: typeof r.startedAt === 'string' ? r.startedAt : undefined,
     endedAt: typeof r.endedAt === 'string' ? r.endedAt : undefined,
     taskCount: typeof r.taskCount === 'number' ? r.taskCount : undefined,
   };
 }
 
-export function formatSessionDuration(startedAt?: string, endedAt?: string): string {
+export function formatSessionDuration(
+  startedAt?: string,
+  endedAt?: string
+): string {
   if (!startedAt) return '';
   const end = endedAt ? Date.parse(endedAt) : Date.now();
   const start = Date.parse(startedAt);
