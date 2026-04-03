@@ -147,7 +147,7 @@ export function KnowledgeWorkspaceSurface({
     useKnowledgeSurface();
 
   useEffect(() => {
-    apiFetch('/api/knowledge/health')
+    apiFetch('/api/v1/knowledge/health')
       .then((r) => r.json())
       .then((data) =>
         dispatch({ type: 'HEALTH_LOADED', health: data as GraphHealthReport })
@@ -157,7 +157,7 @@ export function KnowledgeWorkspaceSurface({
     const audiences = ['human', 'agent', 'bubble'] as const;
     Promise.all(
       audiences.map((a) =>
-        apiFetch(`/api/knowledge/by-audience?audience=${a}`)
+        apiFetch(`/api/v1/knowledge/by-audience?audience=${a}`)
           .then((r) => r.json())
           .then((data) => data as AudienceData)
           .catch(() => ({ audience: a, notes: [] }) as AudienceData)

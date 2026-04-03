@@ -2,12 +2,16 @@ import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { apiFetch } from '../../src/utils/api';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
-import KnowledgeHealthBanner, { type GraphHealthReport } from '../../src/components/KnowledgeHealthBanner';
+import KnowledgeHealthBanner, {
+  type GraphHealthReport,
+} from '../../src/components/KnowledgeHealthBanner';
 
 export const Route = createFileRoute('/knowledge/search')({
   validateSearch: (search) => ({
     q: (search.q as string) ?? '',
-    mode: ((search.mode as string) === 'semantic' ? 'semantic' : 'tag') as 'tag' | 'semantic',
+    mode: ((search.mode as string) === 'semantic' ? 'semantic' : 'tag') as
+      | 'tag'
+      | 'semantic',
   }),
   component: KnowledgeSearchRoute,
 });
@@ -41,10 +45,14 @@ type SearchAction =
 
 function searchReducer(state: SearchState, action: SearchAction): SearchState {
   switch (action.type) {
-    case 'SET_Q': return { ...state, q: action.q };
-    case 'SET_MODE': return { ...state, mode: action.mode };
-    case 'SEARCH_START': return { ...state, searching: true };
-    case 'SEARCH_DONE': return { ...state, searching: false, results: action.results };
+    case 'SET_Q':
+      return { ...state, q: action.q };
+    case 'SET_MODE':
+      return { ...state, mode: action.mode };
+    case 'SEARCH_START':
+      return { ...state, searching: true };
+    case 'SEARCH_DONE':
+      return { ...state, searching: false, results: action.results };
   }
 }
 
@@ -52,17 +60,20 @@ function KnowledgeSearchRoute() {
   const { q: initialQ, mode: initialMode } = Route.useSearch();
   const navigate = useNavigate({ from: '/knowledge/search' });
 
-  const [{ q, mode, results, searching }, dispatch] = useReducer(searchReducer, {
-    q: initialQ,
-    mode: initialMode,
-    results: [],
-    searching: false,
-  });
+  const [{ q, mode, results, searching }, dispatch] = useReducer(
+    searchReducer,
+    {
+      q: initialQ,
+      mode: initialMode,
+      results: [],
+      searching: false,
+    }
+  );
   const [health, setHealth] = useState<GraphHealthReport | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    apiFetch('/api/knowledge/health')
+    apiFetch('/api/v1/knowledge/health')
       .then((r) => r.json())
       .then((data) => setHealth(data as GraphHealthReport))
       .catch(() => setHealth(null));
@@ -74,9 +85,16 @@ function KnowledgeSearchRoute() {
       return;
     }
     dispatch({ type: 'SEARCH_START' });
-    apiFetch(`/api/knowledge/search?q=${encodeURIComponent(query)}&mode=${searchMode}`)
+    apiFetch(
+      `/api/v1/knowledge/search?q=${encodeURIComponent(query)}&mode=${searchMode}`
+    )
       .then((r) => r.json())
-      .then((data) => dispatch({ type: 'SEARCH_DONE', results: (data as { results: NoteRef[] }).results ?? [] }))
+      .then((data) =>
+        dispatch({
+          type: 'SEARCH_DONE',
+          results: (data as { results: NoteRef[] }).results ?? [],
+        })
+      )
       .catch(() => dispatch({ type: 'SEARCH_DONE', results: [] }));
   };
 
@@ -133,7 +151,9 @@ function KnowledgeSearchRoute() {
             Semantic
           </button>
         </div>
-        <button type="submit" className="knowledge-search__submit">Search</button>
+        <button type="submit" className="knowledge-search__submit">
+          Search
+        </button>
       </form>
 
       {searching && <div className="knowledge-search__loading">Searching…</div>}

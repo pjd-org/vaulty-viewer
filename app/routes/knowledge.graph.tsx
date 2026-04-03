@@ -1,13 +1,21 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { apiFetch } from '../../src/utils/api';
-import KnowledgeHealthBanner, { type GraphHealthReport } from '../../src/components/KnowledgeHealthBanner';
+import KnowledgeHealthBanner, {
+  type GraphHealthReport,
+} from '../../src/components/KnowledgeHealthBanner';
 
 export const Route = createFileRoute('/knowledge/graph')({
   component: KnowledgeGraphRoute,
 });
 
-type GraphNode = { title: string; type?: string; tags?: string[]; status?: string; audience?: string | null };
+type GraphNode = {
+  title: string;
+  type?: string;
+  tags?: string[];
+  status?: string;
+  audience?: string | null;
+};
 type GraphJson = {
   generated: string;
   node_count: number;
@@ -49,7 +57,9 @@ function buildSimNodes(graph: GraphJson): SimNode[] {
   return Object.entries(graph.nodes).map(([id, node]) => {
     const backlinks = graph.backlinks?.[id] ?? [];
     const radius = Math.min(3, backlinks.length) * 3 + 6;
-    const color = node.audience ? (AUDIENCE_COLOR[node.audience] ?? DEFAULT_COLOR) : DEFAULT_COLOR;
+    const color = node.audience
+      ? (AUDIENCE_COLOR[node.audience] ?? DEFAULT_COLOR)
+      : DEFAULT_COLOR;
     return {
       id,
       x: Math.random() * WIDTH,
@@ -64,7 +74,10 @@ function buildSimNodes(graph: GraphJson): SimNode[] {
   });
 }
 
-function runLayout(nodes: SimNode[], links: Record<string, string[]>): SimNode[] {
+function runLayout(
+  nodes: SimNode[],
+  links: Record<string, string[]>
+): SimNode[] {
   const idxMap = new Map<string, number>();
   nodes.forEach((n, i) => idxMap.set(n.id, i));
 
@@ -120,10 +133,22 @@ type GraphPageState = {
   simNodes: SimNode[];
 };
 
-type GraphAction = { type: 'LOADED'; graph: GraphJson; health: GraphHealthReport | null; simNodes: SimNode[] };
+type GraphAction = {
+  type: 'LOADED';
+  graph: GraphJson;
+  health: GraphHealthReport | null;
+  simNodes: SimNode[];
+};
 
-function graphPageReducer(_: GraphPageState, action: GraphAction): GraphPageState {
-  return { graph: action.graph, health: action.health, simNodes: action.simNodes };
+function graphPageReducer(
+  _: GraphPageState,
+  action: GraphAction
+): GraphPageState {
+  return {
+    graph: action.graph,
+    health: action.health,
+    simNodes: action.simNodes,
+  };
 }
 
 function KnowledgeGraphRoute() {
@@ -132,24 +157,43 @@ function KnowledgeGraphRoute() {
     health: null,
     simNodes: [],
   });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; title: string; audience: string | null } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    title: string;
+    audience: string | null;
+  } | null>(null);
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     Promise.all([
-      apiFetch('/api/knowledge/graph').then((r) => r.json()),
-      apiFetch('/api/knowledge/health').then((r) => r.json()),
-    ]).then(([g, h]) => {
-      const graphData = g as GraphJson;
-      const simNodes = graphData.node_count > 0
-        ? runLayout(buildSimNodes(graphData), graphData.links)
-        : [];
-      dispatch({ type: 'LOADED', graph: graphData, health: h as GraphHealthReport, simNodes });
-    }).catch(() => {});
+      apiFetch('/api/v1/knowledge/graph').then((r) => r.json()),
+      apiFetch('/api/v1/knowledge/health').then((r) => r.json()),
+    ])
+      .then(([g, h]) => {
+        const graphData = g as GraphJson;
+        const simNodes =
+          graphData.node_count > 0
+            ? runLayout(buildSimNodes(graphData), graphData.links)
+            : [];
+        dispatch({
+          type: 'LOADED',
+          graph: graphData,
+          health: h as GraphHealthReport,
+          simNodes,
+        });
+      })
+      .catch(() => {});
   }, []);
 
-  const edges: Array<{ x1: number; y1: number; x2: number; y2: number; key: string }> = [];
+  const edges: Array<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    key: string;
+  }> = [];
   if (graph && simNodes.length > 0) {
     const posMap = new Map(simNodes.map((n) => [n.id, n]));
     for (const [src, targets] of Object.entries(graph.links)) {
@@ -158,7 +202,13 @@ function KnowledgeGraphRoute() {
       for (const tgt of targets) {
         const t = posMap.get(tgt);
         if (!t) continue;
-        edges.push({ x1: s.x, y1: s.y, x2: t.x, y2: t.y, key: `${src}->${tgt}` });
+        edges.push({
+          x1: s.x,
+          y1: s.y,
+          x2: t.x,
+          y2: t.y,
+          key: `${src}->${tgt}`,
+        });
       }
     }
   }
@@ -172,7 +222,10 @@ function KnowledgeGraphRoute() {
       <KnowledgeHealthBanner health={health} loading={graph === null} />
 
       {graph?.node_count === 0 && (
-        <p className="knowledge-graph__empty">No knowledge notes found. Run the build pipeline to generate the graph.</p>
+        <p className="knowledge-graph__empty">
+          No knowledge notes found. Run the build pipeline to generate the
+          graph.
+        </p>
       )}
 
       {graph && graph.node_count > 0 && (
@@ -185,7 +238,15 @@ function KnowledgeGraphRoute() {
           >
             <g className="edges">
               {edges.map((e) => (
-                <line key={e.key} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="#d1d5db" strokeWidth={1} />
+                <line
+                  key={e.key}
+                  x1={e.x1}
+                  y1={e.y1}
+                  x2={e.x2}
+                  y2={e.y2}
+                  stroke="#d1d5db"
+                  strokeWidth={1}
+                />
               ))}
             </g>
             <g className="nodes">
@@ -197,7 +258,14 @@ function KnowledgeGraphRoute() {
                   r={n.radius}
                   fill={n.color}
                   className="cursor-pointer"
-                  onMouseEnter={() => setTooltip({ x: n.x, y: n.y, title: n.title, audience: n.audience })}
+                  onMouseEnter={() =>
+                    setTooltip({
+                      x: n.x,
+                      y: n.y,
+                      title: n.title,
+                      audience: n.audience,
+                    })
+                  }
                   onMouseLeave={() => setTooltip(null)}
                   onClick={() => navigate({ to: '/note', search: { p: n.id } })}
                 />
@@ -220,7 +288,8 @@ function KnowledgeGraphRoute() {
                   fontSize={12}
                   fill="#111827"
                 >
-                  {tooltip.title.slice(0, 22)}{tooltip.title.length > 22 ? '…' : ''}
+                  {tooltip.title.slice(0, 22)}
+                  {tooltip.title.length > 22 ? '…' : ''}
                 </text>
                 <text
                   x={Math.min(tooltip.x + 14, WIDTH - 174)}
@@ -237,12 +306,16 @@ function KnowledgeGraphRoute() {
           <div className="knowledge-graph__legend">
             {Object.entries(AUDIENCE_COLOR).map(([a, c]) => (
               <span key={a} className="knowledge-graph__legend-item">
-                <svg width={12} height={12}><circle cx={6} cy={6} r={5} fill={c} /></svg>
+                <svg width={12} height={12}>
+                  <circle cx={6} cy={6} r={5} fill={c} />
+                </svg>
                 {a}
               </span>
             ))}
             <span className="knowledge-graph__legend-item">
-              <svg width={12} height={12}><circle cx={6} cy={6} r={5} fill={DEFAULT_COLOR} /></svg>
+              <svg width={12} height={12}>
+                <circle cx={6} cy={6} r={5} fill={DEFAULT_COLOR} />
+              </svg>
               other
             </span>
           </div>
