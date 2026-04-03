@@ -27,6 +27,7 @@ import {
   type NavOverlayDetail,
 } from '../../src/lib/nav-overlays';
 import { isShellHiddenPath } from '../../src/lib/routes/v3-routing';
+import { useUIStore } from '../../src/store/ui';
 import { AvatarRoute } from './avatar';
 import { CODStatusRoute } from './cod-status';
 import appCss from '../../src/styles.css?url';
@@ -59,6 +60,28 @@ function RootComponent() {
   const hideShell = isShellHiddenPath(pathname);
   const routeHasOwnOverlay =
     pathname === '/avatar' || pathname === '/cod-status';
+
+  const theme = useUIStore((s) => s.theme);
+
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const applyDark = (dark: boolean) =>
+      dark ? root.classList.add('dark') : root.classList.remove('dark');
+    if (theme === 'dark') {
+      applyDark(true);
+      return;
+    }
+    if (theme === 'light') {
+      applyDark(false);
+      return;
+    }
+    // system
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    applyDark(mq.matches);
+    const handler = (e: MediaQueryListEvent) => applyDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme]);
 
   const closeNavOverlay = React.useCallback(() => {
     setNavOverlay(null);

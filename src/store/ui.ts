@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export type ModalId = string | null;
 
+type ThemePreference = 'light' | 'dark' | 'system';
 type LayoutDensity = 'compact' | 'comfortable' | 'spacious';
 type RightPanelMode = 'hidden' | 'peek' | 'pinned';
 type DetailPanelMode = 'collapsed' | 'split' | 'overlay';
@@ -15,6 +16,7 @@ type SurfaceKey =
   | 'timeline';
 
 interface UIState {
+  theme: ThemePreference;
   layout: {
     leftSidebarCollapsed: boolean;
     rightPanelMode: RightPanelMode;
@@ -92,9 +94,14 @@ interface UIState {
   ) => void;
   setVerificationRailPinned: (pinned: boolean) => void;
   toggleVerificationRailPinned: () => void;
+  setTheme: (theme: ThemePreference) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
+  theme:
+    typeof localStorage !== 'undefined'
+      ? ((localStorage.getItem('vault-theme') as ThemePreference) ?? 'system')
+      : 'system',
   layout: {
     leftSidebarCollapsed: false,
     rightPanelMode: 'peek',
@@ -188,4 +195,9 @@ export const useUIStore = create<UIState>((set) => ({
         pinned: !state.verification.pinned,
       },
     })),
+  setTheme: (theme) => {
+    if (typeof localStorage !== 'undefined')
+      localStorage.setItem('vault-theme', theme);
+    set({ theme });
+  },
 }));
