@@ -7,8 +7,6 @@ beforeEach(async () => {
   localStorage.clear();
   const mod = await import('../../src/store/ui');
   useUIStore = mod.useUIStore;
-  // Reset store state
-  useUIStore.setState(useUIStore.getInitialState?.() ?? useUIStore.getState());
 });
 
 afterEach(() => {
@@ -63,13 +61,8 @@ describe('theme slice — state and localStorage contract', () => {
   it('falls back to "system" when localStorage value is invalid', async () => {
     localStorage.setItem('vault-theme', 'invalid-value');
     vi.resetModules();
-    // The store casts the value directly — 'invalid-value' is treated as-is.
-    // This test asserts the store does not throw on init.
     const mod = await import('../../src/store/ui');
     const freshStore = mod.useUIStore;
-    // Store reads the value; it's the caller's responsibility to supply valid values.
-    expect(['light', 'dark', 'system', 'invalid-value']).toContain(
-      freshStore.getState().theme
-    );
+    expect(freshStore.getState().theme).toBe('system');
   });
 });

@@ -69,18 +69,21 @@ function RootComponent() {
       dark ? root.classList.add('dark') : root.classList.remove('dark');
     if (theme === 'dark') {
       applyDark(true);
-      return;
+      return () => applyDark(false);
     }
     if (theme === 'light') {
       applyDark(false);
-      return;
+      return () => root.classList.remove('dark');
     }
-    // system
+    // system — mirror OS preference
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     applyDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => applyDark(e.matches);
     mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    return () => {
+      mq.removeEventListener('change', handler);
+      root.classList.remove('dark');
+    };
   }, [theme]);
 
   const closeNavOverlay = React.useCallback(() => {
@@ -151,10 +154,26 @@ function RootDocument({
     ? `window.__VIEWER_DEHYDRATED_STATE__=${serializeDehydratedQueryState(dehydratedState)};`
     : '';
 
+  // Blocking script: runs before first paint, prevents dark-mode flash.
+  // Must be a plain string — no JSX expressions, no template literals with backticks
+  // inside the script body (breaks minifiers). Single quotes only.
+  const themeScript = [
+    '(function(){',
+    "  var t=localStorage.getItem('vault-theme');",
+    "  if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches))",
+    "    document.documentElement.classList.add('dark');",
+    '})();',
+  ].join('');
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        {/* Theme script must be in <head> to block paint before body renders */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
       </head>
       <body>
         {children}

@@ -24,62 +24,60 @@ describe('ThemeSelector', () => {
     cleanup();
   });
 
-  it('renders three buttons: Light, Dark, System', () => {
+  it('renders three options: Light, Dark, System', () => {
     render(<ThemeSelector />);
-    expect(screen.getByRole('button', { name: 'Light' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Dark' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'System' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'System' })).toBeTruthy();
   });
 
   it('clicking Dark calls setTheme("dark")', async () => {
     render(<ThemeSelector />);
-    fireEvent.click(screen.getByRole('button', { name: 'Dark' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Dark' }));
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
   });
 
   it('clicking Light calls setTheme("light")', async () => {
     render(<ThemeSelector />);
-    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Light' }));
     expect(mockSetTheme).toHaveBeenCalledWith('light');
   });
 
   it('clicking System calls setTheme("system")', async () => {
     render(<ThemeSelector />);
-    fireEvent.click(screen.getByRole('button', { name: 'System' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'System' }));
     expect(mockSetTheme).toHaveBeenCalledWith('system');
   });
 
-  it('active option (system) has aria-pressed=true', () => {
+  it('active option (system) has aria-checked=true', () => {
     mockTheme = 'system';
     render(<ThemeSelector />);
-    const systemBtn = screen.getByRole('button', { name: 'System' });
-    expect(systemBtn.getAttribute('aria-pressed')).toBe('true');
+    const systemBtn = screen.getByRole('radio', { name: 'System' });
+    expect(systemBtn.getAttribute('aria-checked')).toBe('true');
   });
 
-  it('inactive options have aria-pressed=false', () => {
+  it('inactive options have aria-checked=false', () => {
     mockTheme = 'dark';
     render(<ThemeSelector />);
     expect(
-      screen.getByRole('button', { name: 'Light' }).getAttribute('aria-pressed')
+      screen.getByRole('radio', { name: 'Light' }).getAttribute('aria-checked')
     ).toBe('false');
     expect(
-      screen
-        .getByRole('button', { name: 'System' })
-        .getAttribute('aria-pressed')
+      screen.getByRole('radio', { name: 'System' }).getAttribute('aria-checked')
     ).toBe('false');
   });
 
   it('active option has default variant class (bg-primary)', () => {
     mockTheme = 'dark';
     render(<ThemeSelector />);
-    const darkBtn = screen.getByRole('button', { name: 'Dark' });
+    const darkBtn = screen.getByRole('radio', { name: 'Dark' });
     expect(darkBtn.className).toContain('bg-primary');
   });
 
   it('inactive options do not have bg-primary class', () => {
     mockTheme = 'dark';
     render(<ThemeSelector />);
-    const lightBtn = screen.getByRole('button', { name: 'Light' });
+    const lightBtn = screen.getByRole('radio', { name: 'Light' });
     expect(lightBtn.className).not.toContain('bg-primary');
   });
 });

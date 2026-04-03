@@ -2,7 +2,17 @@ import { create } from 'zustand';
 
 export type ModalId = string | null;
 
-type ThemePreference = 'light' | 'dark' | 'system';
+export type ThemePreference = 'light' | 'dark' | 'system';
+
+const VALID_THEMES: readonly ThemePreference[] = ['light', 'dark', 'system'];
+
+function readThemePreference(): ThemePreference {
+  if (typeof localStorage === 'undefined') return 'system';
+  const raw = localStorage.getItem('vault-theme');
+  return VALID_THEMES.includes(raw as ThemePreference)
+    ? (raw as ThemePreference)
+    : 'system';
+}
 type LayoutDensity = 'compact' | 'comfortable' | 'spacious';
 type RightPanelMode = 'hidden' | 'peek' | 'pinned';
 type DetailPanelMode = 'collapsed' | 'split' | 'overlay';
@@ -98,10 +108,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme:
-    typeof localStorage !== 'undefined'
-      ? ((localStorage.getItem('vault-theme') as ThemePreference) ?? 'system')
-      : 'system',
+  theme: readThemePreference(),
   layout: {
     leftSidebarCollapsed: false,
     rightPanelMode: 'peek',

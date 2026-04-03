@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { Button } from '../ui/button';
-import { useUIStore } from '../../../src/store/ui';
+import { useUIStore, type ThemePreference } from '../../../src/store/ui';
 
-type ThemeOption = 'light' | 'dark' | 'system';
-
-const OPTIONS: { value: ThemeOption; label: string }[] = [
+const OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
   { value: 'system', label: 'System' },
@@ -15,14 +13,15 @@ export function ThemeSelector() {
   const setTheme = useUIStore((s) => s.setTheme);
 
   return (
-    <div className="flex gap-2" role="group" aria-label="Theme preference">
+    <div role="radiogroup" aria-label="Theme preference" className="flex gap-2">
       {OPTIONS.map(({ value, label }) => (
         <Button
           key={value}
+          role="radio"
+          aria-checked={theme === value}
           variant={theme === value ? 'default' : 'outline'}
           size="sm"
           onClick={() => setTheme(value)}
-          aria-pressed={theme === value}
         >
           {label}
         </Button>
