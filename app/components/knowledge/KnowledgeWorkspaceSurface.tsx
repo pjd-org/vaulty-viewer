@@ -1,25 +1,17 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useState } from 'react';
 
-import { apiFetch } from '../../../src/utils/api';
 import KnowledgeNoteCard from '../../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner, {
   type GraphHealthReport,
 } from '../../../src/components/KnowledgeHealthBanner';
 import { SkeletonCardGrid } from '../../../src/components/Skeletons';
 import { KnowledgeWorkspacePane } from './KnowledgeWorkspacePane';
-import { useKnowledgeSurface } from '../../lib/viewer-adapter';
-
-type NoteRef = {
-  path: string;
-  title: string;
-  type?: string;
-  audience?: string | null;
-  domain?: string;
-  tags?: string[];
-  status?: string;
-};
-
-type AudienceData = { audience: string; notes: NoteRef[] };
+import {
+  useKnowledgeSurface,
+  useKnowledgeHealth,
+  useKnowledgeByAudience,
+  type KnowledgeNoteRef,
+} from '../../lib/viewer-adapter';
 
 interface KnowledgeWorkspaceSurfaceProps {
   noteId?: string;
@@ -32,7 +24,7 @@ interface KnowledgeWorkspaceSurfaceProps {
   workspaceParams?: Record<string, string>;
 }
 
-function getAllDomains(notes: NoteRef[]): string[] {
+function getAllDomains(notes: KnowledgeNoteRef[]): string[] {
   const domains = new Set<string>();
   for (const note of notes) {
     if (note.domain) domains.add(note.domain);
@@ -41,10 +33,10 @@ function getAllDomains(notes: NoteRef[]): string[] {
 }
 
 function filterNotes(
-  notes: NoteRef[],
+  notes: KnowledgeNoteRef[],
   domain: string,
   maturity: string
-): NoteRef[] {
+): KnowledgeNoteRef[] {
   return notes.filter((n) => {
     if (domain && n.domain !== domain) return false;
     if (maturity && n.status !== maturity) return false;
@@ -62,7 +54,7 @@ function AudienceColumn({
   workspaceParams,
 }: {
   audience: string;
-  notes: NoteRef[];
+  notes: KnowledgeNoteRef[];
   loading: boolean;
   selectedNoteId?: string;
   workspaceSearch?: Record<string, unknown>;
@@ -92,37 +84,6 @@ function AudienceColumn({
   );
 }
 
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-
-type KnowledgeState = {
-  health: GraphHealthReport | null;
-  healthLoading: boolean;
-  audienceData: Record<string, NoteRef[]>;
-  notesLoading: boolean;
-};
-
-type KnowledgeAction =
-  | { type: 'HEALTH_LOADED'; health: GraphHealthReport | null }
-  | { type: 'NOTES_LOADED'; audienceData: Record<string, NoteRef[]> };
-
-function knowledgeReducer(
-  state: KnowledgeState,
-  action: KnowledgeAction
-): KnowledgeState {
-  switch (action.type) {
-    case 'HEALTH_LOADED':
-      return { ...state, health: action.health, healthLoading: false };
-    case 'NOTES_LOADED':
-      return {
-        ...state,
-        audienceData: action.audienceData,
-        notesLoading: false,
-      };
-  }
-}
-
 export function KnowledgeWorkspaceSurface({
   noteId,
   mode,
@@ -133,64 +94,27 @@ export function KnowledgeWorkspaceSurface({
   workspaceTo,
   workspaceParams,
 }: KnowledgeWorkspaceSurfaceProps) {
-  const [{ health, healthLoading, audienceData, notesLoading }, dispatch] =
-    useReducer(knowledgeReducer, {
-      health: null,
-      healthLoading: true,
-      audienceData: { human: [], agent: [], bubble: [] },
-      notesLoading: true,
-    });
   const [domainFilter, setDomainFilter] = useState('');
   const [maturityFilter, setMaturityFilter] = useState('');
 
+  const { data: health, isLoading: healthLoading } = useKnowledgeHealth();
+  const { data: humanNotes = [], isLoading: humanLoading } =
+    useKnowledgeByAudience('human');
+  const { data: agentNotes = [], isLoading: agentLoading } =
+    useKnowledgeByAudience('agent');
+  const { data: bubbleNotes = [], isLoading: bubbleLoading } =
+    useKnowledgeByAudience('bubble');
   const { data: adapterData, isLoading: adapterLoading } =
     useKnowledgeSurface();
 
-  useEffect(() => {
-    apiFetch('/api/v1/knowledge/health')
-      .then((r) => r.json())
-      .then((data) =>
-        dispatch({ type: 'HEALTH_LOADED', health: data as GraphHealthReport })
-      )
-      .catch(() => dispatch({ type: 'HEALTH_LOADED', health: null }));
+  const notesLoading = humanLoading || agentLoading || bubbleLoading;
 
-    const audiences = ['human', 'agent', 'bubble'] as const;
-    Promise.all(
-      audiences.map((a) =>
-        apiFetch(`/api/v1/knowledge/by-audience?audience=${a}`)
-          .then((r) => r.json())
-          .then((data) => data as AudienceData)
-          .catch(() => ({ audience: a, notes: [] }) as AudienceData)
-      )
-    ).then((results) => {
-      const map: Record<string, NoteRef[]> = {};
-      for (const r of results) map[r.audience] = r.notes;
-      dispatch({ type: 'NOTES_LOADED', audienceData: map });
-    });
-  }, []);
-
-  const allNotes = [
-    ...(audienceData.human ?? []),
-    ...(audienceData.agent ?? []),
-    ...(audienceData.bubble ?? []),
-  ];
+  const allNotes = [...humanNotes, ...agentNotes, ...bubbleNotes];
   const allDomains = getAllDomains(allNotes);
 
-  const filteredHuman = filterNotes(
-    audienceData.human ?? [],
-    domainFilter,
-    maturityFilter
-  );
-  const filteredAgent = filterNotes(
-    audienceData.agent ?? [],
-    domainFilter,
-    maturityFilter
-  );
-  const filteredBubble = filterNotes(
-    audienceData.bubble ?? [],
-    domainFilter,
-    maturityFilter
-  );
+  const filteredHuman = filterNotes(humanNotes, domainFilter, maturityFilter);
+  const filteredAgent = filterNotes(agentNotes, domainFilter, maturityFilter);
+  const filteredBubble = filterNotes(bubbleNotes, domainFilter, maturityFilter);
   const allVisibleNotes = [
     ...filteredHuman,
     ...filteredAgent,
@@ -201,7 +125,10 @@ export function KnowledgeWorkspaceSurface({
 
   return (
     <>
-      <KnowledgeHealthBanner health={health} loading={healthLoading} />
+      <KnowledgeHealthBanner
+        health={(health as GraphHealthReport | undefined) ?? null}
+        loading={healthLoading}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
         <section className="space-y-4">

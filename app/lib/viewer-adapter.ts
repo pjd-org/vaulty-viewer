@@ -1005,6 +1005,34 @@ export function useKnowledgeHealth() {
   return useQuery(getKnowledgeHealthQueryOptions());
 }
 
+export function getKnowledgeByAudienceQueryOptions(
+  audience: 'human' | 'agent' | 'bubble'
+) {
+  return {
+    queryKey: ['viewer-adapter', 'knowledge-by-audience', audience] as const,
+    queryFn: async (): Promise<KnowledgeNoteRef[]> => {
+      const res = await apiFetch(
+        `/api/v1/knowledge/by-audience?audience=${audience}`
+      );
+      if (!res.ok)
+        throw new Error(
+          `Failed to fetch knowledge notes (${audience}): ${res.status}`
+        );
+      const body = (await res.json()) as {
+        audience: string;
+        notes: KnowledgeNoteRef[];
+      };
+      return body.notes ?? [];
+    },
+    staleTime: 60_000,
+    retry: 1,
+  };
+}
+
+export function useKnowledgeByAudience(audience: 'human' | 'agent' | 'bubble') {
+  return useQuery(getKnowledgeByAudienceQueryOptions(audience));
+}
+
 export function getKnowledgeSearchQueryOptions(
   query: string,
   mode: 'tag' | 'semantic'

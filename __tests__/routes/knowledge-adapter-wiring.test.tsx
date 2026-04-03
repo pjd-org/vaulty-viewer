@@ -9,9 +9,17 @@ import type { KnowledgeSurfacePayload } from '../../app/lib/viewer-adapter';
 // ---------------------------------------------------------------------------
 
 const mockUseKnowledgeSurface = vi.hoisted(() => vi.fn());
+const mockUseKnowledgeHealth = vi.hoisted(() =>
+  vi.fn(() => ({ data: undefined, isLoading: false, error: null }))
+);
+const mockUseKnowledgeByAudience = vi.hoisted(() =>
+  vi.fn(() => ({ data: [], isLoading: false, error: null }))
+);
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
   useKnowledgeSurface: () => mockUseKnowledgeSurface(),
+  useKnowledgeHealth: () => mockUseKnowledgeHealth(),
+  useKnowledgeByAudience: (_audience: string) => mockUseKnowledgeByAudience(),
 }));
 
 // Stub out heavy sub-components that make their own network calls
@@ -84,7 +92,7 @@ const knowledgeSurface: KnowledgeSurfacePayload = {
       label: 'Link this note',
       mutationRef: {
         domain: 'knowledge',
-        operation: 'link_note',
+        operation: 'create_task',
         targetId: 'ctx-1',
       },
     },
