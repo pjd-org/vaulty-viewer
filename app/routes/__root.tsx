@@ -34,6 +34,19 @@ import appCss from '../../src/styles.css?url';
 
 const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true';
 
+// Module-level constant: runs before first paint to prevent dark-mode flash.
+// try/catch guards against SecurityError (sandboxed iframes, iOS private browsing).
+// window.matchMedia guard covers old WebViews / jsdom configs where it may be undefined.
+// Must be a plain string — no JSX expressions, no template literals with backticks
+// inside the script body (breaks minifiers). Single quotes only.
+const THEME_SCRIPT = [
+  '(function(){try{',
+  "var t=localStorage.getItem('vault-theme');",
+  "if(t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches))",
+  "document.documentElement.classList.add('dark');",
+  '}catch(e){}})();',
+].join('');
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     head: () => ({
@@ -80,9 +93,11 @@ function RootComponent() {
     applyDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => applyDark(e.matches);
     mq.addEventListener('change', handler);
+    // Only remove the listener on cleanup — do NOT touch .dark here.
+    // Removing .dark in cleanup causes a flicker when transitioning system→dark
+    // because cleanup runs before the new effect adds .dark back.
     return () => {
       mq.removeEventListener('change', handler);
-      root.classList.remove('dark');
     };
   }, [theme]);
 
@@ -154,17 +169,6 @@ function RootDocument({
     ? `window.__VIEWER_DEHYDRATED_STATE__=${serializeDehydratedQueryState(dehydratedState)};`
     : '';
 
-  // Blocking script: runs before first paint, prevents dark-mode flash.
-  // Must be a plain string — no JSX expressions, no template literals with backticks
-  // inside the script body (breaks minifiers). Single quotes only.
-  const themeScript = [
-    '(function(){',
-    "  var t=localStorage.getItem('vault-theme');",
-    "  if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches))",
-    "    document.documentElement.classList.add('dark');",
-    '})();',
-  ].join('');
-
   return (
     <html lang="en">
       <head>
@@ -172,7 +176,7 @@ function RootDocument({
         {/* Theme script must be in <head> to block paint before body renders */}
         <script
           suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: themeScript }}
+          dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
       </head>
       <body>

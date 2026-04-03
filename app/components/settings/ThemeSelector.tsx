@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from '../ui/button';
 import { useUIStore, type ThemePreference } from '../../../src/store/ui';
+import { useShallow } from 'zustand/react/shallow';
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'light', label: 'Light' },
@@ -9,8 +10,10 @@ const OPTIONS: { value: ThemePreference; label: string }[] = [
 ];
 
 export function ThemeSelector() {
-  const theme = useUIStore((s) => s.theme);
-  const setTheme = useUIStore((s) => s.setTheme);
+  // Single subscription via useShallow — one store subscription instead of two.
+  const { theme, setTheme } = useUIStore(
+    useShallow((s) => ({ theme: s.theme, setTheme: s.setTheme }))
+  );
 
   return (
     <div role="radiogroup" aria-label="Theme preference" className="flex gap-2">
