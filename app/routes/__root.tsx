@@ -27,7 +27,7 @@ import {
   type NavOverlayDetail,
 } from '../../src/lib/nav-overlays';
 import { isShellHiddenPath } from '../../src/lib/routes/v3-routing';
-import { useUIStore } from '../../src/store/ui';
+import { useUIStore, THEME_STORAGE_KEY } from '../../src/store/ui';
 import { AvatarRoute } from './avatar';
 import { CODStatusRoute } from './cod-status';
 import appCss from '../../src/styles.css?url';
@@ -35,13 +35,14 @@ import appCss from '../../src/styles.css?url';
 const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true';
 
 // Module-level constant: runs before first paint to prevent dark-mode flash.
+// Built from THEME_STORAGE_KEY so the localStorage key can't silently diverge.
 // try/catch guards against SecurityError (sandboxed iframes, iOS private browsing).
 // window.matchMedia guard covers old WebViews / jsdom configs where it may be undefined.
 // Must be a plain string — no JSX expressions, no template literals with backticks
 // inside the script body (breaks minifiers). Single quotes only.
 const THEME_SCRIPT = [
   '(function(){try{',
-  "var t=localStorage.getItem('vault-theme');",
+  `var t=localStorage.getItem('${THEME_STORAGE_KEY}');`,
   "if(t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches))",
   "document.documentElement.classList.add('dark');",
   '}catch(e){}})();',
@@ -86,9 +87,14 @@ function RootComponent() {
     }
     if (theme === 'light') {
       applyDark(false);
-      return () => root.classList.remove('dark');
+      // No cleanup: this branch never adds .dark, so there is nothing to undo.
+      return;
     }
-    // system — mirror OS preference
+    // system — mirror OS preference.
+    // Guard: window.matchMedia may be undefined in old WebViews.
+    // An uncaught throw here would not be caught by React error boundaries
+    // (useEffect errors propagate to window.onerror).
+    if (!window.matchMedia) return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     applyDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => applyDark(e.matches);

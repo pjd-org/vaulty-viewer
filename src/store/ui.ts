@@ -4,14 +4,22 @@ export type ModalId = string | null;
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 
+/** Single source of truth for the localStorage key used to persist theme. */
+export const THEME_STORAGE_KEY = 'vault-theme';
+
 const VALID_THEMES: readonly ThemePreference[] = ['light', 'dark', 'system'];
 
 function readThemePreference(): ThemePreference {
-  if (typeof localStorage === 'undefined') return 'system';
-  const raw = localStorage.getItem('vault-theme');
-  return VALID_THEMES.includes(raw as ThemePreference)
-    ? (raw as ThemePreference)
-    : 'system';
+  // try/catch guards against SecurityError on iOS private browsing where
+  // localStorage is defined but localStorage.getItem() throws.
+  try {
+    const raw = localStorage.getItem(THEME_STORAGE_KEY);
+    return VALID_THEMES.includes(raw as ThemePreference)
+      ? (raw as ThemePreference)
+      : 'system';
+  } catch {
+    return 'system';
+  }
 }
 type LayoutDensity = 'compact' | 'comfortable' | 'spacious';
 type RightPanelMode = 'hidden' | 'peek' | 'pinned';
@@ -204,7 +212,7 @@ export const useUIStore = create<UIState>((set) => ({
     })),
   setTheme: (theme) => {
     if (typeof localStorage !== 'undefined')
-      localStorage.setItem('vault-theme', theme);
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
     set({ theme });
   },
 }));
