@@ -60,6 +60,13 @@ module.exports = {
       },
       borderRadius: {
         shadcn: 'var(--radius-shadcn)',
+        // Override vault UI preset radius values for shadcn component compatibility.
+        // shadcn components use rounded-md/lg/xl internally; the vault preset maps these
+        // to vault 28px token values. These overrides restore standard shadcn radii.
+        sm: 'calc(var(--radius-shadcn) - 4px)', // ~4px
+        md: 'calc(var(--radius-shadcn) - 2px)', // ~6px
+        lg: 'var(--radius-shadcn)', // 8px  (e.g. Card)
+        xl: 'calc(var(--radius-shadcn) + 4px)', // ~12px
       },
     },
   },
