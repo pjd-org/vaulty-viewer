@@ -1,46 +1,19 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useStepExtractorQuery } from '../lib/queries/agents';
 import { createFileRoute } from '@tanstack/react-router';
-import { apiFetch } from '../../src/utils/api';
 import {
   INTENT_TEMPLATES,
   getTemplate,
   type IntentType,
   type ThreadRecord,
 } from '../../src/lib/huey-intents';
-import {
-  buildHueyAgentServerRunPath,
-  parseHueyAgentServerRunResponse,
-} from '../../src/lib/huey-agent-server';
 import { useHydrated } from '../../src/hooks/useHydrated';
 import {
   HueyContextRail,
   HueyWorkspace,
   HueyAssistantProvider,
 } from '../components/huey';
-import type { ChatMessage } from '../components/huey';
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type InvokeResponse = {
-  ok?: boolean;
-  result?: string;
-  threadId?: string;
-  thread_id?: string;
-  thread?: {
-    id?: string;
-  };
-  run?: {
-    output?: {
-      result?: string;
-      next_action?: string | null;
-      tool_results_degraded?: boolean;
-    };
-  };
-  next_action?: string | null;
-  tool_results_degraded?: boolean;
-};
+import { useThread, useThreadRuntime } from '@assistant-ui/react';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -87,15 +60,12 @@ function createThreadId(): string {
 }
 
 // ---------------------------------------------------------------------------
-// State
+// State — messages/sending/cancelled moved to @assistant-ui/react runtime
 // ---------------------------------------------------------------------------
 
 export type HueyState = {
   threads: ThreadRecord[];
-  messages: ChatMessage[];
   threadId: string;
-  sending: boolean;
-  cancelled: boolean;
   activeIntent: IntentType | null;
 };
 
@@ -103,17 +73,7 @@ export type HueyAction =
   | { type: 'THREADS_REFRESHED'; threads: ThreadRecord[] }
   | { type: 'NEW_THREAD'; threadId: string }
   | { type: 'SWITCH_THREAD'; threadId: string }
-  | {
-      type: 'SEND_START';
-      userMsg: ChatMessage;
-      threadId: string;
-      threads: ThreadRecord[];
-    }
-  | { type: 'SEND_DONE'; assistantMsg: ChatMessage; threadId: string }
-  | { type: 'SEND_FAIL'; errorMsg: ChatMessage }
-  | { type: 'SET_INTENT'; intent: IntentType | null }
-  | { type: 'CANCEL' }
-  | { type: 'CANCEL_CLEAR' };
+  | { type: 'SET_INTENT'; intent: IntentType | null };
 
 export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
   switch (action.type) {
@@ -123,46 +83,16 @@ export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
       return {
         ...state,
         threadId: action.threadId,
-        messages: [],
         activeIntent: null,
-        cancelled: false,
       };
     case 'SWITCH_THREAD':
       return {
         ...state,
         threadId: action.threadId,
-        messages: [],
         activeIntent: null,
-        cancelled: false,
-      };
-    case 'SEND_START':
-      return {
-        ...state,
-        sending: true,
-        cancelled: false,
-        threadId: action.threadId,
-        threads: action.threads,
-        messages: [...state.messages, action.userMsg],
-      };
-    case 'SEND_DONE':
-      return {
-        ...state,
-        sending: false,
-        threadId: action.threadId,
-        messages: [...state.messages, action.assistantMsg],
-      };
-    case 'SEND_FAIL':
-      return {
-        ...state,
-        sending: false,
-        messages: [...state.messages, action.errorMsg],
       };
     case 'SET_INTENT':
       return { ...state, activeIntent: action.intent };
-    case 'CANCEL':
-      return { ...state, sending: false, cancelled: true };
-    case 'CANCEL_CLEAR':
-      return { ...state, cancelled: false };
   }
 }
 
@@ -174,37 +104,16 @@ export const Route = createFileRoute('/huey')({
   component: HueyRoute,
 });
 
-function createMessage(
-  role: ChatMessage['role'],
-  content: string,
-  meta?: string
-): ChatMessage {
-  return {
-    id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    role,
-    content,
-    meta,
-  };
-}
-
 function HueyRoute() {
   const hydrated = useHydrated();
-  const abortRef = React.useRef<AbortController | null>(null);
-  const [{ threads, messages, threadId, sending, activeIntent }, dispatch] =
-    useReducer(hueyReducer, {
+  const [{ threads, threadId, activeIntent }, dispatch] = useReducer(
+    hueyReducer,
+    {
       threads: [],
-      messages: [],
       threadId: INITIAL_THREAD_ID,
-      sending: false,
-      cancelled: false,
       activeIntent: null,
-    });
-
-  const handleCancel = React.useCallback(() => {
-    abortRef.current?.abort();
-    abortRef.current = null;
-    dispatch({ type: 'CANCEL' });
-  }, []);
+    }
+  );
 
   useEffect(() => {
     if (!hydrated) return;
@@ -232,205 +141,176 @@ function HueyRoute() {
     dispatch({ type: 'SWITCH_THREAD', threadId: id });
   }, []);
 
-  const handleSend = async (text: string) => {
-    if (!text.trim() || sending) return;
+  const handleThreadIdChange = useCallback((id: string) => {
+    dispatch({ type: 'SWITCH_THREAD', threadId: id });
+  }, []);
 
-    // Arm a fresh AbortController for this request
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    dispatch({ type: 'CANCEL_CLEAR' });
+  return (
+    <HueyAssistantProvider
+      threadId={threadId}
+      onThreadIdChange={handleThreadIdChange}
+    >
+      <HueyRouteInner
+        threads={threads}
+        threadId={threadId}
+        activeIntent={activeIntent}
+        onNewThread={newThread}
+        onSwitchThread={switchThread}
+        onSetIntent={(intent) => dispatch({ type: 'SET_INTENT', intent })}
+        onFirstMessage={(record) => {
+          saveThread(record);
+          dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() });
+          window.dispatchEvent(new Event('huey-threads-updated'));
+        }}
+      />
+    </HueyAssistantProvider>
+  );
+}
 
-    const effectiveIntent = activeIntent ?? 'freeform';
-    const template = getTemplate(effectiveIntent);
+// ---------------------------------------------------------------------------
+// HueyRouteInner — lives inside AssistantRuntimeProvider, uses runtime hooks
+// ---------------------------------------------------------------------------
 
-    let prompt: string;
-    let displayText: string;
+interface HueyRouteInnerProps {
+  threads: ThreadRecord[];
+  threadId: string;
+  activeIntent: IntentType | null;
+  onNewThread: () => void;
+  onSwitchThread: (id: string) => void;
+  onSetIntent: (intent: IntentType | null) => void;
+  onFirstMessage: (record: ThreadRecord) => void;
+}
 
-    if (effectiveIntent === 'freeform') {
-      prompt = text;
-      displayText = text;
-    } else {
-      const mainField = template.fields[0]?.key ?? 'message';
-      prompt = template.buildPrompt({ [mainField]: text });
-      displayText = `[${template.label}] ${text}`;
-    }
+function HueyRouteInner({
+  threads,
+  threadId,
+  activeIntent,
+  onNewThread,
+  onSwitchThread,
+  onSetIntent,
+  onFirstMessage,
+}: HueyRouteInnerProps) {
+  const thread = useThread();
+  const threadRuntime = useThreadRuntime();
 
-    const effectiveThreadId =
-      threadId === INITIAL_THREAD_ID ? createThreadId() : threadId;
-    let nextThreadId = effectiveThreadId;
-    let updatedThreads = threads;
+  const handleSend = useCallback(
+    (text: string) => {
+      if (!text.trim() || thread.isRunning) return;
+      // Pre-hydration guard: threadId is still the SSR placeholder
+      if (threadId === INITIAL_THREAD_ID) return;
 
-    // Persist thread to history on first message
-    if (messages.length === 0) {
-      const record: ThreadRecord = {
-        id: effectiveThreadId,
-        title: displayText.slice(0, 60),
-        intent: activeIntent,
-        emoji: INTENT_EMOJIS[effectiveIntent] ?? '💬',
-        timestamp: Date.now(),
-      };
-      saveThread(record);
-      updatedThreads = loadThreads();
-      window.dispatchEvent(new Event('huey-threads-updated'));
-    }
+      const effectiveIntent = activeIntent ?? 'freeform';
+      const template = getTemplate(effectiveIntent);
 
-    dispatch({
-      type: 'SEND_START',
-      userMsg: createMessage('user', displayText),
-      threadId: effectiveThreadId,
-      threads: updatedThreads,
-    });
+      let prompt: string;
+      let displayText: string;
 
-    try {
-      const requestBody = {
-        thread_id: effectiveThreadId,
-        mode: 'repo+spec',
-        messages: [{ role: 'user', content: prompt }],
-      };
-      const response = await apiFetch(
-        buildHueyAgentServerRunPath(effectiveThreadId),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        }
-      );
-
-      let payload = (await response
-        .json()
-        .catch(() => null)) as InvokeResponse | null;
-
-      if (!response.ok && (response.status === 429 || response.status >= 500)) {
-        try {
-          const fallbackBody = JSON.stringify({
-            ...requestBody,
-            mode: 'repo+spec',
-            model: 'gpt-4o-mini',
-          });
-          const fallbackResp = await apiFetch(
-            buildHueyAgentServerRunPath(effectiveThreadId),
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: fallbackBody,
-              signal: controller.signal,
-            }
-          );
-          payload = (await fallbackResp
-            .json()
-            .catch(() => null)) as InvokeResponse | null;
-          if (fallbackResp.ok) {
-            payload = {
-              ...(payload || {}),
-              threadId:
-                payload?.threadId ||
-                payload?.thread_id ||
-                payload?.thread?.id ||
-                effectiveThreadId,
-            };
-          }
-        } catch {
-          // ignore and fall through
-        }
+      if (effectiveIntent === 'freeform') {
+        prompt = text;
+        displayText = text;
+      } else {
+        const mainField = template.fields[0]?.key ?? 'message';
+        prompt = template.buildPrompt({ [mainField]: text });
+        displayText = `[${template.label}] ${text}`;
       }
 
-      if (!response.ok && !payload) {
-        throw new Error(`Huey request failed (${response.status})`);
+      // Persist thread to history on first message
+      if (thread.messages.length === 0) {
+        const record: ThreadRecord = {
+          id: threadId,
+          title: displayText.slice(0, 60),
+          intent: activeIntent,
+          emoji: INTENT_EMOJIS[effectiveIntent] ?? '💬',
+          timestamp: Date.now(),
+        };
+        onFirstMessage(record);
       }
 
-      const parsed = parseHueyAgentServerRunResponse(
-        payload,
-        effectiveThreadId
-      );
-      nextThreadId = parsed.threadId;
-
-      dispatch({
-        type: 'SEND_DONE',
-        assistantMsg: createMessage(
-          'assistant',
-          parsed.assistantText,
-          parsed.meta
-        ),
-        threadId: nextThreadId,
+      threadRuntime.append({
+        role: 'user',
+        content: [{ type: 'text', text: prompt }],
       });
-    } catch (err) {
-      // Swallow abort errors silently — user intentionally cancelled
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      const msg = err instanceof Error ? err.message : 'Huey request failed';
-      dispatch({
-        type: 'SEND_FAIL',
-        errorMsg: createMessage('system', `Request failed: ${msg}`),
-      });
-    } finally {
-      if (abortRef.current === controller) {
-        abortRef.current = null;
-      }
-    }
-  };
+    },
+    [
+      thread.isRunning,
+      thread.messages.length,
+      activeIntent,
+      threadId,
+      threadRuntime,
+      onFirstMessage,
+    ]
+  );
+
+  const handleCancel = useCallback(() => {
+    threadRuntime.cancelRun();
+  }, [threadRuntime]);
+
+  // Map @assistant-ui/react ThreadMessage[] → ChatMessage[] for HueyWorkspace
+  const messages = thread.messages
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .map((m) => ({
+      id: m.id,
+      role: m.role as 'user' | 'assistant',
+      content: m.content
+        .filter((p) => p.type === 'text')
+        .map((p) => (p as { type: 'text'; text: string }).text)
+        .join('\n'),
+    }));
 
   const lastAssistantText =
     [...messages].reverse().find((m) => m.role === 'assistant')?.content ?? '';
 
   const { data: extractedSteps } = useStepExtractorQuery(lastAssistantText, {
-    enabled: !sending && lastAssistantText.length > 80,
+    enabled: !thread.isRunning && lastAssistantText.length > 80,
   });
 
   return (
-    <HueyAssistantProvider>
-      <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
-        <div className="w-full lg:w-[250px] shrink-0">
-          <HueyContextRail
-            threads={threads}
-            activeThreadId={threadId}
-            onSelectThread={switchThread}
-            onNewThread={newThread}
-            intentTemplates={INTENT_TEMPLATES}
-            activeIntent={activeIntent}
-            onSelectIntent={(t) =>
-              dispatch({
-                type: 'SET_INTENT',
-                intent: activeIntent === t ? null : t,
-              })
-            }
-          />
-        </div>
-        <div className="w-full flex-1 min-w-0">
-          <HueyWorkspace
-            messages={messages}
-            loading={sending}
-            onSend={handleSend}
-            onCancel={handleCancel}
-            activeIntent={activeIntent}
-            intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
-          />
-        </div>
+    <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
+      <div className="w-full lg:w-[250px] shrink-0">
+        <HueyContextRail
+          threads={threads}
+          activeThreadId={threadId}
+          onSelectThread={onSwitchThread}
+          onNewThread={onNewThread}
+          intentTemplates={INTENT_TEMPLATES}
+          activeIntent={activeIntent}
+          onSelectIntent={(t) => onSetIntent(activeIntent === t ? null : t)}
+        />
+      </div>
+      <div className="w-full flex-1 min-w-0">
+        <HueyWorkspace
+          messages={messages}
+          loading={thread.isRunning}
+          onSend={handleSend}
+          onCancel={handleCancel}
+          activeIntent={activeIntent}
+          intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
+        />
+      </div>
 
-        {/* Step extractor panel — only shown when steps are available */}
-        {extractedSteps && extractedSteps.steps.length > 0 && (
-          <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
-            <div className="genie-surface genie-surface--utility rounded-[28px] p-4 space-y-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Extracted steps
-              </p>
-              <ol className="space-y-2">
-                {extractedSteps.steps.map((step, i) => (
-                  <li key={i} className="text-sm space-y-0.5">
-                    <p className="font-medium text-slate-800">{step.title}</p>
-                    <p className="text-slate-600">{step.action}</p>
-                    {step.expected_result && (
-                      <p className="text-xs text-slate-500">
-                        → {step.expected_result}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </div>
+      {/* Step extractor panel — only shown when steps are available */}
+      {extractedSteps && extractedSteps.steps.length > 0 && (
+        <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
+          <div className="genie-surface genie-surface--utility rounded-[28px] p-4 space-y-3">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              Extracted steps
+            </p>
+            <ol className="space-y-2">
+              {extractedSteps.steps.map((step, i) => (
+                <li key={i} className="text-sm space-y-0.5">
+                  <p className="font-medium text-slate-800">{step.title}</p>
+                  <p className="text-slate-600">{step.action}</p>
+                  {step.expected_result && (
+                    <p className="text-xs text-slate-500">
+                      → {step.expected_result}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
           </div>
-        )}
-      </main>
-    </HueyAssistantProvider>
+        </div>
+      )}
+    </main>
   );
 }

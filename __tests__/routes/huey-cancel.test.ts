@@ -1,14 +1,17 @@
 /**
- * Huey route — cancel / interrupt behaviour
+ * Huey route — reducer behaviour (Phase 8)
  *
- * The route must support aborting an in-flight send via AbortController.
- * These tests cover:
- *   1. The CANCEL action transitions `sending` → false and `cancelled` → true
- *   2. Re-arming: CANCEL_CLEAR resets cancelled state so a new send can proceed
- *   3. SEND_START while cancelled is a no-op guard (defensive)
+ * messages/sending/cancelled are now managed by the @assistant-ui/react
+ * LocalRuntime. The hueyReducer is responsible only for:
+ *   - threads sidebar state
+ *   - active threadId
+ *   - activeIntent
  *
- * The reducer logic is extracted to a pure function so it can be unit-tested
- * without mounting the full React component.
+ * Tests cover:
+ *   1. NEW_THREAD resets threadId and clears activeIntent
+ *   2. SWITCH_THREAD changes threadId and clears activeIntent
+ *   3. SET_INTENT updates activeIntent (and toggles to null)
+ *   4. THREADS_REFRESHED replaces threads list without touching threadId/intent
  */
 
 import { describe, it, expect } from 'vitest';
@@ -20,40 +23,74 @@ import {
 
 const baseState: HueyState = {
   threads: [],
-  messages: [],
   threadId: 'huey-thread-initial',
-  sending: false,
-  cancelled: false,
   activeIntent: null,
 };
 
-describe('huey reducer — cancel / interrupt', () => {
-  it('CANCEL transitions sending to false and sets cancelled', () => {
-    const sending = { ...baseState, sending: true };
-    const next = hueyReducer(sending, { type: 'CANCEL' });
-    expect(next.sending).toBe(false);
-    expect(next.cancelled).toBe(true);
-  });
-
-  it('CANCEL_CLEAR resets cancelled so a new send can proceed', () => {
-    const cancelled = { ...baseState, cancelled: true };
-    const next = hueyReducer(cancelled, { type: 'CANCEL_CLEAR' });
-    expect(next.cancelled).toBe(false);
-    expect(next.sending).toBe(false);
-  });
-
-  it('SEND_DONE after CANCEL does not mark sending as false again (idempotent)', () => {
-    const cancelled = { ...baseState, sending: false, cancelled: true };
-    const next = hueyReducer(cancelled, {
-      type: 'SEND_DONE',
-      assistantMsg: {
-        id: 'msg-1',
-        role: 'assistant',
-        content: 'late response',
-      },
-      threadId: 'huey-thread-initial',
+describe('huey reducer', () => {
+  it('NEW_THREAD sets a new threadId and clears activeIntent', () => {
+    const withIntent: HueyState = {
+      ...baseState,
+      activeIntent: 'plan_next_step',
+    };
+    const next = hueyReducer(withIntent, {
+      type: 'NEW_THREAD',
+      threadId: 'huey-thread-1234',
     });
-    // sending was already false; state should be stable
-    expect(next.sending).toBe(false);
+    expect(next.threadId).toBe('huey-thread-1234');
+    expect(next.activeIntent).toBeNull();
+  });
+
+  it('SWITCH_THREAD changes threadId and clears activeIntent', () => {
+    const withIntent: HueyState = {
+      ...baseState,
+      threadId: 'huey-thread-aaa',
+      activeIntent: 'debug_blocker',
+    };
+    const next = hueyReducer(withIntent, {
+      type: 'SWITCH_THREAD',
+      threadId: 'huey-thread-bbb',
+    });
+    expect(next.threadId).toBe('huey-thread-bbb');
+    expect(next.activeIntent).toBeNull();
+  });
+
+  it('SET_INTENT updates activeIntent', () => {
+    const next = hueyReducer(baseState, {
+      type: 'SET_INTENT',
+      intent: 'generate_code',
+    });
+    expect(next.activeIntent).toBe('generate_code');
+  });
+
+  it('SET_INTENT to null clears activeIntent', () => {
+    const withIntent: HueyState = {
+      ...baseState,
+      activeIntent: 'summarize_state',
+    };
+    const next = hueyReducer(withIntent, { type: 'SET_INTENT', intent: null });
+    expect(next.activeIntent).toBeNull();
+  });
+
+  it('THREADS_REFRESHED replaces threads without touching threadId or activeIntent', () => {
+    const threads = [
+      {
+        id: 'huey-thread-x',
+        title: 'Test thread',
+        intent: null,
+        emoji: '💬',
+        timestamp: Date.now(),
+      },
+    ];
+    const withIntent: HueyState = {
+      ...baseState,
+      threadId: 'huey-thread-current',
+      activeIntent: 'review_spec',
+    };
+    const action: HueyAction = { type: 'THREADS_REFRESHED', threads };
+    const next = hueyReducer(withIntent, action);
+    expect(next.threads).toBe(threads);
+    expect(next.threadId).toBe('huey-thread-current');
+    expect(next.activeIntent).toBe('review_spec');
   });
 });
