@@ -35,3 +35,38 @@ export async function updateTaskStatus(path: string, status: string) {
   }
   return res.ok;
 }
+
+export interface TaskMetrics {
+  path: string;
+  title: string;
+  status: string;
+  priority: number;
+  effortScore: number;
+  focusCost: number;
+  estimatedTimeMin: number;
+  milestone?: number;
+  rewardPotential?: number;
+  blockerCount?: number;
+  checklistProgress?: string;
+}
+
+export async function fetchTaskMetrics(path: string): Promise<TaskMetrics> {
+  const encoded = encodeURIComponent(path);
+  const res = await apiFetch(`/api/v1/tasks/${encoded}`);
+  if (!res.ok) throw new Error('Failed to fetch task metrics');
+  const body = await res.json();
+  const task = body.structuredContent?.task ?? body.task ?? body;
+  return {
+    path: task.path ?? path,
+    title: task.title ?? '',
+    status: task.status ?? 'unknown',
+    priority: task.priority ?? 0,
+    effortScore: task.effortScore ?? task.effort_score ?? 0,
+    focusCost: task.focusCost ?? task.focus_cost ?? 0,
+    estimatedTimeMin: task.estimatedTimeMin ?? task.estimated_time_min ?? 0,
+    milestone: task.milestone,
+    rewardPotential: task.rewardPotential ?? task.reward_potential,
+    blockerCount: task.blockerCount ?? task.blocker_count ?? 0,
+    checklistProgress: task.checklistProgress ?? task.checklist_progress,
+  };
+}

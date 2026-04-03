@@ -153,6 +153,8 @@ export interface Recommendation {
   state?: 'proposed' | 'simulatable' | 'ready' | 'executed' | 'blocked';
   requiresApproval?: boolean;
   mutationRef?: MutationRef;
+  /** Vault-relative task path for API mutations (e.g. updateTaskStatus) */
+  taskPath?: string;
 }
 
 export interface ContextCandidate {
@@ -400,6 +402,7 @@ function taskRecommendation(task: NextAction): Recommendation {
       operation: 'create_task',
       targetId: task.id,
     },
+    taskPath: task.path || undefined,
   };
 }
 
@@ -1010,6 +1013,8 @@ export function invalidateQueriesForDomain(
       inv(queryClient, ['work']);
       // home surface re-ranks when task pressure changes
       inv(queryClient, ['viewer-adapter', 'home-surface']);
+      // actions surface re-ranks when task status changes
+      inv(queryClient, ['viewer-adapter', 'actions-surface']);
       if (ctx.projectId) {
         inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
       }

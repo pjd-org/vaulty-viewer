@@ -9,6 +9,12 @@ import {
 } from '../lib/viewer-adapter';
 import { actionsSearchParams } from '../../src/lib/routes/search-params';
 import { useUIStore } from '../../src/store/ui';
+import { useMutationWithVerification } from '../hooks/use-mutation-with-verification';
+import {
+  updateTaskStatus,
+  fetchTaskMetrics,
+  type TaskMetrics,
+} from '../lib/api/tasks';
 
 const REVERB_RANK: Record<'low' | 'medium' | 'high', number> = {
   low: 0,
@@ -75,7 +81,52 @@ function ActionsRoute() {
     recommendations[0];
   const verificationCount = surface?.verificationRail.length ?? 0;
   const verificationPhase = useUIStore((s) => s.verification.phase);
-  const setVerificationPhase = useUIStore((s) => s.setVerificationPhase);
+  const [simulationData, setSimulationData] =
+    React.useState<TaskMetrics | null>(null);
+  const [simulationLoading, setSimulationLoading] = React.useState(false);
+
+  // Clear simulation data when selection changes
+  React.useEffect(() => {
+    setSimulationData(null);
+  }, [selected?.id]);
+
+  const executeMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
+    domain: 'work',
+    actionId: selected?.id ?? '',
+    projectId: selected?.projectId,
+  });
+
+  const deferMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'backlog'),
+    domain: 'work',
+    actionId: selected?.id ?? '',
+    projectId: selected?.projectId,
+  });
+
+  const handleExecute = React.useCallback(() => {
+    if (!selected?.taskPath) return;
+    executeMutation.mutate(selected.taskPath);
+  }, [selected, executeMutation]);
+
+  const handleDefer = React.useCallback(() => {
+    if (!selected?.taskPath) return;
+    deferMutation.mutate(selected.taskPath);
+  }, [selected, deferMutation]);
+
+  const handleSimulate = React.useCallback(async () => {
+    if (!selected?.taskPath) return;
+    setSimulationLoading(true);
+    setSimulationData(null);
+    try {
+      const metrics = await fetchTaskMetrics(selected.taskPath);
+      setSimulationData(metrics);
+    } catch {
+      setSimulationData(null);
+    } finally {
+      setSimulationLoading(false);
+    }
+  }, [selected]);
   const setSearch = React.useCallback(
     (next: {
       sort?: 'urgency' | 'impact' | 'confidence' | 'source' | 'reversibility';
@@ -384,35 +435,70 @@ function ActionsRoute() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    disabled={!selected.mutationRef}
-                    onClick={() => setVerificationPhase('pending', selected.id)}
+                    disabled={!selected.taskPath || executeMutation.isPending}
+                    onClick={handleExecute}
                     className="rounded-full border border-sky-300/30 bg-sky-400/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Execute
+                    {executeMutation.isPending ? 'Starting…' : 'Execute'}
                   </button>
                   <button
                     type="button"
-                    disabled={selected.reversibility !== 'high'}
-                    onClick={() => setVerificationPhase('pending', selected.id)}
+                    disabled={
+                      !selected.taskPath ||
+                      selected.reversibility !== 'high' ||
+                      simulationLoading
+                    }
+                    onClick={handleSimulate}
                     className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Simulate
+                    {simulationLoading ? 'Loading…' : 'Simulate'}
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      setSearch({
-                        sort: currentSort,
-                        simulatableOnly,
-                        selectedId: undefined,
-                      })
-                    }
-                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition"
+                    disabled={!selected.taskPath || deferMutation.isPending}
+                    onClick={handleDefer}
+                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Defer
+                    {deferMutation.isPending ? 'Deferring…' : 'Defer'}
                   </button>
                 </div>
               </div>
+              {simulationData && (
+                <div className="rounded-[18px] border border-amber-300/20 bg-amber-400/5 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-400">
+                    Simulation preview
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {[
+                      ['Status', simulationData.status],
+                      ['Priority', String(simulationData.priority)],
+                      ['Effort', `${simulationData.effortScore}/10`],
+                      ['Focus cost', `${simulationData.focusCost}/10`],
+                      [
+                        'Estimated time',
+                        `${simulationData.estimatedTimeMin} min`,
+                      ],
+                      ...(simulationData.milestone != null
+                        ? [['Milestone', `${simulationData.milestone}%`]]
+                        : []),
+                      ...(simulationData.blockerCount
+                        ? [['Blockers', String(simulationData.blockerCount)]]
+                        : []),
+                      ...(simulationData.checklistProgress
+                        ? [['Checklist', simulationData.checklistProgress]]
+                        : []),
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-slate-400">{label}</span>
+                        <span className="text-slate-200">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : (
