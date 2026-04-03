@@ -835,8 +835,23 @@ export async function fetchRichNextActions(max = 25): Promise<NextAction[]> {
 export function getHomeSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'home-surface'],
-    queryFn: async () =>
-      buildHomeSurfacePayload(await fetchRichNextActions(25)),
+    queryFn: async (): Promise<HomeSurfacePayload> => {
+      const res = await apiFetch('/api/v1/surfaces/home?max=25');
+      if (!res.ok)
+        throw new Error(`Failed to fetch home surface: ${res.status}`);
+      const body = await res.json();
+      // API returns { structuredContent: HomeSurfacePayload, warnings? }
+      const sc = (body?.structuredContent ?? body) as HomeSurfacePayload & {
+        tasks?: unknown[];
+        meta?: unknown;
+      };
+      // tasks array from the server is raw records; normalize to NextAction[]
+      const rawTasks = Array.isArray(sc.tasks) ? sc.tasks : [];
+      const tasks = (rawTasks as Array<Record<string, unknown>>).map(
+        normalizeNextAction
+      );
+      return { ...sc, tasks } as HomeSurfacePayload;
+    },
     staleTime: 60_000,
     retry: 1,
   };
@@ -885,8 +900,16 @@ export function useInboxSurface(initialData?: InboxItem[]) {
 export function getActionsSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'actions-surface'],
-    queryFn: async () =>
-      buildActionsSurfacePayload(await fetchRichNextActions(25)),
+    queryFn: async (): Promise<ActionsSurfacePayload> => {
+      const res = await apiFetch('/api/v1/surfaces/actions?max=25');
+      if (!res.ok)
+        throw new Error(`Failed to fetch actions surface: ${res.status}`);
+      const body = await res.json();
+      const sc = (body?.structuredContent ?? body) as ActionsSurfacePayload & {
+        meta?: unknown;
+      };
+      return sc as ActionsSurfacePayload;
+    },
     staleTime: 60_000,
     retry: 1,
   };
@@ -1096,9 +1119,12 @@ export function useSessionDetail(sessionId: string) {
 // ─── Knowledge Surface ────────────────────────────────────────────────────────
 
 export function buildKnowledgeSurfacePayload(source: {
-  notes?: { id: string; title?: string; path?: string }[];
+  notes?: { id?: string; path?: string; title?: string }[];
 }): KnowledgeSurfacePayload {
-  const notes = source.notes ?? [];
+  const notes = (source.notes ?? []).map((n) => ({
+    ...n,
+    id: n.id ?? n.path ?? '',
+  }));
 
   const selectedContext: ContextCandidate[] = notes.slice(0, 5).map((n) => ({
     id: n.id,
@@ -1137,13 +1163,16 @@ export function getKnowledgeSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'knowledge-surface'] as const,
     queryFn: async (): Promise<KnowledgeSurfacePayload> => {
-      const res = await apiFetch('/api/v1/notes');
+      const res = await apiFetch(
+        '/api/v1/knowledge/by-audience?audience=human'
+      );
       if (!res.ok)
         throw new Error(`Failed to fetch knowledge surface: ${res.status}`);
-      const body = await res.json();
-      const notes: { id: string; title?: string; path?: string }[] =
-        body?.structuredContent?.notes ?? body?.notes ?? [];
-      return buildKnowledgeSurfacePayload({ notes });
+      const body = (await res.json()) as {
+        audience: string;
+        notes: KnowledgeNoteRef[];
+      };
+      return buildKnowledgeSurfacePayload({ notes: body.notes ?? [] });
     },
     staleTime: 60_000,
     retry: 1,
