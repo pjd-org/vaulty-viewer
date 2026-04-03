@@ -219,7 +219,7 @@ function FocusRoute() {
     if (!activeSession) return;
     setEndingSession(true);
     try {
-      await apiFetch('/cod/session/end', {
+      await apiFetch('/api/v1/cod/session/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

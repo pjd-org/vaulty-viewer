@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { apiFetch } from "../../src/utils/api";
+import React, { useCallback, useEffect, useState } from 'react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { apiFetch } from '../../src/utils/api';
 import {
   elapsedMinutes,
   formatDuration,
   type ActiveSession,
   type SessionTask,
-} from "../../src/lib/focus-logic";
+} from '../../src/lib/focus-logic';
 
-export const Route = createFileRoute("/session/$id")({
+export const Route = createFileRoute('/session/$id')({
   component: SessionRoute,
 });
 
@@ -41,30 +41,27 @@ function SessionRoute() {
     if (!task.path) return;
     setMutatingId(task.id);
     try {
-      await apiFetch(
-        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }),
-        }
-      );
+      await apiFetch(`/api/v1/tasks/${encodeURIComponent(task.path)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
       reload();
     } finally {
       setMutatingId(null);
     }
   };
 
-  const endSession = async (status: "completed" | "aborted") => {
+  const endSession = async (status: 'completed' | 'aborted') => {
     if (!session) return;
     setEnding(true);
     try {
-      await apiFetch("/cod/session/end", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await apiFetch('/api/v1/cod/session/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: session.id, status }),
       });
-      await navigate({ to: "/", search: {} });
+      await navigate({ to: '/', search: {} });
     } finally {
       setEnding(false);
     }
@@ -83,16 +80,19 @@ function SessionRoute() {
       <main className="page focus-page">
         <div className="focus-empty">
           <p>Session not found.</p>
-          <Link to="/" search={{}} className="pill pill--soft">← Back to Focus</Link>
+          <Link to="/" search={{}} className="pill pill--soft">
+            ← Back to Focus
+          </Link>
         </div>
       </main>
     );
   }
 
-  const pending = session.tasks?.filter((t) => t.status === "pending") ?? [];
-  const inProgress = session.tasks?.filter((t) => t.status === "in_progress") ?? [];
-  const done = session.tasks?.filter((t) => t.status === "done") ?? [];
-  const skipped = session.tasks?.filter((t) => t.status === "skipped") ?? [];
+  const pending = session.tasks?.filter((t) => t.status === 'pending') ?? [];
+  const inProgress =
+    session.tasks?.filter((t) => t.status === 'in_progress') ?? [];
+  const done = session.tasks?.filter((t) => t.status === 'done') ?? [];
+  const skipped = session.tasks?.filter((t) => t.status === 'skipped') ?? [];
   const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
 
   return (
@@ -103,16 +103,18 @@ function SessionRoute() {
           <h1>{session.title ?? `Session ${id.slice(0, 8)}`}</h1>
         </div>
         <div className="focus-header__nav">
-          <Link to="/" search={{}} className="pill pill--ghost">← Focus</Link>
+          <Link to="/" search={{}} className="pill pill--ghost">
+            ← Focus
+          </Link>
         </div>
       </header>
 
       <div className="session-meta">
-        {elapsed !== null && (
-          <span className="chip">{elapsed}m elapsed</span>
-        )}
+        {elapsed !== null && <span className="chip">{elapsed}m elapsed</span>}
         <span className="chip">{formatDuration(session.budgetMin)} budget</span>
-        <span className="chip">{done.length}/{session.tasks?.length ?? 0} done</span>
+        <span className="chip">
+          {done.length}/{session.tasks?.length ?? 0} done
+        </span>
       </div>
 
       {inProgress.length > 0 && (
@@ -122,8 +124,8 @@ function SessionRoute() {
             <SessionTaskCard
               key={t.id}
               task={t}
-              onDone={() => updateTaskStatus(t, "completed")}
-              onSkip={() => updateTaskStatus(t, "skipped")}
+              onDone={() => updateTaskStatus(t, 'completed')}
+              onSkip={() => updateTaskStatus(t, 'skipped')}
               mutating={mutatingId === t.id}
               hero
             />
@@ -139,8 +141,8 @@ function SessionRoute() {
               <SessionTaskCard
                 key={t.id}
                 task={t}
-                onDone={() => updateTaskStatus(t, "completed")}
-                onSkip={() => updateTaskStatus(t, "skipped")}
+                onDone={() => updateTaskStatus(t, 'completed')}
+                onSkip={() => updateTaskStatus(t, 'skipped')}
                 mutating={mutatingId === t.id}
               />
             ))}
@@ -157,7 +159,9 @@ function SessionRoute() {
             {[...done, ...skipped].map((t) => (
               <div key={t.id} className="focus-backlog__item">
                 <span className="focus-backlog__title">{t.title}</span>
-                <span className={`chip chip--${t.status === "done" ? "score" : "tag"}`}>
+                <span
+                  className={`chip chip--${t.status === 'done' ? 'score' : 'tag'}`}
+                >
                   {t.status}
                 </span>
               </div>
@@ -169,14 +173,14 @@ function SessionRoute() {
       <div className="session-footer">
         <button
           className="na-card__btn na-card__btn--done"
-          onClick={() => endSession("completed")}
+          onClick={() => endSession('completed')}
           disabled={ending}
         >
           End Session
         </button>
         <button
           className="na-card__btn na-card__btn--skip"
-          onClick={() => endSession("aborted")}
+          onClick={() => endSession('aborted')}
           disabled={ending}
         >
           Abort
@@ -200,9 +204,11 @@ function SessionTaskCard({
   hero?: boolean;
 }) {
   return (
-    <article className={`na-card${hero ? " na-card--hero" : ""}`}>
+    <article className={`na-card${hero ? ' na-card--hero' : ''}`}>
       <div className="na-card__main">
-        <span className={`na-card__title${hero ? " na-card__title--hero" : ""}`}>
+        <span
+          className={`na-card__title${hero ? ' na-card__title--hero' : ''}`}
+        >
           {task.title}
         </span>
         {task.effortScore !== undefined && task.effortScore > 0 && (

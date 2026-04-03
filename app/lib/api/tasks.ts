@@ -25,7 +25,7 @@ export async function fetchNextActions(): Promise<
 
 export async function updateTaskStatus(path: string, status: string) {
   const encoded = encodeURIComponent(path);
-  const res = await fetch(`/api/v1/tasks/${encoded}/status`, {
+  const res = await apiFetch(`/api/v1/tasks/${encoded}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status }),
