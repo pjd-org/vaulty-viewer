@@ -1,16 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useWhatNowQuery, useUpNextQuery } from '../lib/queries/agents';
 import type { TaskInput } from '../../src/lib/agent-prompts';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { homeSearchParams } from '../../src/lib/routes/search-params';
 import { apiFetch } from '../../src/utils/api';
 import {
-  normalizeNextAction,
-  normalizeSessionSummary,
   formatSessionDuration,
   formatScore,
   elapsedMinutes,
-  type NextAction,
   type ActiveSession,
   type SessionSummary,
 } from '../../src/lib/focus-logic';
@@ -19,6 +17,8 @@ import { EmptyState, PrimaryButton, SecondaryButton } from '../components/ui';
 import {
   getHomeSurfaceQueryOptions,
   useHomeSurface,
+  useActiveSession,
+  useRecentSessions,
 } from '../lib/viewer-adapter';
 import { useUIStore } from '../../src/store/ui';
 import { useMutationWithVerification } from '../hooks/use-mutation-with-verification';
@@ -31,69 +31,6 @@ export const Route = createFileRoute('/')({
   },
   component: FocusRoute,
 });
-
-// ---------------------------------------------------------------------------
-// Data hook
-// ---------------------------------------------------------------------------
-
-function useFocusData() {
-  const [nextActions, setNextActions] = useState<NextAction[]>([]);
-  const [activeSession, setActiveSession] = useState<ActiveSession | null>(
-    null
-  );
-  const [recentSessions, setRecentSessions] = useState<SessionSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [apiOnline, setApiOnline] = useState(true);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [actionsRes, sessionsRes, recentRes] = await Promise.all([
-        apiFetch('/api/v1/tasks/next-actions?max=10'),
-        apiFetch('/api/v1/sessions?status=active&limit=1'),
-        apiFetch('/api/v1/sessions?limit=3'),
-      ]);
-      if (actionsRes.ok) {
-        const body = await actionsRes.json();
-        const raw: Record<string, unknown>[] =
-          body.structuredContent?.tasks ?? body.tasks ?? [];
-        setNextActions(raw.map(normalizeNextAction));
-        setApiOnline(true);
-      } else {
-        setApiOnline(false);
-      }
-      if (sessionsRes.ok) {
-        const body = await sessionsRes.json();
-        const sessions: ActiveSession[] =
-          body.structuredContent?.sessions ?? body.sessions ?? [];
-        setActiveSession(sessions.find((s) => s.status === 'active') ?? null);
-      }
-      if (recentRes.ok) {
-        const body = await recentRes.json();
-        const raw: unknown[] =
-          body.structuredContent?.sessions ?? body.sessions ?? [];
-        setRecentSessions(raw.map(normalizeSessionSummary));
-      }
-    } catch {
-      setApiOnline(false);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  return {
-    nextActions,
-    activeSession,
-    recentSessions,
-    loading,
-    apiOnline,
-    reload,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Components
@@ -182,20 +119,21 @@ function ActiveSessionBanner({
 
 function FocusRoute() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { q, collection, session, snapshot, detailId } = Route.useSearch();
-  const { nextActions, activeSession, recentSessions, loading, reload } =
-    useFocusData();
   const {
     data: surface,
     isLoading: surfaceLoading,
     error: surfaceError,
   } = useHomeSurface();
+  const { data: activeSession } = useActiveSession();
+  const { data: recentSessions } = useRecentSessions();
   const [endingSession, setEndingSession] = useState(false);
 
-  // Map next actions to TaskInput for agent hooks
+  // Derive agentTasks from the adapter's preserved raw task data
   const agentTasks: TaskInput[] = useMemo(
     () =>
-      nextActions.slice(0, 20).map((t) => ({
+      (surface?.tasks ?? []).slice(0, 20).map((t) => ({
         id: t.id,
         title: t.title,
         estimatedMinutes: t.estimatedTimeMin,
@@ -204,17 +142,17 @@ function FocusRoute() {
         project: t.projectId,
         status: t.status,
       })),
-    [nextActions]
+    [surface?.tasks]
   );
 
   const { data: whatNow, isError: whatNowFailed } = useWhatNowQuery(
     agentTasks,
     {
-      enabled: !loading && agentTasks.length > 0,
+      enabled: !surfaceLoading && agentTasks.length > 0,
     }
   );
   const { data: upNext, isError: upNextFailed } = useUpNextQuery(agentTasks, {
-    enabled: !loading && agentTasks.length > 0,
+    enabled: !surfaceLoading && agentTasks.length > 0,
   });
 
   const endSession = async () => {
@@ -229,7 +167,7 @@ function FocusRoute() {
           status: 'completed',
         }),
       });
-      reload();
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
     } finally {
       setEndingSession(false);
     }
@@ -727,7 +665,7 @@ function FocusRoute() {
               )}
             </section>
 
-            {recentSessions.length > 0 ? (
+            {recentSessions && recentSessions.length > 0 ? (
               <RecentSessionsPanel sessions={recentSessions} />
             ) : null}
           </div>

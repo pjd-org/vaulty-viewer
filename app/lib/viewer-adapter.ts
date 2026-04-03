@@ -3,8 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../../src/utils/api';
 import {
   normalizeNextAction,
+  normalizeSessionSummary,
   type NextAction,
   type CodScoreBreakdown,
+  type ActiveSession,
+  type SessionSummary,
 } from '../../src/lib/focus-logic';
 import { splitInboxNotes, type InboxNote } from '../../src/lib/inbox-logic';
 import type { ProjectSummary } from '../../src/lib/projects-logic';
@@ -213,6 +216,8 @@ export interface HomeSurfacePayload {
     health: PressureSignal[];
   };
   contextTail: ContextCandidate[];
+  /** Raw task data preserved for downstream consumers (agent hooks, session logic) */
+  tasks: NextAction[];
 }
 
 export interface InboxItem extends PressureSignal {
@@ -583,6 +588,7 @@ export function buildHomeSurfacePayload(
       freshness: 'fresh',
       linkedEntities: [taskEntity(task)],
     })),
+    tasks,
   };
 }
 
@@ -973,6 +979,48 @@ export function useKnowledgeSurface(initialData?: KnowledgeSurfacePayload) {
     ...getKnowledgeSurfaceQueryOptions(),
     initialData,
   });
+}
+
+// ─── Session Queries ──────────────────────────────────────────────────────────
+
+export function getActiveSessionQueryOptions() {
+  return {
+    queryKey: ['sessions', 'active'] as const,
+    queryFn: async (): Promise<ActiveSession | null> => {
+      const res = await apiFetch('/api/v1/sessions?status=active&limit=1');
+      if (!res.ok) return null;
+      const body = await res.json();
+      const sessions: ActiveSession[] =
+        body.structuredContent?.sessions ?? body.sessions ?? [];
+      return sessions.find((s) => s.status === 'active') ?? null;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  };
+}
+
+export function useActiveSession() {
+  return useQuery(getActiveSessionQueryOptions());
+}
+
+export function getRecentSessionsQueryOptions(limit = 3) {
+  return {
+    queryKey: ['sessions', 'recent', limit] as const,
+    queryFn: async (): Promise<SessionSummary[]> => {
+      const res = await apiFetch(`/api/v1/sessions?limit=${limit}`);
+      if (!res.ok) return [];
+      const body = await res.json();
+      const raw: unknown[] =
+        body.structuredContent?.sessions ?? body.sessions ?? [];
+      return raw.map(normalizeSessionSummary);
+    },
+    staleTime: 30_000,
+    retry: 1,
+  };
+}
+
+export function useRecentSessions(limit = 3) {
+  return useQuery(getRecentSessionsQueryOptions(limit));
 }
 
 // ─── Query Invalidation Helpers ───────────────────────────────────────────────

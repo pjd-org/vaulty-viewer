@@ -4,8 +4,10 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ActionsSurfacePayload } from '../../app/lib/viewer-adapter';
@@ -45,6 +47,7 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('../../app/lib/viewer-adapter', () => ({
   getActionsSurfaceQueryOptions: () => mockGetActionsSurfaceQueryOptions(),
   useActionsSurface: () => mockUseActionsSurface(),
+  invalidateQueriesForDomain: vi.fn(),
 }));
 
 vi.mock('../../app/components/layout', () => ({
@@ -102,6 +105,18 @@ vi.mock('../../app/components/ui', () => ({
   ),
 }));
 
+const mockUpdateTaskStatus = vi.hoisted(() =>
+  vi.fn(() => Promise.resolve(true))
+);
+const mockFetchTaskMetrics = vi.hoisted(() =>
+  vi.fn(() => Promise.resolve(null))
+);
+
+vi.mock('../../app/lib/api/tasks', () => ({
+  updateTaskStatus: (...args: any[]) => (mockUpdateTaskStatus as any)(...args),
+  fetchTaskMetrics: (...args: any[]) => (mockFetchTaskMetrics as any)(...args),
+}));
+
 const mockVerificationPhase = vi.hoisted(() => ({
   current: 'idle' as 'idle' | 'pending' | 'resolved' | 'failed',
 }));
@@ -127,6 +142,15 @@ vi.mock('../../src/store/ui', () => ({
 import { Route } from '../../app/routes/actions';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
+}
 
 const actionsSurface: ActionsSurfacePayload = {
   recommendations: [
@@ -160,6 +184,7 @@ const actionsSurface: ActionsSurfacePayload = {
         operation: 'create_task',
         targetId: 'task-1',
       },
+      taskPath: 'notes/tasks/task-1.md',
     },
     {
       id: 'action-2',
@@ -217,6 +242,10 @@ describe('actions adapter wiring', () => {
     mockVerificationPhase.current = 'idle';
     mockActionsSimulationPreviewOpen.current = false;
     mockSetVerificationPhase.mockReset();
+    mockUpdateTaskStatus.mockReset();
+    mockUpdateTaskStatus.mockReturnValue(Promise.resolve(true));
+    mockFetchTaskMetrics.mockReset();
+    mockFetchTaskMetrics.mockReturnValue(Promise.resolve(null));
     mockUseActionsSurface.mockReturnValue({
       data: actionsSurface,
       isLoading: false,
@@ -229,7 +258,7 @@ describe('actions adapter wiring', () => {
   });
 
   it('renders the action toolbar and explainable detail rail', () => {
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
 
     expect(screen.getByRole('heading', { name: 'Actions' })).toBeTruthy();
     expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe(
@@ -256,7 +285,7 @@ describe('actions adapter wiring', () => {
   });
 
   it('updates the route search when the toolbar changes', () => {
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
 
     fireEvent.change(screen.getByRole('combobox'), {
       target: { value: 'confidence' },
@@ -287,18 +316,18 @@ describe('actions adapter wiring', () => {
 
   it('shows a pending indicator when verification phase is pending', () => {
     mockVerificationPhase.current = 'pending';
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
     expect(screen.getByText('Verifying…')).toBeTruthy();
   });
 
   it('shows a failed indicator when verification phase is failed', () => {
     mockVerificationPhase.current = 'failed';
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
     expect(screen.getByText('Verification failed.')).toBeTruthy();
   });
 
   it('Execute button sets verification phase to pending', () => {
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
     fireEvent.click(screen.getByRole('button', { name: 'Execute' }));
     expect(mockSetVerificationPhase).toHaveBeenCalledWith(
       'pending',
@@ -306,22 +335,24 @@ describe('actions adapter wiring', () => {
     );
   });
 
-  it('Simulate button opens simulation preview in UIStore', () => {
-    render(<RouteComponent />);
+  it('Simulate button fetches task metrics for simulation preview', () => {
+    renderWithClient(<RouteComponent />);
     fireEvent.click(screen.getByRole('button', { name: 'Simulate' }));
+    expect(mockFetchTaskMetrics).toHaveBeenCalledWith('notes/tasks/task-1.md');
+  });
+
+  it('Defer button triggers defer mutation with backlog status', async () => {
+    renderWithClient(<RouteComponent />);
+    fireEvent.click(screen.getByRole('button', { name: 'Defer' }));
     expect(mockSetVerificationPhase).toHaveBeenCalledWith(
       'pending',
       'action-1'
     );
-  });
-
-  it('Defer button navigates to /actions without selectedId', () => {
-    render(<RouteComponent />);
-    fireEvent.click(screen.getByRole('button', { name: 'Defer' }));
-    expect(mockNavigate).toHaveBeenCalledWith({
-      to: '/actions',
-      search: expect.objectContaining({ selectedId: undefined }),
-      replace: true,
+    await waitFor(() => {
+      expect(mockUpdateTaskStatus).toHaveBeenCalledWith(
+        'notes/tasks/task-1.md',
+        'backlog'
+      );
     });
   });
 });

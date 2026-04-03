@@ -17,8 +17,7 @@ import {
   type InboxConvertResult,
 } from '../lib/queries/agents';
 import {
-  getInboxSurfaceQueryOptions,
-  useInboxSurface,
+  buildInboxSurfacePayload,
   type InboxItem,
 } from '../lib/viewer-adapter';
 
@@ -284,9 +283,6 @@ const SORT_OPTIONS = [
 
 export const Route = createFileRoute('/inbox')({
   validateSearch: inboxSearchParams,
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getInboxSurfaceQueryOptions());
-  },
   component: InboxRoute,
 });
 
@@ -295,6 +291,8 @@ function InboxRoute() {
     runs,
     workbenchNotes,
     archiveNotes,
+    loading,
+    error,
     apiStatus,
     refresh,
     commitRun,
@@ -302,11 +300,19 @@ function InboxRoute() {
     actionState,
     pendingConfirmations,
   } = useInbox();
-  const {
-    data: surface,
-    isLoading: surfaceLoading,
-    error: surfaceError,
-  } = useInboxSurface();
+
+  // Derive adapter surface items from the single useInbox() data source
+  const surface = React.useMemo(
+    () =>
+      buildInboxSurfacePayload({
+        runs: runs as unknown as Array<Record<string, unknown>>,
+        workbenchNotes:
+          workbenchNotes as unknown as import('../../src/lib/inbox-logic').InboxNote[],
+        archiveNotes:
+          archiveNotes as unknown as import('../../src/lib/inbox-logic').InboxNote[],
+      }),
+    [runs, workbenchNotes, archiveNotes]
+  );
 
   const {
     view: viewParam,
@@ -319,7 +325,7 @@ function InboxRoute() {
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
   );
-  const surfaceItems = surface ?? [];
+  const surfaceItems = surface;
 
   const filteredSurfaceItems = React.useMemo(() => {
     if (!severity) return surfaceItems;
@@ -379,14 +385,6 @@ function InboxRoute() {
       ),
     [archiveNotes, workbenchNotes]
   );
-
-  const loading = surfaceLoading && !surface;
-  const error =
-    surfaceError instanceof Error
-      ? surfaceError.message
-      : typeof surfaceError === 'string'
-        ? surfaceError
-        : null;
 
   // Determine active view: URL param → smart default → 'workbench'
   const activeView: InboxView =

@@ -18,19 +18,10 @@ const mockRouteState = vi.hoisted(() => ({
 }));
 
 const mockNavigate = vi.hoisted(() => vi.fn());
-const mockEnsureQueryData = vi.hoisted(() => vi.fn());
 const mockRefresh = vi.hoisted(() => vi.fn());
 const mockCommitRun = vi.hoisted(() => vi.fn());
 const mockRejectRun = vi.hoisted(() => vi.fn());
 const mockUseInbox = vi.hoisted(() => vi.fn());
-const mockUseInboxSurface = vi.hoisted(() => vi.fn());
-const mockInboxSurfaceQueryOptions = vi.hoisted(() => ({
-  queryKey: ['viewer-adapter', 'inbox-surface'],
-  queryFn: vi.fn(),
-}));
-const mockGetInboxSurfaceQueryOptions = vi.hoisted(() =>
-  vi.fn(() => mockInboxSurfaceQueryOptions)
-);
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
@@ -44,9 +35,12 @@ vi.mock('../../src/hooks/useInbox', () => ({
   useInbox: () => mockUseInbox(),
 }));
 
+// buildInboxSurfacePayload is called client-side now (no separate query)
+const mockBuildInboxSurfacePayload = vi.hoisted(() => vi.fn());
+
 vi.mock('../../app/lib/viewer-adapter', () => ({
-  getInboxSurfaceQueryOptions: () => mockGetInboxSurfaceQueryOptions(),
-  useInboxSurface: () => mockUseInboxSurface(),
+  buildInboxSurfacePayload: (...args: unknown[]) =>
+    mockBuildInboxSurfacePayload(...args),
 }));
 
 vi.mock('../../app/components/layout', () => ({
@@ -190,14 +184,46 @@ describe('inbox adapter wiring', () => {
       selectedId: undefined,
       severity: undefined,
     };
-    mockEnsureQueryData.mockReset();
-    mockGetInboxSurfaceQueryOptions.mockClear();
     mockRejectRun.mockReset();
     mockUseInbox.mockReturnValue({
-      runs: [],
-      workbenchNotes: [],
-      archiveNotes: [],
-      counts: { queue: 0, workbench: 0, archive: 0 },
+      runs: [
+        {
+          runId: 'run-1',
+          runType: 'extract',
+          action: 'Proposal run',
+          itemCount: 1,
+          confidence: 0.7,
+          items: [],
+        },
+      ],
+      workbenchNotes: [
+        {
+          path: 'inbox/extracted/workbench-note.md',
+          title: 'Workbench note',
+          tags: [],
+          source: 'extracted',
+        },
+      ],
+      archiveNotes: [
+        {
+          path: 'inbox/rejected/human-rejected-proposal.md',
+          title: 'Human rejected proposal',
+          tags: [],
+          source: 'rejected',
+          frontmatter: { rejection_source: 'user' },
+        },
+        {
+          path: 'inbox/rejected/automated-proposal.md',
+          title: 'Policy rejected proposal',
+          tags: [],
+          source: 'rejected',
+          frontmatter: {
+            rejection_source: 'automated-policy',
+            rejection_reason: 'Policy threshold not met.',
+          },
+        },
+      ],
+      counts: { queue: 1, workbench: 1, archive: 2 },
       loading: false,
       error: null,
       apiStatus: 'online',
@@ -207,93 +233,74 @@ describe('inbox adapter wiring', () => {
       actionState: {},
       pendingConfirmations: {},
     });
-    mockUseInboxSurface.mockReturnValue({
-      data: [
-        {
-          id: 'signal:run-1',
-          title: 'Proposal run',
-          summary: '1 staged item awaiting review.',
-          kind: 'rejection',
-          severity: 'medium',
-          surfacedBy: 'cod',
-          sourceType: 'note',
-          sourceId: 'run-1',
-          surfacedAt: new Date(0).toISOString(),
-          whySurfaced: 'Needs review.',
-          reversibility: 'high',
-          allowedActions: [{ actionType: 'approve', label: 'Approve' }],
-          inboxBucket: 'needs_action',
-        },
-        {
-          id: 'signal:workbench-note',
-          title: 'Workbench note',
-          summary: 'Workbench note path',
-          kind: 'stale',
-          severity: 'low',
-          surfacedBy: 'cod',
-          sourceType: 'note',
-          sourceId: 'inbox/extracted/workbench-note.md',
-          surfacedAt: new Date(0).toISOString(),
-          whySurfaced: 'Context remains pending.',
-          reversibility: 'high',
-          allowedActions: [{ actionType: 'open_source', label: 'Open note' }],
-          inboxBucket: 'deferred',
-        },
-        {
-          id: 'signal:archive-note',
-          title: 'Human rejected proposal',
-          summary: 'Rejected note path',
-          kind: 'rejection',
-          severity: 'medium',
-          surfacedBy: 'cod',
-          sourceType: 'note',
-          sourceId: 'inbox/rejected/human-rejected-proposal.md',
-          surfacedAt: new Date(0).toISOString(),
-          whySurfaced: 'Human rejection stays visible.',
-          reversibility: 'medium',
-          allowedActions: [{ actionType: 'reopen', label: 'Reopen' }],
-          inboxBucket: 'rejected_user',
-          rejectionType: 'user',
-        },
-        {
-          id: 'signal:archive-auto-note',
-          title: 'Policy rejected proposal',
-          summary: 'Automated rejected note path',
-          kind: 'rejection',
-          severity: 'high',
-          surfacedBy: 'cod',
-          sourceType: 'note',
-          sourceId: 'inbox/rejected/automated-proposal.md',
-          surfacedAt: new Date(0).toISOString(),
-          whySurfaced: 'Automated rejection stays visible separately.',
-          reversibility: 'high',
-          allowedActions: [{ actionType: 'override', label: 'Override' }],
-          inboxBucket: 'rejected_automated',
-          rejectionType: 'automated',
-          rejectionReason: 'Policy threshold not met.',
-          rejectionSource: 'automated-policy',
-        },
-      ],
-      isLoading: false,
-      error: null,
-    });
-  });
 
-  it('preloads the inbox adapter surface in the route loader', async () => {
-    expect(typeof Route.options.loader).toBe('function');
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (Route.options.loader as any)?.({
-      context: {
-        queryClient: {
-          ensureQueryData: mockEnsureQueryData,
-        },
+    // buildInboxSurfacePayload produces adapter InboxItems from raw data
+    mockBuildInboxSurfacePayload.mockImplementation(() => [
+      {
+        id: 'signal:run-1',
+        title: 'Proposal run',
+        summary: '1 staged item(s) awaiting review.',
+        kind: 'rejection',
+        severity: 'medium',
+        surfacedBy: 'cod',
+        sourceType: 'note',
+        sourceId: 'run-1',
+        surfacedAt: new Date(0).toISOString(),
+        whySurfaced: 'Needs review.',
+        reversibility: 'high',
+        allowedActions: [{ actionType: 'approve', label: 'Approve' }],
+        inboxBucket: 'needs_action',
       },
-    });
-
-    expect(mockEnsureQueryData).toHaveBeenCalledWith(
-      mockInboxSurfaceQueryOptions
-    );
+      {
+        id: 'signal:inbox/extracted/workbench-note.md',
+        title: 'Workbench note',
+        summary: 'inbox/extracted/workbench-note.md',
+        kind: 'stale',
+        severity: 'low',
+        surfacedBy: 'cod',
+        sourceType: 'note',
+        sourceId: 'inbox/extracted/workbench-note.md',
+        surfacedAt: new Date(0).toISOString(),
+        whySurfaced: 'Context remains pending.',
+        reversibility: 'high',
+        allowedActions: [{ actionType: 'open_source', label: 'Open note' }],
+        inboxBucket: 'deferred',
+      },
+      {
+        id: 'signal:inbox/rejected/human-rejected-proposal.md',
+        title: 'Human rejected proposal',
+        summary: 'inbox/rejected/human-rejected-proposal.md',
+        kind: 'rejection',
+        severity: 'medium',
+        surfacedBy: 'cod',
+        sourceType: 'note',
+        sourceId: 'inbox/rejected/human-rejected-proposal.md',
+        surfacedAt: new Date(0).toISOString(),
+        whySurfaced: 'Human rejection stays visible.',
+        reversibility: 'medium',
+        allowedActions: [{ actionType: 'reopen', label: 'Reopen' }],
+        inboxBucket: 'rejected_user',
+        rejectionType: 'user',
+      },
+      {
+        id: 'signal:inbox/rejected/automated-proposal.md',
+        title: 'Policy rejected proposal',
+        summary: 'inbox/rejected/automated-proposal.md',
+        kind: 'rejection',
+        severity: 'high',
+        surfacedBy: 'cod',
+        sourceType: 'note',
+        sourceId: 'inbox/rejected/automated-proposal.md',
+        surfacedAt: new Date(0).toISOString(),
+        whySurfaced: 'Automated rejection stays visible separately.',
+        reversibility: 'high',
+        allowedActions: [{ actionType: 'override', label: 'Override' }],
+        inboxBucket: 'rejected_automated',
+        rejectionType: 'automated',
+        rejectionReason: 'Policy threshold not met.',
+        rejectionSource: 'automated-policy',
+      },
+    ]);
   });
 
   it('renders archive content and counts from the adapter surface', () => {
@@ -379,6 +386,8 @@ describe('inbox adapter wiring', () => {
     };
     render(<RouteComponent />);
     const aside = screen.getByTestId('inbox-aside');
-    expect(within(aside).getByText('Proposal run')).toBeTruthy();
+    expect(within(aside).getAllByText('Proposal run').length).toBeGreaterThan(
+      0
+    );
   });
 });

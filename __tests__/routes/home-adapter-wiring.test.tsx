@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
@@ -116,9 +117,14 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }));
 
+const mockUseActiveSession = vi.hoisted(() => vi.fn());
+const mockUseRecentSessions = vi.hoisted(() => vi.fn());
+
 vi.mock('../../app/lib/viewer-adapter', () => ({
   getHomeSurfaceQueryOptions: () => mockGetHomeSurfaceQueryOptions(),
   useHomeSurface: () => mockUseHomeSurface(),
+  useActiveSession: () => mockUseActiveSession(),
+  useRecentSessions: () => mockUseRecentSessions(),
 }));
 
 vi.mock('../../app/lib/queries/agents', () => ({
@@ -127,7 +133,7 @@ vi.mock('../../app/lib/queries/agents', () => ({
 }));
 
 vi.mock('../../src/utils/api', () => ({
-  apiFetch: (...args: unknown[]) => mockApiFetch(...args),
+  apiFetch: (...args: any[]) => (mockApiFetch as any)(...args),
 }));
 
 vi.mock('../../app/components/home', () => ({
@@ -160,6 +166,15 @@ vi.mock('../../src/store/ui', () => ({
 import { Route } from '../../app/routes/index';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
+}
 
 const homeSurface: HomeSurfacePayload = {
   pressureBand: [
@@ -311,6 +326,7 @@ const homeSurface: HomeSurfacePayload = {
       linkedEntities: [],
     },
   ],
+  tasks: [],
 };
 
 describe('home adapter wiring', () => {
@@ -327,6 +343,16 @@ describe('home adapter wiring', () => {
       isLoading: false,
       error: null,
       isError: false,
+    });
+    mockUseActiveSession.mockReset();
+    mockUseActiveSession.mockReturnValue({
+      data: null,
+      isLoading: false,
+    });
+    mockUseRecentSessions.mockReset();
+    mockUseRecentSessions.mockReturnValue({
+      data: [],
+      isLoading: false,
     });
     mockUseWhatNowQuery.mockReset();
     mockUseWhatNowQuery.mockReturnValue({
@@ -352,7 +378,8 @@ describe('home adapter wiring', () => {
   it('preloads the home adapter surface in the route loader', async () => {
     expect(typeof Route.options.loader).toBe('function');
 
-    await Route.options.loader?.({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (Route.options.loader as any)?.({
       context: {
         queryClient: {
           ensureQueryData: mockEnsureQueryData,
@@ -367,7 +394,7 @@ describe('home adapter wiring', () => {
   });
 
   it('renders the home adapter surface from the route component', () => {
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
 
     expect(mockUseHomeSurface).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Pressure Band')).toBeTruthy();
@@ -389,13 +416,13 @@ describe('home adapter wiring', () => {
 
   it('shows a pending indicator when verification phase is pending', () => {
     mockVerificationPhase.current = 'pending';
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
     expect(screen.getByText('Verifying…')).toBeTruthy();
   });
 
   it('shows a failed indicator when verification phase is failed', () => {
     mockVerificationPhase.current = 'failed';
-    render(<RouteComponent />);
+    renderWithClient(<RouteComponent />);
     expect(screen.getByText('Verification failed.')).toBeTruthy();
   });
 });
