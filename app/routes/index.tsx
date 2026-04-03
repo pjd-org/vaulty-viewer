@@ -21,6 +21,8 @@ import {
   useHomeSurface,
 } from '../lib/viewer-adapter';
 import { useUIStore } from '../../src/store/ui';
+import { useMutationWithVerification } from '../hooks/use-mutation-with-verification';
+import { updateTaskStatus } from '../lib/api/tasks';
 
 export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
@@ -238,6 +240,12 @@ function FocusRoute() {
   const immediateActions = surface?.immediateActions ?? [];
   const verificationRail = surface?.verificationRail ?? [];
   const verificationPhase = useUIStore((s) => s.verification.phase);
+
+  const deferMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'backlog'),
+    domain: 'work',
+    actionId: 'home-defer',
+  });
   const snapshots = surface?.snapshots ?? {
     automation: [],
     knowledge: [],
@@ -361,14 +369,36 @@ function FocusRoute() {
                       </p>
                       <div className="mt-4 flex flex-wrap items-center gap-3">
                         {renderSignalActions(item.sourceId)}
-                        {item.allowedActions.map((action) => (
-                          <span
-                            key={`${item.id}-${action.actionType}`}
-                            className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300"
-                          >
-                            {action.label}
-                          </span>
-                        ))}
+                        {item.taskPath ? (
+                          <>
+                            <Link
+                              to="/work"
+                              search={{ selectedId: item.sourceId }}
+                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
+                            >
+                              Open task
+                            </Link>
+                            <button
+                              type="button"
+                              disabled={deferMutation.isPending}
+                              onClick={() =>
+                                deferMutation.mutate(item.taskPath!)
+                              }
+                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+                            >
+                              {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                            </button>
+                          </>
+                        ) : (
+                          item.allowedActions.map((action) => (
+                            <span
+                              key={`${item.id}-${action.actionType}`}
+                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300"
+                            >
+                              {action.label}
+                            </span>
+                          ))
+                        )}
                       </div>
                     </article>
                   ))
@@ -447,15 +477,42 @@ function FocusRoute() {
                         >
                           Inspect in Actions
                         </Link>
-                        <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300">
+                        <Link
+                          to="/actions"
+                          search={{
+                            selectedId: item.id,
+                            sort: undefined,
+                            simulatableOnly: undefined,
+                          }}
+                          className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
+                        >
                           Execute
-                        </span>
-                        <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300">
+                        </Link>
+                        <Link
+                          to="/actions"
+                          search={{
+                            selectedId: item.id,
+                            simulatableOnly: true,
+                            sort: undefined,
+                          }}
+                          className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
+                        >
                           Simulate
-                        </span>
-                        <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300">
-                          Defer
-                        </span>
+                        </Link>
+                        {item.taskPath ? (
+                          <button
+                            type="button"
+                            disabled={deferMutation.isPending}
+                            onClick={() => deferMutation.mutate(item.taskPath!)}
+                            className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+                          >
+                            {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                          </button>
+                        ) : (
+                          <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300">
+                            Defer
+                          </span>
+                        )}
                       </div>
                     </article>
                   ))}

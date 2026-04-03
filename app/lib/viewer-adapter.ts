@@ -56,17 +56,11 @@ export interface AdapterEntityRef {
 export interface MutationRef {
   domain: MutationDomain;
   operation:
-    | 'retry_run'
     | 'approve_pipeline'
     | 'defer_signal'
     | 'override_rejection'
     | 'reopen_signal'
-    | 'reschedule_item'
-    | 'rebalance_portfolio'
-    | 'adjust_bubble_state'
-    | 'create_task'
-    | 'link_note'
-    | 'create_incident';
+    | 'create_task';
   targetId: string;
 }
 
@@ -133,6 +127,8 @@ export interface PressureSignal {
   confidence?: number;
   reversibility?: 'low' | 'medium' | 'high';
   allowedActions: AdapterActionRef[];
+  /** Vault-relative task path for API mutations (e.g. updateTaskStatus) */
+  taskPath?: string;
 }
 
 export interface Recommendation {
@@ -361,6 +357,7 @@ function taskSignal(task: NextAction): PressureSignal {
         },
       },
     ],
+    taskPath: task.path || undefined,
   };
 }
 
