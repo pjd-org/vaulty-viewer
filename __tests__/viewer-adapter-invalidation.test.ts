@@ -25,7 +25,7 @@ describe('invalidation helpers — per mutation domain', () => {
     expect(typeof invalidateQueriesForDomain).toBe('function');
   });
 
-  it('automation domain invalidates automation + project + verification keys', async () => {
+  it('automation domain invalidates automation + project keys (no phantom verification key)', async () => {
     const { invalidateQueriesForDomain } =
       await import('../app/lib/viewer-adapter');
     invalidateQueriesForDomain(queryClient as never, 'automation', {
@@ -37,8 +37,9 @@ describe('invalidation helpers — per mutation domain', () => {
       true
     );
     expect(calls.some((k) => JSON.stringify(k).includes('proj-1'))).toBe(true);
+    // Phantom key removed: no queryFn ever populates 'verification' in the cache
     expect(calls.some((k) => JSON.stringify(k).includes('verification'))).toBe(
-      true
+      false
     );
   });
 

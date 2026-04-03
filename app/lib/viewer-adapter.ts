@@ -601,12 +601,8 @@ export function buildHomeSurfacePayload(
   };
 }
 
-export function buildInboxSurfacePayload(args: {
-  runs: Array<Record<string, unknown>>;
-  workbenchNotes: InboxNote[];
-  archiveNotes: InboxNote[];
-}): InboxItem[] {
-  const runItems: InboxItem[] = args.runs.map((run, index) => {
+function buildRunItems(runs: Array<Record<string, unknown>>): InboxItem[] {
+  return runs.map((run, index) => {
     const runId = String(run.runId ?? `run-${index}`);
     const confidence =
       typeof run.confidence === 'number' ? run.confidence : 0.5;
@@ -647,8 +643,10 @@ export function buildInboxSurfacePayload(args: {
       inboxBucket: confidence < 0.45 ? 'needs_approval' : 'needs_action',
     };
   });
+}
 
-  const rejected: InboxItem[] = args.archiveNotes.map((note) => {
+function buildRejectedItems(archiveNotes: InboxNote[]): InboxItem[] {
+  return archiveNotes.map((note) => {
     const rejectionType = noteRejectionType(note);
     return {
       id: `signal:${note.path}`,
@@ -704,8 +702,10 @@ export function buildInboxSurfacePayload(args: {
       rejectionSource: note.source,
     };
   });
+}
 
-  const workbench: InboxItem[] = args.workbenchNotes.map((note) => ({
+function buildWorkbenchItems(workbenchNotes: InboxNote[]): InboxItem[] {
+  return workbenchNotes.map((note) => ({
     id: `signal:${note.path}`,
     kind: 'stale' as const,
     title: note.title,
@@ -722,8 +722,18 @@ export function buildInboxSurfacePayload(args: {
     allowedActions: [{ actionType: 'open_source', label: 'Open note' }],
     inboxBucket: 'deferred' as const,
   }));
+}
 
-  return [...runItems, ...rejected, ...workbench];
+export function buildInboxSurfacePayload(args: {
+  runs: Array<Record<string, unknown>>;
+  workbenchNotes: InboxNote[];
+  archiveNotes: InboxNote[];
+}): InboxItem[] {
+  return [
+    ...buildRunItems(args.runs),
+    ...buildRejectedItems(args.archiveNotes),
+    ...buildWorkbenchItems(args.workbenchNotes),
+  ];
 }
 
 export function buildActionsSurfacePayload(
@@ -829,12 +839,6 @@ export function getHomeSurfaceQueryOptions() {
       buildHomeSurfacePayload(await fetchRichNextActions(25)),
     staleTime: 60_000,
     retry: 1,
-  };
-}
-
-export function getTaskSurfaceQueryOptions() {
-  return {
-    queryKey: ['tasks'] as const,
   };
 }
 
@@ -1195,7 +1199,6 @@ export function invalidateQueriesForDomain(
   switch (domain) {
     case 'automation':
       inv(queryClient, ['automation']);
-      inv(queryClient, ['viewer-adapter', 'verification']);
       if (ctx.projectId) {
         inv(queryClient, ['viewer-adapter', 'project-surface', ctx.projectId]);
       }
