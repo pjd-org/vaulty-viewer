@@ -27,9 +27,8 @@ vi.mock('@tanstack/react-query', () => ({ useQuery: vi.fn() }));
 // System under test
 // ---------------------------------------------------------------------------
 
-import { apiFetch } from '../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../src/utils/api';
 import { getHomeSurfaceQueryOptions } from '../app/lib/viewer-adapter';
-import { UnauthenticatedError } from '../src/utils/api';
 
 const mockApiFetch = apiFetch as ReturnType<typeof vi.fn>;
 
@@ -82,5 +81,38 @@ describe('getHomeSurfaceQueryOptions — queryFn', () => {
     const { queryFn } = getHomeSurfaceQueryOptions();
     const result = await queryFn();
     expect(result.pressureBand).toEqual([]);
+  });
+});
+
+describe('getHomeSurfaceQueryOptions — retry config', () => {
+  type RetryFn = (failureCount: number, error: unknown) => boolean;
+
+  it('retry is a function (not a plain number)', () => {
+    const { retry } = getHomeSurfaceQueryOptions();
+    expect(typeof retry).toBe('function');
+  });
+
+  it('does not retry on UnauthenticatedError (failureCount=0)', () => {
+    const { retry } = getHomeSurfaceQueryOptions();
+    const retryFn = retry as unknown as RetryFn;
+    expect(retryFn(0, new UnauthenticatedError('401'))).toBe(false);
+  });
+
+  it('does not retry on UnauthenticatedError (failureCount=1)', () => {
+    const { retry } = getHomeSurfaceQueryOptions();
+    const retryFn = retry as unknown as RetryFn;
+    expect(retryFn(1, new UnauthenticatedError('401'))).toBe(false);
+  });
+
+  it('retries on generic Error when failureCount < 1', () => {
+    const { retry } = getHomeSurfaceQueryOptions();
+    const retryFn = retry as unknown as RetryFn;
+    expect(retryFn(0, new Error('network error'))).toBe(true);
+  });
+
+  it('does not retry on generic Error when failureCount >= 1', () => {
+    const { retry } = getHomeSurfaceQueryOptions();
+    const retryFn = retry as unknown as RetryFn;
+    expect(retryFn(1, new Error('network error'))).toBe(false);
   });
 });

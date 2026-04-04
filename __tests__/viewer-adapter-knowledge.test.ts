@@ -3,6 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock apiFetch and dependencies before importing adapter
 vi.mock('../src/utils/api', () => ({
   apiFetch: vi.fn(),
+  UnauthenticatedError: class UnauthenticatedError extends Error {
+    readonly status = 401;
+    constructor(message?: string) {
+      super(message ?? 'Unauthenticated');
+      this.name = 'UnauthenticatedError';
+    }
+  },
 }));
 vi.mock('../src/lib/focus-logic', () => ({
   normalizeNextAction: (t: unknown) => t,
@@ -16,7 +23,7 @@ vi.mock('@tanstack/react-query', () => ({
   queryOptions: (o: unknown) => o,
 }));
 
-import { apiFetch } from '../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../src/utils/api';
 
 describe('Knowledge surface adapter', () => {
   beforeEach(() => {
@@ -38,7 +45,8 @@ describe('Knowledge surface adapter', () => {
     (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       json: async () => ({
-        structuredContent: { notes: [], graph: { nodes: [], edges: [] } },
+        audience: 'human',
+        notes: [],
       }),
     });
 
@@ -57,5 +65,65 @@ describe('Knowledge surface adapter', () => {
   it('exports useKnowledgeSurface hook', async () => {
     const { useKnowledgeSurface } = await import('../app/lib/viewer-adapter');
     expect(typeof useKnowledgeSurface).toBe('function');
+  });
+
+  it('getKnowledgeSurfaceQueryOptions queryFn throws UnauthenticatedError on 401', async () => {
+    (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+    const { getKnowledgeSurfaceQueryOptions } =
+      await import('../app/lib/viewer-adapter');
+    await expect(
+      getKnowledgeSurfaceQueryOptions().queryFn()
+    ).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+
+  it('getKnowledgeGraphQueryOptions queryFn throws UnauthenticatedError on 401', async () => {
+    (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+    const { getKnowledgeGraphQueryOptions } =
+      await import('../app/lib/viewer-adapter');
+    await expect(
+      getKnowledgeGraphQueryOptions().queryFn()
+    ).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+
+  it('getKnowledgeHealthQueryOptions queryFn throws UnauthenticatedError on 401', async () => {
+    (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+    const { getKnowledgeHealthQueryOptions } =
+      await import('../app/lib/viewer-adapter');
+    await expect(
+      getKnowledgeHealthQueryOptions().queryFn()
+    ).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+
+  it('getKnowledgeByAudienceQueryOptions queryFn throws UnauthenticatedError on 401', async () => {
+    (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+    const { getKnowledgeByAudienceQueryOptions } =
+      await import('../app/lib/viewer-adapter');
+    await expect(
+      getKnowledgeByAudienceQueryOptions('human').queryFn()
+    ).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+
+  it('getKnowledgeSearchQueryOptions queryFn throws UnauthenticatedError on 401', async () => {
+    (apiFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+    const { getKnowledgeSearchQueryOptions } =
+      await import('../app/lib/viewer-adapter');
+    await expect(
+      getKnowledgeSearchQueryOptions('test query', 'tag').queryFn()
+    ).rejects.toBeInstanceOf(UnauthenticatedError);
   });
 });

@@ -826,6 +826,8 @@ export function buildProjectSurfacePayload(args: {
 
 export async function fetchRichNextActions(max = 25): Promise<NextAction[]> {
   const res = await apiFetch(`/api/v1/tasks/next-actions?max=${max}`);
+  if (res.status === 401)
+    throw new UnauthenticatedError(`Failed to fetch next actions: 401`);
   if (!res.ok) throw new Error(`Failed to fetch next actions: ${res.status}`);
   const body = await res.json();
   const raw = validateNextActionsResponse(body);
@@ -855,7 +857,8 @@ export function getHomeSurfaceQueryOptions() {
       return { ...sc, tasks } as HomeSurfacePayload;
     },
     staleTime: 60_000,
-    retry: 1,
+    retry: (failureCount: number, error: unknown) =>
+      !(error instanceof UnauthenticatedError) && failureCount < 1,
   };
 }
 
@@ -868,6 +871,8 @@ export function useHomeSurface(initialData?: HomeSurfacePayload) {
 
 async function fetchInboxSurfaceSource() {
   const res = await apiFetch('/api/v1/inbox');
+  if (res.status === 401)
+    throw new UnauthenticatedError(`Failed to fetch inbox: 401`);
   if (!res.ok) throw new Error(`Failed to fetch inbox: ${res.status}`);
   const body = await res.json();
   const { notes, runs } = validateInboxResponse(body);
@@ -961,6 +966,8 @@ export function getActionsSurfaceQueryOptions() {
     queryKey: ['viewer-adapter', 'actions-surface'],
     queryFn: async (): Promise<ActionsSurfacePayload> => {
       const res = await apiFetch('/api/v1/surfaces/actions?max=25');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch actions surface: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch actions surface: ${res.status}`);
       const body = await res.json();
@@ -1052,6 +1059,8 @@ export function getKnowledgeGraphQueryOptions() {
     queryKey: ['viewer-adapter', 'knowledge-graph'] as const,
     queryFn: async (): Promise<GraphJson> => {
       const res = await apiFetch('/api/v1/knowledge/graph');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch knowledge graph: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch knowledge graph: ${res.status}`);
       const body = await res.json();
@@ -1072,6 +1081,8 @@ export function getKnowledgeHealthQueryOptions() {
     queryKey: ['viewer-adapter', 'knowledge-health'] as const,
     queryFn: async (): Promise<GraphHealthReport> => {
       const res = await apiFetch('/api/v1/knowledge/health');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch knowledge health: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch knowledge health: ${res.status}`);
       const body = await res.json();
@@ -1096,6 +1107,10 @@ export function getKnowledgeByAudienceQueryOptions(
       const res = await apiFetch(
         `/api/v1/knowledge/by-audience?audience=${audience}`
       );
+      if (res.status === 401)
+        throw new UnauthenticatedError(
+          `Failed to fetch knowledge notes (${audience}): 401`
+        );
       if (!res.ok)
         throw new Error(
           `Failed to fetch knowledge notes (${audience}): ${res.status}`
@@ -1126,6 +1141,8 @@ export function getKnowledgeSearchQueryOptions(
       const res = await apiFetch(
         `/api/v1/knowledge/search?q=${encodeURIComponent(query)}&mode=${mode}`
       );
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to search knowledge: 401`);
       if (!res.ok) throw new Error(`Failed to search knowledge: ${res.status}`);
       const body = await res.json();
       return (body as { results: KnowledgeNoteRef[] }).results ?? [];
@@ -1149,6 +1166,8 @@ export function getSessionDetailQueryOptions(sessionId: string) {
       const res = await apiFetch(
         `/api/v1/sessions/${encodeURIComponent(sessionId)}`
       );
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch session: 401`);
       if (!res.ok)
         throw new Error(
           res.status === 404
@@ -1225,6 +1244,10 @@ export function getKnowledgeSurfaceQueryOptions() {
       const res = await apiFetch(
         '/api/v1/knowledge/by-audience?audience=human'
       );
+      if (res.status === 401)
+        throw new UnauthenticatedError(
+          `Failed to fetch knowledge surface: 401`
+        );
       if (!res.ok)
         throw new Error(`Failed to fetch knowledge surface: ${res.status}`);
       const body = (await res.json()) as {
@@ -1252,6 +1275,8 @@ export function getActiveSessionQueryOptions() {
     queryKey: ['sessions', 'active'] as const,
     queryFn: async (): Promise<ActiveSession | null> => {
       const res = await apiFetch('/api/v1/sessions?status=active&limit=1');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch active session: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch active session: ${res.status}`);
       const body = await res.json();
@@ -1275,6 +1300,8 @@ export function getRecentSessionsQueryOptions(limit = 3) {
     queryKey: ['sessions', 'recent', limit] as const,
     queryFn: async (): Promise<SessionSummary[]> => {
       const res = await apiFetch(`/api/v1/sessions?limit=${limit}`);
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch recent sessions: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch recent sessions: ${res.status}`);
       const body = await res.json();
@@ -1359,6 +1386,8 @@ export function useHealthSurface() {
     queryKey: ['health'],
     queryFn: async (): Promise<HealthSurfacePayload> => {
       const res = await apiFetch('/api/v1/health/detailed');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch health: 401`);
       if (!res.ok) throw new Error(`Failed to fetch health: ${res.status}`);
       const body = await res.json();
       return normalizeHealthResponse(body);
@@ -1423,6 +1452,10 @@ export function useAutomationSurface() {
         apiFetch('/api/v1/pipelines'),
         apiFetch('/api/v1/scheduler/status'),
       ]);
+      if (pipelinesRes.status === 401 || schedulerRes.status === 401)
+        throw new UnauthenticatedError(
+          `Failed to fetch automation surface: 401`
+        );
       if (!pipelinesRes.ok)
         throw new Error(`Failed to fetch pipelines: ${pipelinesRes.status}`);
       if (!schedulerRes.ok)
@@ -1451,6 +1484,8 @@ export function useWorkSurface(max = 20) {
     queryKey: ['viewer-adapter', 'work-surface', max],
     queryFn: async (): Promise<WorkSurfacePayload> => {
       const res = await apiFetch(`/api/v1/tasks/next-actions?max=${max}`);
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch work surface: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch work surface: ${res.status}`);
       const body = await res.json();
@@ -1469,7 +1504,6 @@ export function useWorkSurface(max = 20) {
       };
     },
     staleTime: 60_000,
-    retry: 1,
   });
 }
 
