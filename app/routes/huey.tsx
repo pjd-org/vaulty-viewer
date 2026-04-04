@@ -12,8 +12,10 @@ import {
   HueyContextRail,
   HueyWorkspace,
   HueyAssistantProvider,
+  HueyVoiceMode,
 } from '../components/huey';
 import { useThread, useThreadRuntime } from '@assistant-ui/react';
+import { useLiveKitToken } from '../lib/viewer-adapter';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -67,13 +69,15 @@ export type HueyState = {
   threads: ThreadRecord[];
   threadId: string;
   activeIntent: IntentType | null;
+  voiceMode: boolean;
 };
 
 export type HueyAction =
   | { type: 'THREADS_REFRESHED'; threads: ThreadRecord[] }
   | { type: 'NEW_THREAD'; threadId: string }
   | { type: 'SWITCH_THREAD'; threadId: string }
-  | { type: 'SET_INTENT'; intent: IntentType | null };
+  | { type: 'SET_INTENT'; intent: IntentType | null }
+  | { type: 'SET_VOICE_MODE'; value: boolean };
 
 export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
   switch (action.type) {
@@ -93,6 +97,8 @@ export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
       };
     case 'SET_INTENT':
       return { ...state, activeIntent: action.intent };
+    case 'SET_VOICE_MODE':
+      return { ...state, voiceMode: action.value };
   }
 }
 
@@ -106,12 +112,13 @@ export const Route = createFileRoute('/huey')({
 
 function HueyRoute() {
   const hydrated = useHydrated();
-  const [{ threads, threadId, activeIntent }, dispatch] = useReducer(
+  const [{ threads, threadId, activeIntent, voiceMode }, dispatch] = useReducer(
     hueyReducer,
     {
       threads: [],
       threadId: INITIAL_THREAD_ID,
       activeIntent: null,
+      voiceMode: false,
     }
   );
 
@@ -154,9 +161,13 @@ function HueyRoute() {
         threads={threads}
         threadId={threadId}
         activeIntent={activeIntent}
+        voiceMode={voiceMode}
         onNewThread={newThread}
         onSwitchThread={switchThread}
         onSetIntent={(intent) => dispatch({ type: 'SET_INTENT', intent })}
+        onToggleVoice={() =>
+          dispatch({ type: 'SET_VOICE_MODE', value: !voiceMode })
+        }
         onFirstMessage={(record) => {
           saveThread(record);
           dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() });
@@ -175,9 +186,11 @@ interface HueyRouteInnerProps {
   threads: ThreadRecord[];
   threadId: string;
   activeIntent: IntentType | null;
+  voiceMode: boolean;
   onNewThread: () => void;
   onSwitchThread: (id: string) => void;
   onSetIntent: (intent: IntentType | null) => void;
+  onToggleVoice: () => void;
   onFirstMessage: (record: ThreadRecord) => void;
 }
 
@@ -185,9 +198,11 @@ function HueyRouteInner({
   threads,
   threadId,
   activeIntent,
+  voiceMode,
   onNewThread,
   onSwitchThread,
   onSetIntent,
+  onToggleVoice,
   onFirstMessage,
 }: HueyRouteInnerProps) {
   const thread = useThread();
@@ -264,8 +279,22 @@ function HueyRouteInner({
     enabled: !thread.isRunning && lastAssistantText.length > 80,
   });
 
+  // LiveKit token — fetched only when voice mode is active (or about to be)
+  const liveKitRoomName = `huey-${threadId}`;
+  const liveKitParticipant = 'user';
+  const { data: liveKitToken, isError: liveKitError } = useLiveKitToken(
+    liveKitRoomName,
+    liveKitParticipant,
+    voiceMode
+  );
+
+  const voiceAvailable = !liveKitError;
+  const handleDisconnect = useCallback(() => {
+    onToggleVoice();
+  }, [onToggleVoice]);
+
   return (
-    <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
+    <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100dvh-7rem)] lg:h-[calc(100vh-7rem)]">
       <div className="w-full lg:w-[250px] shrink-0">
         <HueyContextRail
           threads={threads}
@@ -275,17 +304,28 @@ function HueyRouteInner({
           intentTemplates={INTENT_TEMPLATES}
           activeIntent={activeIntent}
           onSelectIntent={(t) => onSetIntent(activeIntent === t ? null : t)}
+          voiceMode={voiceMode}
+          onToggleVoice={onToggleVoice}
+          voiceAvailable={voiceAvailable}
         />
       </div>
       <div className="w-full flex-1 min-w-0">
-        <HueyWorkspace
-          messages={messages}
-          loading={thread.isRunning}
-          onSend={handleSend}
-          onCancel={handleCancel}
-          activeIntent={activeIntent}
-          intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
-        />
+        {voiceMode && liveKitToken ? (
+          <HueyVoiceMode
+            token={liveKitToken.token}
+            serverUrl={liveKitToken.serverUrl}
+            onDisconnect={handleDisconnect}
+          />
+        ) : (
+          <HueyWorkspace
+            messages={messages}
+            loading={thread.isRunning}
+            onSend={handleSend}
+            onCancel={handleCancel}
+            activeIntent={activeIntent}
+            intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
+          />
+        )}
       </div>
 
       {/* Step extractor panel — only shown when steps are available */}
