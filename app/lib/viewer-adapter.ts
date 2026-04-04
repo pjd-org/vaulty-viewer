@@ -930,6 +930,27 @@ export function useArchiveSurface() {
   });
 }
 
+// Portfolio surface — project-scoped pressure signals from the shared
+// home-surface cache (same queryKey, zero extra fetches).
+export interface PortfolioSurfacePayload {
+  items: PressureSignal[];
+  total: number;
+}
+
+function selectPortfolioPayload(
+  data: HomeSurfacePayload
+): PortfolioSurfacePayload {
+  const items = data.snapshots.portfolio;
+  return { items, total: items.length };
+}
+
+export function usePortfolioSurface() {
+  return useQuery({
+    ...getHomeSurfaceQueryOptions(),
+    select: selectPortfolioPayload,
+  });
+}
+
 export function getActionsSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'actions-surface'],
