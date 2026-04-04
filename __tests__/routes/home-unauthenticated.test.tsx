@@ -62,6 +62,7 @@ vi.mock('../../src/utils/api', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   apiFetch: (...args: unknown[]) => (mockApiFetch as any)(...args),
   UnauthenticatedError: class UnauthenticatedError extends Error {
+    readonly status = 401;
     constructor(message?: string) {
       super(message ?? 'Unauthenticated');
       this.name = 'UnauthenticatedError';
@@ -154,27 +155,24 @@ describe('home route — unauthenticated state (401)', () => {
     });
   });
 
-  it('renders the unauthenticated state container', () => {
+  it('calls navigate({ to: "/login" }) when error is UnauthenticatedError', () => {
     renderWithClient(<RouteComponent />);
-    expect(screen.getByTestId('home-unauthenticated-state')).toBeTruthy();
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
   });
 
-  it('does NOT render the generic adapter-failed empty state', () => {
-    renderWithClient(<RouteComponent />);
-    expect(screen.queryByText(/adapter query failed/i)).toBeNull();
+  it('renders nothing (null) while redirect is pending', () => {
+    const { container } = renderWithClient(<RouteComponent />);
+    expect(container.firstChild).toBeNull();
   });
 
-  it('renders a login CTA link pointing to /login', () => {
+  it('does NOT render the inline unauthenticated CTA card', () => {
     renderWithClient(<RouteComponent />);
-    const link = screen.getByRole('link', { name: /log in/i });
-    expect(link.getAttribute('href')).toBe('/login');
+    expect(screen.queryByTestId('home-unauthenticated-state')).toBeNull();
   });
 
-  it('renders an explanatory message about authentication', () => {
+  it('does NOT render the WorkspaceScaffold', () => {
     renderWithClient(<RouteComponent />);
-    expect(
-      screen.getByTestId('home-unauthenticated-state').textContent
-    ).toMatch(/sign in|log in|not authenticated|session expired/i);
+    expect(screen.queryByTestId('scaffold-primary')).toBeNull();
   });
 });
 
@@ -195,6 +193,11 @@ describe('home route — generic error (non-401)', () => {
       status: 500,
       json: async () => ({}),
     });
+  });
+
+  it('does NOT navigate to /login for a generic error', () => {
+    renderWithClient(<RouteComponent />);
+    expect(mockNavigate).not.toHaveBeenCalledWith({ to: '/login' });
   });
 
   it('does NOT render the unauthenticated state for a generic error', () => {

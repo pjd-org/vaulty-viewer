@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useWhatNowQuery, useUpNextQuery } from '../lib/queries/agents';
 import type { TaskInput } from '../../src/lib/agent-prompts';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
@@ -195,6 +195,17 @@ function FocusRoute() {
     }
   };
 
+  // Hard-redirect to /login on 401 — return null while in-flight (D3)
+  useEffect(() => {
+    if (surfaceError instanceof UnauthenticatedError) {
+      navigate({ to: '/login' });
+    }
+  }, [surfaceError, navigate]);
+
+  if (surfaceError instanceof UnauthenticatedError) {
+    return null;
+  }
+
   const pressureBand = surface?.pressureBand ?? [];
   const decisionQueue = surface?.decisionQueue ?? [];
   const immediateActions = surface?.immediateActions ?? [];
@@ -293,23 +304,7 @@ function FocusRoute() {
         primarySubtitle="Highest-pressure signals across the system."
         primary={
           <div className="space-y-6">
-            {surfaceError instanceof UnauthenticatedError ? (
-              <div
-                data-testid="home-unauthenticated-state"
-                className="flex flex-col items-center gap-4 rounded-[22px] border border-white/8 bg-white/5 p-8 text-center"
-              >
-                <p className="text-sm text-slate-300">
-                  Your session has expired or you are not authenticated. Log in
-                  to continue.
-                </p>
-                <Link
-                  to="/login"
-                  className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-400"
-                >
-                  Log in
-                </Link>
-              </div>
-            ) : surfaceError && !surface ? (
+            {surfaceError && !surface ? (
               <EmptyState
                 title="Home surface unavailable."
                 description="The adapter query failed to load."
