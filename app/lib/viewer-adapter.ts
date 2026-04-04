@@ -897,6 +897,39 @@ export function useInboxSurface(initialData?: InboxItem[]) {
   });
 }
 
+// Archive surface — groups inbox items with archive buckets from the shared
+// inbox-surface cache (same queryKey, zero extra fetches).
+export interface ArchiveSurfacePayload {
+  rejectedUser: InboxItem[];
+  rejectedAutomated: InboxItem[];
+  deferred: InboxItem[];
+  total: number;
+}
+
+function selectArchivePayload(items: InboxItem[]): ArchiveSurfacePayload {
+  const archived = items.filter(
+    (item) =>
+      item.inboxBucket === 'rejected_user' ||
+      item.inboxBucket === 'rejected_automated' ||
+      item.inboxBucket === 'deferred'
+  );
+  return {
+    rejectedUser: archived.filter((i) => i.inboxBucket === 'rejected_user'),
+    rejectedAutomated: archived.filter(
+      (i) => i.inboxBucket === 'rejected_automated'
+    ),
+    deferred: archived.filter((i) => i.inboxBucket === 'deferred'),
+    total: archived.length,
+  };
+}
+
+export function useArchiveSurface() {
+  return useQuery({
+    ...getInboxSurfaceQueryOptions(),
+    select: selectArchivePayload,
+  });
+}
+
 export function getActionsSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'actions-surface'],
@@ -1229,6 +1262,189 @@ export function getRecentSessionsQueryOptions(limit = 3) {
 
 export function useRecentSessions(limit = 3) {
   return useQuery(getRecentSessionsQueryOptions(limit));
+}
+
+// ─── Health Surface ────────────────────────────────────────────────────────────
+
+export interface HealthServiceEntry {
+  id: string;
+  name: string;
+  status: 'ok' | 'degraded' | 'timeout' | 'error';
+  latencyMs?: number;
+  version?: string;
+  uptime?: number;
+  detail?: string;
+  toolCount?: number;
+}
+
+export interface HealthSurfacePayload {
+  overall: 'ok' | 'degraded';
+  timestamp: string;
+  services: HealthServiceEntry[];
+}
+
+function normalizeHealthResponse(raw: unknown): HealthSurfacePayload {
+  const r = raw as {
+    status: 'ok' | 'degraded';
+    timestamp: string;
+    uptime?: number;
+    version?: string;
+    dependencies?: {
+      mcp?: {
+        status: 'ok' | 'timeout' | 'error';
+        latencyMs?: number;
+        toolCount?: number;
+        error?: string;
+      };
+    };
+  };
+
+  const services: HealthServiceEntry[] = [
+    {
+      id: 'vault-api',
+      name: 'API',
+      status: r.status === 'ok' ? 'ok' : 'degraded',
+      version: r.version,
+      uptime: r.uptime,
+    },
+  ];
+
+  if (r.dependencies?.mcp) {
+    const mcp = r.dependencies.mcp;
+    services.push({
+      id: 'mcp',
+      name: 'MCP',
+      status: mcp.status === 'ok' ? 'ok' : (mcp.status as 'timeout' | 'error'),
+      latencyMs: mcp.latencyMs,
+      toolCount: mcp.toolCount,
+      detail: mcp.error,
+    });
+  }
+
+  return {
+    overall: r.status === 'ok' ? 'ok' : 'degraded',
+    timestamp: r.timestamp,
+    services,
+  };
+}
+
+export function useHealthSurface() {
+  return useQuery({
+    queryKey: ['health'],
+    queryFn: async (): Promise<HealthSurfacePayload> => {
+      const res = await apiFetch('/api/v1/health/detailed');
+      if (!res.ok) throw new Error(`Failed to fetch health: ${res.status}`);
+      const body = await res.json();
+      return normalizeHealthResponse(body);
+    },
+    staleTime: 30_000,
+  });
+}
+
+// ─── Automation Surface ────────────────────────────────────────────────────────
+
+export interface PipelineEntry {
+  name: string;
+}
+
+export interface SchedulerJobEntry {
+  id: string;
+  pipeline: string;
+  cron?: string;
+  intervalSec?: number;
+  mode?: string;
+  lastRun?: unknown;
+  source?: string;
+}
+
+export interface AutomationSurfacePayload {
+  pipelines: PipelineEntry[];
+  scheduler: {
+    enabled: boolean;
+    mode: string;
+    tz: string;
+    jobs: SchedulerJobEntry[];
+  };
+}
+
+function normalizeAutomationResponse(
+  pipelinesRes: unknown,
+  schedulerRes: unknown
+): AutomationSurfacePayload {
+  const pl = pipelinesRes as { pipelines: string[] };
+  const sc = schedulerRes as {
+    enabled: boolean;
+    mode: string;
+    tz: string;
+    jobs: SchedulerJobEntry[];
+  };
+  return {
+    pipelines: (pl.pipelines ?? []).map((name) => ({ name })),
+    scheduler: {
+      enabled: sc.enabled ?? false,
+      mode: sc.mode ?? 'auto',
+      tz: sc.tz ?? 'UTC',
+      jobs: sc.jobs ?? [],
+    },
+  };
+}
+
+export function useAutomationSurface() {
+  return useQuery({
+    queryKey: ['viewer-adapter', 'automation-surface'],
+    queryFn: async (): Promise<AutomationSurfacePayload> => {
+      const [pipelinesRes, schedulerRes] = await Promise.all([
+        apiFetch('/api/v1/pipelines'),
+        apiFetch('/api/v1/scheduler/status'),
+      ]);
+      if (!pipelinesRes.ok)
+        throw new Error(`Failed to fetch pipelines: ${pipelinesRes.status}`);
+      if (!schedulerRes.ok)
+        throw new Error(`Failed to fetch scheduler: ${schedulerRes.status}`);
+      const [pipelinesBody, schedulerBody] = await Promise.all([
+        pipelinesRes.json(),
+        schedulerRes.json(),
+      ]);
+      return normalizeAutomationResponse(pipelinesBody, schedulerBody);
+    },
+    staleTime: 30_000,
+  });
+}
+
+// ─── Work Surface ──────────────────────────────────────────────────────────────
+
+export interface WorkSurfacePayload {
+  tasks: NextAction[];
+  total: number;
+  mode: 'cod' | 'local_fallback';
+  warnings: string[];
+}
+
+export function useWorkSurface(max = 20) {
+  return useQuery({
+    queryKey: ['viewer-adapter', 'work-surface', max],
+    queryFn: async (): Promise<WorkSurfacePayload> => {
+      const res = await apiFetch(`/api/v1/tasks/next-actions?max=${max}`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch work surface: ${res.status}`);
+      const body = await res.json();
+      const sc = body?.structuredContent ?? body;
+      const rawTasks = Array.isArray(sc.tasks) ? sc.tasks : [];
+      const tasks = (rawTasks as Array<Record<string, unknown>>).map(
+        normalizeNextAction
+      );
+      return {
+        tasks,
+        total: typeof sc.total === 'number' ? sc.total : tasks.length,
+        mode: sc.mode === 'cod' ? 'cod' : 'local_fallback',
+        warnings: Array.isArray(body?.warnings)
+          ? (body.warnings as string[])
+          : [],
+      };
+    },
+    staleTime: 60_000,
+    retry: 1,
+  });
 }
 
 // ─── Query Invalidation Helpers ───────────────────────────────────────────────

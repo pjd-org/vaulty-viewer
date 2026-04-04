@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Stubs required by all 6 route components
+// Stubs required by all 8 route components
 // ---------------------------------------------------------------------------
 
 vi.mock('@tanstack/react-router', () => ({
@@ -69,7 +69,7 @@ describe('work lane', () => {
   it('renders ProjectsWorkspace and empty-state when data is null', () => {
     render(<WorkComponent />);
     expect(screen.getByTestId('projects-workspace')).toBeTruthy();
-    expect(screen.getByTestId('work-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('work-task-empty-state')).toBeTruthy();
   });
 
   it('renders aside empty-state', () => {
@@ -151,5 +151,43 @@ describe('timeline lane', () => {
   it('renders aside empty-state', () => {
     render(<TimelineComponent />);
     expect(screen.getByTestId('timeline-aside-empty-state')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Archive
+// ---------------------------------------------------------------------------
+import { Route as ArchiveRouteModule } from '../../app/routes/archive';
+const ArchiveComponent = ArchiveRouteModule.options
+  .component as React.ComponentType;
+
+describe('archive lane', () => {
+  it('renders empty-state with correct testid when data is null', () => {
+    render(<ArchiveComponent />);
+    expect(screen.getByTestId('archive-empty-state')).toBeTruthy();
+  });
+
+  it('renders aside empty-state', () => {
+    render(<ArchiveComponent />);
+    expect(screen.getByTestId('archive-aside-empty-state')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Graph
+// ---------------------------------------------------------------------------
+import { Route as GraphRouteModule } from '../../app/routes/graph';
+const GraphComponent = GraphRouteModule.options
+  .component as React.ComponentType;
+
+describe('graph lane', () => {
+  it('renders empty-state with correct testid when data is null', () => {
+    render(<GraphComponent />);
+    expect(screen.getByTestId('graph-empty-state')).toBeTruthy();
+  });
+
+  it('renders aside empty-state', () => {
+    render(<GraphComponent />);
+    expect(screen.getByTestId('graph-aside-empty-state')).toBeTruthy();
   });
 });
