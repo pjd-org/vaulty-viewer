@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { apiFetch } from '../../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
   normalizeNextAction,
   normalizeSessionSummary,
@@ -837,6 +837,8 @@ export function getHomeSurfaceQueryOptions() {
     queryKey: ['viewer-adapter', 'home-surface'],
     queryFn: async (): Promise<HomeSurfacePayload> => {
       const res = await apiFetch('/api/v1/surfaces/home?max=25');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch home surface: 401`);
       if (!res.ok)
         throw new Error(`Failed to fetch home surface: ${res.status}`);
       const body = await res.json();

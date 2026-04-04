@@ -4,16 +4,19 @@ import type { TaskInput } from '../../src/lib/agent-prompts';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { homeSearchParams } from '../../src/lib/routes/search-params';
-import { apiFetch } from '../../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
   formatSessionDuration,
   formatScore,
   elapsedMinutes,
   type ActiveSession,
   type SessionSummary,
+  type NextAction,
 } from '../../src/lib/focus-logic';
 import { SectionHeader, WorkspaceScaffold } from '../components/layout';
 import { EmptyState, PrimaryButton, SecondaryButton } from '../components/ui';
+import { CodSignalRow } from '../components/cod/CodSignalRow';
+import { BestMoveCard } from '../components/home/BestMoveCard';
 import {
   getHomeSurfaceQueryOptions,
   useHomeSurface,
@@ -80,6 +83,7 @@ function ActiveSessionBanner({
   const tasksDone =
     session.tasks?.filter((t) => t.status === 'done').length ?? 0;
   const tasksTotal = session.tasks?.length ?? 0;
+  const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
     <div className="genie-surface genie-surface--utility rounded-[28px] p-4 flex items-center justify-between">
@@ -107,7 +111,25 @@ function ActiveSessionBanner({
       </div>
       <div className="flex items-center gap-2">
         <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
-        <SecondaryButton onClick={onEnd}>End</SecondaryButton>
+        {confirmingEnd ? (
+          <>
+            <SecondaryButton
+              onClick={() => {
+                onEnd();
+                setConfirmingEnd(false);
+              }}
+            >
+              Confirm end
+            </SecondaryButton>
+            <SecondaryButton onClick={() => setConfirmingEnd(false)}>
+              Cancel
+            </SecondaryButton>
+          </>
+        ) : (
+          <SecondaryButton onClick={() => setConfirmingEnd(true)}>
+            End
+          </SecondaryButton>
+        )}
       </div>
     </div>
   );
@@ -184,6 +206,14 @@ function FocusRoute() {
     domain: 'work',
     actionId: 'home-defer',
   });
+
+  const executeMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
+    domain: 'work',
+    actionId: 'home-execute',
+  });
+
+  const topTask: NextAction | undefined = (surface?.tasks ?? [])[0];
   const snapshots = surface?.snapshots ?? {
     automation: [],
     knowledge: [],
@@ -263,11 +293,45 @@ function FocusRoute() {
         primarySubtitle="Highest-pressure signals across the system."
         primary={
           <div className="space-y-6">
-            {surfaceError && !surface ? (
+            {surfaceError instanceof UnauthenticatedError ? (
+              <div
+                data-testid="home-unauthenticated-state"
+                className="flex flex-col items-center gap-4 rounded-[22px] border border-white/8 bg-white/5 p-8 text-center"
+              >
+                <p className="text-sm text-slate-300">
+                  Your session has expired or you are not authenticated. Log in
+                  to continue.
+                </p>
+                <Link
+                  to="/login"
+                  className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+                >
+                  Log in
+                </Link>
+              </div>
+            ) : surfaceError && !surface ? (
               <EmptyState
                 title="Home surface unavailable."
                 description="The adapter query failed to load."
               />
+            ) : null}
+
+            {topTask ? (
+              <section className="space-y-3">
+                <SectionHeader
+                  title="Best Move"
+                  subtitle="Top COD-ranked task ready to execute."
+                />
+                <BestMoveCard
+                  task={topTask}
+                  onStart={(t) => executeMutation.mutate(t.path)}
+                  onSkip={(t) => deferMutation.mutate(t.path)}
+                  onComplete={(t) => executeMutation.mutate(t.path)}
+                  mutating={
+                    executeMutation.isPending || deferMutation.isPending
+                  }
+                />
+              </section>
             ) : null}
 
             <section className="space-y-3">
@@ -291,16 +355,26 @@ function FocusRoute() {
                           {item.severity}
                         </span>
                       </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                        <span>{item.sourceType}</span>
-                        <span>·</span>
-                        <span>{item.sourceId}</span>
-                        {item.projectId ? (
-                          <>
-                            <span>·</span>
-                            <span>{item.projectId}</span>
-                          </>
-                        ) : null}
+                      <div className="mt-3">
+                        <CodSignalRow
+                          items={[
+                            { label: 'Source type', value: item.sourceType },
+                            {
+                              label: 'Severity',
+                              value: item.severity,
+                              variant:
+                                item.severity === 'high'
+                                  ? 'bad'
+                                  : item.severity === 'medium'
+                                    ? 'warn'
+                                    : 'ok',
+                            },
+                            {
+                              label: 'Confidence',
+                              value: `${((item.confidence ?? 0) * 100).toFixed(0)}%`,
+                            },
+                          ]}
+                        />
                       </div>
                       <p className="mt-3 text-sm text-slate-300">
                         {item.whySurfaced}

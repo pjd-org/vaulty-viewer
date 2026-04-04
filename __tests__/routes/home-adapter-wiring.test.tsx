@@ -134,6 +134,12 @@ vi.mock('../../app/lib/queries/agents', () => ({
 
 vi.mock('../../src/utils/api', () => ({
   apiFetch: (...args: any[]) => (mockApiFetch as any)(...args),
+  UnauthenticatedError: class UnauthenticatedError extends Error {
+    constructor(message?: string) {
+      super(message ?? 'Unauthenticated');
+      this.name = 'UnauthenticatedError';
+    }
+  },
 }));
 
 vi.mock('../../app/components/home', () => ({

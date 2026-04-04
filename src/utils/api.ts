@@ -17,6 +17,19 @@ type ViewerConfig = {
   apiUrl?: string;
 };
 
+/**
+ * Thrown when the API responds with HTTP 401 (Unauthenticated).
+ * Consumers can use `instanceof UnauthenticatedError` to distinguish
+ * auth failures from generic API errors.
+ */
+export class UnauthenticatedError extends Error {
+  readonly status = 401;
+  constructor(message?: string) {
+    super(message ?? 'Unauthenticated');
+    this.name = 'UnauthenticatedError';
+  }
+}
+
 declare global {
   interface Window {
     VAULT_API_URL?: string;
