@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   HeadContent,
   Outlet,
+  Scripts,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -176,9 +177,10 @@ function RootDocument({
     : '';
 
   return (
-    <html lang="en">
+    <html lang="en" style={{ colorScheme: 'dark' }}>
       <head>
         <HeadContent />
+        <meta name="theme-color" content="#0f1117" />
         {/* Theme script must be in <head> to block paint before body renders */}
         <script
           suppressHydrationWarning
@@ -191,6 +193,7 @@ function RootDocument({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: hydrationScript }}
         />
+        <Scripts />
       </body>
     </html>
   );
