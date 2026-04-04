@@ -142,4 +142,16 @@ describe('usePortfolioSurface', () => {
     expect(result.items[0]?.projectId).toBe('proj-a');
     expect(result.items[1]?.projectId).toBe('proj-b');
   });
+
+  it('select handles absent snapshots gracefully (null guard)', () => {
+    const opts = captureQueryOptions();
+    // Simulate malformed/absent snapshots
+    const malformed = {
+      ...HOME_PAYLOAD_WITH_ITEMS,
+      snapshots: undefined,
+    } as unknown as import('../app/lib/viewer-adapter').HomeSurfacePayload;
+    const result = opts!.select!(malformed);
+    expect(result.items).toEqual([]);
+    expect(result.total).toBe(0);
+  });
 });

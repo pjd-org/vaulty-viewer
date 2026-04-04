@@ -53,6 +53,13 @@ function PortfolioItem({ item }: { item: PressureSignal }) {
 function PortfolioList({ data }: { data: PortfolioSurfacePayload }) {
   return (
     <div data-testid="portfolio-list" className="space-y-1">
+      <p
+        data-testid="portfolio-cap-notice"
+        className="text-xs text-muted-foreground mb-2"
+      >
+        Showing top {data.total} project signal{data.total !== 1 ? 's' : ''}{' '}
+        from the pressure band.
+      </p>
       <ul className="space-y-1">
         {data.items.map((item) => (
           <PortfolioItem key={item.id} item={item} />
@@ -73,7 +80,7 @@ function PortfolioRoute() {
   return (
     <WorkspaceScaffold
       title="Portfolio"
-      subtitle="Projects under pressure — highest-priority project-scoped signals."
+      subtitle="Pressure-band snapshot (top 2). Full capital allocation surface requires backend API."
       summaryItems={[
         {
           label: 'Total',

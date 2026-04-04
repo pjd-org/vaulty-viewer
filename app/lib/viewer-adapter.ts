@@ -940,11 +940,14 @@ export interface PortfolioSurfacePayload {
 function selectPortfolioPayload(
   data: HomeSurfacePayload
 ): PortfolioSurfacePayload {
-  const items = data.snapshots.portfolio;
+  const items = data.snapshots?.portfolio ?? [];
   return { items, total: items.length };
 }
 
 export function usePortfolioSurface() {
+  // v1 assumption: shares staleTime (60s) with home surface cache.
+  // No loading indicator, "last updated" timestamp, or refresh affordance.
+  // Accepted for v1 — revisit when portfolio gets a dedicated API endpoint.
   return useQuery({
     ...getHomeSurfaceQueryOptions(),
     select: selectPortfolioPayload,
