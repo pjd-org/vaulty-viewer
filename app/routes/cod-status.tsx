@@ -94,10 +94,10 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
         <div className="route-modal-scroll route-modal-body space-y-4">
           <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
             <div className="genie-content">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
                 Readiness
               </h1>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-slate-300">
                 Can you work now, and under what constraints?
               </p>
             </div>

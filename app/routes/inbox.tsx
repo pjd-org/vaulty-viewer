@@ -273,12 +273,6 @@ const SEVERITY_OPTIONS = [
   { value: 'low', label: 'Low' },
 ] as const;
 
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'confidence', label: 'Confidence' },
-] as const;
-
 /* ─── Route ───────────────────────────────────────────────────────────────── */
 
 export const Route = createFileRoute('/inbox')({
@@ -629,7 +623,6 @@ function InboxRoute() {
             {activeView === 'workbench' &&
               groupedItems.workbench.map((item) => {
                 const note = noteByPath.get(item.sourceId);
-                const notePath = note?.path ?? item.sourceId;
                 return (
                   <InboxItemCard
                     key={item.id}

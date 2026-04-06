@@ -6,6 +6,8 @@ import {
   type GraphJson,
 } from '../lib/viewer-adapter';
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
+import { WorkspaceScaffold } from '../components/layout';
+import { EmptyState } from '../components/ui';
 
 export const Route = createFileRoute('/knowledge/graph')({
   component: KnowledgeGraphRoute,
@@ -135,6 +137,7 @@ function KnowledgeGraphRoute() {
     title: string;
     audience: string | null;
   } | null>(null);
+  const [selectedNode, setSelectedNode] = useState<SimNode | null>(null);
   const navigate = useNavigate();
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -169,121 +172,211 @@ function KnowledgeGraphRoute() {
     }
   }
 
+  const summaryItems = [
+    {
+      label: 'Nodes',
+      value: graphLoading ? '…' : String(graph?.node_count ?? 0),
+      detail: 'Total knowledge notes in graph',
+    },
+    {
+      label: 'Links',
+      value: graphLoading
+        ? '…'
+        : String(
+            graph
+              ? Object.values(graph.links).reduce(
+                  (acc, targets) => acc + targets.length,
+                  0
+                )
+              : 0
+          ),
+      detail: 'Total edges between notes',
+    },
+    {
+      label: 'Human',
+      value: graphLoading
+        ? '…'
+        : String(simNodes.filter((n) => n.audience === 'human').length),
+      detail: 'Human-audience notes',
+    },
+    {
+      label: 'Agent',
+      value: graphLoading
+        ? '…'
+        : String(simNodes.filter((n) => n.audience === 'agent').length),
+      detail: 'Agent-audience notes',
+    },
+  ] as const;
+
   return (
-    <main className="page">
-      <header className="page-header">
-        <h1>Knowledge Graph</h1>
-      </header>
+    <WorkspaceScaffold
+      title="Knowledge Graph"
+      subtitle="Force-directed layout of all linked vault notes."
+      summaryItems={summaryItems}
+      primaryTitle="Graph"
+      primarySubtitle="Click a node to inspect it. Node size reflects backlink count."
+      primary={
+        <div className="space-y-4">
+          <KnowledgeHealthBanner
+            health={health ?? null}
+            loading={graphLoading}
+          />
 
-      <KnowledgeHealthBanner health={health ?? null} loading={graphLoading} />
+          {graphError && (
+            <div
+              className="rounded-[18px] border border-red-400/20 bg-red-400/5 p-4 text-sm text-red-300"
+              role="alert"
+            >
+              <p className="font-medium">Failed to load the knowledge graph.</p>
+              <p className="mt-1 text-xs text-red-400">{graphError.message}</p>
+            </div>
+          )}
 
-      {graphError && (
-        <div className="knowledge-graph__error" role="alert">
-          <p>Failed to load the knowledge graph.</p>
-          <p className="knowledge-graph__error-detail">{graphError.message}</p>
-        </div>
-      )}
+          {graphLoading && !graph && (
+            <div className="h-[600px] animate-pulse rounded-[22px] border border-white/10 bg-white/5" />
+          )}
 
-      {graph?.node_count === 0 && (
-        <p className="knowledge-graph__empty">
-          No knowledge notes found. Run the build pipeline to generate the
-          graph.
-        </p>
-      )}
+          {!graphLoading && graph?.node_count === 0 && (
+            <EmptyState
+              title="No knowledge notes found."
+              description="Run the build pipeline to generate the graph."
+            />
+          )}
 
-      {graph && graph.node_count > 0 && (
-        <div className="knowledge-graph__container">
-          <svg
-            ref={svgRef}
-            width={WIDTH}
-            height={HEIGHT}
-            className="knowledge-graph__svg border border-neutral-200 rounded-lg bg-neutral-50 block max-w-full"
-          >
-            <g className="edges">
-              {edges.map((e) => (
-                <line
-                  key={e.key}
-                  x1={e.x1}
-                  y1={e.y1}
-                  x2={e.x2}
-                  y2={e.y2}
-                  stroke="#d1d5db"
-                  strokeWidth={1}
-                />
-              ))}
-            </g>
-            <g className="nodes">
-              {simNodes.map((n) => (
-                <circle
-                  key={n.id}
-                  cx={n.x}
-                  cy={n.y}
-                  r={n.radius}
-                  fill={n.color}
-                  className="cursor-pointer"
-                  onMouseEnter={() =>
-                    setTooltip({
-                      x: n.x,
-                      y: n.y,
-                      title: n.title,
-                      audience: n.audience,
-                    })
-                  }
-                  onMouseLeave={() => setTooltip(null)}
-                  onClick={() => navigate({ to: '/note', search: { p: n.id } })}
-                />
-              ))}
-            </g>
-            {tooltip && (
-              <g>
-                <rect
-                  x={Math.min(tooltip.x + 8, WIDTH - 180)}
-                  y={Math.max(tooltip.y - 30, 4)}
-                  width={170}
-                  height={44}
-                  rx={4}
-                  fill="white"
-                  stroke="#d1d5db"
-                />
-                <text
-                  x={Math.min(tooltip.x + 14, WIDTH - 174)}
-                  y={Math.max(tooltip.y - 12, 20)}
-                  fontSize={12}
-                  fill="#111827"
-                >
-                  {tooltip.title.slice(0, 22)}
-                  {tooltip.title.length > 22 ? '…' : ''}
-                </text>
-                <text
-                  x={Math.min(tooltip.x + 14, WIDTH - 174)}
-                  y={Math.max(tooltip.y + 6, 38)}
-                  fontSize={11}
-                  fill="#6b7280"
-                >
-                  {tooltip.audience ?? 'unknown'}
-                </text>
-              </g>
-            )}
-          </svg>
-
-          <div className="knowledge-graph__legend">
-            {Object.entries(AUDIENCE_COLOR).map(([a, c]) => (
-              <span key={a} className="knowledge-graph__legend-item">
-                <svg width={12} height={12}>
-                  <circle cx={6} cy={6} r={5} fill={c} />
-                </svg>
-                {a}
-              </span>
-            ))}
-            <span className="knowledge-graph__legend-item">
-              <svg width={12} height={12}>
-                <circle cx={6} cy={6} r={5} fill={DEFAULT_COLOR} />
+          {graph && graph.node_count > 0 && (
+            <div className="overflow-x-auto rounded-[22px] border border-white/10 bg-[#0b0e16]">
+              <svg
+                ref={svgRef}
+                width={WIDTH}
+                height={HEIGHT}
+                className="block max-w-full"
+              >
+                <g>
+                  {edges.map((e) => (
+                    <line
+                      key={e.key}
+                      x1={e.x1}
+                      y1={e.y1}
+                      x2={e.x2}
+                      y2={e.y2}
+                      stroke="rgba(255,255,255,0.08)"
+                      strokeWidth={1}
+                    />
+                  ))}
+                </g>
+                <g>
+                  {simNodes.map((n) => (
+                    <circle
+                      key={n.id}
+                      cx={n.x}
+                      cy={n.y}
+                      r={n.radius}
+                      fill={n.color}
+                      className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                      onMouseEnter={() =>
+                        setTooltip({
+                          x: n.x,
+                          y: n.y,
+                          title: n.title,
+                          audience: n.audience,
+                        })
+                      }
+                      onMouseLeave={() => setTooltip(null)}
+                      onClick={() => {
+                        setSelectedNode(n);
+                        navigate({ to: '/note', search: { p: n.id } });
+                      }}
+                    />
+                  ))}
+                </g>
+                {tooltip && (
+                  <g>
+                    <rect
+                      x={Math.min(tooltip.x + 8, WIDTH - 180)}
+                      y={Math.max(tooltip.y - 30, 4)}
+                      width={170}
+                      height={44}
+                      rx={6}
+                      fill="#1e2130"
+                      stroke="rgba(255,255,255,0.12)"
+                    />
+                    <text
+                      x={Math.min(tooltip.x + 14, WIDTH - 174)}
+                      y={Math.max(tooltip.y - 12, 20)}
+                      fontSize={12}
+                      fill="#f1f5f9"
+                    >
+                      {tooltip.title.slice(0, 22)}
+                      {tooltip.title.length > 22 ? '…' : ''}
+                    </text>
+                    <text
+                      x={Math.min(tooltip.x + 14, WIDTH - 174)}
+                      y={Math.max(tooltip.y + 6, 38)}
+                      fontSize={11}
+                      fill="#64748b"
+                    >
+                      {tooltip.audience ?? 'unknown'}
+                    </text>
+                  </g>
+                )}
               </svg>
-              other
-            </span>
-          </div>
+
+              <div className="flex flex-wrap items-center gap-4 border-t border-white/8 px-5 py-3">
+                {Object.entries(AUDIENCE_COLOR).map(([a, c]) => (
+                  <span
+                    key={a}
+                    className="flex items-center gap-1.5 text-xs text-slate-400"
+                  >
+                    <svg width={10} height={10}>
+                      <circle cx={5} cy={5} r={4} fill={c} />
+                    </svg>
+                    {a}
+                  </span>
+                ))}
+                <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <svg width={10} height={10}>
+                    <circle cx={5} cy={5} r={4} fill={DEFAULT_COLOR} />
+                  </svg>
+                  other
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </main>
+      }
+      asideTitle="Selection"
+      asideSubtitle="Click a node to inspect it here."
+      aside={
+        selectedNode ? (
+          <div className="space-y-4">
+            <div className="rounded-[22px] border border-white/8 bg-white/5 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Selected note
+              </p>
+              <h3 className="mt-3 text-lg font-semibold text-slate-100">
+                {selectedNode.title}
+              </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                {selectedNode.audience ?? 'no audience'}
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate({ to: '/note', search: { p: selectedNode.id } })
+                }
+                className="mt-4 rounded-full border border-sky-300/30 bg-sky-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition hover:bg-sky-400/25"
+              >
+                Open note
+              </button>
+            </div>
+          </div>
+        ) : (
+          <EmptyState
+            title="No node selected."
+            description="Click any node in the graph to inspect it here."
+          />
+        )
+      }
+    />
   );
 }

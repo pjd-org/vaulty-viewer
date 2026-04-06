@@ -78,47 +78,68 @@ function ReadinessHeader({
     : null;
 
   return (
-    <header className="os-header">
-      <div className="os-header__identity">
-        {nameIsReal && <h1 className="os-header__name">{profile.name}</h1>}
-        {titleIsReal && <p className="os-header__title">{profile.title}</p>}
+    <header className="mb-6 space-y-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          {nameIsReal && (
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+              {profile.name}
+            </h1>
+          )}
+          {titleIsReal && (
+            <p className="mt-1 text-sm text-slate-400">{profile.title}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span
+            className={[
+              'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
+              apiStatus === 'online'
+                ? 'bg-emerald-400/15 text-emerald-300'
+                : 'bg-red-400/15 text-red-300',
+            ].join(' ')}
+          >
+            {apiBadgeText(apiStatus as Parameters<typeof apiBadgeText>[0])}
+          </span>
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            title="Refresh state"
+            className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/15 disabled:opacity-40"
+          >
+            ↻
+          </button>
+        </div>
       </div>
 
-      <div className="os-header__readiness">
-        <ReadinessCard
-          readiness={readiness}
-          capacityLabel={capacityLabel}
-          timeBudgetLabel={timeBudgetLabel}
-        />
+      <ReadinessCard
+        readiness={readiness}
+        capacityLabel={capacityLabel}
+        timeBudgetLabel={timeBudgetLabel}
+      />
+
+      <div className="flex flex-wrap gap-2">
         {flags.stagnation && (
-          <span className="os-flag os-flag--warning">Stagnation detected</span>
+          <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-medium text-amber-300">
+            Stagnation detected
+          </span>
         )}
         {flags.entropyWarning && (
-          <span className="os-flag os-flag--danger">High entropy</span>
+          <span className="rounded-full bg-red-400/15 px-3 py-1 text-xs font-medium text-red-300">
+            High entropy
+          </span>
         )}
-      </div>
-
-      <div className="os-header__meta">
         {stale && lastUpdatedStr && (
-          <span className="os-stale">
+          <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs text-amber-400">
             State may be stale — {lastUpdatedStr}
           </span>
         )}
         {!stale && lastUpdatedStr && (
-          <span className="os-updated">Updated {lastUpdatedStr}</span>
+          <span className="text-xs text-slate-500">
+            Updated {lastUpdatedStr}
+          </span>
         )}
-        <span className={`api-badge api-badge--${apiStatus}`}>
-          {apiBadgeText(apiStatus as Parameters<typeof apiBadgeText>[0])}
-        </span>
-        <button
-          type="button"
-          className="os-refresh"
-          onClick={onRefresh}
-          disabled={loading}
-          title="Refresh state"
-        >
-          ↻
-        </button>
       </div>
     </header>
   );
@@ -139,24 +160,28 @@ function CapacityGroup({ capacity }: { capacity: CapacityInput }) {
   if (!hasAny && !guidance) return null;
 
   return (
-    <section className="os-section">
-      <p className="os-section__label">Capacity</p>
-      <div className="capacity-chips">
+    <section className="mb-5 space-y-2">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+        Capacity
+      </p>
+      <div className="flex flex-wrap gap-2">
         {time && (
-          <span className="chip chip--capacity-time">{time} available</span>
+          <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs text-sky-300">
+            {time} available
+          </span>
         )}
         {isMetricReal(capacity.focusCostMax) && (
-          <span className="chip chip--capacity-focus">
+          <span className="rounded-full bg-violet-400/15 px-3 py-1 text-xs text-violet-300">
             Focus ≤ {capacity.focusCostMax}
           </span>
         )}
         {isMetricReal(capacity.effortScoreMax) && (
-          <span className="chip chip--capacity-effort">
+          <span className="rounded-full bg-indigo-400/15 px-3 py-1 text-xs text-indigo-300">
             Effort ≤ {capacity.effortScoreMax}
           </span>
         )}
       </div>
-      {guidance && <p className="os-guidance">{guidance}</p>}
+      {guidance && <p className="mt-1 text-xs text-slate-400">{guidance}</p>}
     </section>
   );
 }
@@ -182,19 +207,24 @@ function ActionGuidancePanel({
       : '/';
 
   return (
-    <section className="os-section action-guidance">
-      <p className="os-section__label">What to do now</p>
-      <p className="action-guidance__text">{readiness.description}</p>
-      <div className="action-guidance__ctas">
+    <section className="mb-5 space-y-3">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+        What to do now
+      </p>
+      <p className="text-sm text-slate-300">{readiness.description}</p>
+      <div className="flex flex-wrap gap-2">
         <Link
           to="/"
           search={{ session: '1' }}
-          className="na-card__btn na-card__btn--start"
+          className="rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30"
         >
           Start {readiness.sessionType} session
           {budget > 0 && ` (${formatTimeBudget(Math.min(budget, 90))})`}
         </Link>
-        <Link to={tasksHref} className="na-card__btn na-card__btn--done">
+        <Link
+          to={tasksHref}
+          className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/8"
+        >
           See matched tasks
         </Link>
       </div>
@@ -213,16 +243,22 @@ function ExecutionStats({ vitals }: { vitals: Record<string, unknown> }) {
   if (tasksToday === 0 && sessionsWeek === 0) return null;
 
   return (
-    <section className="os-section">
-      <p className="os-section__label">Today</p>
-      <div className="exec-stats">
-        <div className="exec-stat">
-          <span className="exec-stat__value">{tasksToday}</span>
-          <span className="exec-stat__label">tasks done</span>
+    <section className="mb-5 space-y-2">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+        Today
+      </p>
+      <div className="flex gap-6">
+        <div className="text-center">
+          <span className="block text-2xl font-semibold tabular-nums text-slate-100">
+            {tasksToday}
+          </span>
+          <span className="text-xs text-slate-500">tasks done</span>
         </div>
-        <div className="exec-stat">
-          <span className="exec-stat__value">{sessionsWeek}</span>
-          <span className="exec-stat__label">sessions this week</span>
+        <div className="text-center">
+          <span className="block text-2xl font-semibold tabular-nums text-slate-100">
+            {sessionsWeek}
+          </span>
+          <span className="text-xs text-slate-500">sessions this week</span>
         </div>
       </div>
     </section>
@@ -256,14 +292,21 @@ function ProgressionSummary({
     })();
 
   return (
-    <div className="progression-summary">
+    <div className="flex flex-wrap gap-2 pt-1">
       {streakDays > 0 && (
-        <span className={`chip ${isStreakActive ? 'chip--score' : ''}`}>
+        <span
+          className={[
+            'rounded-full px-3 py-1 text-xs',
+            isStreakActive
+              ? 'bg-amber-400/15 text-amber-300'
+              : 'bg-white/8 text-slate-400',
+          ].join(' ')}
+        >
           {isStreakActive ? '🔥' : '○'} {streakDays}d streak
         </span>
       )}
       {level > 0 && (
-        <span className="chip chip--tag">
+        <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-slate-400">
           Level {level} · {currentXp.toLocaleString()} /{' '}
           {xpToNext.toLocaleString()} XP
         </span>
@@ -341,20 +384,27 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
         >
           ✕
         </button>
-        <main className="avatar-os-page route-modal-scroll route-modal-body">
-          <nav className="breadcrumb">
-            <Link to="/" search={{}} className="back-link">
+        <main className="route-modal-scroll route-modal-body space-y-2">
+          <nav className="mb-4">
+            <Link
+              to="/"
+              search={{}}
+              className="text-xs text-slate-500 transition hover:text-slate-300"
+            >
               ← Focus
             </Link>
           </nav>
 
           {error && (
-            <div className="focus-offline" role="alert">
+            <div
+              className="mb-4 rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
               {error}
               <button
                 type="button"
                 onClick={refresh}
-                className="os-refresh ml-2"
+                className="ml-2 underline underline-offset-2 hover:no-underline"
               >
                 Retry
               </button>
@@ -382,11 +432,13 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
           />
 
           {loading ? (
-            <div className="focus-loading">Loading…</div>
+            <p className="py-8 text-center text-sm text-slate-500">Loading…</p>
           ) : (
             <>
-              <section className="os-section">
-                <p className="os-section__label">Vitals</p>
+              <section className="mb-5 space-y-2">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+                  Vitals
+                </p>
                 <VitalsPanel vitals={vitals} />
               </section>
 
@@ -396,24 +448,26 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
 
               <ExecutionStats vitals={vitals} />
 
-              <details className="avatar-progression">
-                <summary className="avatar-progression__summary">
+              <details className="group mb-4">
+                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-slate-500 hover:text-slate-400">
                   Progression
                 </summary>
-                <ProgressionSummary
-                  level={level}
-                  currentXp={currentXp}
-                  xpToNext={xpToNext}
-                  progression={progression}
-                />
+                <div className="mt-2">
+                  <ProgressionSummary
+                    level={level}
+                    currentXp={currentXp}
+                    xpToNext={xpToNext}
+                    progression={progression}
+                  />
+                </div>
               </details>
 
               {avatar.updated && (
-                <div className="avatar-footer">
+                <div className="border-t border-white/8 pt-4">
                   <Link
                     to="/note"
                     search={{ p: 'notes/core/avatar/Avatar' }}
-                    className="avatar-link"
+                    className="text-xs text-slate-500 transition hover:text-slate-300"
                   >
                     Open avatar note →
                   </Link>

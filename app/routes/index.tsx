@@ -210,6 +210,12 @@ function FocusRoute() {
     actionId: 'home-execute',
   });
 
+  const completeMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'completed'),
+    domain: 'work',
+    actionId: 'home-complete',
+  });
+
   // Hard-redirect to /login on 401 — return null while in-flight (D3)
   useEffect(() => {
     if (surfaceError instanceof UnauthenticatedError) {
@@ -323,9 +329,11 @@ function FocusRoute() {
                   task={topTask}
                   onStart={(t) => executeMutation.mutate(t.path)}
                   onSkip={(t) => deferMutation.mutate(t.path)}
-                  onComplete={(t) => executeMutation.mutate(t.path)}
+                  onComplete={(t) => completeMutation.mutate(t.path)}
                   mutating={
-                    executeMutation.isPending || deferMutation.isPending
+                    executeMutation.isPending ||
+                    deferMutation.isPending ||
+                    completeMutation.isPending
                   }
                 />
               </section>
@@ -682,24 +690,41 @@ function FocusRoute() {
                 subtitle="Domain-level pressure snapshots."
               />
               <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'Automation', items: snapshots.automation },
-                  { label: 'Knowledge', items: snapshots.knowledge },
-                  { label: 'Portfolio', items: snapshots.portfolio },
-                  { label: 'Bubble', items: snapshots.bubble },
-                  { label: 'Health', items: snapshots.health },
-                ].map((snapshotGroup) => (
-                  <div
+                {(
+                  [
+                    {
+                      label: 'Automation',
+                      items: snapshots.automation,
+                      to: '/automation',
+                    },
+                    {
+                      label: 'Knowledge',
+                      items: snapshots.knowledge,
+                      to: '/knowledge',
+                    },
+                    {
+                      label: 'Portfolio',
+                      items: snapshots.portfolio,
+                      to: '/portfolio',
+                    },
+                    { label: 'Bubble', items: snapshots.bubble, to: '/bubble' },
+                    { label: 'Health', items: snapshots.health, to: '/health' },
+                  ] as const
+                ).map((snapshotGroup) => (
+                  <Link
                     key={snapshotGroup.label}
-                    className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                    to={snapshotGroup.to as never}
+                    className="rounded-[18px] border border-white/8 bg-white/5 p-4 transition hover:bg-white/8"
                   >
                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                       {snapshotGroup.label}
                     </p>
                     <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-100">
-                      {snapshotGroup.items.length}
+                      {snapshotGroup.items.length > 0
+                        ? snapshotGroup.items.length
+                        : '—'}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>

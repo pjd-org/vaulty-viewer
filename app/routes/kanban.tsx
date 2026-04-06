@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { apiFetch } from '../../src/utils/api';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
   STATUS_COLUMNS,
   buildColumns,
@@ -9,8 +9,10 @@ import {
   type KanbanTask,
   type KanbanColumn,
 } from '../../src/lib/kanban-logic';
+import { WorkspaceScaffold } from '../components/layout';
+import { EmptyState } from '../components/ui';
 
-type ApiStatus = 'online' | 'offline' | 'unknown';
+type ApiStatus = 'online' | 'offline' | 'error' | 'unknown';
 
 export const Route = createFileRoute('/kanban')({
   component: KanbanRoute,
@@ -39,6 +41,7 @@ type KanbanAction =
       updatedPath: string;
     }
   | { type: 'MUTATE_FAIL' }
+  | { type: 'MUTATE_RETRY' }
   | { type: 'DRAG_START'; taskId: string }
   | { type: 'DRAG_END' };
 
@@ -65,10 +68,15 @@ function kanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
     case 'MUTATE_FAIL':
       return {
         ...state,
-        apiStatus: 'offline',
+        // Transient error: board remains interactive so the user can retry.
+        // We don't lock to 'offline' permanently — a single PATCH failure
+        // should not disable all drag-drop for the rest of the session.
+        apiStatus: 'error',
         mutatingTaskId: null,
         draggingTaskId: null,
       };
+    case 'MUTATE_RETRY':
+      return { ...state, apiStatus: 'online' };
     case 'DRAG_START':
       return { ...state, draggingTaskId: action.taskId };
     case 'DRAG_END':
@@ -76,7 +84,173 @@ function kanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
   }
 }
 
+// ---------------------------------------------------------------------------
+// KanbanCard sub-component
+// ---------------------------------------------------------------------------
+
+interface KanbanCardProps {
+  task: KanbanTask;
+  isDragging: boolean;
+  isReadOnly: boolean;
+  mutatingTaskId: string | null;
+  onDragStart: (task: KanbanTask) => void;
+  onDragEnd: () => void;
+  onStatusChange: (task: KanbanTask, status: string) => void;
+}
+
+function KanbanCard({
+  task,
+  isDragging,
+  isReadOnly,
+  mutatingTaskId,
+  onDragStart,
+  onDragEnd,
+  onStatusChange,
+}: KanbanCardProps) {
+  return (
+    <article
+      aria-label={task.title}
+      tabIndex={0}
+      draggable={!isReadOnly}
+      onDragStart={() => onDragStart(task)}
+      onDragEnd={onDragEnd}
+      className={[
+        'rounded-[14px] border p-3 transition select-none',
+        isDragging
+          ? 'border-sky-400/40 bg-sky-400/10 opacity-60'
+          : 'border-white/8 bg-white/5 hover:bg-white/8',
+        !isReadOnly ? 'cursor-grab active:cursor-grabbing' : '',
+      ].join(' ')}
+    >
+      {/* Title + priority */}
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <span className="text-sm font-medium text-slate-100 leading-snug">
+          {task.title}
+        </span>
+        {task.priority > 0 && (
+          <span
+            className={[
+              'shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
+              task.priority >= 8
+                ? 'bg-red-400/20 text-red-300'
+                : task.priority >= 5
+                  ? 'bg-amber-400/15 text-amber-300'
+                  : 'bg-white/10 text-slate-400',
+            ].join(' ')}
+            title={`Priority ${task.priority}`}
+          >
+            P{task.priority}
+          </span>
+        )}
+      </div>
+
+      {/* Meta chips */}
+      <div className="flex flex-wrap gap-1 mb-2">
+        {task.estimatedTimeMin ? (
+          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+            ⏱{' '}
+            {task.estimatedTimeMin >= 60
+              ? `${Math.round(task.estimatedTimeMin / 60)}h`
+              : `${task.estimatedTimeMin}m`}
+          </span>
+        ) : null}
+        {task.goalId && (
+          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+            🎯 {task.goalId.replace(/-/g, ' ')}
+          </span>
+        )}
+        {task.projectId && (
+          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+            🚀 {task.projectId}
+          </span>
+        )}
+      </div>
+
+      {/* Tags */}
+      {task.tags?.length ? (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {task.tags
+            .filter((tag) => !tag.startsWith('goal:') && tag !== 'task')
+            .slice(0, 3)
+            .map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] text-sky-300"
+              >
+                #{tag}
+              </span>
+            ))}
+        </div>
+      ) : null}
+
+      {/* Blocked badge */}
+      {task.status === 'blocked' && (
+        <div className="mb-2 rounded-[8px] bg-red-400/10 px-2 py-1 text-[11px] text-red-300">
+          🚫 Blocked
+        </div>
+      )}
+
+      {/* Footer: open link + actions */}
+      <div className="flex items-center justify-between gap-2 mt-1">
+        <Link
+          to={task.link}
+          className="rounded-full bg-white/8 px-3 py-1 text-[11px] text-slate-300 transition hover:bg-white/15"
+        >
+          Open →
+        </Link>
+        {!isReadOnly && task.path ? (
+          <div className="flex items-center gap-1">
+            {task.status !== 'completed' ? (
+              <button
+                type="button"
+                onClick={() => onStatusChange(task, 'completed')}
+                disabled={mutatingTaskId === task.id}
+                title="Mark completed"
+                className="rounded-full bg-emerald-400/10 px-2 py-1 text-[11px] text-emerald-300 transition hover:bg-emerald-400/20 disabled:opacity-40"
+              >
+                ✓
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onStatusChange(task, 'todo')}
+                disabled={mutatingTaskId === task.id}
+                title="Reopen task"
+                className="rounded-full bg-white/8 px-2 py-1 text-[11px] text-slate-300 transition hover:bg-white/15 disabled:opacity-40"
+              >
+                ↺
+              </button>
+            )}
+            <select
+              aria-label={`Move "${task.title}" to column`}
+              value={task.status}
+              onChange={(e) => onStatusChange(task, e.target.value)}
+              disabled={mutatingTaskId === task.id}
+              className="rounded-full border border-white/10 bg-white/8 px-2 py-0.5 text-[10px] text-slate-300 focus-visible:outline-none disabled:opacity-40"
+            >
+              {STATUS_COLUMNS.map((col) => (
+                <option key={col.key} value={col.key}>
+                  {col.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-500">
+            read-only
+          </span>
+        )}
+      </div>
+    </article>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KanbanRoute
+// ---------------------------------------------------------------------------
+
 function KanbanRoute() {
+  const navigate = useNavigate();
   const [{ apiStatus, apiTasks, mutatingTaskId, draggingTaskId }, dispatch] =
     useReducer(kanbanReducer, {
       apiStatus: 'unknown',
@@ -101,16 +275,22 @@ function KanbanRoute() {
             (t: Parameters<typeof normalizeTask>[0]) => normalizeTask(t)
           );
           dispatch({ type: 'TASKS_LOADED', tasks });
+        } else if (res.status === 401) {
+          navigate({ to: '/login' });
         } else {
           dispatch({ type: 'API_OFFLINE' });
         }
       } catch (err) {
-        console.warn('[kanban] API unavailable, using static data', err);
-        dispatch({ type: 'API_OFFLINE' });
+        if (err instanceof UnauthenticatedError) {
+          navigate({ to: '/login' });
+        } else {
+          console.warn('[kanban] API unavailable, using static data', err);
+          dispatch({ type: 'API_OFFLINE' });
+        }
       }
     };
     loadTasks();
-  }, []);
+  }, [navigate]);
 
   const tags = useMemo(() => {
     const set = new Set<string>();
@@ -157,7 +337,7 @@ function KanbanRoute() {
     );
   }, [tasks]);
 
-  const isReadOnly = apiStatus !== 'online';
+  const isReadOnly = apiStatus === 'offline' || apiStatus === 'unknown';
 
   const updateStatus = async (task: KanbanTask, status: string) => {
     if (!task.path) return;
@@ -172,6 +352,11 @@ function KanbanRoute() {
           body: JSON.stringify({ status }),
         }
       );
+      if (res.status === 401) {
+        dispatch({ type: 'MUTATE_FAIL' });
+        navigate({ to: '/login' });
+        return;
+      }
       if (!res.ok) {
         dispatch({ type: 'MUTATE_FAIL' });
         return;
@@ -185,7 +370,11 @@ function KanbanRoute() {
         updatedPath: body?.structuredContent?.path || task.path,
       });
     } catch (err) {
-      console.warn('[kanban] status update failed', err);
+      if (err instanceof UnauthenticatedError) {
+        navigate({ to: '/login' });
+      } else {
+        console.warn('[kanban] status update failed', err);
+      }
       dispatch({ type: 'MUTATE_FAIL' });
     }
   };
@@ -214,370 +403,252 @@ function KanbanRoute() {
     e.preventDefault();
   };
 
+  const summaryItems = STATUS_COLUMNS.map((col) => ({
+    label: col.label,
+    value: String(totalByStatus[col.key] || 0),
+    detail: `Tasks in ${col.label.toLowerCase()}`,
+  }));
+
+  const statusBadge = (
+    <span
+      className={[
+        'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
+        apiStatus === 'online'
+          ? 'bg-emerald-400/15 text-emerald-300'
+          : apiStatus === 'error'
+            ? 'bg-amber-400/15 text-amber-300'
+            : 'bg-red-400/15 text-red-300',
+      ].join(' ')}
+    >
+      {apiStatus === 'online'
+        ? 'Live'
+        : apiStatus === 'error'
+          ? 'Retry safe'
+          : 'Offline — read-only'}
+    </span>
+  );
+
   return (
-    <main className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Tasker Kanban</p>
-          <h1>Visualize task flow</h1>
-          <p className="lede">
-            Four simple columns to track work.{' '}
-            {isReadOnly
-              ? 'API offline — read-only view.'
-              : 'Drag-drop ready when API supports status updates.'}{' '}
-            Recurring tasks are hidden from the board; backlog tasks are listed
-            below.
-          </p>
-        </div>
-        <div className="board-stats">
-          {STATUS_COLUMNS.map((col) => (
-            <div key={col.key} className="board-stat">
-              <span className="board-stat__label">{col.label}</span>
-              <span className="board-stat__value">
-                {totalByStatus[col.key] || 0}
+    <WorkspaceScaffold
+      title="Kanban"
+      subtitle="Visualize task flow across four columns. Recurring tasks are excluded."
+      actions={statusBadge}
+      summaryItems={summaryItems}
+      primaryTitle="Board"
+      primarySubtitle={
+        isReadOnly
+          ? 'API offline — read-only view.'
+          : apiStatus === 'error'
+            ? 'Last update failed — retrying is safe.'
+            : 'Drag cards to move tasks between columns.'
+      }
+      primary={
+        <div className="space-y-6">
+          {/* Board columns — horizontally scrollable on narrow viewports */}
+          <div className="overflow-x-auto -mx-1 px-1 pb-2">
+            <div className="flex gap-4 min-w-[680px]">
+              {columns.map((col) => {
+                const isCompletedColumn = col.key === 'completed';
+                const totalItems = col.items.length;
+                const visibleItems =
+                  isCompletedColumn && !expandCompletedColumn
+                    ? col.items.slice(0, 5)
+                    : col.items;
+
+                return (
+                  <div
+                    key={col.key}
+                    className={[
+                      'flex-1 min-w-[160px] rounded-[18px] border p-3 transition',
+                      draggingTaskId
+                        ? 'border-sky-400/30 bg-sky-400/5'
+                        : 'border-white/8 bg-white/3',
+                    ].join(' ')}
+                    data-status={col.key}
+                    onDragOver={allowDrop}
+                    onDrop={() => handleDrop(col.key)}
+                  >
+                    {/* Column header */}
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        {col.label}
+                      </p>
+                      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                        {totalItems}
+                      </span>
+                    </div>
+
+                    {totalItems === 0 ? (
+                      <div className="flex flex-col items-center gap-1 py-6 text-center">
+                        <span className="text-2xl" aria-hidden="true">
+                          {col.key === 'todo'
+                            ? '📝'
+                            : col.key === 'in-progress'
+                              ? '🚀'
+                              : col.key === 'blocked'
+                                ? '🚧'
+                                : '🎉'}
+                        </span>
+                        <p className="text-xs text-slate-500">
+                          {col.key === 'todo'
+                            ? 'Nothing to do'
+                            : col.key === 'in-progress'
+                              ? 'Nothing in progress'
+                              : col.key === 'blocked'
+                                ? 'No blockers'
+                                : 'All clear'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {visibleItems.map((task) => (
+                          <KanbanCard
+                            key={task.id}
+                            task={task}
+                            isDragging={draggingTaskId === task.id}
+                            isReadOnly={isReadOnly}
+                            mutatingTaskId={mutatingTaskId}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onStatusChange={updateStatus}
+                          />
+                        ))}
+                        {isCompletedColumn && totalItems > 5 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandCompletedColumn((prev) => !prev)
+                            }
+                            className="w-full rounded-[12px] border border-white/8 bg-white/5 py-2 text-xs text-slate-400 transition hover:bg-white/10"
+                          >
+                            {expandCompletedColumn
+                              ? 'Show fewer'
+                              : `+${totalItems - 5} more`}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Backlog */}
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Backlog
+              </p>
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                {backlogTasks.length}
               </span>
             </div>
-          ))}
+            {backlogTasks.length === 0 ? (
+              <EmptyState
+                title="No backlog tasks"
+                description="Backlog items will appear here."
+              />
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {backlogTasks.map((task) => (
+                  <KanbanCard
+                    key={task.id}
+                    task={task}
+                    isDragging={false}
+                    isReadOnly
+                    mutatingTaskId={null}
+                    onDragStart={() => {}}
+                    onDragEnd={() => {}}
+                    onStatusChange={async () => {}}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </header>
+      }
+      asideTitle="Filters"
+      asideSubtitle="Narrow the board view."
+      aside={
+        <div className="space-y-5">
+          {/* Tag filter */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="kanban-filter-tag"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400"
+            >
+              Tag
+            </label>
+            <select
+              id="kanban-filter-tag"
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="w-full rounded-[12px] border border-white/10 bg-white/8 px-3 py-2 text-sm text-slate-100 focus:border-sky-300/50 focus-visible:outline-none"
+            >
+              <option value="">All tags</option>
+              {tags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <section className="kanban-controls">
-        <div className="select-group">
-          <label htmlFor="kanban-filter-tag">Filter by tag</label>
-          <select
-            id="kanban-filter-tag"
-            value={filterTag}
-            onChange={(e) => setFilterTag(e.target.value)}
-            aria-label="Filter by tag"
-          >
-            <option value="">All tags</option>
-            {tags.map((tag) => (
-              <option key={tag} value={tag}>
-                {tag}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="select-group">
-          <label htmlFor="kanban-filter-project">Filter by project</label>
-          <select
-            id="kanban-filter-project"
-            value={filterProject}
-            onChange={(e) => setFilterProject(e.target.value)}
-            aria-label="Filter by project"
-          >
-            <option value="">All projects</option>
-            {projects.map((proj) => (
-              <option key={proj} value={proj}>
-                {proj}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="kanban-legend">
-          <span className="pill pill--ghost">P9+</span>
-          <span className="muted">High priority</span>
-          <span className="pill pill--ghost">⏱</span>
-          <span className="muted">Estimate</span>
-        </div>
-        <div className="toggle-group">
-          <label>
+          {/* Project filter */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="kanban-filter-project"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400"
+            >
+              Project
+            </label>
+            <select
+              id="kanban-filter-project"
+              value={filterProject}
+              onChange={(e) => setFilterProject(e.target.value)}
+              className="w-full rounded-[12px] border border-white/10 bg-white/8 px-3 py-2 text-sm text-slate-100 focus:border-sky-300/50 focus-visible:outline-none"
+            >
+              <option value="">All projects</option>
+              {projects.map((proj) => (
+                <option key={proj} value={proj}>
+                  {proj}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Show completed toggle */}
+          <label className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10">
             <input
               type="checkbox"
               checked={showCompleted}
               onChange={(e) => setShowCompleted(e.target.checked)}
+              className="h-4 w-4 accent-sky-400"
             />
             Show completed
           </label>
+
+          {/* Legend */}
+          <div className="rounded-[12px] border border-white/8 bg-white/5 px-4 py-3 space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Legend
+            </p>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+                P9+
+              </span>
+              High priority
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+                ⏱
+              </span>
+              Time estimate
+            </div>
+          </div>
         </div>
-      </section>
-
-      <section className="kanban">
-        {columns.map((col) =>
-          (() => {
-            const isCompletedColumn = col.key === 'completed';
-            const totalItems = col.items.length;
-            const visibleItems =
-              isCompletedColumn && !expandCompletedColumn
-                ? col.items.slice(0, 5)
-                : col.items;
-
-            return (
-              <div
-                key={col.key}
-                className={`kanban__column ${draggingTaskId ? 'kanban__column--droppable' : ''}`}
-                data-status={col.key}
-                onDragOver={allowDrop}
-                onDrop={() => handleDrop(col.key)}
-              >
-                <header className="kanban__column-header">
-                  <div>
-                    <p className="muted">{col.label}</p>
-                    <h3>
-                      {totalItems} task{totalItems === 1 ? '' : 's'}
-                    </h3>
-                  </div>
-                  <span className="pill">{col.key}</span>
-                </header>
-                {totalItems === 0 ? (
-                  <div className="kanban__empty">
-                    <div className="kanban__empty-icon" aria-hidden="true">
-                      {col.key === 'todo'
-                        ? '📝'
-                        : col.key === 'in-progress'
-                          ? '🚀'
-                          : col.key === 'blocked'
-                            ? '🚧'
-                            : '🎉'}
-                    </div>
-                    <div className="kanban__empty-text">
-                      {col.key === 'todo'
-                        ? 'No tasks to do'
-                        : col.key === 'in-progress'
-                          ? 'Nothing in progress'
-                          : col.key === 'blocked'
-                            ? 'No blockers — great!'
-                            : 'Complete some tasks!'}
-                    </div>
-                    <div className="kanban__empty-hint">
-                      {col.key === 'todo'
-                        ? 'Create a task in your vault to get started'
-                        : col.key === 'completed'
-                          ? 'Finished tasks will appear here'
-                          : 'Drag tasks here or update status in vault'}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="kanban__cards">
-                    {visibleItems.map((task) => (
-                      <article
-                        key={task.id}
-                        className={`kanban-card ${
-                          draggingTaskId === task.id
-                            ? 'kanban-card--dragging'
-                            : ''
-                        }`}
-                        aria-label={task.title}
-                        tabIndex={0}
-                        draggable={!isReadOnly}
-                        onDragStart={() => handleDragStart(task)}
-                        onDragEnd={handleDragEnd}
-                      >
-                        <div className="kanban-card__header">
-                          <span className="kanban-card__title">
-                            {task.title}
-                          </span>
-                          {task.priority > 0 && (
-                            <span
-                              className={`kanban-card__priority ${
-                                task.priority >= 8
-                                  ? 'kanban-card__priority--high'
-                                  : task.priority >= 5
-                                    ? 'kanban-card__priority--mid'
-                                    : ''
-                              }`}
-                              title={`Priority ${task.priority}`}
-                            >
-                              P{task.priority}
-                            </span>
-                          )}
-                        </div>
-                        <div className="kanban-card__meta">
-                          {task.estimatedTimeMin ? (
-                            <span className="chip">
-                              ⏱{' '}
-                              {task.estimatedTimeMin >= 60
-                                ? `${Math.round(task.estimatedTimeMin / 60)}h`
-                                : `${task.estimatedTimeMin}m`}
-                            </span>
-                          ) : null}
-                          {task.goalId && (
-                            <span className="chip">
-                              🎯 {task.goalId.replace(/-/g, ' ')}
-                            </span>
-                          )}
-                          {task.projectId && (
-                            <span className="chip">🚀 {task.projectId}</span>
-                          )}
-                        </div>
-                        {task.tags?.length ? (
-                          <div className="kanban-card__tags">
-                            {task.tags
-                              .filter(
-                                (tag) =>
-                                  !tag.startsWith('goal:') && tag !== 'task'
-                              )
-                              .slice(0, 3)
-                              .map((tag) => (
-                                <span key={tag} className="tag">
-                                  #{tag}
-                                </span>
-                              ))}
-                          </div>
-                        ) : null}
-                        {task.status === 'blocked' && (
-                          <div className="kanban-card__blocked">
-                            <span>🚫 Blocked</span>
-                          </div>
-                        )}
-                        <div className="kanban-card__footer">
-                          <Link to={task.link} className="pill pill--soft">
-                            Open →
-                          </Link>
-                          {!isReadOnly && task.path ? (
-                            <div className="kanban-card__actions">
-                              {task.status !== 'completed' ? (
-                                <button
-                                  type="button"
-                                  className="pill pill--ghost"
-                                  onClick={() =>
-                                    updateStatus(task, 'completed')
-                                  }
-                                  disabled={mutatingTaskId === task.id}
-                                  title="Mark completed"
-                                >
-                                  ✓ Complete
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="pill pill--ghost"
-                                  onClick={() => updateStatus(task, 'todo')}
-                                  disabled={mutatingTaskId === task.id}
-                                  title="Reopen task"
-                                >
-                                  ↺ Reopen
-                                </button>
-                              )}
-                              <select
-                                aria-label={`Move "${task.title}" to column`}
-                                value={task.status}
-                                onChange={(e) =>
-                                  updateStatus(task, e.target.value)
-                                }
-                                disabled={mutatingTaskId === task.id}
-                                className="pill pill--ghost text-xs"
-                              >
-                                {STATUS_COLUMNS.map((col) => (
-                                  <option key={col.key} value={col.key}>
-                                    {col.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          ) : (
-                            <span className="pill pill--ghost">read-only</span>
-                          )}
-                        </div>
-                      </article>
-                    ))}
-                    {isCompletedColumn && totalItems > 5 ? (
-                      <button
-                        type="button"
-                        className="kanban__more"
-                        onClick={() =>
-                          setExpandCompletedColumn((prev) => !prev)
-                        }
-                      >
-                        {expandCompletedColumn
-                          ? 'Show fewer completed'
-                          : `Show ${totalItems - 5} more completed`}
-                      </button>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-            );
-          })()
-        )}
-      </section>
-
-      <section className="kanban backlog-section">
-        <header className="kanban__column-header">
-          <div>
-            <p className="muted">Backlog (non-recurring)</p>
-            <h3>
-              {backlogTasks.length} task{backlogTasks.length === 1 ? '' : 's'}
-            </h3>
-          </div>
-        </header>
-        {backlogTasks.length === 0 ? (
-          <div className="kanban__empty">
-            <div className="kanban__empty-icon" aria-hidden="true">
-              📥
-            </div>
-            <div className="kanban__empty-text">No backlog tasks</div>
-            <div className="kanban__empty-hint">
-              Backlog items will appear here
-            </div>
-          </div>
-        ) : (
-          <div className="kanban__cards backlog-cards">
-            {backlogTasks.map((task) => (
-              <article
-                key={task.id}
-                className="kanban-card"
-                aria-label={task.title}
-              >
-                <div className="kanban-card__header">
-                  <span className="kanban-card__title">{task.title}</span>
-                  {task.priority > 0 && (
-                    <span
-                      className={`kanban-card__priority ${
-                        task.priority >= 8
-                          ? 'kanban-card__priority--high'
-                          : task.priority >= 5
-                            ? 'kanban-card__priority--mid'
-                            : ''
-                      }`}
-                      title={`Priority ${task.priority}`}
-                    >
-                      P{task.priority}
-                    </span>
-                  )}
-                </div>
-                <div className="kanban-card__meta">
-                  {task.estimatedTimeMin ? (
-                    <span className="chip">
-                      ⏱{' '}
-                      {task.estimatedTimeMin >= 60
-                        ? `${Math.round(task.estimatedTimeMin / 60)}h`
-                        : `${task.estimatedTimeMin}m`}
-                    </span>
-                  ) : null}
-                  {task.projectId && (
-                    <span className="chip">🚀 {task.projectId}</span>
-                  )}
-                  {task.goalId && (
-                    <span className="chip">
-                      🎯 {task.goalId.replace(/-/g, ' ')}
-                    </span>
-                  )}
-                </div>
-                {task.tags?.length ? (
-                  <div className="kanban-card__tags">
-                    {task.tags
-                      .filter(
-                        (tag) => !tag.startsWith('goal:') && tag !== 'task'
-                      )
-                      .slice(0, 3)
-                      .map((tag) => (
-                        <span key={tag} className="tag">
-                          #{tag}
-                        </span>
-                      ))}
-                  </div>
-                ) : null}
-                <div className="kanban-card__footer">
-                  <Link to={task.link} className="pill pill--soft">
-                    Open →
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
+      }
+    />
   );
 }

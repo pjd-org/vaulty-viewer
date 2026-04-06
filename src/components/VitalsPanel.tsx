@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface Vitals {
   health?: number;
@@ -18,19 +18,22 @@ interface VitalBarProps {
 
 function VitalBar({ value, label, inverted = false }: VitalBarProps) {
   const effectiveValue = inverted ? 100 - value : value;
-  let color = "success";
-  if (effectiveValue < 40) color = "danger";
-  else if (effectiveValue < 60) color = "warning";
+  const fillColor =
+    effectiveValue < 40
+      ? 'bg-red-500'
+      : effectiveValue < 60
+        ? 'bg-amber-400'
+        : 'bg-emerald-400';
 
   return (
-    <div className="avatar-vital">
-      <div className="avatar-vital__header">
-        <span className="avatar-vital__label">{label}</span>
-        <span className="avatar-vital__value">{value}%</span>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-slate-400">{label}</span>
+        <span className="text-slate-300 tabular-nums">{value}%</span>
       </div>
-      <div className="avatar-vital__track">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className={`avatar-vital__fill avatar-vital__fill--${color}`}
+          className={`h-full rounded-full transition-all ${fillColor}`}
           style={{ width: `${value}%` }}
         />
       </div>
@@ -40,7 +43,7 @@ function VitalBar({ value, label, inverted = false }: VitalBarProps) {
 
 export function VitalsPanel({ vitals }: VitalsPanelProps) {
   return (
-    <div className="vitals-group">
+    <div className="space-y-3">
       <VitalBar value={vitals.energy ?? 50} label="Energy" />
       <VitalBar value={vitals.stress ?? 50} label="Stress" inverted />
       <VitalBar value={vitals.health ?? 50} label="Health" />

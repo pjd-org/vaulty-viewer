@@ -1,6 +1,25 @@
 import React from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { SidebarRail as GenieSidebarRail } from '@vault/ui';
+import {
+  Home,
+  Inbox,
+  Zap,
+  Cpu,
+  Briefcase,
+  BookOpen,
+  FileText,
+  FolderKanban,
+  MessageCircle,
+  Heart,
+  Share2,
+  Clock,
+  Archive,
+  Bot,
+  Settings,
+  User,
+  Activity,
+} from 'lucide-react';
 import { dispatchNavOverlay } from '../../../src/lib/nav-overlays';
 import {
   VIEWER_OVERLAY_NAV,
@@ -12,9 +31,32 @@ type NavTo =
   | (typeof VIEWER_PRIMARY_NAV)[number]['to']
   | (typeof VIEWER_UTILITY_NAV)[number]['to'];
 
+// Map route paths → Lucide icon components
+const ROUTE_ICONS: Record<string, React.ReactNode> = {
+  '/': <Home size={18} />,
+  '/inbox': <Inbox size={18} />,
+  '/actions': <Zap size={18} />,
+  '/automation': <Cpu size={18} />,
+  '/work': <Briefcase size={18} />,
+  '/knowledge': <BookOpen size={18} />,
+  '/notes': <FileText size={18} />,
+  '/portfolio': <FolderKanban size={18} />,
+  '/bubble': <MessageCircle size={18} />,
+  '/health': <Heart size={18} />,
+  '/graph': <Share2 size={18} />,
+  '/timeline': <Clock size={18} />,
+  '/archive': <Archive size={18} />,
+  '/huey': <Bot size={18} />,
+  '/settings': <Settings size={18} />,
+};
+
+const OVERLAY_ICONS: Record<string, React.ReactNode> = {
+  avatar: <User size={18} />,
+  cod: <Activity size={18} />,
+};
+
 function RailItem({
   label,
-  shortLabel,
   to,
   active,
 }: {
@@ -35,14 +77,13 @@ function RailItem({
           : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
       ].join(' ')}
     >
-      {shortLabel}
+      {ROUTE_ICONS[to] ?? <span className="text-xs">{label.slice(0, 2)}</span>}
     </Link>
   );
 }
 
 function OverlayItem({
   label,
-  shortLabel,
   overlay,
   active,
 }: {
@@ -66,7 +107,9 @@ function OverlayItem({
           : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
       ].join(' ')}
     >
-      {shortLabel}
+      {OVERLAY_ICONS[overlay] ?? (
+        <span className="text-xs">{label.slice(0, 2)}</span>
+      )}
     </button>
   );
 }

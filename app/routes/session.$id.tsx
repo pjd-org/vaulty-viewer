@@ -11,10 +11,80 @@ import {
   formatDuration,
   type SessionTask,
 } from '../../src/lib/focus-logic';
+import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
 
 export const Route = createFileRoute('/session/$id')({
   component: SessionRoute,
 });
+
+// ---------------------------------------------------------------------------
+// SessionTaskCard
+// ---------------------------------------------------------------------------
+
+function SessionTaskCard({
+  task,
+  onDone,
+  onSkip,
+  mutating,
+  hero = false,
+}: {
+  task: SessionTask;
+  onDone: () => void;
+  onSkip: () => void;
+  mutating: boolean;
+  hero?: boolean;
+}) {
+  return (
+    <article
+      className={[
+        'rounded-xl border p-4 transition',
+        hero
+          ? 'border-emerald-400/30 bg-emerald-400/8'
+          : 'border-white/8 bg-white/4 hover:bg-white/6',
+      ].join(' ')}
+    >
+      <div className="mb-3 flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p
+            className={[
+              'font-medium leading-snug',
+              hero ? 'text-base text-slate-100' : 'text-sm text-slate-200',
+            ].join(' ')}
+          >
+            {task.title}
+          </p>
+          {task.effortScore !== undefined && task.effortScore > 0 && (
+            <span className="mt-1 inline-block rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+              effort {task.effortScore}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
+          onClick={onDone}
+          disabled={mutating}
+        >
+          ✓ Done
+        </button>
+        <button
+          type="button"
+          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:bg-white/8 disabled:opacity-40"
+          onClick={onSkip}
+          disabled={mutating}
+        >
+          Skip
+        </button>
+      </div>
+    </article>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Route
+// ---------------------------------------------------------------------------
 
 function SessionRoute() {
   const { id } = Route.useParams();
@@ -22,6 +92,10 @@ function SessionRoute() {
   const queryClient = useQueryClient();
 
   const { data: session, isLoading, error } = useSessionDetail(id);
+
+  const [confirmAction, setConfirmAction] = useState<
+    'completed' | 'aborted' | null
+  >(null);
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({
@@ -66,44 +140,42 @@ function SessionRoute() {
     },
   });
 
+  const handleUpdateTask = (task: SessionTask, status: string) => {
+    if (!task.path) return;
+    updateTaskMutation.mutate({ taskPath: task.path, status });
+  };
+
+  // --- Loading / error states ---
+
   if (isLoading) {
     return (
-      <main className="page focus-page">
-        <div className="focus-loading">Loading session…</div>
-      </main>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-slate-500">Loading session…</p>
+      </div>
     );
   }
 
-  if (error) {
-    const is404 = error.message.includes('not found');
+  if (error || !session) {
+    const is404 = !session || error?.message.includes('not found');
     return (
-      <main className="page focus-page">
-        <div className="focus-empty" role="alert">
-          <p>
-            {is404
-              ? 'Session not found.'
-              : `Failed to load session: ${error.message}`}
-          </p>
-          <Link to="/" search={{}} className="pill pill--soft">
-            ← Back to Focus
-          </Link>
-        </div>
-      </main>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+        <p className="text-sm text-slate-400" role="alert">
+          {is404
+            ? 'Session not found.'
+            : `Failed to load session: ${error?.message}`}
+        </p>
+        <Link
+          to="/"
+          search={{}}
+          className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/8"
+        >
+          ← Back to Focus
+        </Link>
+      </div>
     );
   }
 
-  if (!session) {
-    return (
-      <main className="page focus-page">
-        <div className="focus-empty">
-          <p>Session not found.</p>
-          <Link to="/" search={{}} className="pill pill--soft">
-            ← Back to Focus
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  // --- Data ---
 
   const pending = session.tasks?.filter((t) => t.status === 'pending') ?? [];
   const inProgress =
@@ -112,54 +184,38 @@ function SessionRoute() {
   const skipped = session.tasks?.filter((t) => t.status === 'skipped') ?? [];
   const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
 
-  const [confirmAction, setConfirmAction] = useState<
-    'completed' | 'aborted' | null
-  >(null);
+  const mutationError =
+    updateTaskMutation.error?.message ?? endSessionMutation.error?.message;
 
-  const handleUpdateTask = (task: SessionTask, status: string) => {
-    if (!task.path) return;
-    updateTaskMutation.mutate({ taskPath: task.path, status });
-  };
+  // --- Layout ---
 
-  return (
-    <main className="page focus-page">
-      <header className="focus-header">
-        <div>
-          <p className="eyebrow">Session</p>
-          <h1>{session.title ?? `Session ${id.slice(0, 8)}`}</h1>
-        </div>
-        <div className="focus-header__nav">
-          <Link to="/" search={{}} className="pill pill--ghost">
-            ← Focus
-          </Link>
-        </div>
-      </header>
-
-      {(updateTaskMutation.error || endSessionMutation.error) && (
-        <div className="session-error" role="alert">
-          <p>
-            {updateTaskMutation.error?.message ??
-              endSessionMutation.error?.message}
-          </p>
+  const primaryContent = (
+    <div className="space-y-6">
+      {mutationError && (
+        <div
+          className="rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
+          {mutationError}
         </div>
       )}
 
-      <div className="session-meta">
-        {elapsed !== null && <span className="chip">{elapsed}m elapsed</span>}
-        <span className="chip">{formatDuration(session.budgetMin)} budget</span>
-        <span className="chip">
-          {done.length}/{session.tasks?.length ?? 0} done
-        </span>
-      </div>
+      {inProgress.length === 0 && pending.length === 0 && (
+        <p className="py-12 text-center text-sm text-slate-500">
+          No active tasks.
+        </p>
+      )}
 
       {inProgress.length > 0 && (
-        <section className="focus-hero">
-          <p className="focus-section-label">In progress</p>
+        <div className="space-y-3">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            In progress
+          </p>
           {inProgress.map((t) => (
             <SessionTaskCard
               key={t.id}
               task={t}
-              onDone={() => handleUpdateTask(t, 'completed')}
+              onDone={() => handleUpdateTask(t, 'done')}
               onSkip={() => handleUpdateTask(t, 'skipped')}
               mutating={
                 updateTaskMutation.isPending &&
@@ -168,60 +224,45 @@ function SessionRoute() {
               hero
             />
           ))}
-        </section>
+        </div>
       )}
 
       {pending.length > 0 && (
-        <section className="focus-queue">
-          <p className="focus-section-label">Queued</p>
-          <div className="focus-queue__list">
-            {pending.map((t) => (
-              <SessionTaskCard
-                key={t.id}
-                task={t}
-                onDone={() => handleUpdateTask(t, 'completed')}
-                onSkip={() => handleUpdateTask(t, 'skipped')}
-                mutating={
-                  updateTaskMutation.isPending &&
-                  updateTaskMutation.variables?.taskPath === t.path
-                }
-              />
-            ))}
-          </div>
-        </section>
+        <div className="space-y-3">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Queued
+          </p>
+          {pending.map((t) => (
+            <SessionTaskCard
+              key={t.id}
+              task={t}
+              onDone={() => handleUpdateTask(t, 'done')}
+              onSkip={() => handleUpdateTask(t, 'skipped')}
+              mutating={
+                updateTaskMutation.isPending &&
+                updateTaskMutation.variables?.taskPath === t.path
+              }
+            />
+          ))}
+        </div>
       )}
+    </div>
+  );
 
-      {(done.length > 0 || skipped.length > 0) && (
-        <details className="focus-backlog">
-          <summary className="focus-backlog__summary">
-            Done ({done.length}) · Skipped ({skipped.length})
-          </summary>
-          <div className="focus-backlog__list">
-            {[...done, ...skipped].map((t) => (
-              <div key={t.id} className="focus-backlog__item">
-                <span className="focus-backlog__title">{t.title}</span>
-                <span
-                  className={`chip chip--${t.status === 'done' ? 'score' : 'tag'}`}
-                >
-                  {t.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </details>
-      )}
-
-      <div className="session-footer">
+  const asideContent = (
+    <div className="flex h-full flex-col gap-6">
+      {/* Session controls */}
+      <div className="space-y-2">
         {confirmAction ? (
           <>
-            <span className="session-footer__confirm-label">
+            <p className="mb-3 text-sm text-slate-300">
               {confirmAction === 'completed'
                 ? 'End session?'
                 : 'Abort session?'}
-            </span>
+            </p>
             <button
               type="button"
-              className="na-card__btn na-card__btn--done"
+              className="w-full rounded-lg bg-emerald-500/20 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
               onClick={() => {
                 endSessionMutation.mutate(confirmAction);
                 setConfirmAction(null);
@@ -232,7 +273,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="na-card__btn na-card__btn--skip"
+              className="w-full rounded-lg border border-white/10 py-2 text-sm text-slate-400 transition hover:bg-white/8"
               onClick={() => setConfirmAction(null)}
             >
               Cancel
@@ -242,7 +283,7 @@ function SessionRoute() {
           <>
             <button
               type="button"
-              className="na-card__btn na-card__btn--done"
+              className="w-full rounded-lg bg-emerald-500/20 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
               onClick={() => setConfirmAction('completed')}
               disabled={endSessionMutation.isPending}
             >
@@ -250,7 +291,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="na-card__btn na-card__btn--skip"
+              className="w-full rounded-lg border border-red-400/20 py-2 text-sm text-red-400 transition hover:bg-red-400/8 disabled:opacity-40"
               onClick={() => setConfirmAction('aborted')}
               disabled={endSessionMutation.isPending}
             >
@@ -259,53 +300,71 @@ function SessionRoute() {
           </>
         )}
       </div>
-    </main>
-  );
-}
 
-function SessionTaskCard({
-  task,
-  onDone,
-  onSkip,
-  mutating,
-  hero = false,
-}: {
-  task: SessionTask;
-  onDone: () => void;
-  onSkip: () => void;
-  mutating: boolean;
-  hero?: boolean;
-}) {
-  return (
-    <article className={`na-card${hero ? ' na-card--hero' : ''}`}>
-      <div className="na-card__main">
-        <span
-          className={`na-card__title${hero ? ' na-card__title--hero' : ''}`}
-        >
-          {task.title}
-        </span>
-        {task.effortScore !== undefined && task.effortScore > 0 && (
-          <div className="na-card__chips">
-            <span className="chip chip--effort">effort {task.effortScore}</span>
+      {/* Done / skipped log */}
+      {(done.length > 0 || skipped.length > 0) && (
+        <div className="space-y-2">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Done ({done.length}) · Skipped ({skipped.length})
+          </p>
+          <div className="space-y-1">
+            {[...done, ...skipped].map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
+              >
+                <span className="min-w-0 truncate text-slate-400">
+                  {t.title}
+                </span>
+                <span
+                  className={[
+                    'shrink-0 rounded-full px-2 py-0.5 text-[11px]',
+                    t.status === 'done'
+                      ? 'bg-emerald-400/15 text-emerald-300'
+                      : 'bg-white/8 text-slate-500',
+                  ].join(' ')}
+                >
+                  {t.status}
+                </span>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
-      <div className="na-card__actions">
-        <button
-          className="na-card__btn na-card__btn--done"
-          onClick={onDone}
-          disabled={mutating}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <WorkspaceScaffold
+      title={session.title ?? `Session ${id.slice(0, 8)}`}
+      subtitle="Active session"
+      actions={
+        <Link
+          to="/"
+          search={{}}
+          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:bg-white/8"
         >
-          ✓ Done
-        </button>
-        <button
-          className="na-card__btn na-card__btn--skip"
-          onClick={onSkip}
-          disabled={mutating}
-        >
-          Skip
-        </button>
-      </div>
-    </article>
+          ← Focus
+        </Link>
+      }
+      summaryItems={[
+        {
+          label: 'Elapsed',
+          value: elapsed !== null ? `${elapsed}m` : '—',
+        },
+        {
+          label: 'Budget',
+          value: formatDuration(session.budgetMin),
+        },
+        {
+          label: 'Progress',
+          value: `${done.length} / ${session.tasks?.length ?? 0}`,
+        },
+      ]}
+      primaryTitle="Tasks"
+      primary={primaryContent}
+      asideTitle="Controls"
+      aside={asideContent}
+    />
   );
 }

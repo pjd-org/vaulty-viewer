@@ -7,6 +7,8 @@ import {
 } from '../lib/viewer-adapter';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
+import { WorkspaceScaffold } from '../components/layout';
+import { EmptyState } from '../components/ui';
 
 export const Route = createFileRoute('/knowledge/search')({
   validateSearch: (search) => ({
@@ -27,7 +29,6 @@ function KnowledgeSearchRoute() {
 
   const [q, setQ] = useState<string>(initialQ);
   const [mode, setMode] = useState<'tag' | 'semantic'>(initialMode);
-  // Debounced query that actually triggers the search
   const [debouncedQ, setDebouncedQ] = useState<string>(initialQ);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,65 +67,154 @@ function KnowledgeSearchRoute() {
 
   const displayResults: KnowledgeNoteRef[] = results ?? [];
 
-  return (
-    <main className="page">
-      <header className="page-header">
-        <h1>Knowledge Search</h1>
-      </header>
-
-      <KnowledgeHealthBanner health={health ?? null} loading={false} />
-
-      <form className="knowledge-search__form" onSubmit={handleSubmit}>
-        <input
-          type="search"
-          className="knowledge-search__input"
-          value={q}
-          onChange={(e) => handleQueryChange(e.target.value)}
-          placeholder="Search knowledge notes…"
-        />
-        <div className="knowledge-search__mode-toggle">
-          <button
-            type="button"
-            className={`knowledge-search__mode-btn${mode === 'tag' ? ' knowledge-search__mode-btn--active' : ''}`}
-            onClick={() => handleModeChange('tag')}
-          >
-            Structural
-          </button>
-          <button
-            type="button"
-            className={`knowledge-search__mode-btn${mode === 'semantic' ? ' knowledge-search__mode-btn--active' : ''}`}
-            onClick={() => handleModeChange('semantic')}
-          >
-            Semantic
-          </button>
-        </div>
-        <button type="submit" className="knowledge-search__submit">
-          Search
+  const toolbar = (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-3">
+      <input
+        type="search"
+        value={q}
+        onChange={(e) => handleQueryChange(e.target.value)}
+        placeholder="Search knowledge notes…"
+        className="min-w-[240px] flex-1 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-sky-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
+      />
+      <div className="flex overflow-hidden rounded-full border border-white/10 bg-white/5">
+        <button
+          type="button"
+          onClick={() => handleModeChange('tag')}
+          className={[
+            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
+            mode === 'tag'
+              ? 'bg-sky-400/20 text-sky-100'
+              : 'text-slate-400 hover:text-slate-200',
+          ].join(' ')}
+        >
+          Structural
         </button>
-      </form>
-
-      {searchError && (
-        <div className="knowledge-search__error" role="alert">
-          <p>Search failed: {searchError.message}</p>
-        </div>
-      )}
-
-      {searching && <div className="knowledge-search__loading">Searching…</div>}
-
-      {!searching &&
-        !searchError &&
-        displayResults.length === 0 &&
-        debouncedQ.trim() !== '' && (
-          <p className="knowledge-search__empty">
-            No results for "{debouncedQ}".
-          </p>
-        )}
-
-      <div className="knowledge-search__results">
-        {displayResults.map((note) => (
-          <KnowledgeNoteCard key={note.path} {...note} />
-        ))}
+        <button
+          type="button"
+          onClick={() => handleModeChange('semantic')}
+          className={[
+            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
+            mode === 'semantic'
+              ? 'bg-sky-400/20 text-sky-100'
+              : 'text-slate-400 hover:text-slate-200',
+          ].join(' ')}
+        >
+          Semantic
+        </button>
       </div>
-    </main>
+      <button
+        type="submit"
+        className="rounded-full border border-sky-300/30 bg-sky-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition hover:bg-sky-400/25"
+      >
+        Search
+      </button>
+    </form>
+  );
+
+  const summaryItems = [
+    {
+      label: 'Results',
+      value: searching ? '…' : String(displayResults.length),
+      detail: 'Notes matching current query',
+    },
+    {
+      label: 'Mode',
+      value: mode === 'semantic' ? 'Semantic' : 'Structural',
+      detail: 'Active search mode',
+    },
+  ] as const;
+
+  return (
+    <WorkspaceScaffold
+      title="Knowledge Search"
+      subtitle="Search vault notes by tag structure or semantic similarity."
+      actions={toolbar}
+      summaryItems={summaryItems}
+      primaryTitle="Results"
+      primarySubtitle={
+        debouncedQ.trim()
+          ? `Showing results for "${debouncedQ}"`
+          : 'Enter a query to search your knowledge base.'
+      }
+      primary={
+        <div className="space-y-4">
+          <KnowledgeHealthBanner health={health ?? null} loading={false} />
+
+          {searchError && (
+            <div
+              className="rounded-[18px] border border-red-400/20 bg-red-400/5 p-4 text-sm text-red-300"
+              role="alert"
+            >
+              Search failed: {searchError.message}
+            </div>
+          )}
+
+          {searching && (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-20 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
+                />
+              ))}
+            </div>
+          )}
+
+          {!searching &&
+            !searchError &&
+            displayResults.length === 0 &&
+            debouncedQ.trim() !== '' && (
+              <EmptyState
+                title={`No results for "${debouncedQ}".`}
+                description="Try a different query or switch search mode."
+              />
+            )}
+
+          {!searching &&
+            !searchError &&
+            displayResults.length === 0 &&
+            debouncedQ.trim() === '' && (
+              <EmptyState
+                title="Enter a search query."
+                description="Structural mode matches by tag and frontmatter. Semantic mode uses vector similarity."
+              />
+            )}
+
+          {!searching && displayResults.length > 0 && (
+            <div className="space-y-3">
+              {displayResults.map((note) => (
+                <KnowledgeNoteCard key={note.path} {...note} />
+              ))}
+            </div>
+          )}
+        </div>
+      }
+      asideTitle="Search Tips"
+      asideSubtitle="How to get the best results."
+      aside={
+        <div className="space-y-4 text-sm text-slate-300">
+          <div className="rounded-[18px] border border-white/8 bg-white/5 p-4 space-y-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Structural mode
+              </p>
+              <p className="mt-2 text-slate-300">
+                Matches notes by tag, frontmatter type, or audience field. Exact
+                and prefix matching.
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Semantic mode
+              </p>
+              <p className="mt-2 text-slate-300">
+                Uses vector embeddings to find conceptually similar notes even
+                without exact keyword matches.
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    />
   );
 }
