@@ -195,6 +195,21 @@ function FocusRoute() {
     }
   };
 
+  // Hooks must all be called unconditionally — before any early return.
+  const verificationPhase = useUIStore((s) => s.verification.phase);
+
+  const deferMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'backlog'),
+    domain: 'work',
+    actionId: 'home-defer',
+  });
+
+  const executeMutation = useMutationWithVerification<boolean, string>({
+    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
+    domain: 'work',
+    actionId: 'home-execute',
+  });
+
   // Hard-redirect to /login on 401 — return null while in-flight (D3)
   useEffect(() => {
     if (surfaceError instanceof UnauthenticatedError) {
@@ -210,19 +225,6 @@ function FocusRoute() {
   const decisionQueue = surface?.decisionQueue ?? [];
   const immediateActions = surface?.immediateActions ?? [];
   const verificationRail = surface?.verificationRail ?? [];
-  const verificationPhase = useUIStore((s) => s.verification.phase);
-
-  const deferMutation = useMutationWithVerification<boolean, string>({
-    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'backlog'),
-    domain: 'work',
-    actionId: 'home-defer',
-  });
-
-  const executeMutation = useMutationWithVerification<boolean, string>({
-    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
-    domain: 'work',
-    actionId: 'home-execute',
-  });
 
   const topTask: NextAction | undefined = (surface?.tasks ?? [])[0];
   const snapshots = surface?.snapshots ?? {
