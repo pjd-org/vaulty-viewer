@@ -539,7 +539,7 @@ function InboxRoute() {
               replace: true,
             })
           }
-          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-400"
+          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
         >
           {SEVERITY_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -563,7 +563,7 @@ function InboxRoute() {
       )}
 
       {!loading && error && (
-        <div className="inbox-state inbox-state--error">
+        <div className="inbox-state inbox-state--error" role="alert">
           <strong>Could not reach the API.</strong>
           <span>{error}</span>
           <button type="button" className="btn btn--refresh" onClick={refresh}>

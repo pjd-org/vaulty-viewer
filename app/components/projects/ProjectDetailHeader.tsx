@@ -1,16 +1,19 @@
-import React from 'react'
-import { Link } from '@tanstack/react-router'
+import React from 'react';
+import { Link } from '@tanstack/react-router';
 
-import type { ProjectSummaryDisplay } from '../../types/display'
-import { SoftChip } from '../ui'
+import type { ProjectSummaryDisplay } from '../../types/display';
+import { SoftChip } from '../ui';
 
 interface ProjectDetailHeaderProps {
-  projectId: string
-  project: ProjectSummaryDisplay
+  projectId: string;
+  project: ProjectSummaryDisplay;
 }
 
-export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderProps) {
-  const progressWidth = Math.max(0, Math.min(100, project.progressPercent))
+export function ProjectDetailHeader({
+  projectId,
+  project,
+}: ProjectDetailHeaderProps) {
+  const progressWidth = Math.max(0, Math.min(100, project.progressPercent));
   const projectLaneSearch = {
     tab: undefined,
     selectedId: undefined,
@@ -18,13 +21,13 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
     mode: undefined,
     templateId: undefined,
     memoryTab: undefined,
-  }
+  };
   const automationLaneSearch = {
     tab: undefined,
     subtab: undefined,
     selectedId: undefined,
     autoRefresh: undefined,
-  }
+  };
 
   return (
     <div className="genie-surface genie-surface--hero rounded-[28px] p-6">
@@ -39,7 +42,10 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
                 {project.title}
               </h1>
             </div>
-            <SoftChip label={project.statusLabel} variant={project.statusVariant} />
+            <SoftChip
+              label={project.statusLabel}
+              variant={project.statusVariant}
+            />
           </div>
 
           <div className="grid gap-3 md:grid-cols-3">
@@ -50,7 +56,14 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
               <p className="mt-2 text-lg font-semibold text-slate-100">
                 {project.progressText}
               </p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"
+                role="progressbar"
+                aria-valuenow={progressWidth}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${project.title} progress`}
+              >
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-sky-300 to-cyan-300"
                   style={{ width: `${progressWidth}%` }}
@@ -93,7 +106,7 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
               to="/project/$slug/tasks"
               params={{ slug: projectId }}
               search={projectLaneSearch}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -111,11 +124,13 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
               to="/project/$slug/knowledge"
               params={{ slug: projectId }}
               search={projectLaneSearch}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">Knowledge</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    Knowledge
+                  </p>
                   <p className="mt-1 text-sm text-slate-300">
                     Jump to the project workspace and notes.
                   </p>
@@ -129,11 +144,13 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
               to="/project/$slug/automation"
               params={{ slug: projectId }}
               search={automationLaneSearch as never}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">Automation</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    Automation
+                  </p>
                   <p className="mt-1 text-sm text-slate-300">
                     Inspect pipelines, runners, and schedules.
                   </p>
@@ -147,7 +164,7 @@ export function ProjectDetailHeader({ projectId, project }: ProjectDetailHeaderP
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ProjectDetailHeader
+export default ProjectDetailHeader;

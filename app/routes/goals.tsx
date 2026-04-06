@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useGoals } from '../../src/hooks/useGoals';
 import GoalCard from '../../src/components/GoalCard';
-import { computeCounts, filterGoals, sortGoals, computeSummary } from '../../src/lib/goals-logic';
+import {
+  computeCounts,
+  filterGoals,
+  sortGoals,
+  computeSummary,
+} from '../../src/lib/goals-logic';
 import { dispatchNavOverlay } from '../../src/lib/nav-overlays';
 
 interface FilterTabsProps {
@@ -46,7 +51,7 @@ interface GoalsSummaryProps {
 
 export const Route = createFileRoute('/goals')({
   component: GoalsRoute,
-})
+});
 
 /**
  * Filter tabs for goal status
@@ -58,17 +63,20 @@ function FilterTabs({ filter, setFilter, counts }: FilterTabsProps) {
     { key: 'at-risk', label: 'At Risk', count: counts.atRisk },
     { key: 'completed', label: 'Completed', count: counts.completed },
   ];
-  
+
   return (
     <div className="goals-filters">
-      {tabs.map(tab => (
+      {tabs.map((tab) => (
         <button
           key={tab.key}
+          type="button"
           className={`goals-filter ${filter === tab.key ? 'goals-filter--active' : ''}`}
           onClick={() => setFilter(tab.key)}
         >
           {tab.label}
-          {tab.count > 0 && <span className="goals-filter__count">{tab.count}</span>}
+          {tab.count > 0 && (
+            <span className="goals-filter__count">{tab.count}</span>
+          )}
         </button>
       ))}
     </div>
@@ -79,8 +87,14 @@ function FilterTabs({ filter, setFilter, counts }: FilterTabsProps) {
  * Summary stats panel
  */
 function GoalsSummary({ goals }: GoalsSummaryProps) {
-  const { totalTasks, completedTasks, totalEffort, completedEffort, overallProgress } = computeSummary(goals as Parameters<typeof computeSummary>[0]);
-  
+  const {
+    totalTasks,
+    completedTasks,
+    totalEffort,
+    completedEffort,
+    overallProgress,
+  } = computeSummary(goals as Parameters<typeof computeSummary>[0]);
+
   return (
     <div className="goals-summary">
       <div className="goals-summary__stat">
@@ -88,7 +102,9 @@ function GoalsSummary({ goals }: GoalsSummaryProps) {
         <div className="goals-summary__label">Goals</div>
       </div>
       <div className="goals-summary__stat">
-        <div className="goals-summary__value">{completedTasks}/{totalTasks}</div>
+        <div className="goals-summary__value">
+          {completedTasks}/{totalTasks}
+        </div>
         <div className="goals-summary__label">Tasks Done</div>
       </div>
       <div className="goals-summary__stat">
@@ -96,7 +112,9 @@ function GoalsSummary({ goals }: GoalsSummaryProps) {
         <div className="goals-summary__label">Overall Progress</div>
       </div>
       <div className="goals-summary__stat">
-        <div className="goals-summary__value">{completedEffort}/{totalEffort}</div>
+        <div className="goals-summary__value">
+          {completedEffort}/{totalEffort}
+        </div>
         <div className="goals-summary__label">Effort Complete</div>
       </div>
     </div>
@@ -110,28 +128,38 @@ function GoalsRoute() {
   const { goals, loading, error, refresh, apiStatus, updatedAt } = useGoals();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('priority'); // priority, progress, eta
-  
+
   // Calculate filter counts
   const counts = computeCounts(goals as Parameters<typeof computeCounts>[0]);
-  
+
   // Apply filter
-  const filteredGoals = filterGoals(goals as Parameters<typeof filterGoals>[0], filter);
-  
+  const filteredGoals = filterGoals(
+    goals as Parameters<typeof filterGoals>[0],
+    filter
+  );
+
   // Apply sort
   const sortedGoals = sortGoals(filteredGoals, sortBy);
 
   return (
     <main className="page goals-page">
       <nav className="breadcrumb">
-        <Link to="/" search={{}} className="back-link">← Home</Link>
+        <Link to="/" search={{}} className="back-link">
+          ← Home
+        </Link>
       </nav>
-      
+
       <header className="page-header">
         <h1>🎯 Goal Progress</h1>
         <p className="lede">
-          Track progress across all your goals and linked tasks. Data refreshes from Tasker API.
+          Track progress across all your goals and linked tasks. Data refreshes
+          from Tasker API.
           <span className={`api-badge api-badge--${apiStatus} ml-2`}>
-            {apiStatus === 'online' ? 'API online' : apiStatus === 'offline' ? 'API offline' : 'API'}
+            {apiStatus === 'online'
+              ? 'API online'
+              : apiStatus === 'offline'
+                ? 'API offline'
+                : 'API'}
           </span>
         </p>
         <div className="quick-links mt-3 pt-3">
@@ -153,11 +181,19 @@ function GoalsRoute() {
             <span className="quick-link__icon">🧙</span>
             <span className="quick-link__label">Avatar Dashboard</span>
           </button>
-          <button className="quick-link" onClick={refresh} title="Refresh from Tasker API">
+          <button
+            type="button"
+            className="quick-link"
+            onClick={refresh}
+            title="Refresh from Tasker API"
+          >
             <span className="quick-link__icon">🔄</span>
-            <span className="quick-link__label">{loading ? 'Refreshing…' : 'Refresh'}</span>
+            <span className="quick-link__label">
+              {loading ? 'Refreshing…' : 'Refresh'}
+            </span>
           </button>
           <button
+            type="button"
             className="quick-link quick-link--primary"
             onClick={() => setFilter('active')}
             title="Focus on active goals"
@@ -166,6 +202,7 @@ function GoalsRoute() {
             <span className="quick-link__label">Show Active</span>
           </button>
           <button
+            type="button"
             className="quick-link"
             onClick={() => setSortBy('progress')}
             title="Sort by most progress"
@@ -175,31 +212,33 @@ function GoalsRoute() {
           </button>
         </div>
       </header>
-      
+
       {error && (
-        <div className="goals-error">
+        <div className="goals-error" role="alert">
           <span>⚠️ {error}</span>
-          <button className="goals-retry" onClick={refresh}>Retry</button>
+          <button type="button" className="goals-retry" onClick={refresh}>
+            Retry
+          </button>
         </div>
       )}
-      
+
       {loading ? (
         <div className="goals-loading">
           <div className="goals-loading__spinner" />
-          <span>Loading goals...</span>
+          <span>Loading goals…</span>
         </div>
       ) : (
         <div className="goals-dashboard">
           <GoalsSummary goals={goals as Goal[]} />
-          
+
           <div className="goals-toolbar">
             <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
-            
+
             <div className="goals-sort">
               <label htmlFor="goal-sort">Sort by:</label>
-              <select 
+              <select
                 id="goal-sort"
-                value={sortBy} 
+                value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
                 <option value="priority">Priority</option>
@@ -208,19 +247,23 @@ function GoalsRoute() {
               </select>
             </div>
           </div>
-          
+
           {sortedGoals.length === 0 ? (
             <div className="goals-empty">
               <div className="goals-empty__icon">🎯</div>
               <h3 className="goals-empty__title">No goals found</h3>
               <p className="goals-empty__text">
-                {filter !== 'all' 
-                  ? `No ${filter} goals match your criteria.` 
+                {filter !== 'all'
+                  ? `No ${filter} goals match your criteria.`
                   : 'Create goals in your vault to track progress here.'}
               </p>
               <div className="goals-empty__actions">
                 {filter !== 'all' && (
-                  <button className="goals-empty__btn" onClick={() => setFilter('all')}>
+                  <button
+                    type="button"
+                    className="goals-empty__btn"
+                    onClick={() => setFilter('all')}
+                  >
                     Show all goals
                   </button>
                 )}
@@ -235,17 +278,21 @@ function GoalsRoute() {
             </div>
           ) : (
             <div className="goals-list">
-              {sortedGoals.map(goal => (
-                <GoalCard key={goal.id} goal={goal as Parameters<typeof GoalCard>[0]['goal']} />
+              {sortedGoals.map((goal) => (
+                <GoalCard
+                  key={goal.id}
+                  goal={goal as Parameters<typeof GoalCard>[0]['goal']}
+                />
               ))}
             </div>
           )}
-          
+
           <footer className="goals-footer">
             <span>
-              Last updated: {updatedAt ? new Date(updatedAt).toLocaleTimeString() : '—'}
+              Last updated:{' '}
+              {updatedAt ? new Date(updatedAt).toLocaleTimeString() : '—'}
             </span>
-            <button className="goals-refresh" onClick={refresh}>
+            <button type="button" className="goals-refresh" onClick={refresh}>
               🔄 Refresh
             </button>
           </footer>

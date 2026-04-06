@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useReducer } from 'react'
-import { Link } from '@tanstack/react-router'
-import sanitizeHtml from 'sanitize-html'
+import React, { useEffect, useMemo, useReducer } from 'react';
+import { Link } from '@tanstack/react-router';
+import sanitizeHtml from 'sanitize-html';
 
-import { apiFetch } from '../../../src/utils/api'
+import { apiFetch } from '../../../src/utils/api';
 import {
   formatNoteLabel,
   getLifecycleContext,
@@ -11,50 +11,50 @@ import {
   toApiNotePath,
   toNoteSearchPath,
   type NoteLifecycle,
-} from '../../../src/lib/note-logic'
-import { toNoteHeaderDisplay } from '../../lib/display'
-import { NoteBodyRenderer, NoteHeader, NoteMetaRail } from '../note'
-import { SoftPanel } from '../layout'
-import { EmptyState, SoftChip } from '../ui'
+} from '../../../src/lib/note-logic';
+import { toNoteHeaderDisplay } from '../../lib/display';
+import { NoteBodyRenderer, NoteHeader, NoteMetaRail } from '../note';
+import { SoftPanel } from '../layout';
+import { EmptyState, SoftChip } from '../ui';
 
 interface RelatedNote {
-  path: string
-  score: number
-  reasons?: string[]
+  path: string;
+  score: number;
+  reasons?: string[];
 }
 
 interface LoadedNote {
-  path: string
-  searchPath: string
-  title: string
-  tags: string[]
-  collection: string
-  content: string
-  html: string
-  frontmatter: Record<string, unknown>
-  lifecycle: NoteLifecycle
+  path: string;
+  searchPath: string;
+  title: string;
+  tags: string[];
+  collection: string;
+  content: string;
+  html: string;
+  frontmatter: Record<string, unknown>;
+  lifecycle: NoteLifecycle;
 }
 
 interface WorkspaceState {
-  note: LoadedNote | null
-  relatedNotes: RelatedNote[]
-  loading: boolean
-  error: string | null
+  note: LoadedNote | null;
+  relatedNotes: RelatedNote[];
+  loading: boolean;
+  error: string | null;
 }
 
 type WorkspaceAction =
   | { type: 'LOAD_START' }
   | { type: 'LOAD_ERROR'; error: string }
   | { type: 'LOAD_DONE'; note: LoadedNote; relatedNotes: RelatedNote[] }
-  | { type: 'CLEAR' }
+  | { type: 'CLEAR' };
 
 interface KnowledgeWorkspacePaneProps {
-  noteId?: string
-  mode?: 'read' | 'edit'
-  projectId?: string
-  templateId?: string
-  memoryTab?: string
-  workspaceSearch?: Record<string, unknown>
+  noteId?: string;
+  mode?: 'read' | 'edit';
+  projectId?: string;
+  templateId?: string;
+  memoryTab?: string;
+  workspaceSearch?: Record<string, unknown>;
 }
 
 const sanitizeOptions = {
@@ -79,23 +79,36 @@ const sanitizeOptions = {
     pre: ['class'],
     '*': ['class', 'id'],
   },
-} as const
+} as const;
 
-function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
+function workspaceReducer(
+  state: WorkspaceState,
+  action: WorkspaceAction
+): WorkspaceState {
   switch (action.type) {
     case 'LOAD_START':
-      return { ...state, loading: true, error: null }
+      return { ...state, loading: true, error: null };
     case 'LOAD_ERROR':
-      return { note: null, relatedNotes: [], loading: false, error: action.error }
+      return {
+        note: null,
+        relatedNotes: [],
+        loading: false,
+        error: action.error,
+      };
     case 'LOAD_DONE':
-      return { note: action.note, relatedNotes: action.relatedNotes, loading: false, error: null }
+      return {
+        note: action.note,
+        relatedNotes: action.relatedNotes,
+        loading: false,
+        error: null,
+      };
     case 'CLEAR':
-      return { note: null, relatedNotes: [], loading: false, error: null }
+      return { note: null, relatedNotes: [], loading: false, error: null };
   }
 }
 
 function getStringValue(value: unknown): string | null {
-  return typeof value === 'string' ? value : null
+  return typeof value === 'string' ? value : null;
 }
 
 export function KnowledgeWorkspacePane({
@@ -106,50 +119,58 @@ export function KnowledgeWorkspacePane({
   memoryTab,
   workspaceSearch,
 }: KnowledgeWorkspacePaneProps) {
-  const [{ note, relatedNotes, loading, error }, dispatch] = useReducer(workspaceReducer, {
-    note: null,
-    relatedNotes: [],
-    loading: false,
-    error: null,
-  })
+  const [{ note, relatedNotes, loading, error }, dispatch] = useReducer(
+    workspaceReducer,
+    {
+      note: null,
+      relatedNotes: [],
+      loading: false,
+      error: null,
+    }
+  );
 
   useEffect(() => {
-    const requestedPath = noteId ? toNoteSearchPath(noteId) : null
+    const requestedPath = noteId ? toNoteSearchPath(noteId) : null;
 
     if (!requestedPath) {
-      dispatch({ type: 'CLEAR' })
-      return
+      dispatch({ type: 'CLEAR' });
+      return;
     }
 
-    let cancelled = false
-    dispatch({ type: 'LOAD_START' })
+    let cancelled = false;
+    dispatch({ type: 'LOAD_START' });
 
     const loadNote = async () => {
-      const apiPath = toApiNotePath(requestedPath)
-      const encodedPath = encodeURIComponent(apiPath)
+      const apiPath = toApiNotePath(requestedPath);
+      const encodedPath = encodeURIComponent(apiPath);
 
       const [noteResponse, relatedResponse] = await Promise.all([
         apiFetch(`/api/v1/notes/${encodedPath}`),
         apiFetch(`/api/v1/graph/related/${encodedPath}?limit=8`),
-      ])
+      ]);
 
       if (!noteResponse.ok) {
-        throw new Error(`Note not found: ${requestedPath}`)
+        throw new Error(`Note not found: ${requestedPath}`);
       }
 
-      const noteResult = await noteResponse.json()
-      const structured = noteResult.structuredContent || {}
-      const frontmatter = (structured.frontmatter || {}) as Record<string, unknown>
-      const resolvedPath = getStringValue(structured.path) || apiPath
-      const rawContent = getStringValue(structured.content) || ''
-      const lifecycle = getLifecycleContext(resolvedPath, frontmatter)
+      const noteResult = await noteResponse.json();
+      const structured = noteResult.structuredContent || {};
+      const frontmatter = (structured.frontmatter || {}) as Record<
+        string,
+        unknown
+      >;
+      const resolvedPath = getStringValue(structured.path) || apiPath;
+      const rawContent = getStringValue(structured.content) || '';
+      const lifecycle = getLifecycleContext(resolvedPath, frontmatter);
 
       const loadedNote: LoadedNote = {
         path: resolvedPath,
         searchPath: stripMarkdownExtension(resolvedPath),
         title:
           getStringValue(frontmatter.title) ||
-          formatNoteLabel(stripMarkdownExtension(resolvedPath).split('/').pop() || ''),
+          formatNoteLabel(
+            stripMarkdownExtension(resolvedPath).split('/').pop() || ''
+          ),
         tags: Array.isArray(frontmatter.tags)
           ? frontmatter.tags.map((tag) => String(tag))
           : [],
@@ -158,49 +179,73 @@ export function KnowledgeWorkspacePane({
         html: renderNoteMarkdown(rawContent),
         frontmatter,
         lifecycle,
-      }
+      };
 
-      const relatedResult = relatedResponse.ok ? await relatedResponse.json() : null
-      const nextRelated: RelatedNote[] = (relatedResult?.structuredContent?.related ??
+      const relatedResult = relatedResponse.ok
+        ? await relatedResponse.json()
+        : null;
+      const nextRelated: RelatedNote[] = (relatedResult?.structuredContent
+        ?.related ??
         relatedResult?.related ??
-        []) as RelatedNote[]
+        []) as RelatedNote[];
 
       if (!cancelled) {
-        dispatch({ type: 'LOAD_DONE', note: loadedNote, relatedNotes: nextRelated })
+        dispatch({
+          type: 'LOAD_DONE',
+          note: loadedNote,
+          relatedNotes: nextRelated,
+        });
       }
-    }
+    };
 
     void loadNote().catch((err) => {
       if (!cancelled) {
         dispatch({
           type: 'LOAD_ERROR',
-          error: err instanceof Error ? err.message : 'Unable to load the selected note.',
-        })
+          error:
+            err instanceof Error
+              ? err.message
+              : 'Unable to load the selected note.',
+        });
       }
-    })
+    });
 
     return () => {
-      cancelled = true
-    }
-  }, [noteId])
+      cancelled = true;
+    };
+  }, [noteId]);
 
-  const modeLabel = mode === 'edit' ? 'Edit mode' : 'Read mode'
+  const modeLabel = mode === 'edit' ? 'Edit mode' : 'Read mode';
   const summaryChips = useMemo(
     () =>
       [
         <SoftChip key="mode" label={modeLabel} variant="default" />,
-        projectId ? <SoftChip key="project" label={`Project ${projectId}`} variant="default" /> : null,
+        projectId ? (
+          <SoftChip
+            key="project"
+            label={`Project ${projectId}`}
+            variant="default"
+          />
+        ) : null,
         templateId ? (
-          <SoftChip key="template" label={`Template ${templateId}`} variant="default" />
+          <SoftChip
+            key="template"
+            label={`Template ${templateId}`}
+            variant="default"
+          />
         ) : null,
         memoryTab ? (
-          <SoftChip key="memory" label={`Memory ${memoryTab}`} variant="default" />
+          <SoftChip
+            key="memory"
+            label={`Memory ${memoryTab}`}
+            variant="default"
+          />
         ) : null,
       ].filter(Boolean),
-    [memoryTab, modeLabel, projectId, templateId],
-  )
+    [memoryTab, modeLabel, projectId, templateId]
+  );
 
-  const selectedLabel = note ? note.title : 'Select a note'
+  const selectedLabel = note ? note.title : 'Select a note';
 
   return (
     <div className="space-y-4">
@@ -226,10 +271,7 @@ export function KnowledgeWorkspacePane({
         )}
 
         {!loading && error && (
-          <EmptyState
-            title="Note unavailable"
-            description={error}
-          />
+          <EmptyState title="Note unavailable" description={error} />
         )}
 
         {!loading && !error && note && (
@@ -246,20 +288,26 @@ export function KnowledgeWorkspacePane({
                   <Link
                     to="/note"
                     search={{ p: note.searchPath }}
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                   >
                     Open full editor
                   </Link>
                   <Link
                     to="/knowledge/search"
-                    search={((prev: Record<string, unknown>) => ({ ...prev, q: note.title, mode: 'semantic' })) as never}
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                    search={
+                      ((prev: Record<string, unknown>) => ({
+                        ...prev,
+                        q: note.title,
+                        mode: 'semantic',
+                      })) as never
+                    }
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                   >
                     Search around note
                   </Link>
                   <Link
                     to="/knowledge/graph"
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                   >
                     Open graph
                   </Link>
@@ -268,7 +316,11 @@ export function KnowledgeWorkspacePane({
             />
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)]">
-              <SoftPanel variant="utility" title="Preview" subtitle={selectedLabel}>
+              <SoftPanel
+                variant="utility"
+                title="Preview"
+                subtitle={selectedLabel}
+              >
                 <NoteBodyRenderer
                   html={sanitizeHtml(note.html, sanitizeOptions)}
                 />
@@ -293,20 +345,26 @@ export function KnowledgeWorkspacePane({
                 <Link
                   to="/note"
                   search={{ p: note.searchPath }}
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                 >
                   Open note in editor
                 </Link>
                 <Link
                   to="/knowledge/search"
-                  search={((prev: Record<string, unknown>) => ({ ...prev, q: note.title, mode: 'semantic' })) as never}
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                  search={
+                    ((prev: Record<string, unknown>) => ({
+                      ...prev,
+                      q: note.title,
+                      mode: 'semantic',
+                    })) as never
+                  }
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                 >
                   Search related context
                 </Link>
                 <Link
                   to="/knowledge/graph"
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-white/80"
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
                 >
                   Open knowledge graph
                 </Link>
@@ -316,5 +374,5 @@ export function KnowledgeWorkspacePane({
         )}
       </SoftPanel>
     </div>
-  )
+  );
 }

@@ -7,6 +7,9 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 /** Single source of truth for the localStorage key used to persist theme. */
 export const THEME_STORAGE_KEY = 'vault-theme';
 
+/** Single source of truth for the localStorage key used to persist density. */
+export const DENSITY_STORAGE_KEY = 'vault-density';
+
 const VALID_THEMES: readonly ThemePreference[] = ['light', 'dark', 'system'];
 
 function readThemePreference(): ThemePreference {
@@ -21,7 +24,26 @@ function readThemePreference(): ThemePreference {
     return 'system';
   }
 }
+
 type LayoutDensity = 'compact' | 'comfortable' | 'spacious';
+
+const VALID_DENSITIES: readonly LayoutDensity[] = [
+  'compact',
+  'comfortable',
+  'spacious',
+];
+
+function readDensityPreference(): LayoutDensity {
+  try {
+    const raw = localStorage.getItem(DENSITY_STORAGE_KEY);
+    return VALID_DENSITIES.includes(raw as LayoutDensity)
+      ? (raw as LayoutDensity)
+      : 'comfortable';
+  } catch {
+    return 'comfortable';
+  }
+}
+
 type RightPanelMode = 'hidden' | 'peek' | 'pinned';
 type DetailPanelMode = 'collapsed' | 'split' | 'overlay';
 type SurfaceKey =
@@ -113,6 +135,8 @@ interface UIState {
   setVerificationRailPinned: (pinned: boolean) => void;
   toggleVerificationRailPinned: () => void;
   setTheme: (theme: ThemePreference) => void;
+  setDensity: (density: LayoutDensity) => void;
+  toggleLeftSidebar: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -120,7 +144,7 @@ export const useUIStore = create<UIState>((set) => ({
   layout: {
     leftSidebarCollapsed: false,
     rightPanelMode: 'peek',
-    density: 'comfortable',
+    density: readDensityPreference(),
     activeSurface: 'home',
     mobileNavOpen: false,
   },
@@ -215,4 +239,16 @@ export const useUIStore = create<UIState>((set) => ({
       localStorage.setItem(THEME_STORAGE_KEY, theme);
     set({ theme });
   },
+  setDensity: (density) => {
+    if (typeof localStorage !== 'undefined')
+      localStorage.setItem(DENSITY_STORAGE_KEY, density);
+    set((state) => ({ layout: { ...state.layout, density } }));
+  },
+  toggleLeftSidebar: () =>
+    set((state) => ({
+      layout: {
+        ...state.layout,
+        leftSidebarCollapsed: !state.layout.leftSidebarCollapsed,
+      },
+    })),
 }));

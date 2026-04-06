@@ -3,6 +3,8 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { ThemeSelector } from '../components/settings/ThemeSelector';
+import { DensitySelector } from '../components/settings/DensitySelector';
+import { SidebarCollapseToggle } from '../components/settings/SidebarCollapseToggle';
 import { readStringSearchParam } from '../../src/lib/routes/search-params';
 
 export const Route = createFileRoute('/settings')({
@@ -42,6 +44,18 @@ function SettingsRoute() {
           <section>
             <h3 className="text-sm font-medium text-foreground mb-3">Theme</h3>
             <ThemeSelector />
+          </section>
+          <section>
+            <h3 className="text-sm font-medium text-foreground mb-3">
+              Layout density
+            </h3>
+            <DensitySelector />
+          </section>
+          <section>
+            <h3 className="text-sm font-medium text-foreground mb-3">
+              Sidebar
+            </h3>
+            <SidebarCollapseToggle />
           </section>
         </div>
       }

@@ -1,31 +1,38 @@
-import React from 'react'
-import { SectionHeader } from '../layout'
-import type { KanbanTask } from '../../../src/lib/kanban-logic'
+import React from 'react';
+import { SectionHeader } from '../layout';
+import type { KanbanTask } from '../../../src/lib/kanban-logic';
 
 interface ProjectBoardSectionProps {
-  tasks: KanbanTask[]
-  projectId: string
+  tasks: KanbanTask[];
+  projectId: string;
 }
 
 interface Column {
-  key: string
-  label: string
-  tasks: KanbanTask[]
-  accent?: boolean
+  key: string;
+  label: string;
+  tasks: KanbanTask[];
+  accent?: boolean;
 }
 
 function TaskCard({ task, accent }: { task: KanbanTask; accent?: boolean }) {
-  const borderAccent = accent ? 'border-l-2 border-l-primary' : ''
+  const borderAccent = accent ? 'border-l-2 border-l-primary' : '';
   return (
-    <div className={`genie-surface genie-surface--utility rounded-xl px-4 py-3 mb-2 ${borderAccent}`}>
-      <p className="text-sm font-medium text-slate-100 leading-snug">{task.title}</p>
+    <div
+      className={`genie-surface genie-surface--utility rounded-xl px-4 py-3 mb-2 ${borderAccent}`}
+    >
+      <p className="text-sm font-medium text-slate-100 leading-snug">
+        {task.title}
+      </p>
       {task.estimatedTimeMin != null && task.estimatedTimeMin > 0 && (
-        <span className="mt-1.5 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-slate-300">
+        <span
+          aria-hidden="true"
+          className="mt-1.5 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-slate-300"
+        >
           ⏱ {task.estimatedTimeMin}m
         </span>
       )}
     </div>
-  )
+  );
 }
 
 export function ProjectBoardSection({ tasks }: ProjectBoardSectionProps) {
@@ -44,9 +51,11 @@ export function ProjectBoardSection({ tasks }: ProjectBoardSectionProps) {
     {
       key: 'done',
       label: 'Done',
-      tasks: tasks.filter((t) => t.status === 'completed' || t.status === 'done'),
+      tasks: tasks.filter(
+        (t) => t.status === 'completed' || t.status === 'done'
+      ),
     },
-  ]
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -66,5 +75,5 @@ export function ProjectBoardSection({ tasks }: ProjectBoardSectionProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }

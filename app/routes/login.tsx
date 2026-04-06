@@ -1,18 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
 type LoginSearch = {
-  return_to?: string
-  error?: string
-}
+  return_to?: string;
+  error?: string;
+};
 
 const normalizeReturnTo = (value: unknown): string => {
-  if (typeof value !== 'string') return '/'
-  const trimmed = value.trim()
-  if (!trimmed) return '/'
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return '/'
-  if (trimmed.includes('\\')) return '/'
-  return trimmed
-}
+  if (typeof value !== 'string') return '/';
+  const trimmed = value.trim();
+  if (!trimmed) return '/';
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return '/';
+  if (trimmed.includes('\\')) return '/';
+  return trimmed;
+};
 
 export const Route = createFileRoute('/login')({
   validateSearch: (search: Record<string, unknown>): LoginSearch => ({
@@ -21,11 +21,11 @@ export const Route = createFileRoute('/login')({
     error: typeof search.error === 'string' ? search.error : undefined,
   }),
   component: LoginRoute,
-})
+});
 
 function LoginRoute() {
-  const search = Route.useSearch()
-  const returnTo = normalizeReturnTo(search.return_to)
+  const search = Route.useSearch();
+  const returnTo = normalizeReturnTo(search.return_to);
 
   return (
     <main className="min-h-dvh bg-[var(--vault-bg)] px-4 py-6 text-[var(--vault-ink)] antialiased">
@@ -65,6 +65,8 @@ function LoginRoute() {
                 type="email"
                 name="email"
                 autoComplete="email"
+                spellCheck={false}
+                placeholder="you@example.com…"
                 required
               />
             </div>
@@ -94,5 +96,5 @@ function LoginRoute() {
         </div>
       </section>
     </main>
-  )
+  );
 }

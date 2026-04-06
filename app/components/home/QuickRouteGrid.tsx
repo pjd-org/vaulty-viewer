@@ -1,5 +1,5 @@
-import React from 'react'
-import { Link } from '@tanstack/react-router'
+import React from 'react';
+import { Link } from '@tanstack/react-router';
 
 export function QuickRouteGrid() {
   return (
@@ -7,7 +7,7 @@ export function QuickRouteGrid() {
       <Link
         to="/work"
         search={{}}
-        className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
+        className="genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">📁</div>
         <p className="text-sm font-semibold text-slate-800">Work</p>
@@ -17,7 +17,7 @@ export function QuickRouteGrid() {
       <Link
         to="/inbox"
         search={{}}
-        className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
+        className="genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">📥</div>
         <p className="text-sm font-semibold text-slate-800">Inbox</p>
@@ -26,7 +26,7 @@ export function QuickRouteGrid() {
 
       <Link
         to="/huey"
-        className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
+        className="genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">🤖</div>
         <p className="text-sm font-semibold text-slate-800">Huey</p>
@@ -36,12 +36,12 @@ export function QuickRouteGrid() {
       <Link
         to="/knowledge"
         search={{}}
-        className="genie-surface genie-surface--utility p-4 transition-all block hover:-translate-y-0.5"
+        className="genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">🔍</div>
         <p className="text-sm font-semibold text-slate-800">Knowledge</p>
         <p className="text-xs text-slate-600 mt-0.5">Browse &amp; discover</p>
       </Link>
     </div>
-  )
+  );
 }

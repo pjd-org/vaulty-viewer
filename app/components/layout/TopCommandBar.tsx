@@ -1,5 +1,5 @@
-import React from 'react'
-import { Link } from '@tanstack/react-router'
+import React from 'react';
+import { Link } from '@tanstack/react-router';
 
 export function TopCommandBar() {
   return (
@@ -21,8 +21,8 @@ export function TopCommandBar() {
             </span>
             <input
               aria-label="Search viewer"
-              className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
-              placeholder="Find notes, projects, signals, and runs"
+              className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              placeholder="Find notes, projects, signals, and runs…"
               type="search"
             />
           </label>
@@ -56,5 +56,5 @@ export function TopCommandBar() {
         </div>
       </div>
     </div>
-  )
+  );
 }

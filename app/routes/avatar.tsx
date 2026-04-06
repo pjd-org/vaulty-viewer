@@ -12,7 +12,7 @@ import {
   type CapacityInput,
   type VitalsInput,
 } from '../../src/lib/readiness-logic';
-import { ReadinessCard } from '../components/avatar'
+import { ReadinessCard } from '../components/avatar';
 import { apiBadgeText } from '../../src/lib/avatar-logic';
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,11 @@ function ReadinessHeader({
       </div>
 
       <div className="os-header__readiness">
-        <ReadinessCard readiness={readiness} capacityLabel={capacityLabel} timeBudgetLabel={timeBudgetLabel} />
+        <ReadinessCard
+          readiness={readiness}
+          capacityLabel={capacityLabel}
+          timeBudgetLabel={timeBudgetLabel}
+        />
         {flags.stagnation && (
           <span className="os-flag os-flag--warning">Stagnation detected</span>
         )}
@@ -107,6 +111,7 @@ function ReadinessHeader({
           {apiBadgeText(apiStatus as Parameters<typeof apiBadgeText>[0])}
         </span>
         <button
+          type="button"
           className="os-refresh"
           onClick={onRefresh}
           disabled={loading}
@@ -276,11 +281,11 @@ export const Route = createFileRoute('/avatar')({
 });
 
 interface AvatarRouteProps {
-  onRequestClose?: () => void
+  onRequestClose?: () => void;
 }
 
 export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const {
     avatar,
     loading,
@@ -302,21 +307,21 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
   const stale = isStale(avatar.updated);
   const closeOverlay = React.useCallback(() => {
     if (onRequestClose) {
-      onRequestClose()
-      return
+      onRequestClose();
+      return;
     }
 
-    void navigate({ to: '/', search: {} })
-  }, [navigate, onRequestClose])
+    void navigate({ to: '/', search: {} });
+  }, [navigate, onRequestClose]);
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeOverlay()
-    }
+      if (event.key === 'Escape') closeOverlay();
+    };
 
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [closeOverlay])
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [closeOverlay]);
 
   return (
     <div className="route-modal-overlay" onClick={closeOverlay}>
@@ -328,7 +333,12 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
         aria-modal="true"
         aria-label="Avatar"
       >
-        <button type="button" className="route-modal-close" onClick={closeOverlay} aria-label="Close avatar">
+        <button
+          type="button"
+          className="route-modal-close"
+          onClick={closeOverlay}
+          aria-label="Close avatar"
+        >
           ✕
         </button>
         <main className="avatar-os-page route-modal-scroll route-modal-body">
@@ -339,9 +349,10 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
           </nav>
 
           {error && (
-            <div className="focus-offline">
+            <div className="focus-offline" role="alert">
               {error}
               <button
+                type="button"
                 onClick={refresh}
                 className="os-refresh ml-2"
               >
@@ -360,10 +371,12 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
             apiStatus={apiStatus}
             onRefresh={refresh}
             capacityLabel={(() => {
-              const parts: string[] = []
-              if (isMetricReal(capacity.focusCostMax)) parts.push(`Focus ≤ ${capacity.focusCostMax}`)
-              if (isMetricReal(capacity.effortScoreMax)) parts.push(`Effort ≤ ${capacity.effortScoreMax}`)
-              return parts.join(' · ') || 'No capacity set'
+              const parts: string[] = [];
+              if (isMetricReal(capacity.focusCostMax))
+                parts.push(`Focus ≤ ${capacity.focusCostMax}`);
+              if (isMetricReal(capacity.effortScoreMax))
+                parts.push(`Effort ≤ ${capacity.effortScoreMax}`);
+              return parts.join(' · ') || 'No capacity set';
             })()}
             timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
           />
@@ -397,12 +410,13 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
 
               {avatar.updated && (
                 <div className="avatar-footer">
-                  <a
-                    href="/note/notes%2Fcore%2Favatar%2FAvatar"
+                  <Link
+                    to="/note"
+                    search={{ p: 'notes/core/avatar/Avatar' }}
                     className="avatar-link"
                   >
                     Open avatar note →
-                  </a>
+                  </Link>
                 </div>
               )}
             </>

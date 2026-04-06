@@ -9,12 +9,14 @@
  *     <YourChatUI />
  *   </HueyAssistantProvider>
  *
- * When threadId changes the runtime thread is reset (history cleared), matching
- * the existing behaviour where thread history is sidebar-only, not restored.
+ * Thread persistence: each threadId gets its own localStorage-backed
+ * ThreadHistoryAdapter. The adapter is re-created when threadId changes so
+ * useLocalRuntime loads the correct message history for the active thread.
  */
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { AssistantRuntimeProvider, useLocalRuntime } from '@assistant-ui/react';
 import { createHueyModelAdapter } from '../../../src/lib/huey-adapter';
+import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/huey-thread-history';
 
 interface HueyAssistantProviderProps {
   children: React.ReactNode;
@@ -27,19 +29,16 @@ export function HueyAssistantProvider({
   threadId,
   onThreadIdChange,
 }: HueyAssistantProviderProps) {
-  // Refs keep the adapter stable (never recreated) while always reading fresh values.
-  const threadIdRef = useRef(threadId);
+  // Ref keeps onThreadIdChange stable across renders without recreating the model adapter.
   const onThreadIdChangeRef = useRef(onThreadIdChange);
+  onThreadIdChangeRef.current = onThreadIdChange;
 
-  useEffect(() => {
-    threadIdRef.current = threadId;
-  }, [threadId]);
+  // Model adapter is stable — it reads threadId via a ref inside createHueyModelAdapter.
+  // We pass a getter that always returns the latest threadId.
+  const threadIdRef = useRef(threadId);
+  threadIdRef.current = threadId;
 
-  useEffect(() => {
-    onThreadIdChangeRef.current = onThreadIdChange;
-  }, [onThreadIdChange]);
-
-  const adapter = useMemo(
+  const modelAdapter = useMemo(
     () =>
       createHueyModelAdapter({
         getThreadId: () => threadIdRef.current,
@@ -49,12 +48,16 @@ export function HueyAssistantProvider({
     [] // stable — refs handle mutability
   );
 
-  const runtime = useLocalRuntime(adapter);
+  // History adapter is scoped per threadId so switching threads loads the
+  // correct persisted conversation from localStorage.
+  const historyAdapter = useMemo(
+    () => createLocalStorageThreadHistoryAdapter(threadId),
+    [threadId]
+  );
 
-  // When the thread switches, clear the runtime message history.
-  useEffect(() => {
-    runtime.thread.reset();
-  }, [threadId, runtime.thread]);
+  const runtime = useLocalRuntime(modelAdapter, {
+    adapters: { history: historyAdapter },
+  });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>

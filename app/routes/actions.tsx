@@ -164,7 +164,7 @@ function ActionsRoute() {
               simulatableOnly,
             })
           }
-          className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sky-300/50"
+          className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-100 transition focus:border-sky-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
         >
           <option value="urgency">Urgency</option>
           <option value="impact">Impact</option>

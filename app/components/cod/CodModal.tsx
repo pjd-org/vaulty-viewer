@@ -1,33 +1,43 @@
-import React, { useState } from 'react'
-import useCODStatus from '../../../src/hooks/useCODStatus'
-import HumanStateForm from '../../../src/components/HumanStateForm'
+import React, { useState } from 'react';
+import useCODStatus from '../../../src/hooks/useCODStatus';
+import HumanStateForm from '../../../src/components/HumanStateForm';
 import {
   normalizeCodSignals,
   deriveCodConstraints,
   getMaxSprintMin,
-} from '../../../src/lib/cod-status-logic'
-import { toCodDisplayState } from '../../lib/display'
-import { SoftPanel, SectionHeader } from '../layout'
-import { IconButton, ReasonText } from '../ui'
-import { CodSeverityPill } from './CodSeverityPill'
-import { CodActionRow } from './CodActionRow'
-import { CodConstraintTable } from './CodConstraintTable'
-import { CodSignalRow } from './CodSignalRow'
-import type { CodSignalStatus } from '../../../src/lib/cod-status-logic'
+} from '../../../src/lib/cod-status-logic';
+import { toCodDisplayState } from '../../lib/display';
+import { SoftPanel, SectionHeader } from '../layout';
+import { IconButton, ReasonText } from '../ui';
+import { CodSeverityPill } from './CodSeverityPill';
+import { CodActionRow } from './CodActionRow';
+import { CodConstraintTable } from './CodConstraintTable';
+import { CodSignalRow } from './CodSignalRow';
+import type { CodSignalStatus } from '../../../src/lib/cod-status-logic';
 
 function signalVariant(s: CodSignalStatus): 'ok' | 'warn' | 'bad' | undefined {
-  if (s === 'good') return 'ok'
-  if (s === 'warn') return 'warn'
-  if (s === 'bad') return 'bad'
-  return undefined
+  if (s === 'good') return 'ok';
+  if (s === 'warn') return 'warn';
+  if (s === 'bad') return 'bad';
+  return undefined;
 }
 
 const REFRESH_ICON = (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <path d="M13.5 2.5A6.5 6.5 0 1 1 2.5 8" />
     <polyline points="2.5 2.5 2.5 6 6 6" />
   </svg>
-)
+);
 
 export function CodModal() {
   const {
@@ -38,41 +48,49 @@ export function CodModal() {
     updating,
     refresh,
     updateHumanState,
-  } = useCODStatus()
+  } = useCODStatus();
 
-  const [showForm, setShowForm] = useState(false)
+  const [showForm, setShowForm] = useState(false);
 
-  const constraints = deriveCodConstraints(humanState, validation.status)
-  const signals = normalizeCodSignals(humanState)
-  const maxSprintMin = getMaxSprintMin(validation.status)
-  const canStartSession = validation.status !== 'FAIL'
+  const constraints = deriveCodConstraints(humanState, validation.status);
+  const signals = normalizeCodSignals(humanState);
+  const maxSprintMin = getMaxSprintMin(validation.status);
+  const canStartSession = validation.status !== 'FAIL';
 
   const codState = {
     canStartSession,
     maxSprintMin,
     why: warnings,
-  }
+  };
 
   const display = {
     ...toCodDisplayState({
       status: validation.status,
       reason: warnings[0] ?? null,
     }),
-    constraintItems: constraints.map((c) => ({ label: c.label, value: c.value })),
+    constraintItems: constraints.map((c) => ({
+      label: c.label,
+      value: c.value,
+    })),
     signalItems: signals.map((s) => ({
       label: s.label,
       value: `${s.value}${s.unit ?? '%'}`,
       variant: signalVariant(s.status),
     })),
-  }
+  };
 
   return (
     <SoftPanel variant="utility">
       {/* Header row */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <CodSeverityPill variant={display.severityVariant} label={display.severityLabel} />
-          <p className="mt-2 text-base font-medium text-slate-800">{display.headline}</p>
+          <CodSeverityPill
+            variant={display.severityVariant}
+            label={display.severityLabel}
+          />
+          <p className="mt-2 text-base font-medium text-slate-800">
+            {display.headline}
+          </p>
           {display.reasonText && (
             <ReasonText className="mt-1">{display.reasonText}</ReasonText>
           )}
@@ -80,7 +98,9 @@ export function CodModal() {
         <IconButton
           icon={REFRESH_ICON}
           label="Refresh"
-          onClick={() => { void refresh() }}
+          onClick={() => {
+            void refresh();
+          }}
           disabled={loading}
         />
       </div>
@@ -120,7 +140,10 @@ export function CodModal() {
       )}
 
       {/* Human state form + debug — fully collapsed */}
-      <details className="mt-3 rounded-xl genie-surface genie-surface--utility" open={showForm}>
+      <details
+        className="mt-3 rounded-xl genie-surface genie-surface--utility"
+        open={showForm}
+      >
         <summary className="px-4 py-3 text-xs text-slate-500 cursor-pointer select-none">
           Update state / debug
         </summary>
@@ -128,11 +151,14 @@ export function CodModal() {
           <HumanStateForm
             currentState={{
               ...humanState,
-              focusCapacity: humanState.focusCapacity === 'unknown' ? undefined : humanState.focusCapacity,
+              focusCapacity:
+                humanState.focusCapacity === 'unknown'
+                  ? undefined
+                  : humanState.focusCapacity,
             }}
             onSubmit={(data) => {
-              void updateHumanState(data)
-              setShowForm(false)
+              void updateHumanState(data);
+              setShowForm(false);
             }}
             onCancel={() => setShowForm(false)}
             loading={updating}
@@ -140,5 +166,5 @@ export function CodModal() {
         </div>
       </details>
     </SoftPanel>
-  )
+  );
 }

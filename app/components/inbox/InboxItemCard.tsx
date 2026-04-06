@@ -1,15 +1,22 @@
-import React from 'react'
-import type { InboxItemDisplay } from '../../types/display'
-import { PrimaryButton, SecondaryButton, IconButton, SoftChip } from '../ui'
+import React from 'react';
+import type { InboxItemDisplay } from '../../types/display';
+import { PrimaryButton, SecondaryButton, IconButton, SoftChip } from '../ui';
 
 interface InboxItemCardProps {
-  item: InboxItemDisplay
-  onInspect: () => void
-  onPromote?: () => void
-  onReject?: () => void
+  item: InboxItemDisplay;
+  onInspect: () => void;
+  onPromote?: () => void;
+  onReject?: () => void;
 }
 
-export function InboxItemCard({ item, onInspect, onPromote, onReject }: InboxItemCardProps) {
+export function InboxItemCard({
+  item,
+  onInspect,
+  onPromote,
+  onReject,
+}: InboxItemCardProps) {
+  const [confirmingReject, setConfirmingReject] = React.useState(false);
+
   return (
     <div className="genie-surface genie-surface--utility p-4 space-y-2 transition-transform duration-200 hover:-translate-y-0.5">
       <div className="flex items-center gap-2 min-w-0">
@@ -19,7 +26,10 @@ export function InboxItemCard({ item, onInspect, onPromote, onReject }: InboxIte
         <SoftChip label={item.originLabel} variant="default" />
         {item.isBlocked && <SoftChip label="Blocked" variant="danger" />}
         {item.ageLabel && (
-          <span className="text-xs text-slate-500 shrink-0" suppressHydrationWarning>
+          <span
+            className="text-xs text-slate-500 shrink-0"
+            suppressHydrationWarning
+          >
             {item.ageLabel}
           </span>
         )}
@@ -36,15 +46,47 @@ export function InboxItemCard({ item, onInspect, onPromote, onReject }: InboxIte
         {item.actions.includes('promote') && onPromote && (
           <PrimaryButton onClick={onPromote}>Promote</PrimaryButton>
         )}
-        {onReject && (
-          <IconButton
-            icon={<span aria-hidden="true" className="text-base leading-none">×</span>}
-            label="Reject"
-            onClick={onReject}
-            className="text-slate-500 hover:text-red-500"
-          />
-        )}
+        {onReject &&
+          (confirmingReject ? (
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-red-600 font-medium">Reject?</span>
+              <IconButton
+                icon={
+                  <span aria-hidden="true" className="text-base leading-none">
+                    ✓
+                  </span>
+                }
+                label="Confirm reject"
+                onClick={() => {
+                  onReject();
+                  setConfirmingReject(false);
+                }}
+                className="text-red-600 hover:text-red-700"
+              />
+              <IconButton
+                icon={
+                  <span aria-hidden="true" className="text-base leading-none">
+                    ✕
+                  </span>
+                }
+                label="Cancel reject"
+                onClick={() => setConfirmingReject(false)}
+                className="text-slate-500 hover:text-slate-700"
+              />
+            </div>
+          ) : (
+            <IconButton
+              icon={
+                <span aria-hidden="true" className="text-base leading-none">
+                  ×
+                </span>
+              }
+              label="Reject"
+              onClick={() => setConfirmingReject(true)}
+              className="text-slate-500 hover:text-red-500"
+            />
+          ))}
       </div>
     </div>
-  )
+  );
 }

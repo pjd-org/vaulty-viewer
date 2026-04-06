@@ -124,7 +124,7 @@ export function HueyWorkspace({
 
       <div
         ref={listRef}
-        className="flex-1 min-h-0 overflow-y-auto space-y-4 mb-4"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-4 mb-4"
       >
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-600 py-12">

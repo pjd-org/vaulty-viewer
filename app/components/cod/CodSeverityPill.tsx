@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 const VARIANT_STYLES = {
   clear: {
@@ -17,21 +17,24 @@ const VARIANT_STYLES = {
     container: 'bg-danger/10 text-danger border-danger/20',
     dot: 'bg-danger',
   },
-} as const
+} as const;
 
 interface CodSeverityPillProps {
-  variant: keyof typeof VARIANT_STYLES
-  label: string
+  variant: keyof typeof VARIANT_STYLES;
+  label: string;
 }
 
 export function CodSeverityPill({ variant, label }: CodSeverityPillProps) {
-  const styles = VARIANT_STYLES[variant]
+  const styles = VARIANT_STYLES[variant];
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold ${styles.container}`}
     >
-      <span className={`w-2 h-2 rounded-full ${styles.dot}`} aria-hidden />
+      <span
+        className={`w-2 h-2 rounded-full ${styles.dot}`}
+        aria-hidden="true"
+      />
       {label}
     </span>
-  )
+  );
 }

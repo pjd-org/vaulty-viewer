@@ -25,6 +25,20 @@ const REPULSION = 5000;
 const ATTRACTION = 0.05;
 const DAMPING = 0.85;
 
+/**
+ * Deterministic pseudo-random float in [0, 1) derived from a string seed.
+ * Replaces Math.random() so initial node positions are stable across renders
+ * and consistent between server and client (no hydration mismatch).
+ */
+function hashRand(seed: string, salt: string): number {
+  let h = 0;
+  const str = seed + salt;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return ((h >>> 0) % 100_000) / 100_000;
+}
+
 interface SimNode {
   id: string;
   x: number;
@@ -46,8 +60,8 @@ function buildSimNodes(graph: GraphJson): SimNode[] {
       : DEFAULT_COLOR;
     return {
       id,
-      x: Math.random() * WIDTH,
-      y: Math.random() * HEIGHT,
+      x: hashRand(id, 'x') * WIDTH,
+      y: hashRand(id, 'y') * HEIGHT,
       vx: 0,
       vy: 0,
       radius,

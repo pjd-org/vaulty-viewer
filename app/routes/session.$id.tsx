@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../../src/utils/api';
@@ -112,6 +112,10 @@ function SessionRoute() {
   const skipped = session.tasks?.filter((t) => t.status === 'skipped') ?? [];
   const elapsed = session.startedAt ? elapsedMinutes(session.startedAt) : null;
 
+  const [confirmAction, setConfirmAction] = useState<
+    'completed' | 'aborted' | null
+  >(null);
+
   const handleUpdateTask = (task: SessionTask, status: string) => {
     if (!task.path) return;
     updateTaskMutation.mutate({ taskPath: task.path, status });
@@ -208,20 +212,52 @@ function SessionRoute() {
       )}
 
       <div className="session-footer">
-        <button
-          className="na-card__btn na-card__btn--done"
-          onClick={() => endSessionMutation.mutate('completed')}
-          disabled={endSessionMutation.isPending}
-        >
-          End Session
-        </button>
-        <button
-          className="na-card__btn na-card__btn--skip"
-          onClick={() => endSessionMutation.mutate('aborted')}
-          disabled={endSessionMutation.isPending}
-        >
-          Abort
-        </button>
+        {confirmAction ? (
+          <>
+            <span className="session-footer__confirm-label">
+              {confirmAction === 'completed'
+                ? 'End session?'
+                : 'Abort session?'}
+            </span>
+            <button
+              type="button"
+              className="na-card__btn na-card__btn--done"
+              onClick={() => {
+                endSessionMutation.mutate(confirmAction);
+                setConfirmAction(null);
+              }}
+              disabled={endSessionMutation.isPending}
+            >
+              Confirm
+            </button>
+            <button
+              type="button"
+              className="na-card__btn na-card__btn--skip"
+              onClick={() => setConfirmAction(null)}
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="na-card__btn na-card__btn--done"
+              onClick={() => setConfirmAction('completed')}
+              disabled={endSessionMutation.isPending}
+            >
+              End Session
+            </button>
+            <button
+              type="button"
+              className="na-card__btn na-card__btn--skip"
+              onClick={() => setConfirmAction('aborted')}
+              disabled={endSessionMutation.isPending}
+            >
+              Abort
+            </button>
+          </>
+        )}
       </div>
     </main>
   );
