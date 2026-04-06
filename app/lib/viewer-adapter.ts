@@ -1507,49 +1507,6 @@ export function useWorkSurface(max = 20) {
   });
 }
 
-// ─── LiveKit Token ────────────────────────────────────────────────────────────
-
-export interface LiveKitTokenPayload {
-  token: string;
-  serverUrl: string;
-}
-
-export function getLiveKitTokenQueryOptions(
-  roomName: string,
-  participantName: string
-) {
-  return {
-    queryKey: ['livekit', 'token', roomName, participantName] as const,
-    queryFn: async (): Promise<LiveKitTokenPayload> => {
-      const res = await apiFetch('/api/v1/livekit/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomName, participantName }),
-      });
-      if (res.status === 401)
-        throw new UnauthenticatedError(`Failed to fetch LiveKit token: 401`);
-      if (res.status === 503)
-        throw new Error('LiveKit is not configured on this server.');
-      if (!res.ok)
-        throw new Error(`Failed to fetch LiveKit token: ${res.status}`);
-      return res.json() as Promise<LiveKitTokenPayload>;
-    },
-    staleTime: 55 * 60 * 1000, // 55 min — token TTL is 1h
-    retry: false,
-  };
-}
-
-export function useLiveKitToken(
-  roomName: string,
-  participantName: string,
-  enabled = true
-) {
-  return useQuery({
-    ...getLiveKitTokenQueryOptions(roomName, participantName),
-    enabled: enabled && !!roomName && !!participantName,
-  });
-}
-
 // ─── Query Invalidation Helpers ───────────────────────────────────────────────
 // Spec: doc/context/viewer-v3/QUERY-KEY-INVALIDATION-DOC.md
 
