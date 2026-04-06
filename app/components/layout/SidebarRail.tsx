@@ -29,7 +29,7 @@ function RailItem({
       title={label}
       aria-label={label}
       className={[
-        'flex h-10 w-10 items-center justify-center rounded-2xl border text-[10px] font-semibold uppercase tracking-[0.18em] transition-[transform,background-color]',
+        'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color]',
         active
           ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
           : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
@@ -60,7 +60,7 @@ function OverlayItem({
       aria-label={label}
       onClick={onClick}
       className={[
-        'flex h-10 w-10 items-center justify-center rounded-2xl border text-[10px] font-semibold uppercase tracking-[0.18em] transition-[transform,background-color]',
+        'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color]',
         active
           ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
           : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
@@ -93,6 +93,7 @@ export function SidebarRail() {
 
   const bottomItems = (
     <>
+      <div className="w-6 border-t border-white/10 mx-auto" />
       {VIEWER_UTILITY_NAV.map((item) => (
         <RailItem
           key={item.to}
@@ -123,7 +124,7 @@ export function SidebarRail() {
         <Link
           to={'/' as never}
           aria-label="Vault home"
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-100"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100"
         >
           V3
         </Link>

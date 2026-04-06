@@ -10,7 +10,7 @@ export function TopCommandBar() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
               Viewer V3
             </p>
-            <p className="text-sm font-medium text-slate-100">
+            <p className="text-sm font-semibold text-slate-100">
               COD command center
             </p>
           </div>
@@ -30,25 +30,25 @@ export function TopCommandBar() {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               to={'/actions' as never}
-              className="btn-primary rounded-full px-4 py-2 text-sm font-medium text-white transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center rounded-full border border-sky-400/50 bg-sky-400/15 px-4 py-2 text-sm font-semibold text-sky-200 transition-colors hover:border-sky-400/80 hover:bg-sky-400/25 hover:text-sky-100"
             >
               Quick Command
             </Link>
             <Link
               to={'/inbox' as never}
-              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-100"
+              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-slate-100"
             >
               Review Inbox
             </Link>
             <Link
               to={'/knowledge' as never}
-              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-100"
+              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-slate-100"
             >
               Create
             </Link>
             <Link
               to={'/huey' as never}
-              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-100"
+              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-slate-100"
             >
               Huey
             </Link>

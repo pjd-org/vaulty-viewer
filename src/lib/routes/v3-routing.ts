@@ -1,15 +1,15 @@
-import type { NavOverlay } from '../nav-overlays'
+import type { NavOverlay } from '../nav-overlays';
 
 export interface ViewerRouteNavItem {
-  label: string
-  shortLabel: string
-  to: string
+  label: string;
+  shortLabel: string;
+  to: string;
 }
 
 export interface ViewerOverlayNavItem {
-  label: string
-  shortLabel: string
-  overlay: NavOverlay
+  label: string;
+  shortLabel: string;
+  overlay: NavOverlay;
 }
 
 export const VIEWER_TOP_LEVEL_PATHS = [
@@ -26,32 +26,32 @@ export const VIEWER_TOP_LEVEL_PATHS = [
   '/timeline',
   '/settings',
   '/archive',
-] as const
+] as const;
 
 export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
-  { label: 'Home', shortLabel: 'Ho', to: '/' },
-  { label: 'Inbox', shortLabel: 'In', to: '/inbox' },
-  { label: 'Actions', shortLabel: 'Ac', to: '/actions' },
-  { label: 'Automation', shortLabel: 'Au', to: '/automation' },
-  { label: 'Work', shortLabel: 'Wo', to: '/work' },
-  { label: 'Knowledge', shortLabel: 'Kn', to: '/knowledge' },
-  { label: 'Portfolio', shortLabel: 'Po', to: '/portfolio' },
-  { label: 'Bubble', shortLabel: 'Bu', to: '/bubble' },
-  { label: 'Health', shortLabel: 'He', to: '/health' },
-  { label: 'Graph', shortLabel: 'Gr', to: '/graph' },
-  { label: 'Timeline', shortLabel: 'Ti', to: '/timeline' },
-  { label: 'Archive', shortLabel: 'Ar', to: '/archive' },
-] as const
+  { label: 'Home', shortLabel: '⌂', to: '/' },
+  { label: 'Inbox', shortLabel: '✉', to: '/inbox' },
+  { label: 'Actions', shortLabel: '⚡', to: '/actions' },
+  { label: 'Automation', shortLabel: '⚙', to: '/automation' },
+  { label: 'Work', shortLabel: '◎', to: '/work' },
+  { label: 'Knowledge', shortLabel: '◈', to: '/knowledge' },
+  { label: 'Portfolio', shortLabel: '▣', to: '/portfolio' },
+  { label: 'Bubble', shortLabel: '◉', to: '/bubble' },
+  { label: 'Health', shortLabel: '♡', to: '/health' },
+  { label: 'Graph', shortLabel: '⬡', to: '/graph' },
+  { label: 'Timeline', shortLabel: '↦', to: '/timeline' },
+  { label: 'Archive', shortLabel: '⊞', to: '/archive' },
+] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [
-  { label: 'Huey', shortLabel: 'Hy', to: '/huey' },
-  { label: 'Settings', shortLabel: 'Se', to: '/settings' },
-] as const
+  { label: 'Huey', shortLabel: '✦', to: '/huey' },
+  { label: 'Settings', shortLabel: '⚒', to: '/settings' },
+] as const;
 
 export const VIEWER_OVERLAY_NAV: readonly ViewerOverlayNavItem[] = [
-  { label: 'Avatar', shortLabel: 'Av', overlay: 'avatar' },
-  { label: 'COD', shortLabel: 'Co', overlay: 'cod' },
-] as const
+  { label: 'Avatar', shortLabel: '⬟', overlay: 'avatar' },
+  { label: 'COD', shortLabel: '⬡', overlay: 'cod' },
+] as const;
 
 export const PROJECT_ROUTE_TABS = [
   { label: 'Overview', to: '/project/$slug' },
@@ -62,32 +62,32 @@ export const PROJECT_ROUTE_TABS = [
   { label: 'Dependencies', to: '/project/$slug/dependencies' },
   { label: 'Risks', to: '/project/$slug/risks' },
   { label: 'Settings', to: '/project/$slug/settings' },
-] as const
+] as const;
 
-export type ProjectRouteTabPath = (typeof PROJECT_ROUTE_TABS)[number]['to']
+export type ProjectRouteTabPath = (typeof PROJECT_ROUTE_TABS)[number]['to'];
 
 export function getProjectTabPath(
   slug: string,
-  to: ProjectRouteTabPath = '/project/$slug',
+  to: ProjectRouteTabPath = '/project/$slug'
 ): string {
-  return to.replace('$slug', encodeURIComponent(slug))
+  return to.replace('$slug', encodeURIComponent(slug));
 }
 
 export function getLegacyViewerRedirect(pathname: string): string | null {
-  const normalized = pathname.replace(/\/+$/, '') || '/'
+  const normalized = pathname.replace(/\/+$/, '') || '/';
 
   if (normalized === '/projects') {
-    return '/work'
+    return '/work';
   }
 
-  const projectMatch = normalized.match(/^\/projects\/([^/]+)$/)
+  const projectMatch = normalized.match(/^\/projects\/([^/]+)$/);
   if (projectMatch) {
-    return `/project/${projectMatch[1]}`
+    return `/project/${projectMatch[1]}`;
   }
 
-  return null
+  return null;
 }
 
 export function isShellHiddenPath(pathname: string): boolean {
-  return pathname === '/login' || pathname === '/oauth/consent'
+  return pathname === '/login' || pathname === '/oauth/consent';
 }

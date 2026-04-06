@@ -274,7 +274,7 @@ function FocusRoute() {
     <Link
       to="/work"
       search={{ selectedId: sourceId }}
-      className="text-xs font-semibold text-sky-100 underline decoration-sky-300/40 underline-offset-4"
+      className="inline-flex items-center gap-1 rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300 transition-colors hover:border-sky-400/70 hover:bg-sky-400/20 hover:text-sky-100"
     >
       Open work
     </Link>
@@ -338,15 +338,15 @@ function FocusRoute() {
                       className="rounded-[22px] border border-white/8 bg-white/5 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-base font-semibold text-slate-100">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-semibold text-slate-100 line-clamp-2">
                             {item.title}
                           </h3>
                           <p className="mt-1 text-sm text-slate-300">
                             {item.summary}
                           </p>
                         </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
+                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100 shrink-0">
                           {item.severity}
                         </span>
                       </div>
@@ -431,15 +431,15 @@ function FocusRoute() {
                       className="rounded-[22px] border border-white/8 bg-white/5 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-base font-semibold text-slate-100">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-semibold text-slate-100 line-clamp-2">
                             {item.title}
                           </h3>
                           <p className="mt-1 text-sm text-slate-300">
                             {item.summary}
                           </p>
                         </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
+                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100 shrink-0">
                           {formatScore(item.score)}
                         </span>
                       </div>
@@ -642,11 +642,11 @@ function FocusRoute() {
                       className="rounded-[18px] border border-white/8 bg-white/5 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-100">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-100 line-clamp-2">
                             {item.summary}
                           </p>
-                          <p className="mt-1 text-xs text-slate-400">
+                          <p className="mt-1 text-xs text-slate-400 truncate">
                             {item.actionId}
                           </p>
                         </div>
