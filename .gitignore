@@ -4,6 +4,8 @@ public/
 .vinxi/
 .output/
 .playwright-cli/
+dist/
+output/
 app.config.timestamp_*.js
 .env
 .env.*
