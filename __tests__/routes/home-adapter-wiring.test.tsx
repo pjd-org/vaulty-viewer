@@ -231,37 +231,6 @@ const homeSurface: HomeSurfacePayload = {
       },
     },
   ],
-  immediateActions: [
-    {
-      id: 'decision-1',
-      title: 'Adapter decision one',
-      summary: 'Unblock the release path.',
-      actionType: 'create_task',
-      surfacedBy: 'cod',
-      sourceSignalIds: ['pressure-1'],
-      sourceEntities: [
-        { id: 'task-1', type: 'task', title: 'Legacy focus task alpha' },
-      ],
-      projectId: 'project-alpha',
-      score: 9.4,
-      scoreBreakdown: {
-        urgency: 9,
-        impact: 10,
-        blockageRemoval: 9,
-        reversibility: 8,
-        confidence: 9,
-      },
-      whyNow: 'It removes the current blocker and restores momentum.',
-      expectedEffect: 'The blocked lane becomes actionable again.',
-      confidence: 0.92,
-      reversibility: 'high',
-      mutationRef: {
-        domain: 'work',
-        operation: 'create_task',
-        targetId: 'task-1',
-      },
-    },
-  ],
   verificationRail: [
     {
       id: 'verification-1',
@@ -405,7 +374,6 @@ describe('home adapter wiring', () => {
     expect(mockUseHomeSurface).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Pressure Band')).toBeTruthy();
     expect(screen.getByText('Decision Queue')).toBeTruthy();
-    expect(screen.getByText('Immediate Interventions')).toBeTruthy();
     expect(screen.getByText('Verification Rail')).toBeTruthy();
     expect(screen.getByText('Snapshot Grid')).toBeTruthy();
     expect(screen.getByText('Context Tail')).toBeTruthy();

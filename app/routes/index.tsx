@@ -1,6 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useWhatNowQuery, useUpNextQuery } from '../lib/queries/agents';
-import type { TaskInput } from '../../src/lib/agent-prompts';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { homeSearchParams } from '../../src/lib/routes/search-params';
@@ -42,8 +40,8 @@ export const Route = createFileRoute('/')({
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <div className="rounded-[28px] border border-white/8 bg-white/5 p-4 space-y-2">
-      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+    <div className="rounded-[28px] border border-slate-200 bg-black/3 p-4 space-y-2">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
         Recent sessions
       </p>
       {sessions.map((s) => (
@@ -51,7 +49,7 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
           key={s.id}
           to={'/session/$id'}
           params={{ id: s.id }}
-          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/10 transition-colors"
+          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-black/5 transition-colors"
         >
           <span className="text-sm font-medium text-slate-800 truncate">
             {s.title ?? `Session ${s.id.slice(0, 6)}`}
@@ -60,7 +58,7 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
             <span className="text-xs text-slate-500">
               {formatSessionDuration(s.startedAt, s.endedAt)}
             </span>
-            <span className="text-xs text-slate-600 capitalize">
+            <span className="text-xs text-slate-500 capitalize">
               {s.status}
             </span>
           </div>
@@ -86,9 +84,9 @@ function ActiveSessionBanner({
   const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-white/5 p-4 flex items-center justify-between">
+    <div className="rounded-[28px] border border-slate-200 bg-black/3 p-4 flex items-center justify-between">
       <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-sky-300 uppercase tracking-wide">
+        <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">
           Session active
         </span>
         {session.title && (
@@ -96,7 +94,7 @@ function ActiveSessionBanner({
             {session.title}
           </span>
         )}
-        <span className="text-xs text-slate-600">
+        <span className="text-xs text-slate-500">
           {elapsed !== null && (
             <>
               {elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}
@@ -135,6 +133,40 @@ function ActiveSessionBanner({
   );
 }
 
+/** Returns true if the text is a known boilerplate/templated filler string. */
+function isTemplatedText(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const trimmed = value.trim();
+  // Exact known boilerplate strings from the API
+  const BOILERPLATE = [
+    'It is short enough to create momentum without expensive context switching.',
+    'Completing this task will reduce the backlog and improve project velocity.',
+    'This action has a low effort cost and can be completed quickly.',
+  ];
+  return BOILERPLATE.includes(trimmed);
+}
+
+/** Humanizes internal action IDs like "action:task-123456789-my-task-md" → "My Task". */
+function humanizeActionId(actionId: string): string {
+  const stripped = actionId.replace(/^[a-z]+:/i, ''); // remove "action:" prefix
+  const noTimestamp = stripped.replace(/\b\d{10,}\b-?/g, ''); // remove 13-digit timestamps
+  const noExt = noTimestamp.replace(/-md$/, ''); // strip trailing -md
+  const label = noExt.replace(/[-_]+/g, ' ').trim();
+  return label ? label.replace(/\b\w/g, (c) => c.toUpperCase()) : actionId;
+}
+
+function SignalWorkLink({ sourceId }: { sourceId: string }) {
+  return (
+    <Link
+      to="/work"
+      search={{ selectedId: sourceId }}
+      className="inline-flex items-center gap-1 rounded-full border border-sky-600/40 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 transition-colors hover:border-sky-600/70 hover:bg-sky-100 hover:text-sky-800"
+    >
+      Open work
+    </Link>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
@@ -151,31 +183,6 @@ function FocusRoute() {
   const { data: activeSession } = useActiveSession();
   const { data: recentSessions } = useRecentSessions();
   const [endingSession, setEndingSession] = useState(false);
-
-  // Derive agentTasks from the adapter's preserved raw task data
-  const agentTasks: TaskInput[] = useMemo(
-    () =>
-      (surface?.tasks ?? []).slice(0, 20).map((t) => ({
-        id: t.id,
-        title: t.title,
-        estimatedMinutes: t.estimatedTimeMin,
-        focusCost: t.focusCost,
-        priority: t.priority,
-        project: t.projectId,
-        status: t.status,
-      })),
-    [surface?.tasks]
-  );
-
-  const { data: whatNow, isError: whatNowFailed } = useWhatNowQuery(
-    agentTasks,
-    {
-      enabled: !surfaceLoading && agentTasks.length > 0,
-    }
-  );
-  const { data: upNext, isError: upNextFailed } = useUpNextQuery(agentTasks, {
-    enabled: !surfaceLoading && agentTasks.length > 0,
-  });
 
   const [endSessionError, setEndSessionError] = useState<string | null>(null);
 
@@ -214,6 +221,17 @@ function FocusRoute() {
     domain: 'work',
     actionId: 'home-defer',
   });
+  const [pendingDeferPath, setPendingDeferPath] = useState<string | null>(null);
+
+  const handleDefer = useCallback(
+    (taskPath: string) => {
+      setPendingDeferPath(taskPath);
+      deferMutation.mutate(taskPath, {
+        onSettled: () => setPendingDeferPath(null),
+      });
+    },
+    [deferMutation]
+  );
 
   const executeMutation = useMutationWithVerification<boolean, string>({
     mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
@@ -240,16 +258,21 @@ function FocusRoute() {
 
   const pressureBand = surface?.pressureBand ?? [];
   const decisionQueue = surface?.decisionQueue ?? [];
-  const immediateActions = surface?.immediateActions ?? [];
   const verificationRail = surface?.verificationRail ?? [];
 
   const topTask: NextAction | undefined = (surface?.tasks ?? [])[0];
-  const snapshots = surface?.snapshots ?? {
-    automation: [],
-    knowledge: [],
-    portfolio: [],
-    bubble: [],
-    health: [],
+  const visiblePressureBand = pressureBand.filter(
+    (item) => item.sourceId !== topTask?.id
+  );
+  const visibleDecisionQueue = decisionQueue.filter(
+    (item) => item.mutationRef?.targetId !== topTask?.id
+  );
+  const snapshots = {
+    automation: surface?.snapshots?.automation ?? [],
+    knowledge: surface?.snapshots?.knowledge ?? [],
+    portfolio: surface?.snapshots?.portfolio ?? [],
+    bubble: surface?.snapshots?.bubble ?? [],
+    health: surface?.snapshots?.health ?? [],
   };
   const contextTail = surface?.contextTail ?? [];
   const searchEcho = [q, collection, session, snapshot, detailId].filter(
@@ -260,44 +283,30 @@ function FocusRoute() {
     {
       label: 'Pressure',
       value:
-        surfaceLoading && !surface ? 'Loading' : String(pressureBand.length),
+        surfaceLoading && !surface
+          ? 'Loading'
+          : String(visiblePressureBand.length),
       detail: 'Highest-pressure signals',
     },
     {
       label: 'Queue',
       value:
-        surfaceLoading && !surface ? 'Loading' : String(decisionQueue.length),
-      detail: 'COD-ranked next moves',
-    },
-    {
-      label: 'Immediate',
-      value:
         surfaceLoading && !surface
           ? 'Loading'
-          : String(immediateActions.length),
-      detail: 'Low-friction interventions',
+          : String(visibleDecisionQueue.length),
+      detail: 'COD-ranked next moves',
     },
     {
       label: 'Verification',
       value:
         surfaceLoading && !surface
           ? 'Loading'
-          : verificationRail.length
+          : verificationRail.some((item) => item.status !== 'pending')
             ? 'Active'
             : 'Ready',
       detail: 'Feedback loop',
     },
   ] as const;
-
-  const renderSignalActions = (sourceId: string) => (
-    <Link
-      to="/work"
-      search={{ selectedId: sourceId }}
-      className="inline-flex items-center gap-1 rounded-full border border-sky-400/40 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300 transition-colors hover:border-sky-400/70 hover:bg-sky-400/20 hover:text-sky-100"
-    >
-      Open work
-    </Link>
-  );
 
   return (
     <div className="space-y-6">
@@ -316,6 +325,10 @@ function FocusRoute() {
             </p>
           )}
         </>
+      ) : activeSession && endingSession ? (
+        <p className="text-sm text-slate-400" role="status">
+          Ending session…
+        </p>
       ) : null}
 
       <WorkspaceScaffold
@@ -326,8 +339,8 @@ function FocusRoute() {
             : 'Global mission control'
         }
         summaryItems={summaryItems}
-        primaryTitle="Pressure Band"
-        primarySubtitle="Highest-pressure signals across the system."
+        primaryTitle="Today's Focus"
+        primarySubtitle="Best move, pressure signals, and ranked recommendations."
         primary={
           <div className="space-y-6">
             {surfaceError && !surface ? (
@@ -339,18 +352,15 @@ function FocusRoute() {
 
             {topTask ? (
               <section className="space-y-3">
-                <SectionHeader
-                  title="Best Move"
-                  subtitle="Top COD-ranked task ready to execute."
-                />
+                <SectionHeader title="Best Move" subtitle="Next in queue." />
                 <BestMoveCard
                   task={topTask}
                   onStart={(t) => executeMutation.mutate(t.path)}
-                  onSkip={(t) => deferMutation.mutate(t.path)}
+                  onSkip={(t) => handleDefer(t.path)}
                   onComplete={(t) => completeMutation.mutate(t.path)}
                   mutating={
                     executeMutation.isPending ||
-                    deferMutation.isPending ||
+                    pendingDeferPath === topTask?.path ||
                     completeMutation.isPending
                   }
                 />
@@ -358,23 +368,27 @@ function FocusRoute() {
             ) : null}
 
             <section className="space-y-3">
+              <SectionHeader
+                title="Pressure Band"
+                subtitle="Highest-pressure signals across the system."
+              />
               <div className="space-y-3">
-                {pressureBand.length > 0 ? (
-                  pressureBand.map((item) => (
+                {visiblePressureBand.length > 0 ? (
+                  visiblePressureBand.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-[22px] border border-white/8 bg-white/5 p-4"
+                      className="rounded-[22px] border border-slate-200 bg-black/3 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-base font-semibold text-slate-100 line-clamp-2">
+                          <h3 className="text-base font-semibold text-slate-800 line-clamp-2">
                             {item.title}
                           </h3>
-                          <p className="mt-1 text-sm text-slate-300">
+                          <p className="mt-1 text-sm text-slate-600">
                             {item.summary}
                           </p>
                         </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100 shrink-0">
+                        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700 shrink-0">
                           {item.severity}
                         </span>
                       </div>
@@ -399,36 +413,38 @@ function FocusRoute() {
                           ]}
                         />
                       </div>
-                      <p className="mt-3 text-sm text-slate-300">
+                      <p className="mt-3 text-sm text-slate-600">
                         {item.whySurfaced}
                       </p>
                       <div className="mt-4 flex flex-wrap items-center gap-3">
-                        {renderSignalActions(item.sourceId)}
+                        <SignalWorkLink sourceId={item.sourceId} />
                         {item.taskPath ? (
                           <>
                             <Link
                               to="/work"
                               search={{ selectedId: item.sourceId }}
-                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
+                              className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-600 hover:bg-black/6 transition-colors"
                             >
                               Open task
                             </Link>
                             <button
                               type="button"
-                              disabled={deferMutation.isPending}
-                              onClick={() =>
-                                deferMutation.mutate(item.taskPath!)
-                              }
-                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+                              disabled={pendingDeferPath === item.taskPath}
+                              onClick={() => handleDefer(item.taskPath!)}
+                              className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-600 hover:bg-black/6 transition-colors disabled:opacity-50"
                             >
-                              {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                              {pendingDeferPath === item.taskPath
+                                ? 'Deferring…'
+                                : 'Defer'}
                             </button>
                           </>
                         ) : (
                           item.allowedActions.map((action) => (
                             <span
                               key={`${item.id}-${action.actionType}`}
-                              className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300"
+                              aria-disabled="true"
+                              title="Action unavailable without a task path"
+                              className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400 opacity-40 cursor-not-allowed select-none"
                             >
                               {action.label}
                             </span>
@@ -451,23 +467,23 @@ function FocusRoute() {
                 title="Decision Queue"
                 subtitle="Top ranked recommendations."
               />
-              {decisionQueue.length > 0 ? (
+              {visibleDecisionQueue.length > 0 ? (
                 <div className="space-y-3">
-                  {decisionQueue.map((item) => (
+                  {visibleDecisionQueue.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-[22px] border border-white/8 bg-white/5 p-4"
+                      className="rounded-[22px] border border-slate-200 bg-black/3 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-base font-semibold text-slate-100 line-clamp-2">
+                          <h3 className="text-base font-semibold text-slate-800 line-clamp-2">
                             {item.title}
                           </h3>
-                          <p className="mt-1 text-sm text-slate-300">
+                          <p className="mt-1 text-sm text-slate-600">
                             {item.summary}
                           </p>
                         </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100 shrink-0">
+                        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700 shrink-0">
                           {formatScore(item.score)}
                         </span>
                       </div>
@@ -476,26 +492,38 @@ function FocusRoute() {
                           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                             Why now
                           </p>
-                          <p className="mt-1 text-sm text-slate-300">
-                            {item.whyNow}
-                          </p>
+                          {isTemplatedText(item.whyNow) ? (
+                            <p className="mt-1 text-xs text-slate-400 italic">
+                              —
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-sm text-slate-600">
+                              {item.whyNow}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                             Expected effect
                           </p>
-                          <p className="mt-1 text-sm text-slate-300">
-                            {item.expectedEffect}
-                          </p>
+                          {isTemplatedText(item.expectedEffect) ? (
+                            <p className="mt-1 text-xs text-slate-400 italic">
+                              —
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-sm text-slate-600">
+                              {item.expectedEffect}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                             Confidence
                           </p>
-                          <p className="mt-1 text-sm text-slate-200">
-                            {(item.confidence * 100).toFixed(0)}%
+                          <p className="mt-1 text-sm text-slate-800">
+                            {((item.confidence ?? 0) * 100).toFixed(0)}%
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-slate-500">
                             {item.reversibility} reversibility
                           </p>
                         </div>
@@ -508,20 +536,9 @@ function FocusRoute() {
                             sort: undefined,
                             simulatableOnly: undefined,
                           }}
-                          className="text-xs font-semibold text-sky-100 underline decoration-sky-300/40 underline-offset-4"
+                          className="text-xs font-semibold text-sky-700 underline decoration-sky-500/40 underline-offset-4"
                         >
                           Inspect in Actions
-                        </Link>
-                        <Link
-                          to="/actions"
-                          search={{
-                            selectedId: item.id,
-                            sort: undefined,
-                            simulatableOnly: undefined,
-                          }}
-                          className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
-                        >
-                          Execute
                         </Link>
                         <Link
                           to="/actions"
@@ -530,21 +547,27 @@ function FocusRoute() {
                             simulatableOnly: true,
                             sort: undefined,
                           }}
-                          className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors"
+                          className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-600 hover:bg-black/6 transition-colors"
                         >
                           Simulate
                         </Link>
                         {item.taskPath ? (
                           <button
                             type="button"
-                            disabled={deferMutation.isPending}
-                            onClick={() => deferMutation.mutate(item.taskPath!)}
-                            className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+                            disabled={pendingDeferPath === item.taskPath}
+                            onClick={() => handleDefer(item.taskPath!)}
+                            className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-600 hover:bg-black/6 transition-colors disabled:opacity-50"
                           >
-                            {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                            {pendingDeferPath === item.taskPath
+                              ? 'Deferring…'
+                              : 'Defer'}
                           </button>
                         ) : (
-                          <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300">
+                          <span
+                            aria-disabled="true"
+                            title="No task path available"
+                            className="rounded-full border border-slate-200 bg-black/3 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400 opacity-40 cursor-not-allowed select-none"
+                          >
                             Defer
                           </span>
                         )}
@@ -559,96 +582,6 @@ function FocusRoute() {
                 />
               )}
             </section>
-
-            <section className="space-y-3">
-              <SectionHeader
-                title="Immediate Interventions"
-                subtitle="Low-friction actions only."
-              />
-              {immediateActions.length > 0 ? (
-                <div className="space-y-3">
-                  {immediateActions.map((item) => (
-                    <article
-                      key={item.id}
-                      className="rounded-[18px] border border-white/8 bg-white/5 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-100">
-                            {item.title}
-                          </p>
-                          <p className="mt-1 text-sm text-slate-300">
-                            {item.summary}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
-                          {item.reversibility}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-400">
-                        {item.expectedEffect}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="No immediate interventions are surfaced."
-                  description="The adapter will surface low-friction actions once they are available."
-                />
-              )}
-            </section>
-
-            <section className="space-y-3">
-              <SectionHeader
-                title="Legacy coaching"
-                subtitle="Agent guidance stays parallel for now."
-              />
-              {whatNow || upNext ? (
-                <div className="rounded-[22px] border border-white/8 bg-white/5 px-4 py-3 text-sm space-y-2">
-                  {whatNow ? (
-                    <div>
-                      <p className="font-medium text-slate-700">
-                        {whatNow.rationale}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {whatNow.why_now}
-                      </p>
-                    </div>
-                  ) : null}
-                  {upNext ? (
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                        {upNext.flow_label ?? 'Up next'}
-                      </p>
-                      {upNext.steps.slice(0, 3).map((step) => (
-                        <p
-                          key={step.id}
-                          className="mt-1 text-sm text-slate-700"
-                        >
-                          {step.title}
-                        </p>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Legacy coaching is quiet."
-                  description="The route still keeps the parallel agent lane available when tasks exist."
-                />
-              )}
-              {(whatNowFailed || upNextFailed) && (
-                <div className="rounded-[22px] border border-white/8 bg-white/5 px-4 py-3 text-sm space-y-1">
-                  <p className="text-slate-700">
-                    AI guidance is temporarily unavailable.
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    The adapter-backed surface still remains current.
-                  </p>
-                </div>
-              )}
-            </section>
           </div>
         }
         asideTitle="Verification Rail"
@@ -657,38 +590,50 @@ function FocusRoute() {
           <div className="space-y-6">
             <section className="space-y-3">
               {verificationPhase === 'pending' && (
-                <p className="text-sm text-sky-300">Verifying…</p>
+                <p className="text-sm text-sky-600">Verifying…</p>
               )}
               {verificationPhase === 'failed' && (
-                <p className="text-sm text-red-400">Verification failed.</p>
+                <p className="text-sm text-red-600">Verification failed.</p>
               )}
               {verificationRail.length > 0 ? (
                 <div className="space-y-3">
                   {verificationRail.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                      className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-slate-100 line-clamp-2">
+                          <p className="text-sm font-semibold text-slate-800 line-clamp-2">
                             {item.summary}
                           </p>
-                          <p className="mt-1 text-xs text-slate-400 truncate">
-                            {item.actionId}
+                          <p
+                            className="mt-1 text-xs text-slate-500 truncate"
+                            title={item.actionId}
+                          >
+                            {humanizeActionId(item.actionId)}
                           </p>
                         </div>
-                        <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
+                        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
                           {item.status}
                         </span>
                       </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                         {item.improved ? <span>Improved</span> : null}
                         {item.followUpNeeded ? (
                           <span>Follow-up needed</span>
                         ) : null}
                         {item.resolvedAt ? (
-                          <span>{item.resolvedAt}</span>
+                          <span>
+                            {new Date(item.resolvedAt).toLocaleDateString(
+                              undefined,
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              }
+                            )}
+                          </span>
                         ) : null}
                       </div>
                     </article>
@@ -732,15 +677,17 @@ function FocusRoute() {
                   <Link
                     key={snapshotGroup.label}
                     to={snapshotGroup.to as never}
-                    className="rounded-[18px] border border-white/8 bg-white/5 p-4 transition hover:bg-white/8"
+                    className="rounded-[18px] border border-slate-200 bg-black/3 p-4 transition hover:bg-black/5"
                   >
                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                       {snapshotGroup.label}
                     </p>
-                    <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-100">
-                      {snapshotGroup.items.length > 0
-                        ? snapshotGroup.items.length
-                        : '—'}
+                    <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-800">
+                      {surfaceLoading && !surface
+                        ? '…'
+                        : snapshotGroup.items.length > 0
+                          ? snapshotGroup.items.length
+                          : '—'}
                     </p>
                   </Link>
                 ))}
@@ -757,15 +704,15 @@ function FocusRoute() {
                   {contextTail.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                      className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
                     >
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 text-sm text-slate-600">
                         {item.summary}
                       </p>
-                      <p className="mt-3 text-xs text-slate-400">
+                      <p className="mt-3 text-xs text-slate-500">
                         {item.reasonSelected}
                       </p>
                     </article>

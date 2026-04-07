@@ -117,14 +117,14 @@ function KanbanCard({
       className={[
         'rounded-[14px] border p-3 transition select-none',
         isDragging
-          ? 'border-sky-400/40 bg-sky-400/10 opacity-60'
-          : 'border-white/8 bg-white/5 hover:bg-white/8',
+          ? 'border-sky-400/40 bg-sky-50 opacity-60'
+          : 'border-slate-200 bg-black/3 hover:bg-black/5',
         !isReadOnly ? 'cursor-grab active:cursor-grabbing' : '',
       ].join(' ')}
     >
       {/* Title + priority */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <span className="text-sm font-medium text-slate-100 leading-snug">
+        <span className="text-sm font-medium text-slate-800 leading-snug">
           {task.title}
         </span>
         {task.priority > 0 && (
@@ -132,10 +132,10 @@ function KanbanCard({
             className={[
               'shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
               task.priority >= 8
-                ? 'bg-red-400/20 text-red-300'
+                ? 'bg-red-100 text-red-700'
                 : task.priority >= 5
-                  ? 'bg-amber-400/15 text-amber-300'
-                  : 'bg-white/10 text-slate-400',
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-black/5 text-slate-500',
             ].join(' ')}
             title={`Priority ${task.priority}`}
           >
@@ -147,7 +147,7 @@ function KanbanCard({
       {/* Meta chips */}
       <div className="flex flex-wrap gap-1 mb-2">
         {task.estimatedTimeMin ? (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
             ⏱{' '}
             {task.estimatedTimeMin >= 60
               ? `${Math.round(task.estimatedTimeMin / 60)}h`
@@ -155,12 +155,12 @@ function KanbanCard({
           </span>
         ) : null}
         {task.goalId && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
             🎯 {task.goalId.replace(/-/g, ' ')}
           </span>
         )}
         {task.projectId && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
             🚀 {task.projectId}
           </span>
         )}
@@ -175,7 +175,7 @@ function KanbanCard({
             .map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] text-sky-300"
+                className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-700"
               >
                 #{tag}
               </span>
@@ -185,7 +185,7 @@ function KanbanCard({
 
       {/* Blocked badge */}
       {task.status === 'blocked' && (
-        <div className="mb-2 rounded-[8px] bg-red-400/10 px-2 py-1 text-[11px] text-red-300">
+        <div className="mb-2 rounded-[8px] bg-red-100 px-2 py-1 text-[11px] text-red-700">
           🚫 Blocked
         </div>
       )}
@@ -194,7 +194,7 @@ function KanbanCard({
       <div className="flex items-center justify-between gap-2 mt-1">
         <Link
           to={task.link}
-          className="rounded-full bg-white/8 px-3 py-1 text-[11px] text-slate-300 transition hover:bg-white/15"
+          className="rounded-full bg-black/5 px-3 py-1 text-[11px] text-slate-600 transition hover:bg-black/8"
         >
           Open →
         </Link>
@@ -206,7 +206,7 @@ function KanbanCard({
                 onClick={() => onStatusChange(task, 'completed')}
                 disabled={mutatingTaskId === task.id}
                 title="Mark completed"
-                className="rounded-full bg-emerald-400/10 px-2 py-1 text-[11px] text-emerald-300 transition hover:bg-emerald-400/20 disabled:opacity-40"
+                className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-40"
               >
                 ✓
               </button>
@@ -216,7 +216,7 @@ function KanbanCard({
                 onClick={() => onStatusChange(task, 'todo')}
                 disabled={mutatingTaskId === task.id}
                 title="Reopen task"
-                className="rounded-full bg-white/8 px-2 py-1 text-[11px] text-slate-300 transition hover:bg-white/15 disabled:opacity-40"
+                className="rounded-full bg-black/5 px-2 py-1 text-[11px] text-slate-600 transition hover:bg-black/8 disabled:opacity-40"
               >
                 ↺
               </button>
@@ -226,7 +226,7 @@ function KanbanCard({
               value={task.status}
               onChange={(e) => onStatusChange(task, e.target.value)}
               disabled={mutatingTaskId === task.id}
-              className="rounded-full border border-white/10 bg-white/8 px-2 py-0.5 text-[10px] text-slate-300 focus-visible:outline-none disabled:opacity-40"
+              className="rounded-full border border-slate-200 bg-black/3 px-2 py-0.5 text-[10px] text-slate-600 focus-visible:outline-none disabled:opacity-40"
             >
               {STATUS_COLUMNS.map((col) => (
                 <option key={col.key} value={col.key}>
@@ -236,7 +236,7 @@ function KanbanCard({
             </select>
           </div>
         ) : (
-          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-500">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-400">
             read-only
           </span>
         )}
@@ -424,7 +424,7 @@ function KanbanRoute() {
       type="button"
       onClick={handleRefresh}
       disabled={isRefreshing}
-      className="rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
+      className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 disabled:opacity-50"
     >
       {isRefreshing ? 'Refreshing…' : 'Refresh'}
     </button>
@@ -435,10 +435,10 @@ function KanbanRoute() {
       className={[
         'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
         apiStatus === 'online'
-          ? 'bg-emerald-400/15 text-emerald-300'
+          ? 'bg-emerald-100 text-emerald-700'
           : apiStatus === 'error'
-            ? 'bg-amber-400/15 text-amber-300'
-            : 'bg-red-400/15 text-red-300',
+            ? 'bg-amber-100 text-amber-700'
+            : 'bg-red-100 text-red-700',
       ].join(' ')}
     >
       {apiStatus === 'online'
@@ -487,8 +487,8 @@ function KanbanRoute() {
                     className={[
                       'flex-1 min-w-[160px] rounded-[18px] border p-3 transition',
                       draggingTaskId
-                        ? 'border-sky-400/30 bg-sky-400/5'
-                        : 'border-white/8 bg-white/3',
+                        ? 'border-sky-400/30 bg-sky-50'
+                        : 'border-slate-200 bg-black/3',
                     ].join(' ')}
                     data-status={col.key}
                     onDragOver={allowDrop}
@@ -499,7 +499,7 @@ function KanbanRoute() {
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                         {col.label}
                       </p>
-                      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                      <span className="rounded-full bg-black/8 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                         {totalItems}
                       </span>
                     </div>
@@ -545,7 +545,7 @@ function KanbanRoute() {
                             onClick={() =>
                               setExpandCompletedColumn((prev) => !prev)
                             }
-                            className="w-full rounded-[12px] border border-white/8 bg-white/5 py-2 text-xs text-slate-400 transition hover:bg-white/10"
+                            className="w-full rounded-[12px] border border-slate-200 bg-black/3 py-2 text-xs text-slate-500 transition hover:bg-black/5"
                           >
                             {expandCompletedColumn
                               ? 'Show fewer'
@@ -566,7 +566,7 @@ function KanbanRoute() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Backlog
               </p>
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+              <span className="rounded-full bg-black/8 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                 {backlogTasks.length}
               </span>
             </div>
@@ -610,7 +610,7 @@ function KanbanRoute() {
               id="kanban-filter-tag"
               value={filterTag}
               onChange={(e) => setFilterTag(e.target.value)}
-              className="w-full rounded-[12px] border border-white/10 bg-white/8 px-3 py-2 text-sm text-slate-100 focus:border-sky-300/50 focus-visible:outline-none"
+              className="w-full rounded-[12px] border border-slate-200 bg-black/3 px-3 py-2 text-sm text-slate-800 focus:border-sky-500/50 focus-visible:outline-none"
             >
               <option value="">All tags</option>
               {tags.map((tag) => (
@@ -633,7 +633,7 @@ function KanbanRoute() {
               id="kanban-filter-project"
               value={filterProject}
               onChange={(e) => setFilterProject(e.target.value)}
-              className="w-full rounded-[12px] border border-white/10 bg-white/8 px-3 py-2 text-sm text-slate-100 focus:border-sky-300/50 focus-visible:outline-none"
+              className="w-full rounded-[12px] border border-slate-200 bg-black/3 px-3 py-2 text-sm text-slate-800 focus:border-sky-500/50 focus-visible:outline-none"
             >
               <option value="">All projects</option>
               {projects.map((proj) => (
@@ -645,7 +645,7 @@ function KanbanRoute() {
           </div>
 
           {/* Show completed toggle */}
-          <label className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10">
+          <label className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-slate-200 bg-black/3 px-4 py-3 text-sm text-slate-700 transition hover:bg-black/5">
             <input
               type="checkbox"
               checked={showCompleted}
@@ -656,18 +656,18 @@ function KanbanRoute() {
           </label>
 
           {/* Legend */}
-          <div className="rounded-[12px] border border-white/8 bg-white/5 px-4 py-3 space-y-2">
+          <div className="rounded-[12px] border border-slate-200 bg-black/3 px-4 py-3 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Legend
             </p>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="rounded-full bg-black/8 px-2 py-0.5 font-mono text-[10px] text-slate-600">
                 P9+
               </span>
               High priority
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="rounded-full bg-black/8 px-2 py-0.5 font-mono text-[10px] text-slate-600">
                 ⏱
               </span>
               Time estimate

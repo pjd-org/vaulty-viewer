@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
 import {
   buildHomeSurfacePayload,
@@ -9,9 +9,9 @@ import {
   getInboxSurfaceQueryOptions,
   getActionsSurfaceQueryOptions,
   getProjectSurfaceQueryOptions,
-} from '../app/lib/viewer-adapter'
-import type { NextAction } from '../src/lib/focus-logic'
-import type { InboxNote } from '../src/lib/inbox-logic'
+} from '../app/lib/viewer-adapter';
+import type { NextAction } from '../src/lib/focus-logic';
+import type { InboxNote } from '../src/lib/inbox-logic';
 
 const sampleTasks: NextAction[] = [
   {
@@ -26,7 +26,8 @@ const sampleTasks: NextAction[] = [
     status: 'blocked',
     tags: ['deploy'],
     projectId: 'rent-stability-pantin',
-    description: 'Restore the failing pipeline so the release path is usable again.',
+    description:
+      'Restore the failing pipeline so the release path is usable again.',
     blockers: [{ id: 'blocked-by-ci' }],
   },
   {
@@ -44,25 +45,25 @@ const sampleTasks: NextAction[] = [
     description: 'Tighten shell polish after the routing cutover.',
     blockers: [],
   },
-]
+];
 
 describe('viewer adapter builders', () => {
   it('builds action recommendations with explanation metadata', () => {
-    const payload = buildActionsSurfacePayload(sampleTasks)
+    const payload = buildActionsSurfacePayload(sampleTasks);
 
-    expect(payload.recommendations).toHaveLength(2)
-    expect(payload.recommendations[0].title).toBe('Unblock deploy pipeline')
-    expect(payload.recommendations[0].whyNow).toContain('Resolving this item')
-    expect(payload.recommendations[0].scoreBreakdown.impact).toBeGreaterThan(0)
-  })
+    expect(payload.recommendations).toHaveLength(2);
+    expect(payload.recommendations[0].title).toBe('Unblock deploy pipeline');
+    expect(payload.recommendations[0].whyNow).toContain('Resolving this item');
+    expect(payload.recommendations[0].scoreBreakdown.impact).toBeGreaterThan(0);
+  });
 
   it('uses the shared verification rail contract for actions surfaces', () => {
-    const payload = buildActionsSurfacePayload(sampleTasks)
-    const surface = payload as Record<string, unknown>
+    const payload = buildActionsSurfacePayload(sampleTasks);
+    const surface = payload as unknown as Record<string, unknown>;
 
-    expect('verificationRail' in surface).toBe(true)
-    expect('recentVerifications' in surface).toBe(false)
-  })
+    expect('verificationRail' in surface).toBe(true);
+    expect('recentVerifications' in surface).toBe(false);
+  });
 
   it('keeps user and automated rejections separated', () => {
     const archiveNotes: InboxNote[] = [
@@ -87,59 +88,68 @@ describe('viewer adapter builders', () => {
           rejection_source: 'automated-policy',
         },
       },
-    ]
+    ];
 
     const payload = buildInboxSurfacePayload({
       runs: [],
       workbenchNotes: [],
       archiveNotes,
-    })
+    });
 
-    const userRejected = payload.find((item) => item.rejectionType === 'user')
+    const userRejected = payload.find((item) => item.rejectionType === 'user');
     const automatedRejected = payload.find(
-      (item) => item.rejectionType === 'automated',
-    )
+      (item) => item.rejectionType === 'automated'
+    );
 
-    expect(userRejected?.inboxBucket).toBe('rejected_user')
-    expect(automatedRejected?.inboxBucket).toBe('rejected_automated')
-  })
+    expect(userRejected?.inboxBucket).toBe('rejected_user');
+    expect(automatedRejected?.inboxBucket).toBe('rejected_automated');
+  });
 
   it('builds a project-scoped surface from project tasks', () => {
     const payload = buildProjectSurfacePayload({
       projectId: 'rent-stability-pantin',
       tasks: sampleTasks,
-    })
+    });
 
-    expect(payload.projectId).toBe('rent-stability-pantin')
-    expect(payload.pressureBand[0]?.kind).toBe('blocker')
-    expect(payload.contextPanel.every((item) => item.projectId === 'rent-stability-pantin')).toBe(true)
-  })
+    expect(payload.projectId).toBe('rent-stability-pantin');
+    expect(payload.pressureBand[0]?.kind).toBe('blocker');
+    expect(
+      payload.contextPanel.every(
+        (item) => item.projectId === 'rent-stability-pantin'
+      )
+    ).toBe(true);
+  });
 
   it('builds a pressure-first home surface from the ranked task queue', () => {
-    const payload = buildHomeSurfacePayload(sampleTasks)
+    const payload = buildHomeSurfacePayload(sampleTasks);
 
-    expect(payload.pressureBand[0]?.kind).toBe('blocker')
-    expect(payload.decisionQueue[0]?.title).toBe('Unblock deploy pipeline')
-    expect(payload.immediateActions.every((item) => item.reversibility === 'high')).toBe(
-      true,
-    )
-  })
+    // task-1 has blockers → lands in pressureBand
+    expect(payload.pressureBand[0]?.kind).toBe('blocker');
+    expect(payload.pressureBand[0]?.title).toBe('Unblock deploy pipeline');
+
+    // task-1 should NOT appear in decisionQueue (it is already in pressureBand)
+    const queueIds = payload.decisionQueue.map((item) => item.id);
+    expect(queueIds).not.toContain('action:task-1');
+
+    // task-2 (non-pressure) should be in the decision queue
+    expect(payload.decisionQueue[0]?.title).toBe('Polish project shell');
+  });
 
   it('exposes stable query keys for preloading adapter surfaces', () => {
     expect(getHomeSurfaceQueryOptions().queryKey).toEqual([
       'viewer-adapter',
       'home-surface',
-    ])
+    ]);
     expect(getInboxSurfaceQueryOptions().queryKey).toEqual([
       'viewer-adapter',
       'inbox-surface',
-    ])
+    ]);
     expect(getActionsSurfaceQueryOptions().queryKey).toEqual([
       'viewer-adapter',
       'actions-surface',
-    ])
+    ]);
     expect(
-      getProjectSurfaceQueryOptions('rent-stability-pantin').queryKey,
-    ).toEqual(['viewer-adapter', 'project-surface', 'rent-stability-pantin'])
-  })
-})
+      getProjectSurfaceQueryOptions('rent-stability-pantin').queryKey
+    ).toEqual(['viewer-adapter', 'project-surface', 'rent-stability-pantin']);
+  });
+});

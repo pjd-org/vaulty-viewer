@@ -17,6 +17,10 @@ const VARIANT_STYLES = {
     container: 'bg-danger/10 text-danger border-danger/20',
     dot: 'bg-danger',
   },
+  unknown: {
+    container: 'bg-white/8 text-slate-400 border-white/10',
+    dot: 'bg-slate-500',
+  },
 } as const;
 
 interface CodSeverityPillProps {

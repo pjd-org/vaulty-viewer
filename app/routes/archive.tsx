@@ -26,48 +26,48 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
   };
 
   const severityColor: Record<string, string> = {
-    critical: 'text-red-400',
-    high: 'text-orange-400',
-    medium: 'text-yellow-400',
-    low: 'text-slate-400',
+    critical: 'text-red-700',
+    high: 'text-orange-700',
+    medium: 'text-yellow-700',
+    low: 'text-slate-500',
   };
 
   return (
     <div className="space-y-4 text-sm" data-testid="archive-item-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-100">{item.title}</p>
+        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
         {item.summary && (
-          <p className="mt-1 text-xs text-slate-400 font-mono break-all">
+          <p className="mt-1 text-xs text-slate-500 font-mono break-all">
             {item.summary}
           </p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-300">
+        <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600">
           {bucketLabel[item.inboxBucket] ?? item.inboxBucket}
         </span>
         <span
-          className={`rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-slate-400'}`}
+          className={`rounded-full bg-black/5 px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-slate-500'}`}
         >
           {item.severity}
         </span>
       </div>
 
-      <div className="space-y-1 text-xs text-slate-400">
+      <div className="space-y-1 text-xs text-slate-600">
         <p>
-          <span className="font-medium text-slate-300">Why archived:</span>{' '}
+          <span className="font-medium text-slate-700">Why archived:</span>{' '}
           {item.whySurfaced}
         </p>
         {item.rejectionReason && (
           <p>
-            <span className="font-medium text-slate-300">Reason:</span>{' '}
+            <span className="font-medium text-slate-700">Reason:</span>{' '}
             {item.rejectionReason}
           </p>
         )}
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-slate-300">Confidence:</span>{' '}
+            <span className="font-medium text-slate-700">Confidence:</span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
@@ -82,7 +82,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="text-xs text-slate-400 bg-white/5 rounded-md px-2 py-1"
+                className="text-xs text-slate-600 bg-black/5 rounded-md px-2 py-1"
               >
                 {action.label}
               </li>
@@ -131,8 +131,8 @@ function ArchiveSection({
                 className={[
                   'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
                   selectedId === item.id
-                    ? 'bg-neutral-200/60 text-neutral-900'
-                    : 'hover:bg-muted/50 text-neutral-700',
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'hover:bg-black/5 text-slate-600',
                 ].join(' ')}
               >
                 <span className="font-mono text-xs text-muted-foreground shrink-0">
@@ -241,10 +241,10 @@ function ArchiveRoute() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : data == null || data.total === 0 ? (
           <div data-testid="archive-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-700">
               Archive is empty.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Items will appear here once runs are rejected or deferred.
             </p>
           </div>
@@ -263,10 +263,10 @@ function ArchiveRoute() {
           <ArchiveItemDetail item={selectedItem} />
         ) : (
           <div data-testid="archive-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-700">
               No item selected.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Select an archived item to inspect it here.
             </p>
           </div>

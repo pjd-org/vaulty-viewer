@@ -117,7 +117,7 @@ const surfaceWithTask: HomeSurfacePayload = {
       severity: 'high',
       surfacedBy: 'cod',
       sourceType: 'task',
-      sourceId: 'task-x',
+      sourceId: 'task-blocker',
       surfacedAt: '2026-04-01T10:00:00.000Z',
       whySurfaced: 'This blocker should be cleared first.',
       confidence: 0.94,
@@ -150,11 +150,10 @@ const surfaceWithTask: HomeSurfacePayload = {
       mutationRef: {
         domain: 'work',
         operation: 'create_task',
-        targetId: 'task-x',
+        targetId: 'task-y',
       },
     },
   ],
-  immediateActions: [],
   verificationRail: [],
   snapshots: {
     automation: [],

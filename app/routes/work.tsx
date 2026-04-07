@@ -35,8 +35,8 @@ function TaskList({
             className={[
               'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
               selectedId === task.id
-                ? 'bg-white/10 text-slate-100'
-                : 'text-slate-300 hover:bg-muted/50',
+                ? 'bg-slate-100 text-slate-900'
+                : 'text-slate-600 hover:bg-black/5',
             ].join(' ')}
           >
             <div className="flex min-w-0 items-center gap-2">
@@ -128,30 +128,30 @@ function TaskDetail({ task }: { task: NextAction }) {
   return (
     <div className="space-y-4 text-sm" data-testid="work-task-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-100">{task.title}</p>
+        <p className="font-medium leading-snug text-slate-800">{task.title}</p>
         {task.description && (
-          <p className="mt-1 text-xs text-slate-400">{task.description}</p>
+          <p className="mt-1 text-xs text-slate-500">{task.description}</p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         {task.effortScore > 0 && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
             effort {task.effortScore}
           </span>
         )}
         {task.focusCost > 0 && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
             focus {task.focusCost}
           </span>
         )}
         {task.estimatedTimeMin > 0 && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
             {task.estimatedTimeMin}m
           </span>
         )}
         {task.dueDate && (
-          <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] text-amber-300">
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-700">
             due {task.dueDate}
           </span>
         )}
@@ -159,8 +159,8 @@ function TaskDetail({ task }: { task: NextAction }) {
           className={[
             'rounded-full px-2 py-0.5 text-[11px]',
             task.status === 'blocked'
-              ? 'bg-red-400/15 text-red-300'
-              : 'bg-emerald-400/15 text-emerald-300',
+              ? 'bg-red-100 text-red-700'
+              : 'bg-emerald-100 text-emerald-700',
           ].join(' ')}
         >
           {task.status}
@@ -172,7 +172,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           {task.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-white/6 px-2 py-0.5 text-[11px] text-slate-500"
+              className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500"
             >
               {tag}
             </span>
@@ -187,7 +187,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           </p>
           <ul className="space-y-1">
             {blockers.map((b, i) => (
-              <li key={i} className="text-xs text-red-300">
+              <li key={i} className="text-xs text-red-600">
                 {b.description ?? String(b)}
               </li>
             ))}
@@ -199,7 +199,7 @@ function TaskDetail({ task }: { task: NextAction }) {
         <Link
           to="/note"
           search={{ p: task.path }}
-          className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-300"
+          className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
         >
           Open note →
         </Link>

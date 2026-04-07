@@ -20,53 +20,53 @@ export const Route = createFileRoute('/portfolio')({
 
 function PortfolioItemDetail({ item }: { item: PressureSignal }) {
   const severityColor: Record<string, string> = {
-    critical: 'bg-red-400/15 text-red-300',
-    high: 'bg-orange-400/15 text-orange-300',
-    medium: 'bg-yellow-400/15 text-yellow-300',
-    low: 'bg-white/8 text-slate-400',
+    critical: 'bg-red-100 text-red-700',
+    high: 'bg-orange-100 text-orange-700',
+    medium: 'bg-yellow-100 text-yellow-700',
+    low: 'bg-black/5 text-slate-600',
   };
 
   return (
     <div className="space-y-4 text-sm" data-testid="portfolio-item-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-100">{item.title}</p>
+        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
         {item.projectId && (
-          <p className="mt-0.5 text-xs text-slate-400">{item.projectId}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{item.projectId}</p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-white/8 text-slate-400'}`}
+          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-black/5 text-slate-600'}`}
         >
           {item.severity}
         </span>
-        <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-300">
+        <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600">
           {item.kind}
         </span>
         {item.state && (
-          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600">
             {item.state}
           </span>
         )}
       </div>
 
-      {item.summary && <p className="text-xs text-slate-400">{item.summary}</p>}
+      {item.summary && <p className="text-xs text-slate-500">{item.summary}</p>}
 
-      <div className="space-y-1 text-xs text-slate-400">
+      <div className="space-y-1 text-xs text-slate-600">
         <p>
-          <span className="font-medium text-slate-300">Why surfaced:</span>{' '}
+          <span className="font-medium text-slate-700">Why surfaced:</span>{' '}
           {item.whySurfaced}
         </p>
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-slate-300">Confidence:</span>{' '}
+            <span className="font-medium text-slate-700">Confidence:</span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
         {item.score !== undefined && (
           <p>
-            <span className="font-medium text-slate-300">Score:</span>{' '}
+            <span className="font-medium text-slate-700">Score:</span>{' '}
             {item.score}
           </p>
         )}
@@ -81,7 +81,7 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="text-xs text-slate-400 bg-white/5 rounded-md px-2 py-1"
+                className="text-xs text-slate-600 bg-black/5 rounded-md px-2 py-1"
               >
                 {action.label}
               </li>
@@ -129,7 +129,7 @@ function PortfolioItem({
         onClick={() => onSelect(item)}
         className={[
           'flex w-full items-start gap-3 rounded-md px-3 py-2 text-sm transition-colors text-left',
-          isSelected ? 'bg-neutral-200/60' : 'hover:bg-muted/50',
+          isSelected ? 'bg-slate-100' : 'hover:bg-black/5',
         ].join(' ')}
       >
         <SeverityDot severity={item.severity} />
@@ -240,10 +240,10 @@ function PortfolioRoute() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : data == null || data.total === 0 ? (
           <div data-testid="portfolio-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-700">
               No projects in the pressure band.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Project-scoped signals will appear here once COD surfaces
               project-linked tasks.
             </p>
@@ -263,10 +263,10 @@ function PortfolioRoute() {
           <PortfolioItemDetail item={selectedItem} />
         ) : (
           <div data-testid="portfolio-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-700">
               No item selected.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Select a project signal to inspect it here.
             </p>
           </div>

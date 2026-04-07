@@ -71,7 +71,9 @@ function ReadinessHeader({
     profile.title !== 'Unknown';
 
   const lastUpdatedStr = updated
-    ? new Date(updated).toLocaleTimeString([], {
+    ? new Date(updated).toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       })
@@ -82,12 +84,12 @@ function ReadinessHeader({
       <div className="flex items-start justify-between gap-4">
         <div>
           {nameIsReal && (
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
               {profile.name}
             </h1>
           )}
           {titleIsReal && (
-            <p className="mt-1 text-sm text-slate-400">{profile.title}</p>
+            <p className="mt-1 text-sm text-slate-500">{profile.title}</p>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -95,8 +97,8 @@ function ReadinessHeader({
             className={[
               'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
               apiStatus === 'online'
-                ? 'bg-emerald-400/15 text-emerald-300'
-                : 'bg-red-400/15 text-red-300',
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-red-100 text-red-700',
             ].join(' ')}
           >
             {apiBadgeText(apiStatus as Parameters<typeof apiBadgeText>[0])}
@@ -106,7 +108,7 @@ function ReadinessHeader({
             onClick={onRefresh}
             disabled={loading}
             title="Refresh state"
-            className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/15 disabled:opacity-40"
+            className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-600 transition hover:bg-black/5 disabled:opacity-40"
           >
             ↻
           </button>
@@ -121,17 +123,17 @@ function ReadinessHeader({
 
       <div className="flex flex-wrap gap-2">
         {flags.stagnation && (
-          <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-medium text-amber-300">
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
             Stagnation detected
           </span>
         )}
         {flags.entropyWarning && (
-          <span className="rounded-full bg-red-400/15 px-3 py-1 text-xs font-medium text-red-300">
+          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
             High entropy
           </span>
         )}
         {stale && lastUpdatedStr && (
-          <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs text-amber-400">
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700">
             State may be stale — {lastUpdatedStr}
           </span>
         )}
@@ -166,22 +168,22 @@ function CapacityGroup({ capacity }: { capacity: CapacityInput }) {
       </p>
       <div className="flex flex-wrap gap-2">
         {time && (
-          <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs text-sky-300">
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs text-sky-700">
             {time} available
           </span>
         )}
         {isMetricReal(capacity.focusCostMax) && (
-          <span className="rounded-full bg-violet-400/15 px-3 py-1 text-xs text-violet-300">
+          <span className="rounded-full bg-violet-100 px-3 py-1 text-xs text-violet-700">
             Focus ≤ {capacity.focusCostMax}
           </span>
         )}
         {isMetricReal(capacity.effortScoreMax) && (
-          <span className="rounded-full bg-indigo-400/15 px-3 py-1 text-xs text-indigo-300">
+          <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs text-indigo-700">
             Effort ≤ {capacity.effortScoreMax}
           </span>
         )}
       </div>
-      {guidance && <p className="mt-1 text-xs text-slate-400">{guidance}</p>}
+      {guidance && <p className="mt-1 text-xs text-slate-500">{guidance}</p>}
     </section>
   );
 }
@@ -211,19 +213,19 @@ function ActionGuidancePanel({
       <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
         What to do now
       </p>
-      <p className="text-sm text-slate-300">{readiness.description}</p>
+      <p className="text-sm text-slate-600">{readiness.description}</p>
       <div className="flex flex-wrap gap-2">
         <Link
           to="/"
           search={{ session: '1' }}
-          className="rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30"
+          className="rounded-lg bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-200"
         >
           Start {readiness.sessionType} session
           {budget > 0 && ` (${formatTimeBudget(Math.min(budget, 90))})`}
         </Link>
         <Link
           to={tasksHref}
-          className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/8"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:bg-black/5"
         >
           See matched tasks
         </Link>
@@ -249,13 +251,13 @@ function ExecutionStats({ vitals }: { vitals: Record<string, unknown> }) {
       </p>
       <div className="flex gap-6">
         <div className="text-center">
-          <span className="block text-2xl font-semibold tabular-nums text-slate-100">
+          <span className="block text-2xl font-semibold tabular-nums text-slate-800">
             {tasksToday}
           </span>
           <span className="text-xs text-slate-500">tasks done</span>
         </div>
         <div className="text-center">
-          <span className="block text-2xl font-semibold tabular-nums text-slate-100">
+          <span className="block text-2xl font-semibold tabular-nums text-slate-800">
             {sessionsWeek}
           </span>
           <span className="text-xs text-slate-500">sessions this week</span>
@@ -298,15 +300,15 @@ function ProgressionSummary({
           className={[
             'rounded-full px-3 py-1 text-xs',
             isStreakActive
-              ? 'bg-amber-400/15 text-amber-300'
-              : 'bg-white/8 text-slate-400',
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-black/5 text-slate-600',
           ].join(' ')}
         >
           {isStreakActive ? '🔥' : '○'} {streakDays}d streak
         </span>
       )}
       {level > 0 && (
-        <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-slate-400">
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-slate-600">
           Level {level} · {currentXp.toLocaleString()} /{' '}
           {xpToNext.toLocaleString()} XP
         </span>
@@ -389,7 +391,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
             <Link
               to="/"
               search={{}}
-              className="text-xs text-slate-500 transition hover:text-slate-300"
+              className="text-xs text-slate-500 transition hover:text-slate-700"
             >
               ← Focus
             </Link>
@@ -397,7 +399,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
 
           {error && (
             <div
-              className="mb-4 rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               role="alert"
             >
               {error}
@@ -449,7 +451,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
               <ExecutionStats vitals={vitals} />
 
               <details className="group mb-4">
-                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-slate-500 hover:text-slate-400">
+                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-slate-500 hover:text-slate-700">
                   Progression
                 </summary>
                 <div className="mt-2">
@@ -463,11 +465,11 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
               </details>
 
               {avatar.updated && (
-                <div className="border-t border-white/8 pt-4">
+                <div className="border-t border-slate-200 pt-4">
                   <Link
                     to="/note"
                     search={{ p: 'notes/core/avatar/Avatar' }}
-                    className="text-xs text-slate-500 transition hover:text-slate-300"
+                    className="text-xs text-slate-500 transition hover:text-slate-700"
                   >
                     Open avatar note →
                   </Link>

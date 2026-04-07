@@ -215,7 +215,6 @@ function nowIso() {
 export interface HomeSurfacePayload {
   pressureBand: PressureSignal[];
   decisionQueue: Recommendation[];
-  immediateActions: Recommendation[];
   verificationRail: VerificationOutcome[];
   snapshots: {
     automation: PressureSignal[];
@@ -345,11 +344,7 @@ function taskSignal(task: NextAction): PressureSignal {
       operation: 'create_task',
       targetId: task.id,
     },
-    confidence: task.scoreBreakdown
-      ? Math.min(0.95, Math.max(0.4, task.score / 10))
-      : task.score
-        ? Math.min(0.95, Math.max(0.4, task.score / 10))
-        : 0.5,
+    confidence: task.score > 0 ? Math.min(0.95, task.score / 10) : 0,
     reversibility: reversibilityFromTask(task),
     allowedActions: [
       {
@@ -404,8 +399,10 @@ function taskRecommendation(task: NextAction): Recommendation {
       ? `Progress moves forward for ${task.projectId}.`
       : 'The visible queue should become clearer after execution.',
     confidence: cod
-      ? Math.min(0.95, Math.max(0.4, task.score / 10))
-      : Math.min(0.95, Math.max(0.35, (task.score || 5) / 10)),
+      ? Math.min(0.95, task.score / 10)
+      : task.score > 0
+        ? Math.min(0.95, task.score / 10)
+        : 0,
     reversibility,
     state: reversibility === 'high' ? 'ready' : 'proposed',
     mutationRef: {
@@ -439,7 +436,9 @@ function buildCodBreakdown(
   const confidence = clampScore(
     cod.adhdStartability !== undefined
       ? Math.round(cod.adhdStartability * 10)
-      : (task.score || task.priority || 5) * 0.9
+      : task.score > 0 || task.priority > 0
+        ? (task.score || task.priority) * 0.9
+        : 0
   );
   const total = clampScore(urgency + impact + blockageRemoval, 30);
   const normalizedTotal = Math.min(1, Math.max(0, total / 30));
@@ -481,7 +480,11 @@ function buildFallbackBreakdown(
       Array.isArray(task.blockers) && task.blockers.length > 0 ? 9 : 4,
     reversibility:
       reversibility === 'high' ? 8 : reversibility === 'medium' ? 5 : 2,
-    confidence: clampScore((task.score || task.priority || 5) * 0.9),
+    confidence: clampScore(
+      task.score > 0 || task.priority > 0
+        ? (task.score || task.priority) * 0.9
+        : 0
+    ),
     total: clampScore(
       (task.score || 0) +
         task.priority +
@@ -537,32 +540,25 @@ function noteRejectionType(note: InboxNote): 'user' | 'automated' {
 export function buildHomeSurfacePayload(
   tasks: NextAction[]
 ): HomeSurfacePayload {
-  const recommendations = tasks.slice(0, 5).map(taskRecommendation);
-  const pressureBand = tasks.slice(0, 5).map(taskSignal);
-  const verificationRail: VerificationOutcome[] = tasks
-    .slice(0, 3)
-    .map((task) => ({
-      id: `verification:${task.id}`,
-      actionId: `action:${task.id}`,
-      mutationId: `mutation:${task.id}`,
-      entity: taskEntity(task),
-      startedAt: nowIso(),
-      status: task.status === 'blocked' ? 'warning' : 'pending',
-      improved: undefined,
-      followUpNeeded: task.status === 'blocked',
-      summary: `Verification pending for ${task.title}`,
-      evidence: task.description ? [task.description] : undefined,
-      nextRecommendedActionId:
-        task.score >= 8 ? `action:${task.id}` : undefined,
-      stage: 'started',
-      surfaceScope: task.projectId ? 'project' : 'home',
-    }));
+  // Pressure Band: tasks with active blockers or high score (genuine pressure)
+  const pressureTasks = tasks.filter(
+    (t) => (Array.isArray(t.blockers) && t.blockers.length > 0) || t.score >= 8
+  );
+  // Fall back to top-5 only when nothing qualifies as high-pressure
+  const pressureBandTasks =
+    pressureTasks.length > 0 ? pressureTasks.slice(0, 5) : tasks.slice(0, 5);
+
+  // Decision Queue: tasks NOT in the pressure band, top 5
+  const pressureIds = new Set(pressureBandTasks.map((t) => t.id));
+  const queueTasks = tasks.filter((t) => !pressureIds.has(t.id)).slice(0, 5);
+
+  const pressureBand = pressureBandTasks.map(taskSignal);
+  const recommendations = queueTasks.map(taskRecommendation);
+
+  const verificationRail: VerificationOutcome[] = [];
   return {
     pressureBand,
     decisionQueue: recommendations,
-    immediateActions: recommendations
-      .filter((item) => item.reversibility === 'high')
-      .slice(0, 3),
     verificationRail,
     snapshots: {
       automation: pressureBand
@@ -585,18 +581,7 @@ export function buildHomeSurfacePayload(
       bubble: [],
       health: [],
     },
-    contextTail: tasks.slice(0, 3).map((task) => ({
-      id: `context-tail:${task.id}`,
-      contextType: 'note',
-      title: task.title,
-      summary: task.description ?? 'Relevant queue context.',
-      sourceId: task.id,
-      projectId: task.projectId,
-      reasonSelected:
-        'Selected because it is adjacent to the highest-priority work.',
-      freshness: 'fresh',
-      linkedEntities: [taskEntity(task)],
-    })),
+    contextTail: [],
     tasks,
   };
 }
@@ -740,25 +725,8 @@ export function buildActionsSurfacePayload(
   tasks: NextAction[]
 ): ActionsSurfacePayload {
   const recommendations = tasks.map(taskRecommendation);
-  const verificationRail: VerificationOutcome[] = recommendations
-    .slice(0, 3)
-    .map((item) => ({
-      id: `verification:${item.id}`,
-      actionId: item.id,
-      mutationId: item.mutationRef
-        ? `${item.mutationRef.domain}:${item.mutationRef.targetId}`
-        : undefined,
-      entity: item.sourceEntities[0],
-      startedAt: nowIso(),
-      status: item.reversibility === 'high' ? 'pending' : 'warning',
-      improved: undefined,
-      followUpNeeded: item.requiresApproval ?? false,
-      summary: `Verification pending for ${item.title}`,
-      evidence: [item.whyNow],
-      nextRecommendedActionId: item.id,
-      stage: 'started',
-      surfaceScope: 'actions',
-    }));
+  // Verification rail is populated only after mutations complete — not pre-seeded here.
+  const verificationRail: VerificationOutcome[] = [];
   return {
     recommendations,
     verificationRail,
@@ -792,23 +760,7 @@ export function buildProjectSurfacePayload(args: {
     immediateActions: decisionQueue
       .filter((item) => item.reversibility === 'high')
       .slice(0, 3),
-    verificationRail: decisionQueue.slice(0, 3).map((item) => ({
-      id: `verification:${item.id}`,
-      actionId: item.id,
-      mutationId: item.mutationRef
-        ? `${item.mutationRef.domain}:${item.mutationRef.targetId}`
-        : undefined,
-      entity: item.sourceEntities[0],
-      startedAt: nowIso(),
-      status: 'pending',
-      improved: undefined,
-      followUpNeeded: item.reversibility !== 'high',
-      summary: `Project verification pending for ${item.title}`,
-      evidence: [item.whyNow],
-      nextRecommendedActionId: item.id,
-      stage: 'started',
-      surfaceScope: 'project',
-    })),
+    verificationRail: [],
     executionSnapshot: {
       activeTasks: args.tasks.slice(0, 5).map(taskEntity),
       activePipelines: [],

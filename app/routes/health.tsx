@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { cn } from '@/src/lib/utils';
 
@@ -32,7 +32,15 @@ function StatusBadge({ status }: { status: HealthServiceEntry['status'] }) {
   );
 }
 
-function ServiceTable({ services }: { services: HealthServiceEntry[] }) {
+function ServiceTable({
+  services,
+  selectedId,
+  onSelect,
+}: {
+  services: HealthServiceEntry[];
+  selectedId: string | null;
+  onSelect: (svc: HealthServiceEntry) => void;
+}) {
   return (
     <table className="w-full text-sm border-collapse">
       <thead>
@@ -53,7 +61,17 @@ function ServiceTable({ services }: { services: HealthServiceEntry[] }) {
         {services.map((svc) => (
           <tr
             key={svc.id}
-            className="border-b border-border/50 hover:bg-muted/40 transition-colors"
+            role="button"
+            tabIndex={0}
+            aria-selected={selectedId === svc.id}
+            onClick={() => onSelect(svc)}
+            onKeyDown={(e) =>
+              (e.key === 'Enter' || e.key === ' ') && onSelect(svc)
+            }
+            className={cn(
+              'border-b border-border/50 cursor-pointer transition-colors',
+              selectedId === svc.id ? 'bg-muted/60' : 'hover:bg-muted/40'
+            )}
           >
             <td className="py-2 pr-4 font-medium">{svc.name}</td>
             <td className="py-2 pr-4">
@@ -73,6 +91,50 @@ function ServiceTable({ services }: { services: HealthServiceEntry[] }) {
   );
 }
 
+function ServiceDetail({ svc }: { svc: HealthServiceEntry }) {
+  return (
+    <div className="space-y-4 text-sm">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+          Name
+        </p>
+        <p className="font-medium">{svc.name}</p>
+      </div>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+          Status
+        </p>
+        <StatusBadge status={svc.status} />
+      </div>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+          Latency
+        </p>
+        <p className="tabular-nums">
+          {svc.latencyMs != null ? `${svc.latencyMs}ms` : '—'}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+          Version / Tools
+        </p>
+        <p>
+          {svc.version ??
+            (svc.toolCount != null ? `${svc.toolCount} tools` : '—')}
+        </p>
+      </div>
+      {svc.detail && (
+        <div>
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+            Detail
+          </p>
+          <p className="text-muted-foreground break-words">{svc.detail}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
   const color =
     payload.overall === 'ok' ? 'text-emerald-600' : 'text-amber-600';
@@ -88,6 +150,15 @@ function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
 
 function HealthRoute() {
   const { data, isLoading } = useHealthSurface();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selectedSvc = selectedId
+    ? (data?.services.find((s) => s.id === selectedId) ?? null)
+    : null;
+
+  const handleSelect = (svc: HealthServiceEntry) => {
+    setSelectedId((prev) => (prev === svc.id ? null : svc.id));
+  };
 
   return (
     <WorkspaceScaffold
@@ -126,10 +197,10 @@ function HealthRoute() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : data == null ? (
           <div data-testid="health-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-700">
               No health data yet.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Adapter context is wired. Service status will appear once the
               runtime connects.
             </p>
@@ -139,21 +210,29 @@ function HealthRoute() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               Overall: <OverallBadge payload={data} />
             </div>
-            <ServiceTable services={data.services} />
+            <ServiceTable
+              services={data.services}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+            />
           </div>
         )
       }
       asideTitle="Service Detail"
       asideSubtitle="Selected service information and diagnostics."
       aside={
-        <div data-testid="health-aside-empty-state" className="space-y-2">
-          <p className="text-sm font-medium text-neutral-600">
-            No item selected.
-          </p>
-          <p className="text-xs text-neutral-400">
-            Select a service row to view details.
-          </p>
-        </div>
+        selectedSvc ? (
+          <ServiceDetail svc={selectedSvc} />
+        ) : (
+          <div data-testid="health-aside-empty-state" className="space-y-2">
+            <p className="text-sm font-medium text-slate-700">
+              No item selected.
+            </p>
+            <p className="text-xs text-slate-500">
+              Select a service row to view details.
+            </p>
+          </div>
+        )
       }
     />
   );

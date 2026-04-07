@@ -61,7 +61,6 @@ describe('getHomeSurfaceQueryOptions — queryFn', () => {
     const payload = {
       pressureBand: [],
       decisionQueue: [],
-      immediateActions: [],
       verificationRail: [],
       snapshots: {
         automation: [],

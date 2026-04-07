@@ -57,6 +57,15 @@ export function CodModal() {
   const maxSprintMin = getMaxSprintMin(validation.status);
   const canStartSession = validation.status !== 'FAIL';
 
+  // Detect "no data entered" state: all numeric signals are 0 and focusCapacity unknown
+  const hasNoData =
+    (humanState.energy == null || humanState.energy === 0) &&
+    (humanState.stress == null || humanState.stress === 0) &&
+    (humanState.timeAvailableMin == null ||
+      humanState.timeAvailableMin === 0) &&
+    (humanState.focusCapacity == null ||
+      humanState.focusCapacity === 'unknown');
+
   const codState = {
     canStartSession,
     maxSprintMin,
@@ -65,8 +74,10 @@ export function CodModal() {
 
   const display = {
     ...toCodDisplayState({
-      status: validation.status,
-      reason: warnings[0] ?? null,
+      status: hasNoData ? 'UNKNOWN' : validation.status,
+      reason: hasNoData
+        ? 'No human state data. Check in to calibrate.'
+        : (warnings[0] ?? null),
     }),
     constraintItems: constraints.map((c) => ({
       label: c.label,
