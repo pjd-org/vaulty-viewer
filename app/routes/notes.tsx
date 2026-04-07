@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
@@ -75,27 +75,72 @@ function NotesRoute() {
     enabled: searchEnabled,
   });
 
-  // Otherwise use the audience/collection endpoint
+  // Otherwise use the audience/collection endpoint.
+  // When audienceFilter is '' ("All"), fetch all three audiences in parallel
+  // and merge — never silently fall back to human-only.
   const audienceFilter = (collection as CollectionFilter) ?? '';
-  const audienceKey = audienceFilter || 'human';
-  const browseQuery = useQuery({
-    ...getKnowledgeByAudienceQueryOptions(
-      audienceKey as 'human' | 'agent' | 'bubble'
-    ),
-    enabled: !searchEnabled,
+  const humanQuery = useQuery({
+    ...getKnowledgeByAudienceQueryOptions('human'),
+    enabled: !searchEnabled && audienceFilter === '',
   });
+  const agentQuery = useQuery({
+    ...getKnowledgeByAudienceQueryOptions('agent'),
+    enabled: !searchEnabled && audienceFilter === '',
+  });
+  const bubbleQuery = useQuery({
+    ...getKnowledgeByAudienceQueryOptions('bubble'),
+    enabled: !searchEnabled && audienceFilter === '',
+  });
+  const singleQuery = useQuery({
+    ...getKnowledgeByAudienceQueryOptions(
+      (audienceFilter || 'human') as 'human' | 'agent' | 'bubble'
+    ),
+    enabled: !searchEnabled && audienceFilter !== '',
+  });
+
+  const allNotes: KnowledgeNoteRef[] = useMemo(() => {
+    if (audienceFilter !== '') return [];
+    const seen = new Set<string>();
+    const merged: KnowledgeNoteRef[] = [];
+    for (const note of [
+      ...(humanQuery.data ?? []),
+      ...(agentQuery.data ?? []),
+      ...(bubbleQuery.data ?? []),
+    ]) {
+      if (!seen.has(note.path)) {
+        seen.add(note.path);
+        merged.push(note);
+      }
+    }
+    return merged;
+  }, [audienceFilter, humanQuery.data, agentQuery.data, bubbleQuery.data]);
 
   const isLoading = searchEnabled
     ? searchQuery.isLoading
-    : browseQuery.isLoading;
-  const error = searchEnabled ? searchQuery.error : browseQuery.error;
+    : audienceFilter === ''
+      ? humanQuery.isLoading || agentQuery.isLoading || bubbleQuery.isLoading
+      : singleQuery.isLoading;
+  const error = searchEnabled
+    ? searchQuery.error
+    : audienceFilter === ''
+      ? (humanQuery.error ?? agentQuery.error ?? bubbleQuery.error)
+      : singleQuery.error;
   const notes: KnowledgeNoteRef[] = searchEnabled
     ? (searchQuery.data ?? [])
-    : (browseQuery.data ?? []);
+    : audienceFilter === ''
+      ? allNotes
+      : (singleQuery.data ?? []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    void navigate({ search: (prev) => ({ ...prev, q: draftQ || undefined }) });
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        q: draftQ || undefined,
+        // Clear collection when search becomes active — they must not coexist
+        collection: draftQ ? undefined : prev.collection,
+      }),
+    });
   };
 
   const handleCollection = (value: CollectionFilter) => {

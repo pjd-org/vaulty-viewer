@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { ProjectsWorkspace } from '../components/projects';
@@ -195,13 +195,15 @@ function TaskDetail({ task }: { task: NextAction }) {
         </div>
       )}
 
-      <Link
-        to="/note"
-        search={{ p: task.path }}
-        className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-300"
-      >
-        Open note →
-      </Link>
+      {task.path && (
+        <Link
+          to="/note"
+          search={{ p: task.path }}
+          className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-300"
+        >
+          Open note →
+        </Link>
+      )}
     </div>
   );
 }
@@ -213,6 +215,13 @@ function TaskDetail({ task }: { task: NextAction }) {
 function WorkRoute() {
   const { data, isLoading } = useWorkSurface();
   const [selectedTask, setSelectedTask] = useState<NextAction | null>(null);
+
+  // Clear selection if the selected task is no longer in the refreshed data
+  useEffect(() => {
+    if (!selectedTask || !data) return;
+    const stillExists = data.tasks.some((t) => t.id === selectedTask.id);
+    if (!stillExists) setSelectedTask(null);
+  }, [data, selectedTask]);
 
   return (
     <WorkspaceScaffold

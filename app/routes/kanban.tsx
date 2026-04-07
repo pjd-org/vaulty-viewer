@@ -265,31 +265,35 @@ function KanbanRoute() {
 
   const tasks = apiTasks;
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const res = await apiFetch('/api/v1/tasks');
-        if (res.ok) {
-          const body = await res.json();
-          const tasks = (body.structuredContent?.tasks || body.tasks || []).map(
-            (t: Parameters<typeof normalizeTask>[0]) => normalizeTask(t)
-          );
-          dispatch({ type: 'TASKS_LOADED', tasks });
-        } else if (res.status === 401) {
-          navigate({ to: '/login' });
-        } else {
-          dispatch({ type: 'API_OFFLINE' });
-        }
-      } catch (err) {
-        if (err instanceof UnauthenticatedError) {
-          navigate({ to: '/login' });
-        } else {
-          console.warn('[kanban] API unavailable, using static data', err);
-          dispatch({ type: 'API_OFFLINE' });
-        }
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const loadTasks = async () => {
+    try {
+      const res = await apiFetch('/api/v1/tasks');
+      if (res.ok) {
+        const body = await res.json();
+        const tasks = (body.structuredContent?.tasks || body.tasks || []).map(
+          (t: Parameters<typeof normalizeTask>[0]) => normalizeTask(t)
+        );
+        dispatch({ type: 'TASKS_LOADED', tasks });
+      } else if (res.status === 401) {
+        navigate({ to: '/login' });
+      } else {
+        dispatch({ type: 'API_OFFLINE' });
       }
-    };
+    } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        navigate({ to: '/login' });
+      } else {
+        console.warn('[kanban] API unavailable, using static data', err);
+        dispatch({ type: 'API_OFFLINE' });
+      }
+    }
+  };
+
+  useEffect(() => {
     loadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const tags = useMemo(() => {
@@ -409,6 +413,23 @@ function KanbanRoute() {
     detail: `Tasks in ${col.label.toLowerCase()}`,
   }));
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadTasks();
+    setIsRefreshing(false);
+  };
+
+  const refreshButton = (
+    <button
+      type="button"
+      onClick={handleRefresh}
+      disabled={isRefreshing}
+      className="rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
+    >
+      {isRefreshing ? 'Refreshing…' : 'Refresh'}
+    </button>
+  );
+
   const statusBadge = (
     <span
       className={[
@@ -432,7 +453,12 @@ function KanbanRoute() {
     <WorkspaceScaffold
       title="Kanban"
       subtitle="Visualize task flow across four columns. Recurring tasks are excluded."
-      actions={statusBadge}
+      actions={
+        <div className="flex items-center gap-2">
+          {refreshButton}
+          {statusBadge}
+        </div>
+      }
       summaryItems={summaryItems}
       primaryTitle="Board"
       primarySubtitle={

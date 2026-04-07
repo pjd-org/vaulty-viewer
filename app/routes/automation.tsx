@@ -16,38 +16,43 @@ export const Route = createFileRoute('/automation')({
 });
 
 // ---------------------------------------------------------------------------
-// Selection types
+// Selection types — discriminated union for type safety
 // ---------------------------------------------------------------------------
 
-type SelectionKind = 'pipeline' | 'job';
-
-interface Selection {
-  kind: SelectionKind;
-  pipeline?: PipelineEntry;
-  job?: SchedulerJobEntry;
-}
+type Selection =
+  | { kind: 'pipeline'; pipeline: PipelineEntry }
+  | { kind: 'job'; job: SchedulerJobEntry };
 
 // ---------------------------------------------------------------------------
 // AutomationDetail — aside panel
 // ---------------------------------------------------------------------------
 
 function AutomationDetail({ selection }: { selection: Selection }) {
-  if (selection.kind === 'pipeline' && selection.pipeline) {
+  if (selection.kind === 'pipeline') {
     const { pipeline } = selection;
     return (
       <div
         className="space-y-3 text-sm"
         data-testid="automation-pipeline-detail"
       >
-        <p className="font-medium text-slate-800 font-mono">{pipeline.name}</p>
-        <p className="text-xs text-neutral-500">
-          No additional metadata available for this pipeline.
-        </p>
+        <p className="font-medium text-slate-100 font-mono">{pipeline.name}</p>
+        <div className="space-y-1 text-xs text-slate-400">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Pipeline info
+          </p>
+          <p>
+            <span className="font-medium text-slate-300">Name:</span>{' '}
+            <span className="font-mono">{pipeline.name}</span>
+          </p>
+          <p className="text-slate-500 italic">
+            No additional runtime metadata available for this pipeline.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (selection.kind === 'job' && selection.job) {
+  if (selection.kind === 'job') {
     const { job } = selection;
     const run = job.lastRun as Record<string, unknown> | null | undefined;
     const lastRunStatus = run ? String(run.status ?? '—') : null;
@@ -62,32 +67,32 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     return (
       <div className="space-y-4 text-sm" data-testid="automation-job-detail">
         <div>
-          <p className="font-medium text-slate-800 font-mono">{job.id}</p>
-          <p className="mt-0.5 text-xs text-neutral-500">{job.pipeline}</p>
+          <p className="font-medium text-slate-100 font-mono">{job.id}</p>
+          <p className="mt-0.5 text-xs text-slate-400">{job.pipeline}</p>
         </div>
 
-        <div className="space-y-1 text-xs text-neutral-600">
+        <div className="space-y-1 text-xs text-slate-400">
           {job.cron && (
             <p>
-              <span className="font-medium text-neutral-700">Cron:</span>{' '}
+              <span className="font-medium text-slate-300">Cron:</span>{' '}
               <span className="font-mono">{job.cron}</span>
             </p>
           )}
           {job.intervalSec != null && (
             <p>
-              <span className="font-medium text-neutral-700">Interval:</span>{' '}
+              <span className="font-medium text-slate-300">Interval:</span>{' '}
               {job.intervalSec}s
             </p>
           )}
           {job.mode && (
             <p>
-              <span className="font-medium text-neutral-700">Mode:</span>{' '}
+              <span className="font-medium text-slate-300">Mode:</span>{' '}
               {job.mode}
             </p>
           )}
           {job.source && (
             <p>
-              <span className="font-medium text-neutral-700">Source:</span>{' '}
+              <span className="font-medium text-slate-300">Source:</span>{' '}
               {job.source}
             </p>
           )}
@@ -95,12 +100,12 @@ function AutomationDetail({ selection }: { selection: Selection }) {
 
         {lastRunStatus && (
           <div className="space-y-1 text-xs">
-            <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400">
+            <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
               Last run
             </p>
             <p
               className={
-                isFailed ? 'text-red-500 font-medium' : 'text-neutral-600'
+                isFailed ? 'text-red-400 font-medium' : 'text-slate-400'
               }
             >
               {lastRunStatus}
@@ -226,9 +231,17 @@ function SchedulerSection({
               return (
                 <tr
                   key={job.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectJob(job)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectJob(job);
+                    }
+                  }}
                   className={[
-                    'border-b border-border/50 transition-colors cursor-pointer',
+                    'border-b border-border/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400/50',
                     selectedJobId === job.id
                       ? 'bg-neutral-200/60'
                       : 'hover:bg-muted/40',
@@ -275,9 +288,8 @@ function AutomationRoute() {
   const [selection, setSelection] = useState<Selection | null>(null);
 
   const selectedPipelineId =
-    selection?.kind === 'pipeline' ? (selection.pipeline?.name ?? null) : null;
-  const selectedJobId =
-    selection?.kind === 'job' ? (selection.job?.id ?? null) : null;
+    selection?.kind === 'pipeline' ? selection.pipeline.name : null;
+  const selectedJobId = selection?.kind === 'job' ? selection.job.id : null;
 
   return (
     <WorkspaceScaffold

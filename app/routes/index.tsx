@@ -42,7 +42,7 @@ export const Route = createFileRoute('/')({
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <div className="genie-surface genie-surface--utility rounded-[28px] p-4 space-y-2">
+    <div className="rounded-[28px] border border-white/8 bg-white/5 p-4 space-y-2">
       <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
         Recent sessions
       </p>
@@ -86,7 +86,7 @@ function ActiveSessionBanner({
   const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
-    <div className="genie-surface genie-surface--utility rounded-[28px] p-4 flex items-center justify-between">
+    <div className="rounded-[28px] border border-white/8 bg-white/5 p-4 flex items-center justify-between">
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-semibold text-sky-300 uppercase tracking-wide">
           Session active
@@ -177,9 +177,12 @@ function FocusRoute() {
     enabled: !surfaceLoading && agentTasks.length > 0,
   });
 
+  const [endSessionError, setEndSessionError] = useState<string | null>(null);
+
   const endSession = async () => {
     if (!activeSession) return;
     setEndingSession(true);
+    setEndSessionError(null);
     try {
       await apiFetch('/api/v1/cod/session/end', {
         method: 'POST',
@@ -190,6 +193,14 @@ function FocusRoute() {
         }),
       });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        navigate({ to: '/login' });
+        return;
+      }
+      setEndSessionError(
+        err instanceof Error ? err.message : 'Failed to end session.'
+      );
     } finally {
       setEndingSession(false);
     }
@@ -291,13 +302,20 @@ function FocusRoute() {
   return (
     <div className="space-y-6">
       {activeSession && !endingSession ? (
-        <ActiveSessionBanner
-          session={activeSession}
-          onResume={() =>
-            navigate({ to: '/session/$id', params: { id: activeSession.id } })
-          }
-          onEnd={endSession}
-        />
+        <>
+          <ActiveSessionBanner
+            session={activeSession}
+            onResume={() =>
+              navigate({ to: '/session/$id', params: { id: activeSession.id } })
+            }
+            onEnd={endSession}
+          />
+          {endSessionError && (
+            <p className="text-sm text-red-400" role="alert">
+              {endSessionError}
+            </p>
+          )}
+        </>
       ) : null}
 
       <WorkspaceScaffold
@@ -587,7 +605,7 @@ function FocusRoute() {
                 subtitle="Agent guidance stays parallel for now."
               />
               {whatNow || upNext ? (
-                <div className="genie-surface genie-surface--utility rounded-[22px] px-4 py-3 text-sm space-y-2">
+                <div className="rounded-[22px] border border-white/8 bg-white/5 px-4 py-3 text-sm space-y-2">
                   {whatNow ? (
                     <div>
                       <p className="font-medium text-slate-700">
@@ -621,7 +639,7 @@ function FocusRoute() {
                 />
               )}
               {(whatNowFailed || upNextFailed) && (
-                <div className="genie-surface genie-surface--utility rounded-[22px] px-4 py-3 text-sm space-y-1">
+                <div className="rounded-[22px] border border-white/8 bg-white/5 px-4 py-3 text-sm space-y-1">
                   <p className="text-slate-700">
                     AI guidance is temporarily unavailable.
                   </p>

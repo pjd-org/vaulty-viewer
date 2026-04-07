@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
@@ -20,55 +20,53 @@ export const Route = createFileRoute('/portfolio')({
 
 function PortfolioItemDetail({ item }: { item: PressureSignal }) {
   const severityColor: Record<string, string> = {
-    critical: 'bg-destructive/10 text-red-700',
-    high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-neutral-100 text-neutral-600',
+    critical: 'bg-red-400/15 text-red-300',
+    high: 'bg-orange-400/15 text-orange-300',
+    medium: 'bg-yellow-400/15 text-yellow-300',
+    low: 'bg-white/8 text-slate-400',
   };
 
   return (
     <div className="space-y-4 text-sm" data-testid="portfolio-item-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
+        <p className="font-medium leading-snug text-slate-100">{item.title}</p>
         {item.projectId && (
-          <p className="mt-0.5 text-xs text-slate-500">{item.projectId}</p>
+          <p className="mt-0.5 text-xs text-slate-400">{item.projectId}</p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-neutral-100 text-neutral-600'}`}
+          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-white/8 text-slate-400'}`}
         >
           {item.severity}
         </span>
-        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-600">
+        <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-300">
           {item.kind}
         </span>
         {item.state && (
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-500">
+          <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
             {item.state}
           </span>
         )}
       </div>
 
-      {item.summary && (
-        <p className="text-xs text-neutral-600">{item.summary}</p>
-      )}
+      {item.summary && <p className="text-xs text-slate-400">{item.summary}</p>}
 
-      <div className="space-y-1 text-xs text-neutral-500">
+      <div className="space-y-1 text-xs text-slate-400">
         <p>
-          <span className="font-medium text-neutral-700">Why surfaced:</span>{' '}
+          <span className="font-medium text-slate-300">Why surfaced:</span>{' '}
           {item.whySurfaced}
         </p>
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-neutral-700">Confidence:</span>{' '}
+            <span className="font-medium text-slate-300">Confidence:</span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
         {item.score !== undefined && (
           <p>
-            <span className="font-medium text-neutral-700">Score:</span>{' '}
+            <span className="font-medium text-slate-300">Score:</span>{' '}
             {item.score}
           </p>
         )}
@@ -76,14 +74,14 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
 
       {item.allowedActions.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-            Available actions
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Actions (display only)
           </p>
           <ul className="space-y-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="text-xs text-neutral-600 bg-neutral-50 rounded-md px-2 py-1"
+                className="text-xs text-slate-400 bg-white/5 rounded-md px-2 py-1"
               >
                 {action.label}
               </li>
@@ -197,6 +195,13 @@ function PortfolioRoute() {
   const { data, isLoading } = usePortfolioSurface();
   const [selectedItem, setSelectedItem] = useState<PressureSignal | null>(null);
 
+  // Clear selection if the selected item is no longer present after a data refresh
+  useEffect(() => {
+    if (!selectedItem || !data) return;
+    const stillExists = data.items.some((i) => i.id === selectedItem.id);
+    if (!stillExists) setSelectedItem(null);
+  }, [data, selectedItem]);
+
   const criticalCount =
     data?.items.filter((i) => i.severity === 'critical').length ?? 0;
   const highCount =
@@ -205,7 +210,7 @@ function PortfolioRoute() {
   return (
     <WorkspaceScaffold
       title="Portfolio"
-      subtitle="Pressure-band snapshot (top 2). Full capital allocation surface requires backend API."
+      subtitle={`Pressure-band snapshot${data ? ` (top ${data.total})` : ''}. Full capital allocation surface requires backend API.`}
       summaryItems={[
         {
           label: 'Total',

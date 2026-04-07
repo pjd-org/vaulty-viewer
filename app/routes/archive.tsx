@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
@@ -28,46 +28,46 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
   const severityColor: Record<string, string> = {
     critical: 'text-red-400',
     high: 'text-orange-400',
-    medium: 'text-yellow-500',
-    low: 'text-neutral-400',
+    medium: 'text-yellow-400',
+    low: 'text-slate-400',
   };
 
   return (
     <div className="space-y-4 text-sm" data-testid="archive-item-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
+        <p className="font-medium leading-snug text-slate-100">{item.title}</p>
         {item.summary && (
-          <p className="mt-1 text-xs text-slate-500 font-mono break-all">
+          <p className="mt-1 text-xs text-slate-400 font-mono break-all">
             {item.summary}
           </p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-600">
+        <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-300">
           {bucketLabel[item.inboxBucket] ?? item.inboxBucket}
         </span>
         <span
-          className={`rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-neutral-500'}`}
+          className={`rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-slate-400'}`}
         >
           {item.severity}
         </span>
       </div>
 
-      <div className="space-y-1 text-xs text-neutral-500">
+      <div className="space-y-1 text-xs text-slate-400">
         <p>
-          <span className="font-medium text-neutral-700">Why archived:</span>{' '}
+          <span className="font-medium text-slate-300">Why archived:</span>{' '}
           {item.whySurfaced}
         </p>
         {item.rejectionReason && (
           <p>
-            <span className="font-medium text-neutral-700">Reason:</span>{' '}
+            <span className="font-medium text-slate-300">Reason:</span>{' '}
             {item.rejectionReason}
           </p>
         )}
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-neutral-700">Confidence:</span>{' '}
+            <span className="font-medium text-slate-300">Confidence:</span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
@@ -75,14 +75,14 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
 
       {item.allowedActions.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-            Available actions
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Actions (display only)
           </p>
           <ul className="space-y-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="text-xs text-neutral-600 bg-neutral-50 rounded-md px-2 py-1"
+                className="text-xs text-slate-400 bg-white/5 rounded-md px-2 py-1"
               >
                 {action.label}
               </li>
@@ -195,6 +195,18 @@ function ArchiveList({
 function ArchiveRoute() {
   const { data, isLoading } = useArchiveSurface();
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
+
+  // Clear selection if the selected item is no longer present after a data refresh
+  useEffect(() => {
+    if (!selectedItem || !data) return;
+    const allItems = [
+      ...data.rejectedUser,
+      ...data.rejectedAutomated,
+      ...data.deferred,
+    ];
+    const stillExists = allItems.some((i) => i.id === selectedItem.id);
+    if (!stillExists) setSelectedItem(null);
+  }, [data, selectedItem]);
 
   return (
     <WorkspaceScaffold
