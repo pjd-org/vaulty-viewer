@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
@@ -14,14 +14,102 @@ export const Route = createFileRoute('/archive')({
   component: ArchiveRoute,
 });
 
+// ---------------------------------------------------------------------------
+// ArchiveItemDetail — aside panel
+// ---------------------------------------------------------------------------
+
+function ArchiveItemDetail({ item }: { item: InboxItem }) {
+  const bucketLabel: Record<string, string> = {
+    rejected_user: 'Rejected by user',
+    rejected_automated: 'Rejected automatically',
+    deferred: 'Deferred',
+  };
+
+  const severityColor: Record<string, string> = {
+    critical: 'text-red-400',
+    high: 'text-orange-400',
+    medium: 'text-yellow-500',
+    low: 'text-neutral-400',
+  };
+
+  return (
+    <div className="space-y-4 text-sm" data-testid="archive-item-detail">
+      <div>
+        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
+        {item.summary && (
+          <p className="mt-1 text-xs text-slate-500 font-mono break-all">
+            {item.summary}
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-600">
+          {bucketLabel[item.inboxBucket] ?? item.inboxBucket}
+        </span>
+        <span
+          className={`rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-neutral-500'}`}
+        >
+          {item.severity}
+        </span>
+      </div>
+
+      <div className="space-y-1 text-xs text-neutral-500">
+        <p>
+          <span className="font-medium text-neutral-700">Why archived:</span>{' '}
+          {item.whySurfaced}
+        </p>
+        {item.rejectionReason && (
+          <p>
+            <span className="font-medium text-neutral-700">Reason:</span>{' '}
+            {item.rejectionReason}
+          </p>
+        )}
+        {item.confidence !== undefined && (
+          <p>
+            <span className="font-medium text-neutral-700">Confidence:</span>{' '}
+            {(item.confidence * 100).toFixed(0)}%
+          </p>
+        )}
+      </div>
+
+      {item.allowedActions.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400">
+            Available actions
+          </p>
+          <ul className="space-y-1">
+            {item.allowedActions.map((action) => (
+              <li
+                key={action.actionType}
+                className="text-xs text-neutral-600 bg-neutral-50 rounded-md px-2 py-1"
+              >
+                {action.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ArchiveSection
+// ---------------------------------------------------------------------------
+
 function ArchiveSection({
   testId,
   label,
   items,
+  selectedId,
+  onSelect,
 }: {
   testId: string;
   label: string;
   items: InboxItem[];
+  selectedId: string | null;
+  onSelect: (item: InboxItem) => void;
 }) {
   return (
     <div data-testid={testId} className="space-y-2">
@@ -36,12 +124,22 @@ function ArchiveSection({
       ) : (
         <ul className="space-y-1">
           {items.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
-            >
-              <span className="font-mono text-xs text-muted-foreground">▸</span>
-              <span>{item.title}</span>
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(item)}
+                className={[
+                  'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
+                  selectedId === item.id
+                    ? 'bg-neutral-200/60 text-neutral-900'
+                    : 'hover:bg-muted/50 text-neutral-700',
+                ].join(' ')}
+              >
+                <span className="font-mono text-xs text-muted-foreground shrink-0">
+                  ▸
+                </span>
+                <span className="truncate">{item.title}</span>
+              </button>
             </li>
           ))}
         </ul>
@@ -50,30 +148,53 @@ function ArchiveSection({
   );
 }
 
-function ArchiveList({ data }: { data: ArchiveSurfacePayload }) {
+// ---------------------------------------------------------------------------
+// ArchiveList
+// ---------------------------------------------------------------------------
+
+function ArchiveList({
+  data,
+  selectedId,
+  onSelect,
+}: {
+  data: ArchiveSurfacePayload;
+  selectedId: string | null;
+  onSelect: (item: InboxItem) => void;
+}) {
   return (
     <div data-testid="archive-list" className="space-y-6">
       <ArchiveSection
         testId="archive-user-rejected-section"
         label="Rejected by user"
         items={data.rejectedUser}
+        selectedId={selectedId}
+        onSelect={onSelect}
       />
       <ArchiveSection
         testId="archive-automated-rejected-section"
         label="Rejected automatically"
         items={data.rejectedAutomated}
+        selectedId={selectedId}
+        onSelect={onSelect}
       />
       <ArchiveSection
         testId="archive-deferred-section"
         label="Deferred"
         items={data.deferred}
+        selectedId={selectedId}
+        onSelect={onSelect}
       />
     </div>
   );
 }
 
+// ---------------------------------------------------------------------------
+// ArchiveRoute
+// ---------------------------------------------------------------------------
+
 function ArchiveRoute() {
   const { data, isLoading } = useArchiveSurface();
+  const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
 
   return (
     <WorkspaceScaffold
@@ -116,20 +237,28 @@ function ArchiveRoute() {
             </p>
           </div>
         ) : (
-          <ArchiveList data={data} />
+          <ArchiveList
+            data={data}
+            selectedId={selectedItem?.id ?? null}
+            onSelect={setSelectedItem}
+          />
         )
       }
       asideTitle="Archive Detail"
       asideSubtitle="Why it was archived and what can be reopened."
       aside={
-        <div data-testid="archive-aside-empty-state" className="space-y-2">
-          <p className="text-sm font-medium text-neutral-600">
-            No item selected.
-          </p>
-          <p className="text-xs text-neutral-400">
-            Select an archived item to inspect it here.
-          </p>
-        </div>
+        selectedItem ? (
+          <ArchiveItemDetail item={selectedItem} />
+        ) : (
+          <div data-testid="archive-aside-empty-state" className="space-y-2">
+            <p className="text-sm font-medium text-neutral-600">
+              No item selected.
+            </p>
+            <p className="text-xs text-neutral-400">
+              Select an archived item to inspect it here.
+            </p>
+          </div>
+        )
       }
     />
   );

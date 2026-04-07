@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
@@ -15,7 +15,119 @@ export const Route = createFileRoute('/automation')({
   component: AutomationRoute,
 });
 
-function PipelineList({ pipelines }: { pipelines: PipelineEntry[] }) {
+// ---------------------------------------------------------------------------
+// Selection types
+// ---------------------------------------------------------------------------
+
+type SelectionKind = 'pipeline' | 'job';
+
+interface Selection {
+  kind: SelectionKind;
+  pipeline?: PipelineEntry;
+  job?: SchedulerJobEntry;
+}
+
+// ---------------------------------------------------------------------------
+// AutomationDetail — aside panel
+// ---------------------------------------------------------------------------
+
+function AutomationDetail({ selection }: { selection: Selection }) {
+  if (selection.kind === 'pipeline' && selection.pipeline) {
+    const { pipeline } = selection;
+    return (
+      <div
+        className="space-y-3 text-sm"
+        data-testid="automation-pipeline-detail"
+      >
+        <p className="font-medium text-slate-800 font-mono">{pipeline.name}</p>
+        <p className="text-xs text-neutral-500">
+          No additional metadata available for this pipeline.
+        </p>
+      </div>
+    );
+  }
+
+  if (selection.kind === 'job' && selection.job) {
+    const { job } = selection;
+    const run = job.lastRun as Record<string, unknown> | null | undefined;
+    const lastRunStatus = run ? String(run.status ?? '—') : null;
+    const lastRunEndedAt = run?.endedAt
+      ? new Date(String(run.endedAt)).toLocaleString([], {
+          dateStyle: 'short',
+          timeStyle: 'short',
+        })
+      : null;
+    const isFailed = lastRunStatus?.startsWith('failed');
+
+    return (
+      <div className="space-y-4 text-sm" data-testid="automation-job-detail">
+        <div>
+          <p className="font-medium text-slate-800 font-mono">{job.id}</p>
+          <p className="mt-0.5 text-xs text-neutral-500">{job.pipeline}</p>
+        </div>
+
+        <div className="space-y-1 text-xs text-neutral-600">
+          {job.cron && (
+            <p>
+              <span className="font-medium text-neutral-700">Cron:</span>{' '}
+              <span className="font-mono">{job.cron}</span>
+            </p>
+          )}
+          {job.intervalSec != null && (
+            <p>
+              <span className="font-medium text-neutral-700">Interval:</span>{' '}
+              {job.intervalSec}s
+            </p>
+          )}
+          {job.mode && (
+            <p>
+              <span className="font-medium text-neutral-700">Mode:</span>{' '}
+              {job.mode}
+            </p>
+          )}
+          {job.source && (
+            <p>
+              <span className="font-medium text-neutral-700">Source:</span>{' '}
+              {job.source}
+            </p>
+          )}
+        </div>
+
+        {lastRunStatus && (
+          <div className="space-y-1 text-xs">
+            <p className="text-[11px] font-medium uppercase tracking-widest text-neutral-400">
+              Last run
+            </p>
+            <p
+              className={
+                isFailed ? 'text-red-500 font-medium' : 'text-neutral-600'
+              }
+            >
+              {lastRunStatus}
+              {lastRunEndedAt ? ` · ${lastRunEndedAt}` : ''}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// PipelineList
+// ---------------------------------------------------------------------------
+
+function PipelineList({
+  pipelines,
+  selectedId,
+  onSelect,
+}: {
+  pipelines: PipelineEntry[];
+  selectedId: string | null;
+  onSelect: (p: PipelineEntry) => void;
+}) {
   if (pipelines.length === 0) {
     return (
       <p className="text-sm text-muted-foreground italic">
@@ -26,22 +138,40 @@ function PipelineList({ pipelines }: { pipelines: PipelineEntry[] }) {
   return (
     <ul data-testid="automation-pipeline-list" className="space-y-1">
       {pipelines.map((p) => (
-        <li
-          key={p.name}
-          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
-        >
-          <span className="font-mono text-xs text-muted-foreground">▸</span>
-          <span>{p.name}</span>
+        <li key={p.name}>
+          <button
+            type="button"
+            onClick={() => onSelect(p)}
+            className={[
+              'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
+              selectedId === p.name
+                ? 'bg-neutral-200/60 text-neutral-900'
+                : 'hover:bg-muted/50 text-neutral-700',
+            ].join(' ')}
+          >
+            <span className="font-mono text-xs text-muted-foreground shrink-0">
+              ▸
+            </span>
+            <span>{p.name}</span>
+          </button>
         </li>
       ))}
     </ul>
   );
 }
 
+// ---------------------------------------------------------------------------
+// SchedulerSection
+// ---------------------------------------------------------------------------
+
 function SchedulerSection({
   scheduler,
+  selectedJobId,
+  onSelectJob,
 }: {
   scheduler: AutomationSurfacePayload['scheduler'];
+  selectedJobId: string | null;
+  onSelectJob: (job: SchedulerJobEntry) => void;
 }) {
   return (
     <div data-testid="automation-scheduler-section" className="space-y-3">
@@ -83,46 +213,52 @@ function SchedulerSection({
             </tr>
           </thead>
           <tbody>
-            {scheduler.jobs.map((job: SchedulerJobEntry) => (
-              <tr
-                key={job.id}
-                className="border-b border-border/50 hover:bg-muted/40 transition-colors"
-              >
-                <td className="py-2 pr-4 font-mono text-xs">{job.id}</td>
-                <td className="py-2 pr-4">{job.pipeline}</td>
-                <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
-                  {job.cron ??
-                    (job.intervalSec != null ? `${job.intervalSec}s` : '—')}
-                </td>
-                <td className="py-2 text-xs">
-                  {job.lastRun != null
-                    ? (() => {
-                        const run = job.lastRun as Record<string, unknown>;
-                        const status = String(run.status ?? '—');
-                        const endedAt = run.endedAt
-                          ? new Date(String(run.endedAt)).toLocaleTimeString(
-                              [],
-                              { hour: '2-digit', minute: '2-digit' }
-                            )
-                          : null;
-                        const failed = status.startsWith('failed');
-                        return (
-                          <span
-                            className={
-                              failed
-                                ? 'text-destructive font-medium'
-                                : 'text-muted-foreground'
-                            }
-                          >
-                            {status}
-                            {endedAt ? ` · ${endedAt}` : ''}
-                          </span>
-                        );
-                      })()
-                    : '—'}
-                </td>
-              </tr>
-            ))}
+            {scheduler.jobs.map((job: SchedulerJobEntry) => {
+              const run = job.lastRun as Record<string, unknown>;
+              const status = String(run?.status ?? '—');
+              const endedAt = run?.endedAt
+                ? new Date(String(run.endedAt)).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : null;
+              const failed = status.startsWith('failed');
+              return (
+                <tr
+                  key={job.id}
+                  onClick={() => onSelectJob(job)}
+                  className={[
+                    'border-b border-border/50 transition-colors cursor-pointer',
+                    selectedJobId === job.id
+                      ? 'bg-neutral-200/60'
+                      : 'hover:bg-muted/40',
+                  ].join(' ')}
+                >
+                  <td className="py-2 pr-4 font-mono text-xs">{job.id}</td>
+                  <td className="py-2 pr-4">{job.pipeline}</td>
+                  <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
+                    {job.cron ??
+                      (job.intervalSec != null ? `${job.intervalSec}s` : '—')}
+                  </td>
+                  <td className="py-2 text-xs">
+                    {job.lastRun != null ? (
+                      <span
+                        className={
+                          failed
+                            ? 'text-destructive font-medium'
+                            : 'text-muted-foreground'
+                        }
+                      >
+                        {status}
+                        {endedAt ? ` · ${endedAt}` : ''}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -130,8 +266,18 @@ function SchedulerSection({
   );
 }
 
+// ---------------------------------------------------------------------------
+// AutomationRoute
+// ---------------------------------------------------------------------------
+
 function AutomationRoute() {
   const { data, isLoading } = useAutomationSurface();
+  const [selection, setSelection] = useState<Selection | null>(null);
+
+  const selectedPipelineId =
+    selection?.kind === 'pipeline' ? (selection.pipeline?.name ?? null) : null;
+  const selectedJobId =
+    selection?.kind === 'job' ? (selection.job?.id ?? null) : null;
 
   return (
     <WorkspaceScaffold
@@ -178,23 +324,37 @@ function AutomationRoute() {
           <div className="space-y-6">
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Pipelines</h3>
-              <PipelineList pipelines={data.pipelines} />
+              <PipelineList
+                pipelines={data.pipelines}
+                selectedId={selectedPipelineId}
+                onSelect={(p) =>
+                  setSelection({ kind: 'pipeline', pipeline: p })
+                }
+              />
             </div>
-            <SchedulerSection scheduler={data.scheduler} />
+            <SchedulerSection
+              scheduler={data.scheduler}
+              selectedJobId={selectedJobId}
+              onSelectJob={(job) => setSelection({ kind: 'job', job })}
+            />
           </div>
         )
       }
       asideTitle="Detail Panel"
       asideSubtitle="Retry, inspect, and verification hooks live here."
       aside={
-        <div data-testid="automation-aside-empty-state" className="space-y-2">
-          <p className="text-sm font-medium text-neutral-600">
-            No item selected.
-          </p>
-          <p className="text-xs text-neutral-400">
-            Select a run, pipeline, or schedule to inspect it here.
-          </p>
-        </div>
+        selection ? (
+          <AutomationDetail selection={selection} />
+        ) : (
+          <div data-testid="automation-aside-empty-state" className="space-y-2">
+            <p className="text-sm font-medium text-neutral-600">
+              No item selected.
+            </p>
+            <p className="text-xs text-neutral-400">
+              Select a run, pipeline, or schedule to inspect it here.
+            </p>
+          </div>
+        )
       }
     />
   );

@@ -14,7 +14,7 @@ import {
   type NoteLifecycle,
 } from '../../src/lib/note-logic';
 import { toNoteHeaderDisplay } from '../lib/display';
-import { SoftPanel } from '../components/layout';
+import { PageContainer, SoftPanel } from '../components/layout';
 import { PrimaryButton, SecondaryButton } from '../components/ui';
 import { NoteHeader, NoteMetaRail, NoteBodyRenderer } from '../components/note';
 
@@ -642,7 +642,7 @@ function NoteRoute() {
   } as const;
 
   return (
-    <main className="px-4 sm:px-6 pb-12 pt-6 max-w-[1440px] mx-auto space-y-6">
+    <PageContainer className="max-w-[1440px] pb-12">
       {/* Back nav */}
       <nav>
         <Link
@@ -995,6 +995,6 @@ function NoteRoute() {
           )}
         </div>
       </footer>
-    </main>
+    </PageContainer>
   );
 }

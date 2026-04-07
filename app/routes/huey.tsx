@@ -291,7 +291,7 @@ function HueyRouteInner({
       {/* Step extractor panel — only shown when steps are available */}
       {extractedSteps && extractedSteps.steps.length > 0 && (
         <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
-          <div className="genie-surface genie-surface--utility rounded-[28px] p-4 space-y-3">
+          <div className="rounded-[28px] bg-white/60 backdrop-blur-sm border border-slate-200/60 p-4 space-y-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               Extracted steps
             </p>
