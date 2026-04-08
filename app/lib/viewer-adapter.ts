@@ -289,6 +289,24 @@ export interface BubbleSurfacePayload {
   signals: PressureSignal[];
 }
 
+// Timeline surface — domain event stream reader
+export interface TimelineEventEntry {
+  id: string;
+  type: string;
+  ts: string;
+  src: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  data: Record<string, unknown>;
+}
+
+export interface TimelineSurfacePayload {
+  events: TimelineEventEntry[];
+  total: number;
+  offset: number;
+  limit: number;
+  fetchedAt: string;
+}
+
 // Knowledge surface — active authoring workspace context
 // Spec: doc/context/viewer-v3/COD-VIEWER-ADAPTER-SPEC.md — Knowledge surface
 export interface KnowledgeSurfacePayload {
@@ -1003,6 +1021,50 @@ export function getBubbleSurfaceQueryOptions() {
 
 export function useBubbleSurface() {
   return useQuery(getBubbleSurfaceQueryOptions());
+}
+
+export interface TimelineQueryParams {
+  limit?: number;
+  offset?: number;
+  eventType?: string;
+  from?: string;
+  to?: string;
+}
+
+export function getTimelineSurfaceQueryOptions(
+  params: TimelineQueryParams = {}
+) {
+  const searchParams = new URLSearchParams();
+  if (params.limit != null) searchParams.set('limit', String(params.limit));
+  if (params.offset != null) searchParams.set('offset', String(params.offset));
+  if (params.eventType) searchParams.set('eventType', params.eventType);
+  if (params.from) searchParams.set('from', params.from);
+  if (params.to) searchParams.set('to', params.to);
+  const qs = searchParams.toString();
+  const url = qs
+    ? `/api/v1/surfaces/timeline?${qs}`
+    : '/api/v1/surfaces/timeline';
+  return {
+    queryKey: ['viewer-adapter', 'timeline-surface', params] as const,
+    queryFn: async (): Promise<TimelineSurfacePayload> => {
+      const res = await apiFetch(url);
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch timeline surface: 401`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch timeline surface: ${res.status}`);
+      const body = await res.json();
+      const sc = (body?.structuredContent ?? body) as TimelineSurfacePayload;
+      return sc;
+    },
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+    retry: (failureCount: number, error: unknown) =>
+      !(error instanceof UnauthenticatedError) && failureCount < 1,
+  };
+}
+
+export function useTimelineSurface(params: TimelineQueryParams = {}) {
+  return useQuery(getTimelineSurfaceQueryOptions(params));
 }
 
 export function getProjectSurfaceQueryOptions(projectId: string) {
