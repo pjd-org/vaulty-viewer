@@ -36,18 +36,10 @@ function AutomationDetail({ selection }: { selection: Selection }) {
         data-testid="automation-pipeline-detail"
       >
         <p className="font-medium text-slate-800 font-mono">{pipeline.name}</p>
-        <div className="space-y-1 text-xs text-slate-600">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-            Pipeline info
-          </p>
-          <p>
-            <span className="font-medium text-slate-700">Name:</span>{' '}
-            <span className="font-mono">{pipeline.name}</span>
-          </p>
-          <p className="text-slate-500 italic">
-            No additional runtime metadata available for this pipeline.
-          </p>
-        </div>
+        <p className="text-xs text-slate-500">
+          No execution history yet. Trigger a run via the scheduler or CLI to
+          see runtime metadata here.
+        </p>
       </div>
     );
   }
@@ -352,8 +344,8 @@ function AutomationRoute() {
           </div>
         )
       }
-      asideTitle="Detail Panel"
-      asideSubtitle="Retry, inspect, and verification hooks live here."
+      asideTitle="Detail"
+      asideSubtitle="Pipeline and job inspection."
       aside={
         selection ? (
           <AutomationDetail selection={selection} />

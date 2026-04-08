@@ -76,7 +76,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
       {item.allowedActions.length > 0 && (
         <div className="space-y-1">
           <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-            Actions (display only)
+            Available actions
           </p>
           <ul className="space-y-1">
             {item.allowedActions.map((action) => (
@@ -257,7 +257,7 @@ function ArchiveRoute() {
         )
       }
       asideTitle="Archive Detail"
-      asideSubtitle="Why it was archived and what can be reopened."
+      asideSubtitle="Why it was archived and its rejection context."
       aside={
         selectedItem ? (
           <ArchiveItemDetail item={selectedItem} />

@@ -129,12 +129,21 @@ function TaskDetail({ task }: { task: NextAction }) {
     <div className="space-y-4 text-sm" data-testid="work-task-detail">
       <div>
         <p className="font-medium leading-snug text-slate-800">{task.title}</p>
-        {task.description && (
+        {task.description ? (
           <p className="mt-1 text-xs text-slate-500">{task.description}</p>
+        ) : (
+          <p className="mt-1 text-xs text-slate-400 italic">
+            No description. Open the note to add context.
+          </p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
+        {task.priority > 0 && (
+          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-700">
+            p{task.priority}
+          </span>
+        )}
         {task.effortScore > 0 && (
           <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
             effort {task.effortScore}

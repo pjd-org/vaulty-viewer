@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -138,5 +138,52 @@ describe('automation route — scheduler disabled', () => {
     render(<AutomationComponent />);
     expect(screen.getByTestId('automation-scheduler-section')).toBeTruthy();
     expect(screen.getByText(/disabled/i)).toBeTruthy();
+  });
+});
+
+describe('automation route — pipeline detail panel', () => {
+  const AUTOMATION_DATA = {
+    pipelines: [{ name: 'daily-digest' }],
+    scheduler: {
+      enabled: false,
+      mode: 'auto',
+      tz: 'UTC',
+      jobs: [],
+    },
+  };
+
+  beforeEach(() => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: AUTOMATION_DATA,
+      isError: false,
+    });
+  });
+
+  it('shows pipeline detail panel when a pipeline is selected', () => {
+    render(<AutomationComponent />);
+    const btn = screen.getByText('daily-digest');
+    fireEvent.click(btn);
+    expect(screen.getByTestId('automation-pipeline-detail')).toBeTruthy();
+  });
+
+  it('shows pipeline name once in the detail panel header', () => {
+    render(<AutomationComponent />);
+    fireEvent.click(screen.getByText('daily-digest'));
+    const detail = screen.getByTestId('automation-pipeline-detail');
+    // name appears exactly once inside the detail panel
+    const nameEls = detail.querySelectorAll('*');
+    const nameMatches = Array.from(nameEls).filter(
+      (el) => el.textContent?.trim() === 'daily-digest'
+    );
+    // Only the header <p> should match; there should not be a second copy
+    expect(nameMatches.length).toBe(1);
+  });
+
+  it('shows no-history message instead of "No additional runtime metadata" copy', () => {
+    render(<AutomationComponent />);
+    fireEvent.click(screen.getByText('daily-digest'));
+    expect(screen.queryByText(/no additional runtime metadata/i)).toBeNull();
+    expect(screen.getByText(/no execution history/i)).toBeTruthy();
   });
 });
