@@ -2,8 +2,10 @@ import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
+import { EmptyState } from '../components/ui';
 import { bubbleSearchParams } from '../../src/lib/routes/search-params';
 import {
+  getBubbleSurfaceQueryOptions,
   useBubbleSurface,
   type BubbleSurfacePayload,
 } from '../lib/viewer-adapter';
@@ -11,6 +13,9 @@ import { UnauthenticatedError } from '../../src/utils/api';
 
 export const Route = createFileRoute('/bubble')({
   validateSearch: bubbleSearchParams,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(getBubbleSurfaceQueryOptions());
+  },
   component: BubbleRoute,
 });
 
@@ -92,7 +97,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
           />
           <StatRow
             label="Top task score"
-            value={momentum.topTaskScore.toFixed(2)}
+            value={`${Math.round(momentum.topTaskScore * 100)}%`}
           />
         </div>
       </section>
@@ -109,6 +114,40 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
           <StatRow label="Stress" value={`${pressure.stressLevel}%`} />
         </div>
       </section>
+
+      {/* Signals */}
+      {data.signals.length > 0 && (
+        <section data-testid="bubble-signals">
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+            Signals
+          </h3>
+          <ul className="space-y-1">
+            {data.signals.map((signal) => {
+              const badgeClass =
+                signal.severity === 'high' || signal.severity === 'critical'
+                  ? 'bg-red-100 text-red-700'
+                  : signal.severity === 'medium'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-neutral-100 text-neutral-500';
+              return (
+                <li
+                  key={signal.id}
+                  className="flex items-center justify-between gap-2 py-1.5 border-b border-neutral-100 last:border-0"
+                >
+                  <span className="text-sm text-neutral-800">
+                    {signal.title}
+                  </span>
+                  <span
+                    className={`text-xs font-medium px-1.5 py-0.5 rounded ${badgeClass}`}
+                  >
+                    {signal.severity}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
@@ -203,12 +242,16 @@ function BubbleRoute() {
       primarySubtitle="Interpretation on the left, intervention on the right."
       primary={
         isLoading ? (
-          <p
-            className="text-sm text-neutral-400"
-            data-testid="bubble-loading-state"
-          >
-            Loading…
-          </p>
+          <div className="space-y-3" data-testid="bubble-loading-state">
+            <div className="h-16 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
+            <div className="h-20 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
+            <div className="h-16 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
+          </div>
+        ) : error && !data ? (
+          <EmptyState
+            title="Bubble data temporarily unavailable."
+            description="The shell is intact. Retry once the runtime responds again."
+          />
         ) : data == null ? (
           <div data-testid="bubble-empty-state" className="space-y-2">
             <p className="text-sm font-medium text-neutral-600">
@@ -234,7 +277,8 @@ function BubbleRoute() {
               No item selected.
             </p>
             <p className="text-xs text-neutral-400">
-              Selection-driven bubble actions will render here.
+              Energy, rewards, and behavioral context will appear here once the
+              runtime connects.
             </p>
           </div>
         )

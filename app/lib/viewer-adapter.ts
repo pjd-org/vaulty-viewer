@@ -985,7 +985,7 @@ export function getBubbleSurfaceQueryOptions() {
   return {
     queryKey: ['viewer-adapter', 'bubble-surface'] as const,
     queryFn: async (): Promise<BubbleSurfacePayload> => {
-      const res = await apiFetch('/api/v1/surfaces/bubble?max=25');
+      const res = await apiFetch('/api/v1/surfaces/bubble');
       if (res.status === 401)
         throw new UnauthenticatedError(`Failed to fetch bubble surface: 401`);
       if (!res.ok)
@@ -995,6 +995,7 @@ export function getBubbleSurfaceQueryOptions() {
       return sc;
     },
     staleTime: 60_000,
+    refetchInterval: 60_000,
     retry: (failureCount: number, error: unknown) =>
       !(error instanceof UnauthenticatedError) && failureCount < 1,
   };

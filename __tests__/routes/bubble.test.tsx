@@ -278,7 +278,9 @@ describe('BubbleRoute — generic error', () => {
 
   it('renders empty-state on generic error', () => {
     render(<BubbleComponent />);
-    expect(screen.getByTestId('bubble-empty-state')).toBeTruthy();
+    expect(
+      screen.getByText('Bubble data temporarily unavailable.')
+    ).toBeTruthy();
   });
 
   it('does not navigate to login on generic error', () => {
