@@ -80,20 +80,29 @@ vi.mock('../../app/components/layout', () => ({
 vi.mock('../../app/components/inbox/InboxItemCard', () => ({
   InboxItemCard: ({
     item,
+    isExpanded,
+    onToggle,
     onInspect,
     onPromote,
     onReject,
+    detail,
   }: {
     item: { title: string };
+    isExpanded?: boolean;
+    onToggle?: () => void;
     onInspect: () => void;
     onPromote?: () => void;
     onReject?: () => void;
+    detail?: { summary?: string };
   }) => (
     <article>
       <span>{item.title}</span>
-      <button type="button" onClick={onInspect}>
+      <button type="button" onClick={onToggle ?? onInspect}>
         {`Inspect ${item.title}`}
       </button>
+      {isExpanded && detail?.summary ? (
+        <div data-testid="inline-detail">{detail.summary}</div>
+      ) : null}
       {onPromote ? (
         <button type="button" onClick={onPromote}>
           {`Promote ${item.title}`}
@@ -385,9 +394,8 @@ describe('inbox adapter wiring', () => {
       severity: undefined,
     };
     render(<RouteComponent />);
-    const aside = screen.getByTestId('inbox-aside');
-    expect(within(aside).getAllByText('Proposal run').length).toBeGreaterThan(
-      0
-    );
+    // Detail is now inline in the card (inbox-primary), not in the aside
+    const primary = screen.getByTestId('inbox-primary');
+    expect(within(primary).getByTestId('inline-detail')).toBeTruthy();
   });
 });

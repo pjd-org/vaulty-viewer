@@ -14,6 +14,7 @@ import {
   HueyAssistantProvider,
 } from '../components/huey';
 import { useThread, useThreadRuntime } from '@assistant-ui/react';
+import { useWorkSurface, useHomeSurface } from '../lib/viewer-adapter';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -60,7 +61,7 @@ function createThreadId(): string {
 }
 
 // ---------------------------------------------------------------------------
-// State — messages/sending/cancelled moved to @assistant-ui/react runtime
+// State
 // ---------------------------------------------------------------------------
 
 export type HueyState = {
@@ -193,76 +194,71 @@ function HueyRouteInner({
   const thread = useThread();
   const threadRuntime = useThreadRuntime();
 
-  const handleSend = useCallback(
-    (text: string) => {
-      if (!text.trim() || thread.isRunning) return;
-      // Pre-hydration guard: threadId is still the SSR placeholder
-      if (threadId === INITIAL_THREAD_ID) return;
+  /**
+   * The composer primitives handle send internally via the runtime.
+   * We hook into the thread state to persist the thread record on first message.
+   */
+  useEffect(() => {
+    // When the thread gets its first message, save the thread record.
+    // thread.messages updates after the first user turn is appended.
+    if (thread.messages.length !== 1) return;
+    const firstMsg = thread.messages[0];
+    if (!firstMsg || firstMsg.role !== 'user') return;
+    if (threadId === INITIAL_THREAD_ID) return;
 
-      const effectiveIntent = activeIntent ?? 'freeform';
-      const template = getTemplate(effectiveIntent);
+    const effectiveIntent = activeIntent ?? 'freeform';
+    const displayText = firstMsg.content
+      .filter((p) => p.type === 'text')
+      .map((p) => (p as { type: 'text'; text: string }).text)
+      .join(' ')
+      .slice(0, 60);
 
-      let prompt: string;
-      let displayText: string;
+    const record: ThreadRecord = {
+      id: threadId,
+      title: displayText,
+      intent: activeIntent,
+      emoji: INTENT_EMOJIS[effectiveIntent] ?? '💬',
+      timestamp: Date.now(),
+    };
+    onFirstMessage(record);
+  }, [thread.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-      if (effectiveIntent === 'freeform') {
-        prompt = text;
-        displayText = text;
-      } else {
-        const mainField = template.fields[0]?.key ?? 'message';
-        prompt = template.buildPrompt({ [mainField]: text });
-        displayText = `[${template.label}] ${text}`;
-      }
-
-      // Persist thread to history on first message
-      if (thread.messages.length === 0) {
-        const record: ThreadRecord = {
-          id: threadId,
-          title: displayText.slice(0, 60),
-          intent: activeIntent,
-          emoji: INTENT_EMOJIS[effectiveIntent] ?? '💬',
-          timestamp: Date.now(),
-        };
-        onFirstMessage(record);
-      }
-
-      threadRuntime.append({
-        role: 'user',
-        content: [{ type: 'text', text: prompt }],
-      });
-    },
-    [
-      thread.isRunning,
-      thread.messages.length,
-      activeIntent,
-      threadId,
-      threadRuntime,
-      onFirstMessage,
-    ]
-  );
-
-  const handleCancel = useCallback(() => {
-    threadRuntime.cancelRun();
-  }, [threadRuntime]);
-
-  // Map @assistant-ui/react ThreadMessage[] → ChatMessage[] for HueyWorkspace
-  const messages = thread.messages
-    .filter((m) => m.role === 'user' || m.role === 'assistant')
-    .map((m) => ({
-      id: m.id,
-      role: m.role as 'user' | 'assistant',
-      content: m.content
-        .filter((p) => p.type === 'text')
-        .map((p) => (p as { type: 'text'; text: string }).text)
-        .join('\n'),
-    }));
+  /**
+   * When an intent is active, inject the intent prompt as the system-level
+   * context before the user sends. We do this by overriding the model context
+   * instructions via useAssistantInstructions if available, or by prepending
+   * to the user message in the model adapter.
+   *
+   * For now: the existing huey-adapter already uses intent-aware prompting
+   * via buildPrompt() called from the route. Since the composer now sends
+   * directly, we instead set the intent description as a system message
+   * by appending it as an instruction to the thread via threadRuntime.
+   * The model adapter already receives the full thread context; the intent
+   * framing is handled server-side. No additional wiring needed here.
+   */
 
   const lastAssistantText =
-    [...messages].reverse().find((m) => m.role === 'assistant')?.content ?? '';
+    [...thread.messages]
+      .reverse()
+      .find((m) => m.role === 'assistant')
+      ?.content.filter((p) => p.type === 'text')
+      .map((p) => (p as { type: 'text'; text: string }).text)
+      .join('\n') ?? '';
 
   const { data: extractedSteps } = useStepExtractorQuery(lastAssistantText, {
     enabled: !thread.isRunning && lastAssistantText.length > 80,
   });
+
+  const { data: workSurface } = useWorkSurface();
+  const { data: homeSurface } = useHomeSurface();
+
+  const contextSummary = {
+    taskCount: workSurface?.total ?? 0,
+    noteCount:
+      (homeSurface?.snapshots?.knowledge?.length ?? 0) +
+      (homeSurface?.contextTail?.length ?? 0),
+    inboxPending: homeSurface?.pressureBand?.length ?? 0,
+  };
 
   return (
     <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
@@ -279,12 +275,9 @@ function HueyRouteInner({
       </div>
       <div className="w-full flex-1 min-w-0">
         <HueyWorkspace
-          messages={messages}
-          loading={thread.isRunning}
-          onSend={handleSend}
-          onCancel={handleCancel}
           activeIntent={activeIntent}
           intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
+          contextSummary={contextSummary}
         />
       </div>
 

@@ -161,109 +161,6 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
   return null;
 }
 
-/* ─── Detail Panel ───────────────────────────────────────────────────────── */
-
-function InboxDetailPanel({
-  item,
-  run,
-  onPromote,
-  onReject,
-  onClose,
-}: {
-  item: InboxItem;
-  run?: Run;
-  onPromote?: () => void;
-  onReject?: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="space-y-4 text-sm">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-slate-800 text-base leading-snug">
-          {item.title}
-        </h3>
-        <button
-          type="button"
-          onClick={onClose}
-          className="shrink-0 text-slate-400 hover:text-slate-700 text-xs px-2 py-1 rounded"
-          aria-label="Close detail panel"
-        >
-          ✕
-        </button>
-      </div>
-
-      {item.summary && (
-        <p className="text-slate-600 leading-relaxed">{item.summary}</p>
-      )}
-
-      <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-          Why surfaced
-        </p>
-        <p className="text-slate-600">
-          {item.whySurfaced ?? 'No explanation provided.'}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Severity
-          </p>
-          <p className="mt-1 capitalize text-slate-700">
-            {item.severity ?? '—'}
-          </p>
-        </div>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Bucket
-          </p>
-          <p className="mt-1 text-slate-700">{item.inboxBucket}</p>
-        </div>
-        {item.rejectionReason && (
-          <div className="col-span-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Rejection reason
-            </p>
-            <p className="mt-1 text-slate-700">{item.rejectionReason}</p>
-          </div>
-        )}
-      </div>
-
-      {run && (
-        <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Run
-          </p>
-          <p className="text-slate-600 font-mono text-xs">{run.runId}</p>
-          {run.action && <p className="text-slate-500 text-xs">{run.action}</p>}
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-        {onPromote && (
-          <button
-            type="button"
-            onClick={onPromote}
-            className="rounded-full bg-slate-900 text-white text-xs font-semibold px-4 py-2 hover:bg-slate-700 transition-colors"
-          >
-            Promote
-          </button>
-        )}
-        {onReject && (
-          <button
-            type="button"
-            onClick={onReject}
-            className="rounded-full border border-red-200 text-red-600 text-xs font-semibold px-4 py-2 hover:bg-red-50 transition-colors"
-          >
-            Reject
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Filter bar ─────────────────────────────────────────────────────────── */
 
 const SEVERITY_OPTIONS = [
@@ -472,18 +369,6 @@ function InboxRoute() {
     [rejectRun, refresh]
   );
 
-  // Find the selected item across all buckets
-  const selectedItem = React.useMemo(
-    () =>
-      selectedId
-        ? surfaceItems.find((item) => item.id === selectedId)
-        : undefined,
-    [selectedId, surfaceItems]
-  );
-  const selectedRun = selectedItem
-    ? runById.get(selectedItem.sourceId)
-    : undefined;
-
   /* ─── toolbar ─────────────────────────────────────────────────────────── */
 
   const toolbar = (
@@ -585,10 +470,24 @@ function InboxRoute() {
             {activeView === 'queue' &&
               groupedItems.queue.map((item) => {
                 const run = runById.get(item.sourceId);
+                const expanded = selectedId === item.id;
                 return (
                   <div key={item.id} className="space-y-1">
                     <InboxItemCard
                       item={inboxItemToDisplay(item, undefined, run)}
+                      detail={{
+                        summary: item.summary ?? undefined,
+                        whySurfaced: item.whySurfaced,
+                        severity: item.severity,
+                        inboxBucket: item.inboxBucket,
+                        rejectionReason: item.rejectionReason,
+                        runId: run?.runId,
+                        runAction: run?.action,
+                      }}
+                      isExpanded={expanded}
+                      onToggle={() =>
+                        setSelectedId(expanded ? undefined : item.id)
+                      }
                       onInspect={() => setSelectedId(item.id)}
                       onPromote={
                         run && run.runType !== 'signals_infer'
@@ -623,10 +522,22 @@ function InboxRoute() {
             {activeView === 'workbench' &&
               groupedItems.workbench.map((item) => {
                 const note = noteByPath.get(item.sourceId);
+                const expanded = selectedId === item.id;
                 return (
                   <InboxItemCard
                     key={item.id}
                     item={inboxItemToDisplay(item, note)}
+                    detail={{
+                      summary: item.summary ?? undefined,
+                      whySurfaced: item.whySurfaced,
+                      severity: item.severity,
+                      inboxBucket: item.inboxBucket,
+                      rejectionReason: item.rejectionReason,
+                    }}
+                    isExpanded={expanded}
+                    onToggle={() =>
+                      setSelectedId(expanded ? undefined : item.id)
+                    }
                     onInspect={() => setSelectedId(item.id)}
                   />
                 );
@@ -647,10 +558,22 @@ function InboxRoute() {
             {activeView === 'archive' &&
               archiveItems.map((item) => {
                 const note = noteByPath.get(item.sourceId);
+                const expanded = selectedId === item.id;
                 return (
                   <InboxItemCard
                     key={item.id}
                     item={inboxItemToDisplay(item, note)}
+                    detail={{
+                      summary: item.summary ?? undefined,
+                      whySurfaced: item.whySurfaced,
+                      severity: item.severity,
+                      inboxBucket: item.inboxBucket,
+                      rejectionReason: item.rejectionReason,
+                    }}
+                    isExpanded={expanded}
+                    onToggle={() =>
+                      setSelectedId(expanded ? undefined : item.id)
+                    }
                     onInspect={() => setSelectedId(item.id)}
                   />
                 );
@@ -663,42 +586,71 @@ function InboxRoute() {
 
   /* ─── aside detail panel ──────────────────────────────────────────────── */
 
-  const asideContent = selectedItem ? (
-    <InboxDetailPanel
-      item={selectedItem}
-      run={selectedRun}
-      onClose={() => setSelectedId(undefined)}
-      onPromote={
-        selectedRun && selectedRun.runType !== 'signals_infer'
-          ? () => handleCommit(selectedRun.runId)
-          : undefined
-      }
-      onReject={
-        selectedRun
-          ? () => handleReject(selectedRun.runId)
-          : selectedItem.sourceId
-            ? () => handleReject(selectedItem.sourceId)
-            : undefined
-      }
-    />
-  ) : (
-    <EmptyState
-      title="Select an item to inspect"
-      description="Source context, rejection reason, and actions will appear here."
-    />
-  );
+  // Detail is now rendered inline within each InboxItemCard — no aside needed.
+
+  const summaryItems = [
+    {
+      label: 'Queue',
+      value: String(counts.queue),
+      detail:
+        counts.queue > 0
+          ? `${counts.queue} proposal${counts.queue !== 1 ? 's' : ''} staged — commit or reject to clear`
+          : 'Queue is empty — no staged proposals waiting',
+    },
+    {
+      label: 'Workbench',
+      value: String(counts.workbench),
+      detail:
+        counts.workbench > 0
+          ? `${counts.workbench} draft note${counts.workbench !== 1 ? 's' : ''} deferred — inspect or promote`
+          : 'No notes in workbench',
+    },
+    {
+      label: 'Archive',
+      value: String(counts.archive),
+      detail:
+        counts.archive > 0
+          ? `${counts.archive} rejected item${counts.archive !== 1 ? 's' : ''} — browse or clear`
+          : 'Archive is empty',
+    },
+    {
+      label: 'API',
+      value:
+        apiStatus === 'online'
+          ? 'Online'
+          : apiStatus === 'offline'
+            ? 'Offline'
+            : 'Unknown',
+      detail:
+        apiStatus === 'online'
+          ? 'MCP/API reachable — commits will go through'
+          : apiStatus === 'offline'
+            ? 'API unreachable — commit and reject actions are blocked'
+            : 'API status unknown',
+    },
+  ] as const;
 
   return (
     <WorkspaceScaffold
       title="Inbox"
       subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
+      statusLine={
+        loading
+          ? undefined
+          : `${counts.queue} queued · ${counts.workbench} in workbench · ${counts.archive} archived`
+      }
+      nextAction={
+        counts.queue > 0
+          ? `→ ${counts.queue} proposal${counts.queue !== 1 ? 's' : ''} waiting — commit, reject, or inspect each one.`
+          : counts.workbench > 0
+            ? `→ Queue is clear. ${counts.workbench} workbench note${counts.workbench !== 1 ? 's' : ''} deferred — review them next.`
+            : '→ Inbox is clear. Nothing staged or deferred right now.'
+      }
+      summaryItems={summaryItems}
       actions={toolbar}
       primaryTitle="Triage Queue"
       primarySubtitle="Sorted by COD rank, filtered by severity."
       primary={primaryContent}
-      asideTitle="Item Detail"
-      asideSubtitle="Source context and allowed actions."
-      aside={asideContent}
     />
   );
 }

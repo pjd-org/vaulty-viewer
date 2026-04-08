@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { cn } from '@/src/lib/utils';
 import { formatDuration, type NextAction } from '../../../src/lib/focus-logic';
+import { Card, CardContent } from '../ui/card';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -19,6 +21,20 @@ const BUDGET_OPTIONS = [
   { value: '90', label: '90m' },
   { value: '120', label: '120m' },
 ];
+
+/** Corner bracket accent — card-5 pattern */
+const CornerBracket = ({ className }: { className: string }) => (
+  <div className={cn('size-5 absolute border-border', className)} />
+);
+
+const CornerBrackets = () => (
+  <>
+    <CornerBracket className="-top-px -left-px border-l-2 border-t-2 rounded-tl-lg" />
+    <CornerBracket className="-top-px -right-px border-r-2 border-t-2 rounded-tr-lg" />
+    <CornerBracket className="-bottom-px -left-px border-l-2 border-b-2 rounded-bl-lg" />
+    <CornerBracket className="-bottom-px -right-px border-r-2 border-b-2 rounded-br-lg" />
+  </>
+);
 
 export function SessionPlannerCard({
   tasks,
@@ -75,142 +91,147 @@ export function SessionPlannerCard({
 
   if (!expanded) {
     return (
-      <div className="genie-surface genie-surface--utility px-4 py-3">
-        <SecondaryButton onClick={() => setExpanded(true)} className="w-full">
-          Plan a session →
-        </SecondaryButton>
-      </div>
+      <Card className="shadow-[0px_4px_0px_0px_var(--border)]">
+        <CardContent className="px-4 py-3">
+          <SecondaryButton onClick={() => setExpanded(true)} className="w-full">
+            Plan a session →
+          </SecondaryButton>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="genie-surface genie-surface--elevated p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-800">Plan a session</p>
-        <IconButton
-          onClick={() => {
-            setExpanded(false);
-            setAiEnabled(false);
-          }}
-          label="Close"
-          icon={<span className="text-lg leading-none">×</span>}
-          className="text-slate-400"
-        />
-      </div>
+    <Card className="relative rounded-md bg-muted/20">
+      <CornerBrackets />
+      <CardContent className="p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-slate-800">Plan a session</p>
+          <IconButton
+            onClick={() => {
+              setExpanded(false);
+              setAiEnabled(false);
+            }}
+            label="Close"
+            icon={<span className="text-lg leading-none">×</span>}
+            className="text-slate-400"
+          />
+        </div>
 
-      <div>
-        <p className="text-xs text-slate-600 mb-2">Duration</p>
-        <SegmentedControl
-          options={BUDGET_OPTIONS}
-          value={budgetMin}
-          onChange={(v) => {
-            setBudgetMin(v);
-            setAiEnabled(false);
-          }}
-        />
-      </div>
+        <div>
+          <p className="text-xs text-slate-600 mb-2">Duration</p>
+          <SegmentedControl
+            options={BUDGET_OPTIONS}
+            value={budgetMin}
+            onChange={(v) => {
+              setBudgetMin(v);
+              setAiEnabled(false);
+            }}
+          />
+        </div>
 
-      {/* AI plan result */}
-      {aiPlan && !aiLoading && (
-        <div className="genie-surface genie-surface--utility rounded-xl p-3 space-y-2">
-          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-            AI Session Plan
-          </p>
-          <p className="text-xs text-slate-600 italic">
-            {aiPlan.expected_outcome}
-          </p>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
-              <span
-                aria-hidden="true"
-                className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"
-              />
-              {aiPlan.main_task.title}
-              <span className="text-xs text-slate-500 ml-auto">
-                {aiPlan.main_task.duration}
-              </span>
-            </div>
-            {aiPlan.supporting_tasks.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center gap-2 text-sm text-slate-700 pl-4"
-              >
+        {/* AI plan result */}
+        {aiPlan && !aiLoading && (
+          <div className="genie-surface genie-surface--utility rounded-xl p-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              AI Session Plan
+            </p>
+            <p className="text-xs text-slate-600 italic">
+              {aiPlan.expected_outcome}
+            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
                 <span
                   aria-hidden="true"
-                  className="w-1.5 h-1.5 rounded-full bg-neutral-300 shrink-0"
+                  className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"
                 />
-                {t.title}
+                {aiPlan.main_task.title}
                 <span className="text-xs text-slate-500 ml-auto">
-                  {t.duration}
+                  {aiPlan.main_task.duration}
                 </span>
               </div>
-            ))}
-          </div>
-          <p className="text-xs text-slate-500">Total: {aiPlan.total_time}</p>
-          <PrimaryButton onClick={handleUseAiPlan} className="w-full">
-            Start this session
-          </PrimaryButton>
-        </div>
-      )}
-
-      {/* Manual task picker (shown when AI hasn't run or loaded) */}
-      {!aiPlan && (
-        <div>
-          <p className="text-xs text-slate-600 mb-2">Tasks</p>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {tasks.map((t) => (
-              <label
-                key={t.id}
-                className="flex items-center gap-3 text-sm cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(t.id)}
-                  onChange={() => toggle(t.id)}
-                  className="rounded"
-                />
-                <span className="flex-1 truncate text-slate-800">
+              {aiPlan.supporting_tasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-2 text-sm text-slate-700 pl-4"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-1.5 h-1.5 rounded-full bg-neutral-300 shrink-0"
+                  />
                   {t.title}
-                </span>
-                <span className="text-xs text-slate-500 shrink-0">
-                  {t.estimatedTimeMin > 0
-                    ? formatDuration(t.estimatedTimeMin)
-                    : ''}
-                </span>
-              </label>
-            ))}
+                  <span className="text-xs text-slate-500 ml-auto">
+                    {t.duration}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500">Total: {aiPlan.total_time}</p>
+            <PrimaryButton onClick={handleUseAiPlan} className="w-full">
+              Start this session
+            </PrimaryButton>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="flex gap-2">
+        {/* Manual task picker (shown when AI hasn't run or loaded) */}
         {!aiPlan && (
-          <SecondaryButton
-            onClick={handleAiPlan}
-            disabled={aiLoading || tasks.length === 0}
-            className="flex-1"
-          >
-            {aiLoading ? 'Planning…' : '✦ Let AI plan it'}
-          </SecondaryButton>
+          <div>
+            <p className="text-xs text-slate-600 mb-2">Tasks</p>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {tasks.map((t) => (
+                <label
+                  key={t.id}
+                  className="flex items-center gap-3 text-sm cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(t.id)}
+                    onChange={() => toggle(t.id)}
+                    className="rounded"
+                  />
+                  <span className="flex-1 truncate text-slate-800">
+                    {t.title}
+                  </span>
+                  <span className="text-xs text-slate-500 shrink-0">
+                    {t.estimatedTimeMin > 0
+                      ? formatDuration(t.estimatedTimeMin)
+                      : ''}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         )}
-        {!aiPlan && (
-          <PrimaryButton
-            onClick={handleStart}
-            disabled={selected.size === 0}
-            className="flex-1"
-          >
-            Start ({selected.size})
-          </PrimaryButton>
-        )}
-        {aiPlan && (
-          <SecondaryButton
-            onClick={() => setAiEnabled(false)}
-            className="w-full"
-          >
-            Back to manual
-          </SecondaryButton>
-        )}
-      </div>
-    </div>
+
+        <div className="flex gap-2">
+          {!aiPlan && (
+            <SecondaryButton
+              onClick={handleAiPlan}
+              disabled={aiLoading || tasks.length === 0}
+              className="flex-1"
+            >
+              {aiLoading ? 'Planning…' : '✦ Let AI plan it'}
+            </SecondaryButton>
+          )}
+          {!aiPlan && (
+            <PrimaryButton
+              onClick={handleStart}
+              disabled={selected.size === 0}
+              className="flex-1"
+            >
+              Start ({selected.size})
+            </PrimaryButton>
+          )}
+          {aiPlan && (
+            <SecondaryButton
+              onClick={() => setAiEnabled(false)}
+              className="w-full"
+            >
+              Back to manual
+            </SecondaryButton>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

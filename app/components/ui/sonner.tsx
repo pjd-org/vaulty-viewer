@@ -6,12 +6,16 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { Toaster as Sonner } from 'sonner';
+import { useUIStore } from '@/src/store/ui';
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const theme = useUIStore((s) => s.theme);
+
   return (
     <Sonner
+      theme={theme as ToasterProps['theme']}
       className="toaster group"
       icons={{
         success: <CircleCheck className="h-4 w-4" />,

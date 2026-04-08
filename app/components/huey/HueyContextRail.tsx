@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SoftPanel, SectionHeader } from '../layout';
 import { PrimaryButton, SoftChip } from '../ui';
 import type {
@@ -40,6 +40,14 @@ function groupByDate(threads: ThreadRecord[]) {
   return groups;
 }
 
+// Workflow category grouping — local since IntentTemplate has no category field
+const WORKFLOW_GROUPS: { label: string; ids: IntentType[] }[] = [
+  { label: 'Execution', ids: ['plan_next_step', 'generate_code'] },
+  { label: 'Memory', ids: ['review_spec', 'summarize_state'] },
+  { label: 'Debug', ids: ['debug_blocker'] },
+  { label: 'Free', ids: ['freeform'] },
+];
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -68,9 +76,36 @@ export function HueyContextRail({
     { label: string; items: ThreadRecord[] }[]
   >([]);
 
+  const [workflowSearch, setWorkflowSearch] = useState('');
+
   useEffect(() => {
     setGroups(groupByDate(threads));
   }, [threads]);
+
+  // Filter templates by search query
+  const filteredTemplates = useMemo(() => {
+    const q = workflowSearch.trim().toLowerCase();
+    if (!q) return intentTemplates;
+    return intentTemplates.filter(
+      (t) =>
+        t.label.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+    );
+  }, [intentTemplates, workflowSearch]);
+
+  // Build grouped views from filtered list
+  const visibleGroups = useMemo(() => {
+    if (workflowSearch.trim()) {
+      // When searching, show all matches in a single flat group
+      return filteredTemplates.length > 0
+        ? [{ label: 'Results', items: filteredTemplates }]
+        : [];
+    }
+    return WORKFLOW_GROUPS.map((g) => ({
+      label: g.label,
+      items: intentTemplates.filter((t) => g.ids.includes(t.id)),
+    })).filter((g) => g.items.length > 0);
+  }, [filteredTemplates, intentTemplates, workflowSearch]);
 
   return (
     <SoftPanel variant="utility" className="h-full flex flex-col gap-4 !p-5">
@@ -82,22 +117,49 @@ export function HueyContextRail({
       </PrimaryButton>
 
       <div>
-        <SectionHeader title="Intent" className="mb-2" />
-        <div className="flex flex-wrap gap-2">
-          {intentTemplates.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onSelectIntent(t.id)}
-              className="appearance-none border-0 bg-transparent p-0 rounded-full"
-              title={t.description}
-            >
-              <SoftChip
-                label={t.label}
-                variant={activeIntent === t.id ? 'primary' : 'default'}
-                className="cursor-pointer"
-              />
-            </button>
+        <SectionHeader title="Workflows" className="mb-2" />
+        <p className="text-xs text-slate-400 mb-2">
+          Pick a mode to focus the conversation, or just type.
+        </p>
+
+        {/* Search */}
+        <input
+          type="search"
+          value={workflowSearch}
+          onChange={(e) => setWorkflowSearch(e.target.value)}
+          placeholder="Filter workflows…"
+          aria-label="Filter workflows"
+          className="w-full rounded-full border border-slate-200 bg-white/60 px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 mb-3"
+        />
+
+        {/* Grouped workflow chips */}
+        {visibleGroups.length === 0 && workflowSearch.trim() && (
+          <p className="text-xs text-slate-400">No matching workflows.</p>
+        )}
+        <div className="space-y-3">
+          {visibleGroups.map((group) => (
+            <div key={group.label}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1.5">
+                {group.label}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {group.items.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => onSelectIntent(t.id)}
+                    className="appearance-none border-0 bg-transparent p-0 rounded-full"
+                    title={t.description}
+                  >
+                    <SoftChip
+                      label={t.label}
+                      variant={activeIntent === t.id ? 'primary' : 'default'}
+                      className="cursor-pointer"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -119,17 +181,32 @@ export function HueyContextRail({
                 onClick={() => onSelectThread(thread.id)}
                 suppressHydrationWarning
                 className={[
-                  'huey-thread-item w-full text-left text-sm truncate rounded-xl px-3 py-2.5 block transition-colors',
+                  'huey-thread-item w-full text-left text-sm rounded-xl px-3 py-2.5 block transition-colors',
                   thread.id === activeThreadId
                     ? 'huey-thread-item--active'
                     : 'huey-thread-item--idle',
                 ].join(' ')}
                 title={`${thread.title} · ${formatRelativeTime(thread.timestamp)}`}
               >
-                <span aria-hidden="true" className="mr-1">
-                  {thread.emoji}
-                </span>
-                {thread.title}
+                <div className="flex items-center gap-1 truncate">
+                  <span aria-hidden="true" className="shrink-0">
+                    {thread.emoji}
+                  </span>
+                  <span className="truncate">{thread.title}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {thread.intent && (
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wide shrink-0">
+                      {thread.intent.replace(/_/g, ' ')}
+                    </span>
+                  )}
+                  <span
+                    className="text-[10px] text-slate-400 shrink-0"
+                    suppressHydrationWarning
+                  >
+                    {formatRelativeTime(thread.timestamp)}
+                  </span>
+                </div>
               </button>
             ))}
           </div>

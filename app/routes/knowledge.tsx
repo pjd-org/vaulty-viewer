@@ -43,6 +43,13 @@ function KnowledgeRoute() {
       >
         Graph
       </Link>
+      <Link
+        to="/huey"
+        search={{}}
+        className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700"
+      >
+        Ask Huey →
+      </Link>
       {noteId && (
         <Link
           to="/note"
@@ -81,7 +88,13 @@ function KnowledgeRoute() {
   return (
     <WorkspaceScaffold
       title="Knowledge"
-      subtitle="Active authoring and context operations."
+      subtitle="Structured memory for human, agent, and bubble contexts."
+      statusLine={
+        surface
+          ? `${surface.selectedContext.length} active context · ${surface.suggestedActions.length} suggested action${surface.suggestedActions.length !== 1 ? 's' : ''}`
+          : 'Memory surface loading…'
+      }
+      nextAction="→ Select a note to read or edit, or use Search to find context by meaning."
       actions={quickLinks}
       summaryItems={summaryItems}
       primaryTitle="Workspace"

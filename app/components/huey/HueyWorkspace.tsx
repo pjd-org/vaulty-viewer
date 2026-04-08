@@ -1,26 +1,31 @@
-import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
+/**
+ * HueyWorkspace — chat UI built on @assistant-ui/react primitives.
+ *
+ * Reads thread state directly from AssistantRuntimeProvider context:
+ *   - ThreadPrimitive.Viewport / Messages for message rendering + auto-scroll
+ *   - ThreadPrimitive.ViewportFooter for scroll-aware composer placement
+ *   - ComposerPrimitive.Root / Input / Send / Cancel for the composer
+ *   - AuiIf for conditional rendering (replaces deprecated ThreadPrimitive.If / Empty)
+ *
+ * Must be rendered inside HueyAssistantProvider (AssistantRuntimeProvider).
+ * Only external props are intent-level UI: activeIntent + intentTemplate.
+ */
+import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
+import {
+  AuiIf,
+  ThreadPrimitive,
+  ComposerPrimitive,
+  MessagePrimitive,
+  useMessage,
+} from '@assistant-ui/react';
 import { SoftPanel } from '../layout';
-import { PrimaryButton } from '../ui';
 import type { IntentTemplate, IntentType } from '../../../src/lib/huey-intents';
 
 // ---------------------------------------------------------------------------
-// Types (exported for use in route)
-// ---------------------------------------------------------------------------
-
-export type ChatRole = 'user' | 'assistant' | 'system';
-
-export interface ChatMessage {
-  id: string;
-  role: ChatRole;
-  content: string;
-  meta?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
+// Markdown renderer (assistant messages only)
 // ---------------------------------------------------------------------------
 
 function renderMarkdown(content: string): string {
@@ -40,6 +45,10 @@ function renderMarkdown(content: string): string {
     },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Post-response quick-nav links
+// ---------------------------------------------------------------------------
 
 function PostResponseActions() {
   return (
@@ -65,163 +74,196 @@ function PostResponseActions() {
 }
 
 // ---------------------------------------------------------------------------
+// Message components — rendered by Thread.Messages render-function children
+// ---------------------------------------------------------------------------
+
+function UserMessage() {
+  const message = useMessage();
+  const text = message.content
+    .filter((p) => p.type === 'text')
+    .map((p) => (p as { type: 'text'; text: string }).text)
+    .join('\n');
+
+  return (
+    <MessagePrimitive.Root>
+      <div className="flex justify-end">
+        <div className="genie-surface genie-surface--elevated genie-pill genie-layer-panel text-sm ml-auto max-w-[80%] text-right text-slate-800">
+          {text}
+        </div>
+      </div>
+    </MessagePrimitive.Root>
+  );
+}
+
+function AssistantMessage() {
+  const message = useMessage();
+  const text = message.content
+    .filter((p) => p.type === 'text')
+    .map((p) => (p as { type: 'text'; text: string }).text)
+    .join('\n');
+
+  return (
+    <MessagePrimitive.Root>
+      <div className="max-w-[85%]">
+        <div className="genie-surface genie-card text-sm genie-surface--elevated genie-layer-panel">
+          <div
+            className="genie-content prose prose-sm max-w-none text-slate-800"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
+          />
+        </div>
+        <PostResponseActions />
+      </div>
+    </MessagePrimitive.Root>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 interface HueyWorkspaceProps {
-  messages: ChatMessage[];
-  loading: boolean;
-  onSend: (text: string) => void;
-  onCancel?: () => void;
   activeIntent: IntentType | null;
   intentTemplate: IntentTemplate | null;
+  /** Optional summary of what Huey has access to in the current context */
+  contextSummary?: {
+    taskCount: number;
+    noteCount: number;
+    inboxPending: number;
+  };
 }
 
 export function HueyWorkspace({
-  messages,
-  loading,
-  onSend,
-  onCancel,
   intentTemplate,
+  contextSummary,
 }: HueyWorkspaceProps) {
-  const [inputText, setInputText] = useState('');
-  const listRef = useRef<HTMLDivElement>(null);
-  const lastAssistantIndex = (() => {
-    for (let i = messages.length - 1; i >= 0; i -= 1) {
-      if (messages[i]?.role === 'assistant') return i;
-    }
-    return -1;
-  })();
-
-  useEffect(() => {
-    listRef.current?.scrollTo({
-      top: listRef.current.scrollHeight,
-      behavior: 'smooth',
-    });
-  }, [messages, loading]);
-
-  const handleSend = () => {
-    const text = inputText.trim();
-    if (!text || loading) return;
-    setInputText('');
-    onSend(text);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const contextLine = contextSummary
+    ? [
+        contextSummary.taskCount > 0
+          ? `${contextSummary.taskCount} task${contextSummary.taskCount !== 1 ? 's' : ''}`
+          : null,
+        contextSummary.noteCount > 0
+          ? `${contextSummary.noteCount} note${contextSummary.noteCount !== 1 ? 's' : ''}`
+          : null,
+        contextSummary.inboxPending > 0
+          ? `${contextSummary.inboxPending} inbox item${contextSummary.inboxPending !== 1 ? 's' : ''}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : null;
 
   return (
     <SoftPanel variant="elevated" className="h-full flex flex-col !p-5">
+      {/* Intent context banner */}
       {intentTemplate && (
         <div className="genie-surface genie-surface--utility rounded-2xl p-3 text-sm text-slate-700 mb-4 shrink-0">
           {intentTemplate.description}
         </div>
       )}
 
-      <div
-        ref={listRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-4 mb-4"
-      >
-        {messages.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-600 py-12">
-            <span className="text-4xl font-semibold text-slate-800">H</span>
-            <p className="text-sm text-slate-700">Hi! How can I help?</p>
-            <p className="text-xs text-slate-500">
-              Select an intent in the sidebar or just type below.
+      {/* Context access summary — shown when intent is active and data is available */}
+      {contextLine && (
+        <div className="flex items-center gap-1.5 mb-3 shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            Huey has access to:
+          </span>
+          <span className="text-[10px] text-slate-500">{contextLine}</span>
+        </div>
+      )}
+
+      {/* Message list + scroll-aware composer footer */}
+      <ThreadPrimitive.Viewport className="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-4">
+        {/* Empty state — AuiIf replaces deprecated ThreadPrimitive.Empty */}
+        <AuiIf condition={(s) => s.thread.isEmpty}>
+          <div className="flex flex-col justify-center h-full gap-5 py-10 px-2">
+            {/* Identity + purpose */}
+            <div>
+              <p className="text-base font-semibold text-slate-800">Huey</p>
+              <p className="text-sm text-slate-600 mt-0.5">
+                Execution interface for the vault system. Ask about tasks,
+                context, decisions, or anything else tracked here.
+              </p>
+            </div>
+
+            {/* What you can do */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                Try asking
+              </p>
+              {[
+                'What should I work on next?',
+                'Summarise the current state of the project.',
+                'What decisions have we made about the API?',
+                'Which tasks are blocked right now?',
+              ].map((prompt) => (
+                <p
+                  key={prompt}
+                  className="text-xs text-slate-500 pl-2 border-l border-slate-200"
+                >
+                  {prompt}
+                </p>
+              ))}
+            </div>
+
+            {/* Workflow hint */}
+            <p className="text-xs text-slate-400">
+              Select a workflow in the sidebar to pre-load context, or just type
+              below.
             </p>
           </div>
-        )}
+        </AuiIf>
 
-        {messages.map((msg, idx) => {
-          if (msg.role === 'system') {
-            return (
-              <p
-                key={msg.id}
-                className="text-xs text-slate-400 text-center py-2"
-              >
-                {msg.content}
-              </p>
-            );
-          }
+        {/* Messages — render-function children replace deprecated components prop */}
+        <ThreadPrimitive.Messages>
+          {({ message }) => {
+            if (message.role === 'user') return <UserMessage />;
+            return <AssistantMessage />;
+          }}
+        </ThreadPrimitive.Messages>
 
-          if (msg.role === 'user') {
-            return (
-              <div key={msg.id} className="flex justify-end">
-                <div className="genie-surface genie-surface--elevated genie-pill genie-layer-panel text-sm ml-auto max-w-[80%] text-right text-slate-800">
-                  {msg.content}
-                </div>
-              </div>
-            );
-          }
-
-          // assistant
-          const isHero = idx === lastAssistantIndex;
-          return (
-            <div key={msg.id} className="max-w-[85%]">
-              <div
-                className={[
-                  'genie-surface genie-card text-sm',
-                  isHero
-                    ? 'genie-surface--hero genie-card--hero genie-layer-hero genie-halo'
-                    : 'genie-surface--elevated genie-layer-panel',
-                ].join(' ')}
-              >
-                <div
-                  className="genie-content prose prose-sm max-w-none text-slate-800"
-                  // eslint-disable-next-line react/no-danger
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(msg.content),
-                  }}
-                />
-              </div>
-              {msg.meta && (
-                <p className="text-xs text-slate-500 mt-1 ml-2">{msg.meta}</p>
-              )}
-              <PostResponseActions />
-            </div>
-          );
-        })}
-
-        {loading && (
+        {/* Streaming indicator — AuiIf replaces deprecated ThreadPrimitive.If */}
+        <AuiIf condition={(s) => s.thread.isRunning}>
           <div className="max-w-[85%]">
             <div className="genie-surface genie-surface--elevated genie-card text-sm text-slate-600">
               Thinking…
             </div>
           </div>
-        )}
-      </div>
+        </AuiIf>
 
-      <div className="genie-surface genie-surface--overlay genie-layer-overlay genie-composer flex items-center gap-3 shrink-0">
-        <textarea
-          className="flex-1 resize-none text-sm outline-none border-none shadow-none ring-0 bg-transparent text-slate-800 placeholder:text-slate-500"
-          rows={2}
-          placeholder="Ask me anything…"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-        />
-        {loading && onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 border border-slate-200 hover:border-red-300 hover:text-red-500 transition-colors"
-          >
-            Cancel
-          </button>
-        ) : (
-          <PrimaryButton
-            onClick={handleSend}
-            disabled={loading || !inputText.trim()}
-          >
-            Send
-          </PrimaryButton>
-        )}
-      </div>
+        {/* Composer inside ViewportFooter so auto-scroll accounts for its height */}
+        <ThreadPrimitive.ViewportFooter className="sticky bottom-0 pt-2">
+          <ComposerPrimitive.Root className="genie-surface genie-surface--overlay genie-layer-overlay genie-composer flex items-center gap-3">
+            <ComposerPrimitive.Input
+              className="flex-1 resize-none text-sm outline-none border-none shadow-none ring-0 bg-transparent text-slate-800 placeholder:text-slate-500"
+              rows={2}
+              placeholder="Ask me anything…"
+              submitMode="ctrlEnter"
+            />
+
+            {/* Cancel — only while running */}
+            <AuiIf condition={(s) => s.thread.isRunning}>
+              <ComposerPrimitive.Cancel asChild>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 border border-slate-200 hover:border-red-300 hover:text-red-500 transition-colors"
+                >
+                  Cancel
+                </button>
+              </ComposerPrimitive.Cancel>
+            </AuiIf>
+
+            <ComposerPrimitive.Send asChild>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+              >
+                Send
+              </button>
+            </ComposerPrimitive.Send>
+          </ComposerPrimitive.Root>
+        </ThreadPrimitive.ViewportFooter>
+      </ThreadPrimitive.Viewport>
     </SoftPanel>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 
 import KnowledgeNoteCard from '../../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner, {
@@ -44,6 +45,22 @@ function filterNotes(
   });
 }
 
+const AUDIENCE_META: Record<string, { description: string; hint: string }> = {
+  human: {
+    description:
+      'Notes authored for human review — decisions, context, guides.',
+    hint: 'Add a note with audience: human in its frontmatter.',
+  },
+  agent: {
+    description: 'Instructions and memory for agent runtime consumption.',
+    hint: 'Add a note with audience: agent to surface it here.',
+  },
+  bubble: {
+    description: 'Shared context that floats between human and agent layers.',
+    hint: 'Add a note with audience: bubble to bridge both layers.',
+  },
+};
+
 function AudienceColumn({
   audience,
   notes,
@@ -63,8 +80,29 @@ function AudienceColumn({
 }) {
   if (loading) return <SkeletonCardGrid count={3} />;
   if (notes.length === 0) {
+    const meta = AUDIENCE_META[audience] ?? {
+      description: `No ${audience} notes yet.`,
+      hint: '',
+    };
     return (
-      <p className="knowledge-col__empty">No {audience} knowledge notes yet.</p>
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          {audience}
+        </p>
+        <p className="text-sm text-slate-600">{meta.description}</p>
+        {meta.hint && (
+          <p className="text-xs text-slate-400 border-l border-slate-200 pl-2">
+            {meta.hint}
+          </p>
+        )}
+        <Link
+          to="/huey"
+          search={{}}
+          className="inline-block mt-1 text-xs text-primary hover:underline"
+        >
+          Ask Huey to help author →
+        </Link>
+      </div>
     );
   }
   return (
@@ -132,32 +170,58 @@ export function KnowledgeWorkspaceSurface({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
         <section className="space-y-4">
-          <div className="knowledge-filters">
-            <label htmlFor="knowledge-domain-filter">Domain</label>
-            <select
-              id="knowledge-domain-filter"
-              value={domainFilter}
-              onChange={(e) => setDomainFilter(e.target.value)}
-            >
-              <option value="">All domains</option>
-              {allDomains.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Domain filter */}
+            <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
+              <span className="font-medium text-slate-400 uppercase tracking-widest">
+                Domain
+              </span>
+              <select
+                id="knowledge-domain-filter"
+                value={domainFilter}
+                onChange={(e) => setDomainFilter(e.target.value)}
+                className="bg-transparent border-none outline-none text-slate-700 text-xs cursor-pointer"
+              >
+                <option value="">All</option>
+                {allDomains.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <label htmlFor="knowledge-maturity-filter">Maturity</label>
-            <select
-              id="knowledge-maturity-filter"
-              value={maturityFilter}
-              onChange={(e) => setMaturityFilter(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="draft">Draft</option>
-              <option value="stable">Stable</option>
-              <option value="deprecated">Deprecated</option>
-            </select>
+            {/* Maturity filter */}
+            <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
+              <span className="font-medium text-slate-400 uppercase tracking-widest">
+                Maturity
+              </span>
+              <select
+                id="knowledge-maturity-filter"
+                value={maturityFilter}
+                onChange={(e) => setMaturityFilter(e.target.value)}
+                className="bg-transparent border-none outline-none text-slate-700 text-xs cursor-pointer"
+              >
+                <option value="">All</option>
+                <option value="draft">Draft</option>
+                <option value="stable">Stable</option>
+                <option value="deprecated">Deprecated</option>
+              </select>
+            </div>
+
+            {/* Active filter chips */}
+            {(domainFilter || maturityFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDomainFilter('');
+                  setMaturityFilter('');
+                }}
+                className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs text-red-500 hover:bg-red-100 transition-colors"
+              >
+                Clear filters ×
+              </button>
+            )}
           </div>
 
           <div className="knowledge-grid">

@@ -16,6 +16,10 @@ import { EmptyState, PrimaryButton, SecondaryButton } from '../components/ui';
 import { CodSignalRow } from '../components/cod/CodSignalRow';
 import { BestMoveCard } from '../components/home/BestMoveCard';
 import {
+  SurfaceEntryGrid,
+  type SurfaceEntryTile,
+} from '../components/home/SurfaceEntryGrid';
+import {
   getHomeSurfaceQueryOptions,
   useHomeSurface,
   useActiveSession,
@@ -260,6 +264,20 @@ function FocusRoute() {
   const decisionQueue = surface?.decisionQueue ?? [];
   const verificationRail = surface?.verificationRail ?? [];
 
+  // Derive top severity for the Home status line
+  const SEVERITY_RANK = { critical: 4, high: 3, medium: 2, low: 1 } as const;
+  type Severity = keyof typeof SEVERITY_RANK;
+  const topSeverity: Severity | null =
+    pressureBand.length > 0
+      ? pressureBand.reduce<Severity | null>((best, item) => {
+          const s = item.severity as Severity;
+          if (!best) return s;
+          return (SEVERITY_RANK[s] ?? 0) > (SEVERITY_RANK[best] ?? 0)
+            ? s
+            : best;
+        }, null)
+      : null;
+
   const topTask: NextAction | undefined = (surface?.tasks ?? [])[0];
   const visiblePressureBand = pressureBand.filter(
     (item) => item.sourceId !== topTask?.id
@@ -286,7 +304,10 @@ function FocusRoute() {
         surfaceLoading && !surface
           ? 'Loading'
           : String(visiblePressureBand.length),
-      detail: 'Highest-pressure signals',
+      detail:
+        visiblePressureBand.length > 0
+          ? `${visiblePressureBand.length} active signal${visiblePressureBand.length !== 1 ? 's' : ''} — review below`
+          : 'No pressure signals right now',
     },
     {
       label: 'Queue',
@@ -294,7 +315,10 @@ function FocusRoute() {
         surfaceLoading && !surface
           ? 'Loading'
           : String(visibleDecisionQueue.length),
-      detail: 'COD-ranked next moves',
+      detail:
+        visibleDecisionQueue.length > 0
+          ? `${visibleDecisionQueue.length} ranked move${visibleDecisionQueue.length !== 1 ? 's' : ''} — act or defer`
+          : 'Queue is clear',
     },
     {
       label: 'Verification',
@@ -304,7 +328,9 @@ function FocusRoute() {
           : verificationRail.some((item) => item.status !== 'pending')
             ? 'Active'
             : 'Ready',
-      detail: 'Feedback loop',
+      detail: verificationRail.some((item) => item.status !== 'pending')
+        ? 'Results to review in the rail below'
+        : 'No pending feedback — loop is idle',
     },
   ] as const;
 
@@ -335,8 +361,31 @@ function FocusRoute() {
         title="Home"
         subtitle={
           searchEcho.length
-            ? `Global mission control · ${searchEcho.join(' · ')}`
-            : 'Global mission control'
+            ? `Command center · ${searchEcho.join(' · ')}`
+            : 'Command center — system state, best move, and live modules.'
+        }
+        statusLine={
+          surface
+            ? [
+                `${visiblePressureBand.length} pressure signal${visiblePressureBand.length !== 1 ? 's' : ''}`,
+                `${visibleDecisionQueue.length} queued decision${visibleDecisionQueue.length !== 1 ? 's' : ''}`,
+                `verification ${verificationRail.some((i) => i.status !== 'pending') ? 'active' : 'ready'}`,
+                topSeverity === 'critical'
+                  ? '⚠ CRITICAL signals active'
+                  : topSeverity === 'high'
+                    ? '⚠ High-severity pressure'
+                    : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')
+            : undefined
+        }
+        nextAction={
+          topTask
+            ? `→ Best move: "${topTask.title}" — start it, skip it, or inspect in Work.`
+            : visibleDecisionQueue.length > 0
+              ? '→ Review queued decisions below and act or defer.'
+              : '→ No immediate moves. Check Inbox or review pressure signals.'
         }
         summaryItems={summaryItems}
         primaryTitle="Today's Focus"
@@ -653,54 +702,48 @@ function FocusRoute() {
                     title="Snapshot Grid"
                     subtitle="Domain-level pressure snapshots."
                   />
-                  <div className="grid grid-cols-2 gap-3">
-                    {(
+                  <SurfaceEntryGrid
+                    loading={surfaceLoading && !surface}
+                    tiles={
                       [
                         {
                           label: 'Automation',
-                          items: snapshots.automation,
+                          role: 'Active pipelines and triggers',
+                          count: snapshots.automation.length,
                           to: '/automation',
+                          nextStep: 'Review pipeline health',
                         },
                         {
                           label: 'Knowledge',
-                          items: snapshots.knowledge,
+                          role: 'Authored memory and context',
+                          count: snapshots.knowledge.length,
                           to: '/knowledge',
+                          nextStep: 'Search or browse notes',
                         },
                         {
                           label: 'Portfolio',
-                          items: snapshots.portfolio,
+                          role: 'Projects and milestone tracking',
+                          count: snapshots.portfolio.length,
                           to: '/portfolio',
+                          nextStep: 'Check project progress',
                         },
                         {
                           label: 'Bubble',
-                          items: snapshots.bubble,
+                          role: 'Audience-facing content state',
+                          count: snapshots.bubble.length,
                           to: '/bubble',
+                          nextStep: 'Review content signals',
                         },
                         {
                           label: 'Health',
-                          items: snapshots.health,
+                          role: 'System and personal vitals',
+                          count: snapshots.health.length,
                           to: '/health',
+                          nextStep: 'Check system status',
                         },
-                      ] as const
-                    ).map((snapshotGroup) => (
-                      <Link
-                        key={snapshotGroup.label}
-                        to={snapshotGroup.to as never}
-                        className="rounded-[18px] border border-slate-200 bg-black/3 p-4 transition hover:bg-black/5"
-                      >
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          {snapshotGroup.label}
-                        </p>
-                        <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-800">
-                          {surfaceLoading && !surface
-                            ? '…'
-                            : snapshotGroup.items.length > 0
-                              ? snapshotGroup.items.length
-                              : '—'}
-                        </p>
-                      </Link>
-                    ))}
-                  </div>
+                      ] as SurfaceEntryTile[]
+                    }
+                  />
                 </section>
 
                 <section className="space-y-3">

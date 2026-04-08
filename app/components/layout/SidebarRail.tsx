@@ -24,11 +24,13 @@ import { dispatchNavOverlay } from '../../../src/lib/nav-overlays';
 import {
   VIEWER_OVERLAY_NAV,
   VIEWER_PRIMARY_NAV,
+  VIEWER_SECONDARY_NAV,
   VIEWER_UTILITY_NAV,
 } from '../../../src/lib/routes/v3-routing';
 
 type NavTo =
   | (typeof VIEWER_PRIMARY_NAV)[number]['to']
+  | (typeof VIEWER_SECONDARY_NAV)[number]['to']
   | (typeof VIEWER_UTILITY_NAV)[number]['to'];
 
 // Map route paths → Lucide icon components
@@ -71,7 +73,7 @@ function RailItem({
       title={label}
       aria-label={label}
       className={[
-        'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color]',
+        'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color,opacity]',
         active
           ? 'border-sky-500/30 bg-sky-100 text-sky-700 shadow-[0_12px_24px_rgba(56,189,248,0.12)]'
           : 'border-slate-200 bg-black/0 text-slate-500 hover:border-slate-300 hover:bg-black/5 hover:text-slate-700',
@@ -124,15 +126,32 @@ export function SidebarRail() {
     return pathname === to || pathname.startsWith(`${to}/`);
   };
 
-  const topItems = VIEWER_PRIMARY_NAV.map((item) => (
-    <RailItem
-      key={item.to}
-      label={item.label}
-      shortLabel={item.shortLabel}
-      to={item.to}
-      active={isActivePath(item.to)}
-    />
-  ));
+  const topItems = (
+    <>
+      {/* Core execution: Home, Inbox, Work */}
+      {VIEWER_PRIMARY_NAV.map((item) => (
+        <RailItem
+          key={item.to}
+          label={item.label}
+          shortLabel={item.shortLabel}
+          to={item.to}
+          active={isActivePath(item.to)}
+        />
+      ))}
+      {/* Divider — core vs supporting surfaces */}
+      <div className="w-6 border-t border-slate-200 mx-auto" />
+      {/* Supporting surfaces */}
+      {VIEWER_SECONDARY_NAV.map((item) => (
+        <RailItem
+          key={item.to}
+          label={item.label}
+          shortLabel={item.shortLabel}
+          to={item.to}
+          active={isActivePath(item.to)}
+        />
+      ))}
+    </>
+  );
 
   const bottomItems = (
     <>

@@ -4,6 +4,7 @@ export interface ViewerRouteNavItem {
   label: string;
   shortLabel: string;
   to: string;
+  group?: 'core' | 'knowledge' | 'system';
 }
 
 export interface ViewerOverlayNavItem {
@@ -29,20 +30,26 @@ export const VIEWER_TOP_LEVEL_PATHS = [
   '/archive',
 ] as const;
 
+/** Primary destinations — shown at the top of the rail, grouped by intent. */
 export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
-  { label: 'Home', shortLabel: '⌂', to: '/' },
-  { label: 'Inbox', shortLabel: '✉', to: '/inbox' },
-  { label: 'Actions', shortLabel: '⚡', to: '/actions' },
-  { label: 'Automation', shortLabel: '⚙', to: '/automation' },
-  { label: 'Work', shortLabel: '◎', to: '/work' },
-  { label: 'Knowledge', shortLabel: '◈', to: '/knowledge' },
-  { label: 'Notes', shortLabel: '◻', to: '/notes' },
-  { label: 'Portfolio', shortLabel: '▣', to: '/portfolio' },
-  { label: 'Bubble', shortLabel: '◉', to: '/bubble' },
-  { label: 'Health', shortLabel: '♡', to: '/health' },
-  { label: 'Graph', shortLabel: '⬡', to: '/graph' },
-  { label: 'Timeline', shortLabel: '↦', to: '/timeline' },
-  { label: 'Archive', shortLabel: '⊞', to: '/archive' },
+  // Core execution group
+  { label: 'Home', shortLabel: '⌂', to: '/', group: 'core' },
+  { label: 'Inbox', shortLabel: '✉', to: '/inbox', group: 'core' },
+  { label: 'Work', shortLabel: '◎', to: '/work', group: 'core' },
+] as const;
+
+/** Secondary destinations — supporting surfaces, shown below a divider. */
+export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
+  { label: 'Knowledge', shortLabel: '◈', to: '/knowledge', group: 'knowledge' },
+  { label: 'Notes', shortLabel: '◻', to: '/notes', group: 'knowledge' },
+  { label: 'Graph', shortLabel: '⬡', to: '/graph', group: 'knowledge' },
+  { label: 'Actions', shortLabel: '⚡', to: '/actions', group: 'system' },
+  { label: 'Automation', shortLabel: '⚙', to: '/automation', group: 'system' },
+  { label: 'Portfolio', shortLabel: '▣', to: '/portfolio', group: 'system' },
+  { label: 'Bubble', shortLabel: '◉', to: '/bubble', group: 'system' },
+  { label: 'Health', shortLabel: '♡', to: '/health', group: 'system' },
+  { label: 'Timeline', shortLabel: '↦', to: '/timeline', group: 'system' },
+  { label: 'Archive', shortLabel: '⊞', to: '/archive', group: 'system' },
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [

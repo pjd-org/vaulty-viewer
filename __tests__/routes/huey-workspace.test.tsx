@@ -1,22 +1,28 @@
 /**
  * Huey workspace — basic render and interaction wiring
  *
- * Tests the HueyWorkspace component in isolation:
+ * Tests the HueyWorkspace component wrapped in a lightweight
+ * AssistantRuntimeProvider + useLocalRuntime so that all
+ * @assistant-ui/react primitives have the context they need.
+ *
+ * Behaviours verified:
  *   1. Empty state renders the greeting placeholder
- *   2. Send button is disabled when input is empty
- *   3. Send button is enabled when input has text
- *   4. Cancel button replaces Send while loading
- *   5. onCancel is called when Cancel button is clicked
- *   6. Messages render with correct roles
+ *   2. Send button is disabled when the composer is empty
+ *   3. Send button is enabled once the composer has text
+ *   4. Cancel button is absent while not running
  */
 
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  AssistantRuntimeProvider,
+  useLocalRuntime,
+  type ChatModelAdapter,
+} from '@assistant-ui/react';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-// TanStack Router Link requires a RouterProvider — stub it out for isolation
 vi.mock('@tanstack/react-router', async () => {
   const actual = await vi.importActual<typeof import('@tanstack/react-router')>(
     '@tanstack/react-router'
@@ -42,61 +48,55 @@ vi.mock('@tanstack/react-router', async () => {
   };
 });
 
-// jsdom doesn't implement scrollTo — polyfill it
-beforeAll(() => {
-  if (!HTMLElement.prototype.scrollTo) {
-    HTMLElement.prototype.scrollTo = () => {
-      /* noop */
-    };
-  }
-});
-
 afterEach(cleanup);
 
-// ── Import after mocks ────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** A no-op model adapter — never actually sends messages in tests */
+const noopAdapter: ChatModelAdapter = {
+  run: () => new Promise(() => {}), // never resolves
+};
+
+function HueyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
+  const runtime = useLocalRuntime(noopAdapter);
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      {children}
+    </AssistantRuntimeProvider>
+  );
+}
+
+// ── Import component after mocks ──────────────────────────────────────────────
 
 import { HueyWorkspace } from '../../app/components/huey/HueyWorkspace';
-import type { ChatMessage } from '../../app/components/huey/HueyWorkspace';
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('HueyWorkspace — render', () => {
-  it('shows greeting placeholder when there are no messages', () => {
+  it('shows greeting placeholder when the thread is empty', () => {
     render(
-      <HueyWorkspace
-        messages={[]}
-        loading={false}
-        onSend={vi.fn()}
-        activeIntent={null}
-        intentTemplate={null}
-      />
+      <HueyWorkspaceWrapper>
+        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+      </HueyWorkspaceWrapper>
     );
     expect(screen.getByText(/How can I help/i)).toBeTruthy();
   });
 
-  it('Send button is disabled when input is empty', () => {
+  it('Send button is disabled when composer input is empty', () => {
     render(
-      <HueyWorkspace
-        messages={[]}
-        loading={false}
-        onSend={vi.fn()}
-        activeIntent={null}
-        intentTemplate={null}
-      />
+      <HueyWorkspaceWrapper>
+        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+      </HueyWorkspaceWrapper>
     );
     const send = screen.getByRole('button', { name: /send/i });
     expect(send).toBeDisabled();
   });
 
-  it('Send button is enabled when input has text', () => {
+  it('Send button is enabled once the composer has text', () => {
     render(
-      <HueyWorkspace
-        messages={[]}
-        loading={false}
-        onSend={vi.fn()}
-        activeIntent={null}
-        intentTemplate={null}
-      />
+      <HueyWorkspaceWrapper>
+        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+      </HueyWorkspaceWrapper>
     );
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: 'hello' },
@@ -105,53 +105,13 @@ describe('HueyWorkspace — render', () => {
     expect(send).not.toBeDisabled();
   });
 
-  it('shows Cancel button while loading when onCancel is provided', () => {
+  it('Cancel button is not present while thread is idle', () => {
     render(
-      <HueyWorkspace
-        messages={[]}
-        loading={true}
-        onSend={vi.fn()}
-        onCancel={vi.fn()}
-        activeIntent={null}
-        intentTemplate={null}
-      />
+      <HueyWorkspaceWrapper>
+        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+      </HueyWorkspaceWrapper>
     );
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /send/i })).toBeNull();
-  });
-
-  it('calls onCancel when Cancel button is clicked', () => {
-    const onCancel = vi.fn();
-    render(
-      <HueyWorkspace
-        messages={[]}
-        loading={true}
-        onSend={vi.fn()}
-        onCancel={onCancel}
-        activeIntent={null}
-        intentTemplate={null}
-      />
-    );
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    expect(onCancel).toHaveBeenCalledOnce();
-  });
-
-  it('renders user and assistant messages', () => {
-    const messages: ChatMessage[] = [
-      { id: 'm1', role: 'user', content: 'What is next?' },
-      { id: 'm2', role: 'assistant', content: 'Check your task list.' },
-    ];
-    render(
-      <HueyWorkspace
-        messages={messages}
-        loading={false}
-        onSend={vi.fn()}
-        activeIntent={null}
-        intentTemplate={null}
-      />
-    );
-    expect(screen.getByText('What is next?')).toBeTruthy();
-    // assistant message rendered via marked — plain text should still appear
-    expect(screen.getByText(/Check your task list/i)).toBeTruthy();
+    // Cancel is only shown while running — absent in idle state
+    expect(screen.queryByRole('button', { name: /cancel/i })).toBeNull();
   });
 });

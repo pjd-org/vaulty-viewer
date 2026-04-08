@@ -80,8 +80,15 @@ function RootComponent() {
 
   React.useEffect(() => {
     const root = document.documentElement;
-    const applyDark = (dark: boolean) =>
-      dark ? root.classList.add('dark') : root.classList.remove('dark');
+    const applyDark = (dark: boolean) => {
+      if (dark) {
+        root.classList.add('dark');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.remove('dark');
+        root.style.colorScheme = 'light';
+      }
+    };
     if (theme === 'dark') {
       applyDark(true);
       return () => applyDark(false);

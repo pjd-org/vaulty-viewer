@@ -258,254 +258,282 @@ function ActionsRoute() {
         ) : (
           <div className="space-y-3">
             {recommendations.map((item) => {
-              const active = item.id === selected?.id;
+              const isExpanded = item.id === selectedId;
               return (
                 <article
                   key={item.id}
                   className={[
-                    'rounded-[22px] border p-4 transition',
-                    active
+                    'rounded-[22px] border transition',
+                    isExpanded
                       ? 'border-sky-300 bg-sky-50 shadow-[0_18px_45px_rgba(56,189,248,0.10)]'
                       : 'border-slate-200 bg-black/3',
                   ].join(' ')}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-800">
-                        {item.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.summary}
-                      </p>
+                  {/* ── summary row — clickable ── */}
+                  <button
+                    type="button"
+                    aria-expanded={isExpanded}
+                    onClick={() =>
+                      setSearch({
+                        sort: currentSort,
+                        simulatableOnly,
+                        selectedId: isExpanded ? undefined : item.id,
+                      })
+                    }
+                    className="w-full p-4 text-left"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-800">
+                          {item.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {item.summary}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
+                        {item.actionType.replace('_', ' ')}
+                      </span>
                     </div>
-                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
-                      {item.actionType.replace('_', ' ')}
-                    </span>
-                  </div>
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                        Why now
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.whyNow}
-                      </p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Why now
+                        </p>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {item.whyNow}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Expected effect
+                        </p>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {item.expectedEffect}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Score
+                        </p>
+                        <p className="mt-1 text-sm text-slate-800">
+                          {item.score.toFixed(1)} / 10
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Confidence {(item.confidence * 100).toFixed(0)}% ·{' '}
+                          {item.reversibility} reversibility
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                        Expected effect
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.expectedEffect}
-                      </p>
+                  </button>
+
+                  {/* ── inline detail panel ── */}
+                  {isExpanded && (
+                    <div className="border-t border-sky-200 px-4 pb-4 pt-3 space-y-4 text-sm text-slate-600">
+                      {/* Score breakdown */}
+                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Score breakdown
+                        </p>
+                        <div className="mt-3 space-y-2">
+                          {Object.entries(item.scoreBreakdown).map(
+                            ([key, value]) => (
+                              <div
+                                key={key}
+                                className="flex items-center justify-between gap-3"
+                              >
+                                <span className="text-slate-500 capitalize">
+                                  {key.replace(/([A-Z])/g, ' $1')}
+                                </span>
+                                <span className="text-slate-800">{value}</span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Mutation path */}
+                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Mutation path
+                        </p>
+                        <p className="mt-3 text-slate-800">
+                          {item.mutationRef
+                            ? `${item.mutationRef.domain} / ${item.mutationRef.operation}`
+                            : 'Simulation only'}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Source entities: {item.sourceEntities.length}
+                        </p>
+                      </div>
+
+                      {/* Source signals */}
+                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Source signals
+                        </p>
+                        {item.sourceSignalIds.length > 0 ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {item.sourceSignalIds.map((signalId) => (
+                              <span
+                                key={signalId}
+                                className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-700"
+                              >
+                                {signalId}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm text-slate-500">
+                            No source signals surfaced.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Verification preview */}
+                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Verification preview
+                        </p>
+                        {verificationPhase === 'pending' && (
+                          <p className="mt-3 text-sm text-sky-700">
+                            Verifying…
+                          </p>
+                        )}
+                        {verificationPhase === 'failed' && (
+                          <p className="mt-3 text-sm text-red-700">
+                            Verification failed.
+                          </p>
+                        )}
+                        {verificationCount > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            {surface?.verificationRail.map((vItem) => (
+                              <article
+                                key={vItem.id}
+                                className="rounded-[14px] border border-slate-200 bg-black/3 p-3"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-medium text-slate-800">
+                                      {vItem.summary}
+                                    </p>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {vItem.actionId}
+                                    </p>
+                                  </div>
+                                  <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700">
+                                    {vItem.status}
+                                  </span>
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm text-slate-500">
+                            Ready for post-action verification.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Action controls */}
+                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          Action controls
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={
+                              !item.taskPath || executeMutation.isPending
+                            }
+                            onClick={handleExecute}
+                            className="rounded-full border border-sky-300 bg-sky-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {executeMutation.isPending
+                              ? 'Starting…'
+                              : 'Execute'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={
+                              !item.taskPath ||
+                              item.reversibility !== 'high' ||
+                              simulationLoading
+                            }
+                            onClick={handleSimulate}
+                            className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {simulationLoading ? 'Loading…' : 'Simulate'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!item.taskPath || deferMutation.isPending}
+                            onClick={handleDefer}
+                            className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Simulation preview (item-scoped) */}
+                      {simulationData && (
+                        <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">
+                            Simulation preview
+                          </p>
+                          <div className="mt-3 space-y-2">
+                            {[
+                              ['Status', simulationData.status],
+                              ['Priority', String(simulationData.priority)],
+                              ['Effort', `${simulationData.effortScore}/10`],
+                              ['Focus cost', `${simulationData.focusCost}/10`],
+                              [
+                                'Estimated time',
+                                `${simulationData.estimatedTimeMin} min`,
+                              ],
+                              ...(simulationData.milestone != null
+                                ? [
+                                    [
+                                      'Milestone',
+                                      `${simulationData.milestone}%`,
+                                    ],
+                                  ]
+                                : []),
+                              ...(simulationData.blockerCount
+                                ? [
+                                    [
+                                      'Blockers',
+                                      String(simulationData.blockerCount),
+                                    ],
+                                  ]
+                                : []),
+                              ...(simulationData.checklistProgress
+                                ? [
+                                    [
+                                      'Checklist',
+                                      simulationData.checklistProgress,
+                                    ],
+                                  ]
+                                : []),
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className="flex items-center justify-between gap-3"
+                              >
+                                <span className="text-slate-500">{label}</span>
+                                <span className="text-slate-800">{value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                        Score
-                      </p>
-                      <p className="mt-1 text-sm text-slate-800">
-                        {item.score.toFixed(1)} / 10
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Confidence {(item.confidence * 100).toFixed(0)}% ·{' '}
-                        {item.reversibility} reversibility
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </article>
               );
             })}
           </div>
-        )
-      }
-      asideTitle="Detail Panel"
-      asideSubtitle="Selection-driven explanation and controls."
-      aside={
-        selected ? (
-          <div className="space-y-5 text-sm text-slate-600">
-            <div className="rounded-[22px] border border-slate-200 bg-black/3 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Selected action
-              </p>
-              <h3 className="mt-3 text-lg font-semibold text-slate-800">
-                {selected.title}
-              </h3>
-              <p className="mt-2 text-sm text-slate-600">{selected.summary}</p>
-            </div>
-            <div className="grid gap-3">
-              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Score breakdown
-                </p>
-                <div className="mt-3 space-y-2">
-                  {Object.entries(selected.scoreBreakdown).map(
-                    ([key, value]) => (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <span className="text-slate-500 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1')}
-                        </span>
-                        <span className="text-slate-800">{value}</span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Mutation path
-                </p>
-                <p className="mt-3 text-slate-800">
-                  {selected.mutationRef
-                    ? `${selected.mutationRef.domain} / ${selected.mutationRef.operation}`
-                    : 'Simulation only'}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Source entities: {selected.sourceEntities.length}
-                </p>
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Source signals
-                </p>
-                {selected.sourceSignalIds.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {selected.sourceSignalIds.map((signalId) => (
-                      <span
-                        key={signalId}
-                        className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-700"
-                      >
-                        {signalId}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-slate-500">
-                    No source signals surfaced.
-                  </p>
-                )}
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Verification preview
-                </p>
-                {verificationPhase === 'pending' && (
-                  <p className="mt-3 text-sm text-sky-700">Verifying…</p>
-                )}
-                {verificationPhase === 'failed' && (
-                  <p className="mt-3 text-sm text-red-700">
-                    Verification failed.
-                  </p>
-                )}
-                {verificationCount > 0 ? (
-                  <div className="mt-3 space-y-2">
-                    {surface?.verificationRail.map((item) => (
-                      <article
-                        key={item.id}
-                        className="rounded-[14px] border border-slate-200 bg-black/3 p-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium text-slate-800">
-                              {item.summary}
-                            </p>
-                            <p className="mt-1 text-xs text-slate-500">
-                              {item.actionId}
-                            </p>
-                          </div>
-                          <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700">
-                            {item.status}
-                          </span>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-slate-500">
-                    Ready for post-action verification.
-                  </p>
-                )}
-              </div>
-              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Action controls
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={!selected.taskPath || executeMutation.isPending}
-                    onClick={handleExecute}
-                    className="rounded-full border border-sky-300 bg-sky-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {executeMutation.isPending ? 'Starting…' : 'Execute'}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={
-                      !selected.taskPath ||
-                      selected.reversibility !== 'high' ||
-                      simulationLoading
-                    }
-                    onClick={handleSimulate}
-                    className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {simulationLoading ? 'Loading…' : 'Simulate'}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!selected.taskPath || deferMutation.isPending}
-                    onClick={handleDefer}
-                    className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {deferMutation.isPending ? 'Deferring…' : 'Defer'}
-                  </button>
-                </div>
-              </div>
-              {simulationData && (
-                <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">
-                    Simulation preview
-                  </p>
-                  <div className="mt-3 space-y-2">
-                    {[
-                      ['Status', simulationData.status],
-                      ['Priority', String(simulationData.priority)],
-                      ['Effort', `${simulationData.effortScore}/10`],
-                      ['Focus cost', `${simulationData.focusCost}/10`],
-                      [
-                        'Estimated time',
-                        `${simulationData.estimatedTimeMin} min`,
-                      ],
-                      ...(simulationData.milestone != null
-                        ? [['Milestone', `${simulationData.milestone}%`]]
-                        : []),
-                      ...(simulationData.blockerCount
-                        ? [['Blockers', String(simulationData.blockerCount)]]
-                        : []),
-                      ...(simulationData.checklistProgress
-                        ? [['Checklist', simulationData.checklistProgress]]
-                        : []),
-                    ].map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <span className="text-slate-500">{label}</span>
-                        <span className="text-slate-800">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <EmptyState
-            title="Select an action to inspect."
-            description="The right rail will expose explanation, confidence, and mutation details."
-          />
         )
       }
     />

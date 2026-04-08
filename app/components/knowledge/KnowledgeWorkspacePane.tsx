@@ -275,7 +275,7 @@ export function KnowledgeWorkspacePane({
         )}
 
         {!loading && !error && note && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <NoteHeader
               display={toNoteHeaderDisplay({
                 title: note.title,

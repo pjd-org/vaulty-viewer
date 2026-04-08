@@ -16,6 +16,10 @@ export const Route = createFileRoute('/work')({
 // TaskList
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// TaskList — rows expand inline to show TaskDetail
+// ---------------------------------------------------------------------------
+
 function TaskList({
   tasks,
   selectedId,
@@ -23,41 +27,56 @@ function TaskList({
 }: {
   tasks: NextAction[];
   selectedId: string | null;
-  onSelect: (task: NextAction) => void;
+  onSelect: (task: NextAction | null) => void;
 }) {
   return (
     <ul data-testid="work-task-list" className="space-y-1">
-      {tasks.map((task) => (
-        <li key={task.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(task)}
-            className={[
-              'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
-              selectedId === task.id
-                ? 'bg-slate-100 text-slate-900'
-                : 'text-slate-600 hover:bg-black/5',
-            ].join(' ')}
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <span
-                className={`size-2 shrink-0 rounded-full ${
-                  task.status === 'blocked' ? 'bg-red-400' : 'bg-emerald-400'
-                }`}
-              />
-              <span className="truncate font-medium">{task.title}</span>
-            </div>
-            <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-              {task.effortScore != null && (
-                <span title="Effort">{task.effortScore}e</span>
-              )}
-              {task.estimatedTimeMin != null && (
-                <span title="Estimated time">{task.estimatedTimeMin}m</span>
-              )}
-            </div>
-          </button>
-        </li>
-      ))}
+      {tasks.map((task) => {
+        const isExpanded = selectedId === task.id;
+        return (
+          <li key={task.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(isExpanded ? null : task)}
+              aria-expanded={isExpanded}
+              className={[
+                'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+                isExpanded
+                  ? 'bg-slate-100 text-slate-900'
+                  : 'text-slate-600 hover:bg-black/5',
+              ].join(' ')}
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={`size-2 shrink-0 rounded-full ${
+                    task.status === 'blocked' ? 'bg-red-400' : 'bg-emerald-400'
+                  }`}
+                />
+                <span className="truncate font-medium">{task.title}</span>
+              </div>
+              <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+                {task.effortScore != null && (
+                  <span title="Effort">{task.effortScore}e</span>
+                )}
+                {task.estimatedTimeMin != null && (
+                  <span title="Estimated time">{task.estimatedTimeMin}m</span>
+                )}
+                <span
+                  className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </div>
+            </button>
+            {isExpanded && (
+              <div className="mx-1 mb-1 rounded-b-md border border-t-0 border-slate-200 bg-slate-50 px-4 py-3 animate-fade-in">
+                <TaskDetail task={task} />
+              </div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -73,7 +92,7 @@ function TaskSection({
 }: {
   data: WorkSurfacePayload | undefined;
   selectedId: string | null;
-  onSelect: (task: NextAction) => void;
+  onSelect: (task: NextAction | null) => void;
 }) {
   if (!data) {
     return (
@@ -205,13 +224,80 @@ function TaskDetail({ task }: { task: NextAction }) {
       )}
 
       {task.path && (
-        <Link
-          to="/note"
-          search={{ p: task.path }}
-          className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
-        >
-          Open note →
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/note"
+            search={{ p: task.path }}
+            className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
+          >
+            Open note →
+          </Link>
+          <Link
+            to="/knowledge"
+            search={{ tab: 'notes' }}
+            onClick={() => {
+              try {
+                const hint =
+                  task.tags.length > 0
+                    ? task.tags[0]
+                    : task.title.split(' ').slice(0, 3).join(' ');
+                sessionStorage.setItem('knowledge-search-hint', hint);
+              } catch {
+                // sessionStorage unavailable — silently skip
+              }
+            }}
+            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+          >
+            Related knowledge →
+          </Link>
+          <Link
+            to="/huey"
+            onClick={() => {
+              try {
+                sessionStorage.setItem('huey-task-hint', task.title);
+              } catch {
+                // sessionStorage unavailable — silently skip
+              }
+            }}
+            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+          >
+            Ask Huey about this →
+          </Link>
+        </div>
+      )}
+      {!task.path && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/knowledge"
+            search={{ tab: 'notes' }}
+            onClick={() => {
+              try {
+                sessionStorage.setItem(
+                  'knowledge-search-hint',
+                  task.title.split(' ').slice(0, 3).join(' ')
+                );
+              } catch {
+                // sessionStorage unavailable — silently skip
+              }
+            }}
+            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+          >
+            Related knowledge →
+          </Link>
+          <Link
+            to="/huey"
+            onClick={() => {
+              try {
+                sessionStorage.setItem('huey-task-hint', task.title);
+              } catch {
+                // sessionStorage unavailable — silently skip
+              }
+            }}
+            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+          >
+            Ask Huey about this →
+          </Link>
+        </div>
       )}
     </div>
   );
@@ -236,23 +322,39 @@ function WorkRoute() {
     <WorkspaceScaffold
       title="Work"
       subtitle="Durable execution lane for tasks, projects, and dependencies."
+      statusLine={
+        data
+          ? `${data.total} task${data.total !== 1 ? 's' : ''} unblocked · ${data.mode} mode`
+          : undefined
+      }
+      nextAction="→ Expand a task to inspect blockers, or open a project to see its full board."
       summaryItems={[
         {
           label: 'Projects',
           value: 'Live',
-          detail: 'Legacy projects index now lands here',
+          detail: 'All projects — click to open',
         },
         {
           label: 'Tasks',
           value: data ? String(data.total) : '—',
-          detail: 'Unblocked next actions',
+          detail:
+            data && data.total > 0
+              ? `${data.total} unblocked — expand any to inspect`
+              : 'No unblocked tasks in range',
         },
         {
           label: 'Mode',
           value: data ? data.mode : '—',
-          detail: 'COD or local fallback',
+          detail:
+            data?.mode === 'cod'
+              ? 'COD-ranked priority'
+              : 'Local fallback order',
         },
-        { label: 'Scope', value: 'Portfolio', detail: 'Global work lane' },
+        {
+          label: 'Scope',
+          value: 'Portfolio',
+          detail: 'Global work lane — all projects',
+        },
       ]}
       primaryTitle="Projects & Tasks"
       primarySubtitle="Projects list and ranked next actions."
@@ -268,22 +370,6 @@ function WorkRoute() {
               onSelect={setSelectedTask}
             />
           </>
-        )
-      }
-      asideTitle="Execution Notes"
-      asideSubtitle="Task details and dependency paths."
-      aside={
-        selectedTask ? (
-          <TaskDetail task={selectedTask} />
-        ) : (
-          <div data-testid="work-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
-              No item selected.
-            </p>
-            <p className="text-xs text-neutral-400">
-              Select a task to see details, blockers, and next steps here.
-            </p>
-          </div>
         )
       }
     />

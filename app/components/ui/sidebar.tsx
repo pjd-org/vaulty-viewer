@@ -659,6 +659,8 @@ const SidebarMenuSkeleton = React.forwardRef<
   }
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90% — computed client-side only to avoid SSR mismatch.
+  // Built with useState + useEffect so the initial render always uses "60%",
+  // preventing a hydration mismatch between server and client.
   const [width, setWidth] = React.useState('60%');
   React.useEffect(() => {
     setWidth(`${Math.floor(Math.random() * 40) + 50}%`);

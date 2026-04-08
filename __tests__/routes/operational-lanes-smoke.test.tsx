@@ -73,9 +73,11 @@ describe('work lane', () => {
     expect(screen.getByTestId('work-task-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content (detail is now inline)', () => {
     render(<WorkComponent />);
-    expect(screen.getByTestId('work-aside-empty-state')).toBeTruthy();
+    // The aside slot is empty — details expand inline within the task list
+    const aside = screen.getByTestId('scaffold-aside');
+    expect(aside.childElementCount).toBe(0);
   });
 });
 

@@ -8,6 +8,10 @@ import { SummaryRow, type SummaryRowItem } from './SummaryRow';
 interface WorkspaceScaffoldProps {
   title: string;
   subtitle?: string;
+  /** Short current-state line forwarded to PageFrame */
+  statusLine?: string;
+  /** Suggested next-action prompt forwarded to PageFrame */
+  nextAction?: string;
   actions?: React.ReactNode;
   summaryItems?: readonly SummaryRowItem[];
   primaryTitle: string;
@@ -21,6 +25,8 @@ interface WorkspaceScaffoldProps {
 export function WorkspaceScaffold({
   title,
   subtitle,
+  statusLine,
+  nextAction,
   actions,
   summaryItems = [],
   primaryTitle,
@@ -32,7 +38,13 @@ export function WorkspaceScaffold({
 }: WorkspaceScaffoldProps) {
   return (
     <PageContainer>
-      <PageFrame title={title} subtitle={subtitle} actions={actions}>
+      <PageFrame
+        title={title}
+        subtitle={subtitle}
+        statusLine={statusLine}
+        nextAction={nextAction}
+        actions={actions}
+      >
         <SummaryRow items={summaryItems} />
         {aside ? (
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
