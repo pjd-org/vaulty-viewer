@@ -1,21 +1,25 @@
-import React from 'react'
+import React from 'react';
+import { cn } from '@/src/lib/utils';
 
 interface SoftPanelProps {
-  title?: string
-  subtitle?: string
-  actions?: React.ReactNode
-  variant?: 'base' | 'elevated' | 'hero' | 'utility' | 'overlay'
-  className?: string
-  children: React.ReactNode
+  title?: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+  variant?: 'base' | 'elevated' | 'hero' | 'utility' | 'overlay';
+  className?: string;
+  children: React.ReactNode;
 }
 
-const VARIANT_CLASSES: Record<NonNullable<SoftPanelProps['variant']>, string> = {
-  base: 'genie-surface genie-layer-panel',
-  elevated: 'genie-surface genie-surface--elevated genie-layer-panel',
-  hero: 'genie-surface genie-surface--hero genie-layer-hero',
-  utility: 'genie-surface genie-surface--utility genie-layer-panel',
-  overlay: 'genie-surface genie-surface--overlay genie-layer-overlay',
-}
+const VARIANT_CLASSES: Record<
+  NonNullable<SoftPanelProps['variant']>,
+  string
+> = {
+  base: '',
+  elevated: 'shadow-md',
+  hero: 'shadow-lg',
+  utility: 'bg-muted/40',
+  overlay: 'bg-background/80 backdrop-blur',
+};
 
 export function SoftPanel({
   title,
@@ -25,30 +29,32 @@ export function SoftPanel({
   className,
   children,
 }: SoftPanelProps) {
-  const hasHeader = title || subtitle || actions
+  const hasHeader = title || subtitle || actions;
 
   return (
     <section
-      className={[
-        'rounded-[28px] p-6',
+      className={cn(
+        'rounded-lg border bg-card text-card-foreground shadow-sm',
         VARIANT_CLASSES[variant],
-        className ?? '',
-      ].join(' ').trim()}
+        className
+      )}
     >
       {hasHeader && (
-        <div className="flex justify-between items-center mb-5">
-          <div>
+        <div className="flex flex-row items-start justify-between gap-4 p-6 pb-2">
+          <div className="flex flex-col gap-1">
             {title && (
-              <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
+              <h2 className="text-lg font-semibold leading-none tracking-tight">
+                {title}
+              </h2>
             )}
             {subtitle && (
-              <p className="text-sm text-slate-600">{subtitle}</p>
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          {actions && <div>{actions}</div>}
+          {actions && <div className="shrink-0">{actions}</div>}
         </div>
       )}
-      {children}
+      <div className={cn('p-6', hasHeader && 'pt-2')}>{children}</div>
     </section>
-  )
+  );
 }
