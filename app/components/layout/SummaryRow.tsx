@@ -1,5 +1,6 @@
 import React from 'react';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDownIcon } from '@/app/components/ui/trending-down';
+import { TrendingUpIcon } from '@/app/components/ui/trending-up';
 import { Badge } from '@/app/components/ui/badge';
 import {
   Card,
@@ -55,9 +56,9 @@ export function SummaryRow({ items }: SummaryRowProps) {
                     }
                   >
                     {isUp ? (
-                      <TrendingUp className="size-3" />
+                      <TrendingUpIcon size={12} />
                     ) : (
-                      <TrendingDown className="size-3" />
+                      <TrendingDownIcon size={12} />
                     )}
                     {Math.abs(item.trend!)}%
                   </Badge>
