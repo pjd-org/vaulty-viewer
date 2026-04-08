@@ -25,7 +25,7 @@ export function ProjectsWorkspace() {
         <div
           role="status"
           aria-label="Loading projects"
-          className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-sky-300"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-sky-600"
         />
       </div>
     );

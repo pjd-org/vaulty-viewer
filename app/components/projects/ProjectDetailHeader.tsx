@@ -38,7 +38,7 @@ export function ProjectDetailHeader({
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Project command center
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-100">
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-800">
                 {project.title}
               </h1>
             </div>
@@ -49,15 +49,15 @@ export function ProjectDetailHeader({
           </div>
 
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Progress
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-100">
+              <p className="mt-2 text-lg font-semibold text-slate-800">
                 {project.progressText}
               </p>
               <div
-                className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"
+                className="mt-3 h-2 overflow-hidden rounded-full bg-black/10"
                 role="progressbar"
                 aria-valuenow={progressWidth}
                 aria-valuemin={0}
@@ -71,26 +71,26 @@ export function ProjectDetailHeader({
               </div>
             </div>
 
-            <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 ETA
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-100">
+              <p className="mt-2 text-lg font-semibold text-slate-800">
                 {project.etaLabel ?? 'No ETA surfaced'}
               </p>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-500">
                 Live project timing from the summary feed.
               </p>
             </div>
 
-            <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Best move
               </p>
-              <p className="mt-2 text-lg font-semibold text-slate-100">
+              <p className="mt-2 text-lg font-semibold text-slate-800">
                 {project.bestMoveTitle ?? 'No best move surfaced'}
               </p>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-500">
                 COD-ranked next step from the current project summary.
               </p>
             </div>
@@ -106,16 +106,16 @@ export function ProjectDetailHeader({
               to="/project/$slug/tasks"
               params={{ slug: projectId }}
               search={projectLaneSearch}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">Tasks</p>
-                  <p className="mt-1 text-sm text-slate-300">
+                  <p className="text-sm font-semibold text-slate-800">Tasks</p>
+                  <p className="mt-1 text-sm text-slate-600">
                     Open the project board and execution queue.
                   </p>
                 </div>
-                <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-100">
+                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
                   Open
                 </span>
               </div>
@@ -124,18 +124,18 @@ export function ProjectDetailHeader({
               to="/project/$slug/knowledge"
               params={{ slug: projectId }}
               search={projectLaneSearch}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">
+                  <p className="text-sm font-semibold text-slate-800">
                     Knowledge
                   </p>
-                  <p className="mt-1 text-sm text-slate-300">
+                  <p className="mt-1 text-sm text-slate-600">
                     Jump to the project workspace and notes.
                   </p>
                 </div>
-                <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-100">
+                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
                   Open
                 </span>
               </div>
@@ -144,18 +144,18 @@ export function ProjectDetailHeader({
               to="/project/$slug/automation"
               params={{ slug: projectId }}
               search={automationLaneSearch as never}
-              className="group rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-sky-300/40 hover:bg-white/10"
+              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">
+                  <p className="text-sm font-semibold text-slate-800">
                     Automation
                   </p>
-                  <p className="mt-1 text-sm text-slate-300">
+                  <p className="mt-1 text-sm text-slate-600">
                     Inspect pipelines, runners, and schedules.
                   </p>
                 </div>
-                <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-100">
+                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
                   Open
                 </span>
               </div>

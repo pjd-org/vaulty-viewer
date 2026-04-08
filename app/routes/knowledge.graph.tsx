@@ -224,16 +224,16 @@ function KnowledgeGraphRoute() {
 
           {graphError && (
             <div
-              className="rounded-[18px] border border-red-400/20 bg-red-400/5 p-4 text-sm text-red-300"
+              className="rounded-[18px] border border-red-200 bg-red-50 p-4 text-sm text-red-700"
               role="alert"
             >
               <p className="font-medium">Failed to load the knowledge graph.</p>
-              <p className="mt-1 text-xs text-red-400">{graphError.message}</p>
+              <p className="mt-1 text-xs text-red-600">{graphError.message}</p>
             </div>
           )}
 
           {graphLoading && !graph && (
-            <div className="h-[600px] animate-pulse rounded-[22px] border border-white/10 bg-white/5" />
+            <div className="h-[600px] animate-pulse rounded-[22px] border border-slate-200 bg-black/3" />
           )}
 
           {!graphLoading && graph?.node_count === 0 && (
@@ -244,7 +244,7 @@ function KnowledgeGraphRoute() {
           )}
 
           {graph && graph.node_count > 0 && (
-            <div className="overflow-x-auto rounded-[22px] border border-white/10 bg-[#0b0e16]">
+            <div className="overflow-x-auto rounded-[22px] border border-slate-200 bg-[#0b0e16]">
               <svg
                 ref={svgRef}
                 width={WIDTH}
@@ -321,11 +321,11 @@ function KnowledgeGraphRoute() {
                 )}
               </svg>
 
-              <div className="flex flex-wrap items-center gap-4 border-t border-white/8 px-5 py-3">
+              <div className="flex flex-wrap items-center gap-4 border-t border-slate-200 px-5 py-3">
                 {Object.entries(AUDIENCE_COLOR).map(([a, c]) => (
                   <span
                     key={a}
-                    className="flex items-center gap-1.5 text-xs text-slate-400"
+                    className="flex items-center gap-1.5 text-xs text-slate-500"
                   >
                     <svg width={10} height={10}>
                       <circle cx={5} cy={5} r={4} fill={c} />
@@ -333,7 +333,7 @@ function KnowledgeGraphRoute() {
                     {a}
                   </span>
                 ))}
-                <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
                   <svg width={10} height={10}>
                     <circle cx={5} cy={5} r={4} fill={DEFAULT_COLOR} />
                   </svg>
@@ -349,14 +349,14 @@ function KnowledgeGraphRoute() {
       aside={
         selectedNode ? (
           <div className="space-y-4">
-            <div className="rounded-[22px] border border-white/8 bg-white/5 p-4">
+            <div className="rounded-[22px] border border-slate-200 bg-black/3 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Selected note
               </p>
-              <h3 className="mt-3 text-lg font-semibold text-slate-100">
+              <h3 className="mt-3 text-lg font-semibold text-slate-800">
                 {selectedNode.title}
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 {selectedNode.audience ?? 'no audience'}
               </p>
               <button
@@ -364,7 +364,7 @@ function KnowledgeGraphRoute() {
                 onClick={() =>
                   navigate({ to: '/note', search: { p: selectedNode.id } })
                 }
-                className="mt-4 rounded-full border border-sky-300/30 bg-sky-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition hover:bg-sky-400/25"
+                className="mt-4 rounded-full border border-sky-300 bg-sky-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition hover:bg-sky-200"
               >
                 Open note
               </button>

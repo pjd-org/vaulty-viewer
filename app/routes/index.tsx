@@ -582,153 +582,164 @@ function FocusRoute() {
                 />
               )}
             </section>
-          </div>
-        }
-        asideTitle="Verification Rail"
-        asideSubtitle="Feedback, snapshots, and context."
-        aside={
-          <div className="space-y-6">
+
             <section className="space-y-3">
-              {verificationPhase === 'pending' && (
-                <p className="text-sm text-sky-600">Verifying…</p>
-              )}
-              {verificationPhase === 'failed' && (
-                <p className="text-sm text-red-600">Verification failed.</p>
-              )}
-              {verificationRail.length > 0 ? (
-                <div className="space-y-3">
-                  {verificationRail.map((item) => (
-                    <article
-                      key={item.id}
-                      className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-slate-800 line-clamp-2">
+              <SectionHeader
+                title="Verification Rail"
+                subtitle="Feedback, snapshots, and context."
+              />
+              <div className="space-y-6">
+                <section className="space-y-3">
+                  {verificationPhase === 'pending' && (
+                    <p className="text-sm text-sky-600">Verifying…</p>
+                  )}
+                  {verificationPhase === 'failed' && (
+                    <p className="text-sm text-red-600">Verification failed.</p>
+                  )}
+                  {verificationRail.length > 0 ? (
+                    <div className="space-y-3">
+                      {verificationRail.map((item) => (
+                        <article
+                          key={item.id}
+                          className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-800 line-clamp-2">
+                                {item.summary}
+                              </p>
+                              <p
+                                className="mt-1 text-xs text-slate-500 truncate"
+                                title={item.actionId}
+                              >
+                                {humanizeActionId(item.actionId)}
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
+                              {item.status}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                            {item.improved ? <span>Improved</span> : null}
+                            {item.followUpNeeded ? (
+                              <span>Follow-up needed</span>
+                            ) : null}
+                            {item.resolvedAt ? (
+                              <span>
+                                {new Date(item.resolvedAt).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  }
+                                )}
+                              </span>
+                            ) : null}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      title="Verification rail is ready."
+                      description="Results will appear here after actions are executed."
+                    />
+                  )}
+                </section>
+
+                <section className="space-y-3">
+                  <SectionHeader
+                    title="Snapshot Grid"
+                    subtitle="Domain-level pressure snapshots."
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    {(
+                      [
+                        {
+                          label: 'Automation',
+                          items: snapshots.automation,
+                          to: '/automation',
+                        },
+                        {
+                          label: 'Knowledge',
+                          items: snapshots.knowledge,
+                          to: '/knowledge',
+                        },
+                        {
+                          label: 'Portfolio',
+                          items: snapshots.portfolio,
+                          to: '/portfolio',
+                        },
+                        {
+                          label: 'Bubble',
+                          items: snapshots.bubble,
+                          to: '/bubble',
+                        },
+                        {
+                          label: 'Health',
+                          items: snapshots.health,
+                          to: '/health',
+                        },
+                      ] as const
+                    ).map((snapshotGroup) => (
+                      <Link
+                        key={snapshotGroup.label}
+                        to={snapshotGroup.to as never}
+                        className="rounded-[18px] border border-slate-200 bg-black/3 p-4 transition hover:bg-black/5"
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                          {snapshotGroup.label}
+                        </p>
+                        <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-800">
+                          {surfaceLoading && !surface
+                            ? '…'
+                            : snapshotGroup.items.length > 0
+                              ? snapshotGroup.items.length
+                              : '—'}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="space-y-3">
+                  <SectionHeader
+                    title="Context Tail"
+                    subtitle="COD-selected context, not just recent notes."
+                  />
+                  {contextTail.length > 0 ? (
+                    <div className="space-y-3">
+                      {contextTail.map((item) => (
+                        <article
+                          key={item.id}
+                          className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+                        >
+                          <p className="text-sm font-semibold text-slate-800">
+                            {item.title}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
                             {item.summary}
                           </p>
-                          <p
-                            className="mt-1 text-xs text-slate-500 truncate"
-                            title={item.actionId}
-                          >
-                            {humanizeActionId(item.actionId)}
+                          <p className="mt-3 text-xs text-slate-500">
+                            {item.reasonSelected}
                           </p>
-                        </div>
-                        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
-                          {item.status}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                        {item.improved ? <span>Improved</span> : null}
-                        {item.followUpNeeded ? (
-                          <span>Follow-up needed</span>
-                        ) : null}
-                        {item.resolvedAt ? (
-                          <span>
-                            {new Date(item.resolvedAt).toLocaleDateString(
-                              undefined,
-                              {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              }
-                            )}
-                          </span>
-                        ) : null}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Verification rail is ready."
-                  description="Results will appear here after actions are executed."
-                />
-              )}
-            </section>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      title="No context tail is selected."
+                      description="COD-selected context will appear here when available."
+                    />
+                  )}
+                </section>
 
-            <section className="space-y-3">
-              <SectionHeader
-                title="Snapshot Grid"
-                subtitle="Domain-level pressure snapshots."
-              />
-              <div className="grid grid-cols-2 gap-3">
-                {(
-                  [
-                    {
-                      label: 'Automation',
-                      items: snapshots.automation,
-                      to: '/automation',
-                    },
-                    {
-                      label: 'Knowledge',
-                      items: snapshots.knowledge,
-                      to: '/knowledge',
-                    },
-                    {
-                      label: 'Portfolio',
-                      items: snapshots.portfolio,
-                      to: '/portfolio',
-                    },
-                    { label: 'Bubble', items: snapshots.bubble, to: '/bubble' },
-                    { label: 'Health', items: snapshots.health, to: '/health' },
-                  ] as const
-                ).map((snapshotGroup) => (
-                  <Link
-                    key={snapshotGroup.label}
-                    to={snapshotGroup.to as never}
-                    className="rounded-[18px] border border-slate-200 bg-black/3 p-4 transition hover:bg-black/5"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      {snapshotGroup.label}
-                    </p>
-                    <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-800">
-                      {surfaceLoading && !surface
-                        ? '…'
-                        : snapshotGroup.items.length > 0
-                          ? snapshotGroup.items.length
-                          : '—'}
-                    </p>
-                  </Link>
-                ))}
+                {recentSessions && recentSessions.length > 0 ? (
+                  <RecentSessionsPanel sessions={recentSessions} />
+                ) : null}
               </div>
             </section>
-
-            <section className="space-y-3">
-              <SectionHeader
-                title="Context Tail"
-                subtitle="COD-selected context, not just recent notes."
-              />
-              {contextTail.length > 0 ? (
-                <div className="space-y-3">
-                  {contextTail.map((item) => (
-                    <article
-                      key={item.id}
-                      className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
-                    >
-                      <p className="text-sm font-semibold text-slate-800">
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.summary}
-                      </p>
-                      <p className="mt-3 text-xs text-slate-500">
-                        {item.reasonSelected}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="No context tail is selected."
-                  description="COD-selected context will appear here when available."
-                />
-              )}
-            </section>
-
-            {recentSessions && recentSessions.length > 0 ? (
-              <RecentSessionsPanel sessions={recentSessions} />
-            ) : null}
           </div>
         }
       />

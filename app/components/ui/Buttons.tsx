@@ -41,7 +41,7 @@ export function SecondaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      className={`btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
     >
       {children}
     </button>
@@ -61,7 +61,7 @@ export function IconButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`p-2 rounded-xl text-slate-500 hover:bg-white/70 hover:text-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      className={`p-2 rounded-xl text-slate-500 hover:bg-black/5 hover:text-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
     >
       {label && <span className="sr-only">{label}</span>}
       {icon}

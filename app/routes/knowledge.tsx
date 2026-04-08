@@ -105,19 +105,19 @@ function KnowledgeRoute() {
             {surface.suggestedActions.map((action) => (
               <div
                 key={`${action.actionType}-${action.label}`}
-                className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
               >
-                <p className="text-sm font-semibold text-slate-100">
+                <p className="text-sm font-semibold text-slate-800">
                   {action.label}
                 </p>
-                <p className="mt-1 text-xs text-slate-400 uppercase tracking-[0.18em]">
+                <p className="mt-1 text-xs text-slate-500 uppercase tracking-[0.18em]">
                   {action.actionType.replace(/_/g, ' ')}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-500">
             No authoring actions are suggested at this time.
           </p>
         )

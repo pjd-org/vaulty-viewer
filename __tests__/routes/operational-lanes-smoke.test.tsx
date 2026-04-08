@@ -11,6 +11,7 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => ({}),
   }),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@tanstack/react-query', () => ({

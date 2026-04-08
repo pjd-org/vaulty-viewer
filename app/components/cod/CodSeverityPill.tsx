@@ -18,8 +18,8 @@ const VARIANT_STYLES = {
     dot: 'bg-danger',
   },
   unknown: {
-    container: 'bg-white/8 text-slate-400 border-white/10',
-    dot: 'bg-slate-500',
+    container: 'bg-black/5 text-slate-500 border-slate-200',
+    dot: 'bg-slate-400',
   },
 } as const;
 

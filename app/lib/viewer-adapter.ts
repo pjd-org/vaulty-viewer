@@ -248,6 +248,47 @@ export interface ActionsSurfacePayload {
   verificationRail: VerificationOutcome[];
 }
 
+// Bubble surface — behavioral control lane (pressure, momentum, rewards, energy)
+export interface BubbleMomentum {
+  score: number;
+  trend: 'up' | 'stable' | 'down';
+  streakDays: number;
+  topTaskScore: number;
+  label: string;
+}
+
+export interface BubblePressure {
+  score: number;
+  blockedCount: number;
+  overdueCount: number;
+  stressLevel: number;
+  label: string;
+}
+
+export interface BubbleEnergy {
+  level: number;
+  stress: number;
+  focusBand: string;
+  sleepHours: number;
+  timeBudgetMin: number;
+  asOf: string;
+}
+
+export interface BubbleRewards {
+  xp: number;
+  level: number;
+  rank: string;
+  streakDays: number;
+}
+
+export interface BubbleSurfacePayload {
+  momentum: BubbleMomentum;
+  pressure: BubblePressure;
+  energy: BubbleEnergy;
+  rewards: BubbleRewards;
+  signals: PressureSignal[];
+}
+
 // Knowledge surface — active authoring workspace context
 // Spec: doc/context/viewer-v3/COD-VIEWER-ADAPTER-SPEC.md — Knowledge surface
 export interface KnowledgeSurfacePayload {
@@ -938,6 +979,29 @@ export function useActionsSurface(initialData?: ActionsSurfacePayload) {
     ...getActionsSurfaceQueryOptions(),
     initialData,
   });
+}
+
+export function getBubbleSurfaceQueryOptions() {
+  return {
+    queryKey: ['viewer-adapter', 'bubble-surface'] as const,
+    queryFn: async (): Promise<BubbleSurfacePayload> => {
+      const res = await apiFetch('/api/v1/surfaces/bubble?max=25');
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch bubble surface: 401`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch bubble surface: ${res.status}`);
+      const body = await res.json();
+      const sc = (body?.structuredContent ?? body) as BubbleSurfacePayload;
+      return sc;
+    },
+    staleTime: 60_000,
+    retry: (failureCount: number, error: unknown) =>
+      !(error instanceof UnauthenticatedError) && failureCount < 1,
+  };
+}
+
+export function useBubbleSurface() {
+  return useQuery(getBubbleSurfaceQueryOptions());
 }
 
 export function getProjectSurfaceQueryOptions(projectId: string) {

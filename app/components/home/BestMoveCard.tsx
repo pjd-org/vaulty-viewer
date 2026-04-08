@@ -35,13 +35,13 @@ export function BestMoveCard({
         <Link
           to="/note"
           search={{ p: task.path }}
-          className="text-xl font-semibold text-slate-100 hover:text-sky-300 transition-colors block"
+          className="text-xl font-semibold text-slate-800 hover:text-sky-700 transition-colors block"
         >
           {task.title}
         </Link>
 
         {task.description && (
-          <p className="text-sm text-slate-300 mt-1 line-clamp-2">
+          <p className="text-sm text-slate-600 mt-1 line-clamp-2">
             {task.description}
           </p>
         )}
@@ -54,7 +54,7 @@ export function BestMoveCard({
         </div>
 
         {blocked && (
-          <p className="text-xs text-amber-300 mt-2">
+          <p className="text-xs text-amber-600 mt-2">
             This task has dependencies
           </p>
         )}

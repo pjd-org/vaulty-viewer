@@ -73,8 +73,8 @@ function RailItem({
       className={[
         'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color]',
         active
-          ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
-          : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
+          ? 'border-sky-500/30 bg-sky-100 text-sky-700 shadow-[0_12px_24px_rgba(56,189,248,0.12)]'
+          : 'border-slate-200 bg-black/0 text-slate-500 hover:border-slate-300 hover:bg-black/5 hover:text-slate-700',
       ].join(' ')}
     >
       {ROUTE_ICONS[to] ?? <span className="text-xs">{label.slice(0, 2)}</span>}
@@ -103,8 +103,8 @@ function OverlayItem({
       className={[
         'flex h-10 w-10 items-center justify-center rounded-2xl border text-base leading-none transition-[transform,background-color]',
         active
-          ? 'border-sky-300/30 bg-sky-300/15 text-slate-50 shadow-[0_12px_24px_rgba(56,189,248,0.18)]'
-          : 'border-white/5 bg-white/0 text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-100',
+          ? 'border-sky-500/30 bg-sky-100 text-sky-700 shadow-[0_12px_24px_rgba(56,189,248,0.12)]'
+          : 'border-slate-200 bg-black/0 text-slate-500 hover:border-slate-300 hover:bg-black/5 hover:text-slate-700',
       ].join(' ')}
     >
       {OVERLAY_ICONS[overlay] ?? (
@@ -136,7 +136,7 @@ export function SidebarRail() {
 
   const bottomItems = (
     <>
-      <div className="w-6 border-t border-white/10 mx-auto" />
+      <div className="w-6 border-t border-slate-200 mx-auto" />
       {VIEWER_UTILITY_NAV.map((item) => (
         <RailItem
           key={item.to}
@@ -167,7 +167,7 @@ export function SidebarRail() {
         <Link
           to={'/' as never}
           aria-label="Vault home"
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-black/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-700"
         >
           V3
         </Link>

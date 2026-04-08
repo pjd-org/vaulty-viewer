@@ -20,13 +20,13 @@ function TaskCard({ task, accent }: { task: KanbanTask; accent?: boolean }) {
     <div
       className={`genie-surface genie-surface--utility rounded-xl px-4 py-3 mb-2 ${borderAccent}`}
     >
-      <p className="text-sm font-medium text-slate-100 leading-snug">
+      <p className="text-sm font-medium text-slate-800 leading-snug">
         {task.title}
       </p>
       {task.estimatedTimeMin != null && task.estimatedTimeMin > 0 && (
         <span
           aria-hidden="true"
-          className="mt-1.5 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-slate-300"
+          className="mt-1.5 inline-flex items-center rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600"
         >
           ⏱ {task.estimatedTimeMin}m
         </span>

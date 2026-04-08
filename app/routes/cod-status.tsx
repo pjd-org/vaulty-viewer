@@ -94,10 +94,10 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
         <div className="route-modal-scroll route-modal-body space-y-4">
           <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
             <div className="genie-content">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
                 Readiness
               </h1>
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="mt-2 text-sm text-slate-600">
                 Can you work now, and under what constraints?
               </p>
             </div>
@@ -105,14 +105,14 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
           {summaryData?.summary && summaryData.summary.length > 0 && (
             <div className="genie-surface genie-surface--hero rounded-xl px-4 py-3 space-y-1.5">
               <div className="genie-content">
-                <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   System State
                 </p>
                 <ul className="space-y-1">
                   {summaryData.summary.map((bullet, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-slate-200"
+                      className="flex items-start gap-2 text-sm text-slate-700"
                     >
                       <span
                         aria-hidden="true"

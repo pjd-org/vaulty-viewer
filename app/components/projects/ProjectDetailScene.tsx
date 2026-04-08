@@ -1,21 +1,24 @@
-import React, { useMemo } from 'react'
-import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import React, { useMemo } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 
-import { useAllTasks } from '../../lib/queries/tasks'
-import { toProjectSummaryDisplay } from '../../lib/display'
+import { useAllTasks } from '../../lib/queries/tasks';
+import { toProjectSummaryDisplay } from '../../lib/display';
 import {
   deriveProjects,
   getProjectTasks,
   type ProjectSummary,
-} from '../../../src/lib/projects-logic'
-import { SoftPanel } from '../layout'
-import { EmptyState } from '../ui'
-import SkeletonCard from '../ui/SkeletonCard'
-import { BlockersRail, ProjectBoardSection, ProjectDetailHeader } from '.'
-import { getProjectQueryOptions } from '../../lib/api/projects'
-import { useProjectSurface, type ProjectSurfacePayload } from '../../lib/viewer-adapter'
-import type { ProjectSummaryDisplay } from '../../types/display'
+} from '../../../src/lib/projects-logic';
+import { SoftPanel } from '../layout';
+import { EmptyState } from '../ui';
+import SkeletonCard from '../ui/SkeletonCard';
+import { BlockersRail, ProjectBoardSection, ProjectDetailHeader } from '.';
+import { getProjectQueryOptions } from '../../lib/api/projects';
+import {
+  useProjectSurface,
+  type ProjectSurfacePayload,
+} from '../../lib/viewer-adapter';
+import type { ProjectSummaryDisplay } from '../../types/display';
 
 const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   activeTasks: [],
@@ -23,57 +26,62 @@ const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   activeRunners: [],
   hueyJobs: [],
   scheduleItems: [],
-}
+};
 
 export function ProjectDetailScene({ projectId }: { projectId: string }) {
   const { data: projectDisplay, isLoading: projectLoading } = useQuery({
     ...getProjectQueryOptions(projectId),
     enabled: !!projectId,
-  })
+  });
 
-  const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks()
+  const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks();
 
   const projectTasks = useMemo(
     () => getProjectTasks(allTasks, projectId),
-    [allTasks, projectId],
-  )
+    [allTasks, projectId]
+  );
 
-  const projects = useMemo(() => deriveProjects(allTasks), [allTasks])
-  const derivedProject = projects.find((project) => project.id === projectId)
+  const projects = useMemo(() => deriveProjects(allTasks), [allTasks]);
+  const derivedProject = projects.find((project) => project.id === projectId);
 
   const project: ProjectSummary | undefined = useMemo(() => {
     if (projectDisplay) {
       return {
         id: projectDisplay.id,
         title: projectDisplay.title,
-        status: projectDisplay.statusVariant === 'success' ? 'completed' : 'active',
+        status:
+          projectDisplay.statusVariant === 'success' ? 'completed' : 'active',
         progress: (projectDisplay.progressPercent ?? 0) / 100,
         priority: derivedProject?.priority ?? 0,
         taskCounts: derivedProject?.taskCounts ?? {
           total: projectTasks.length,
           done: projectTasks.filter((task) => task.status === 'done').length,
-          inProgress: projectTasks.filter((task) => task.status === 'in-progress').length,
-          blocked: projectTasks.filter((task) => task.status === 'blocked').length,
+          inProgress: projectTasks.filter(
+            (task) => task.status === 'in-progress'
+          ).length,
+          blocked: projectTasks.filter((task) => task.status === 'blocked')
+            .length,
           todo: projectTasks.filter(
-            (task) => !['done', 'in-progress', 'blocked'].includes(task.status),
+            (task) => !['done', 'in-progress', 'blocked'].includes(task.status)
           ).length,
         },
-      }
+      };
     }
 
-    return derivedProject
-  }, [derivedProject, projectDisplay, projectTasks])
+    return derivedProject;
+  }, [derivedProject, projectDisplay, projectTasks]);
 
-  const { data: displaySurface } = useProjectSurface(projectId)
-  const pressureSignals = displaySurface?.pressureBand ?? []
-  const decisionQueue = displaySurface?.decisionQueue ?? []
-  const immediateActions = displaySurface?.immediateActions ?? []
-  const verificationRail = displaySurface?.verificationRail ?? []
-  const executionSnapshot = displaySurface?.executionSnapshot ?? EMPTY_EXECUTION_SNAPSHOT
-  const contextPanel = displaySurface?.contextPanel ?? []
+  const { data: displaySurface } = useProjectSurface(projectId);
+  const pressureSignals = displaySurface?.pressureBand ?? [];
+  const decisionQueue = displaySurface?.decisionQueue ?? [];
+  const immediateActions = displaySurface?.immediateActions ?? [];
+  const verificationRail = displaySurface?.verificationRail ?? [];
+  const executionSnapshot =
+    displaySurface?.executionSnapshot ?? EMPTY_EXECUTION_SNAPSHOT;
+  const contextPanel = displaySurface?.contextPanel ?? [];
 
   const projectHeader = useMemo<ProjectSummaryDisplay | null>(() => {
-    if (!project) return null
+    if (!project) return null;
 
     const fallbackDisplay = toProjectSummaryDisplay({
       id: project.id,
@@ -83,21 +91,24 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
       completedTaskCount: project.taskCounts.done,
       dueDate: project.eta ?? undefined,
       nextAction: decisionQueue[0] ? { title: decisionQueue[0].title } : null,
-    })
+    });
 
     return {
       ...(projectDisplay ?? fallbackDisplay),
       bestMoveTitle:
-        projectDisplay?.bestMoveTitle ?? fallbackDisplay.bestMoveTitle ?? decisionQueue[0]?.title ?? null,
-    }
-  }, [decisionQueue, project, projectDisplay])
+        projectDisplay?.bestMoveTitle ??
+        fallbackDisplay.bestMoveTitle ??
+        decisionQueue[0]?.title ??
+        null,
+    };
+  }, [decisionQueue, project, projectDisplay]);
 
   const blockedTasks = useMemo(
     () => projectTasks.filter((task) => task.status === 'blocked'),
-    [projectTasks],
-  )
+    [projectTasks]
+  );
 
-  const anyLoading = tasksLoading || projectLoading
+  const anyLoading = tasksLoading || projectLoading;
 
   if (anyLoading && !project && !displaySurface) {
     return (
@@ -113,11 +124,11 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
           </SoftPanel>
         </div>
       </div>
-    )
+    );
   }
 
   if (!project) {
-    return <EmptyState title={`Project "${projectId}" not found.`} />
+    return <EmptyState title={`Project "${projectId}" not found.`} />;
   }
 
   return (
@@ -146,20 +157,24 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {pressureSignals.slice(0, 3).map((signal) => (
                 <div
                   key={signal.id}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">
                         {signal.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">{signal.summary}</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {signal.summary}
+                      </p>
                     </div>
-                    <span className="rounded-full bg-amber-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-amber-100">
+                    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-amber-700">
                       {signal.severity}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-400">{signal.whySurfaced}</p>
+                  <p className="mt-3 text-xs text-slate-500">
+                    {signal.whySurfaced}
+                  </p>
                 </div>
               ))}
             </div>
@@ -180,20 +195,22 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {decisionQueue.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">{item.whyNow}</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {item.whyNow}
+                      </p>
                     </div>
-                    <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-100">
+                    <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
                       {item.score.toFixed(1)}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-400">
+                  <p className="mt-3 text-xs text-slate-500">
                     {item.expectedEffect}
                   </p>
                 </div>
@@ -216,20 +233,22 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {immediateActions.slice(0, 3).map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">{item.summary}</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {item.summary}
+                      </p>
                     </div>
-                    <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-100">
+                    <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
                       {item.reversibility}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-400">{item.whyNow}</p>
+                  <p className="mt-3 text-xs text-slate-500">{item.whyNow}</p>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <Link
                       to="/actions"
@@ -238,11 +257,11 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
                         simulatableOnly: undefined,
                         selectedId: item.id,
                       }}
-                      className="text-xs font-semibold text-sky-100 underline decoration-sky-300/40 underline-offset-4"
+                      className="text-xs font-semibold text-sky-700 underline decoration-sky-500/40 underline-offset-4"
                     >
                       Inspect in Actions
                     </Link>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {item.expectedEffect}
                     </span>
                   </div>
@@ -266,18 +285,18 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {verificationRail.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800">
                         {item.summary}
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 text-sm text-slate-600">
                         {item.status}
                       </p>
                     </div>
-                    <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-100">
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-700">
                       {item.status}
                     </span>
                   </div>
@@ -306,17 +325,22 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
             ].map((group) => (
               <div
                 key={group.label}
-                className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-100">{group.label}</p>
-                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-200">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {group.label}
+                  </p>
+                  <span className="rounded-full bg-black/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-600">
                     {group.items.length}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="mt-2 text-sm text-slate-600">
                   {group.items.length
-                    ? group.items.slice(0, 2).map((item) => item.title ?? item.id).join(' · ')
+                    ? group.items
+                        .slice(0, 2)
+                        .map((item) => item.title ?? item.id)
+                        .join(' · ')
                     : 'No items surfaced'}
                 </p>
               </div>
@@ -333,11 +357,13 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {contextPanel.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-4"
+                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
                 >
-                  <p className="text-sm font-semibold text-slate-100">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-300">{item.summary}</p>
-                  <p className="mt-3 text-xs text-slate-400">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {item.title}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">{item.summary}</p>
+                  <p className="mt-3 text-xs text-slate-500">
                     {item.reasonSelected}
                   </p>
                 </div>
@@ -352,5 +378,5 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
         </SoftPanel>
       </div>
     </div>
-  )
+  );
 }

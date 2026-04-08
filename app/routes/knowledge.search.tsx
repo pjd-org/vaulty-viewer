@@ -74,17 +74,17 @@ function KnowledgeSearchRoute() {
         value={q}
         onChange={(e) => handleQueryChange(e.target.value)}
         placeholder="Search knowledge notes…"
-        className="min-w-[240px] flex-1 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-sky-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
+        className="min-w-[240px] flex-1 rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-sm text-slate-800 placeholder-slate-400 transition focus:border-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
       />
-      <div className="flex overflow-hidden rounded-full border border-white/10 bg-white/5">
+      <div className="flex overflow-hidden rounded-full border border-slate-200 bg-black/3">
         <button
           type="button"
           onClick={() => handleModeChange('tag')}
           className={[
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
             mode === 'tag'
-              ? 'bg-sky-400/20 text-sky-100'
-              : 'text-slate-400 hover:text-slate-200',
+              ? 'bg-sky-100 text-sky-700'
+              : 'text-slate-500 hover:text-slate-700',
           ].join(' ')}
         >
           Structural
@@ -95,8 +95,8 @@ function KnowledgeSearchRoute() {
           className={[
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
             mode === 'semantic'
-              ? 'bg-sky-400/20 text-sky-100'
-              : 'text-slate-400 hover:text-slate-200',
+              ? 'bg-sky-100 text-sky-700'
+              : 'text-slate-500 hover:text-slate-700',
           ].join(' ')}
         >
           Semantic
@@ -104,7 +104,7 @@ function KnowledgeSearchRoute() {
       </div>
       <button
         type="submit"
-        className="rounded-full border border-sky-300/30 bg-sky-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition hover:bg-sky-400/25"
+        className="rounded-full border border-sky-300 bg-sky-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition hover:bg-sky-200"
       >
         Search
       </button>
@@ -142,7 +142,7 @@ function KnowledgeSearchRoute() {
 
           {searchError && (
             <div
-              className="rounded-[18px] border border-red-400/20 bg-red-400/5 p-4 text-sm text-red-300"
+              className="rounded-[18px] border border-red-200 bg-red-50 p-4 text-sm text-red-700"
               role="alert"
             >
               Search failed: {searchError.message}
@@ -154,7 +154,7 @@ function KnowledgeSearchRoute() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
+                  className="h-20 animate-pulse rounded-[18px] border border-slate-200 bg-black/3"
                 />
               ))}
             </div>
@@ -192,13 +192,13 @@ function KnowledgeSearchRoute() {
       asideTitle="Search Tips"
       asideSubtitle="How to get the best results."
       aside={
-        <div className="space-y-4 text-sm text-slate-300">
-          <div className="rounded-[18px] border border-white/8 bg-white/5 p-4 space-y-3">
+        <div className="space-y-4 text-sm text-slate-600">
+          <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4 space-y-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Structural mode
               </p>
-              <p className="mt-2 text-slate-300">
+              <p className="mt-2 text-slate-600">
                 Matches notes by tag, frontmatter type, or audience field. Exact
                 and prefix matching.
               </p>
@@ -207,7 +207,7 @@ function KnowledgeSearchRoute() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Semantic mode
               </p>
-              <p className="mt-2 text-slate-300">
+              <p className="mt-2 text-slate-600">
                 Uses vector embeddings to find conceptually similar notes even
                 without exact keyword matches.
               </p>

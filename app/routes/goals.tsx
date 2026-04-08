@@ -86,7 +86,7 @@ function GoalsRoute() {
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
       {/* Status filter pills */}
-      <div className="flex overflow-hidden rounded-full border border-white/10 bg-white/5">
+      <div className="flex overflow-hidden rounded-full border border-slate-200 bg-black/3">
         {(
           [
             { key: 'all', label: 'All', count: counts.all },
@@ -102,13 +102,13 @@ function GoalsRoute() {
             className={[
               'flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
               filter === tab.key
-                ? 'bg-sky-400/20 text-sky-100'
-                : 'text-slate-400 hover:text-slate-200',
+                ? 'bg-sky-100 text-sky-700'
+                : 'text-slate-500 hover:text-slate-700',
             ].join(' ')}
           >
             {tab.label}
             {tab.count > 0 && (
-              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] leading-none">
+              <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] leading-none">
                 {tab.count}
               </span>
             )}
@@ -120,7 +120,7 @@ function GoalsRoute() {
       <select
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value)}
-        className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs text-slate-100 transition focus:border-sky-300/50 focus-visible:outline-none"
+        className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs text-slate-800 transition focus:border-sky-500/50 focus-visible:outline-none"
       >
         <option value="priority">Sort: Priority</option>
         <option value="progress">Sort: Progress</option>
@@ -132,7 +132,7 @@ function GoalsRoute() {
         type="button"
         onClick={refresh}
         disabled={loading}
-        className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:bg-white/15 disabled:opacity-50"
+        className="rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-800 transition hover:bg-black/5 disabled:opacity-50"
       >
         {loading ? 'Refreshing…' : 'Refresh'}
       </button>
@@ -142,8 +142,8 @@ function GoalsRoute() {
         className={[
           'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
           apiStatus === 'online'
-            ? 'bg-emerald-400/15 text-emerald-300'
-            : 'bg-red-400/15 text-red-300',
+            ? 'bg-emerald-100 text-emerald-700'
+            : 'bg-red-100 text-red-700',
         ].join(' ')}
       >
         {apiStatus === 'online' ? 'API online' : 'API offline'}
@@ -163,14 +163,14 @@ function GoalsRoute() {
         <div className="space-y-4">
           {error && (
             <div
-              className="flex items-center justify-between rounded-[18px] border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-300"
+              className="flex items-center justify-between rounded-[18px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700"
               role="alert"
             >
               <span>{error}</span>
               <button
                 type="button"
                 onClick={refresh}
-                className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200 transition hover:bg-amber-400/20"
+                className="rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 transition hover:bg-amber-200"
               >
                 Retry
               </button>
@@ -182,7 +182,7 @@ function GoalsRoute() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-[22px] border border-white/10 bg-white/5"
+                  className="h-24 animate-pulse rounded-[22px] border border-slate-200 bg-black/3"
                 />
               ))}
             </div>
@@ -217,32 +217,32 @@ function GoalsRoute() {
       asideSubtitle="Navigate and manage goals."
       aside={
         <div className="space-y-4">
-          <div className="rounded-[22px] border border-white/8 bg-white/5 p-4 space-y-3">
+          <div className="rounded-[22px] border border-slate-200 bg-black/3 p-4 space-y-3">
             <Link
               to="/"
               search={{ q: undefined, collection: undefined }}
-              className="flex items-center gap-3 rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+              className="flex items-center gap-3 rounded-[14px] border border-slate-200 bg-black/3 px-4 py-3 text-sm text-slate-800 transition hover:bg-black/5"
             >
               <span>Open Tasks</span>
             </Link>
             <button
               type="button"
               onClick={() => dispatchNavOverlay('avatar')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-slate-200 bg-black/3 px-4 py-3 text-sm text-slate-800 transition hover:bg-black/5"
             >
               Avatar Dashboard
             </button>
             <button
               type="button"
               onClick={() => setFilter('active')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-slate-200 bg-black/3 px-4 py-3 text-sm text-slate-800 transition hover:bg-black/5"
             >
               Show Active Goals
             </button>
             <Link
               to="/note"
               search={{ p: 'goals' }}
-              className="flex items-center gap-3 rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:bg-white/10"
+              className="flex items-center gap-3 rounded-[14px] border border-slate-200 bg-black/3 px-4 py-3 text-sm text-slate-800 transition hover:bg-black/5"
             >
               Browse Goals Folder
             </Link>

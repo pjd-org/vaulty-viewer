@@ -288,7 +288,7 @@ export function KnowledgeWorkspacePane({
                   <Link
                     to="/note"
                     search={{ p: note.searchPath }}
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                   >
                     Open full editor
                   </Link>
@@ -301,13 +301,13 @@ export function KnowledgeWorkspacePane({
                         mode: 'semantic',
                       })) as never
                     }
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                   >
                     Search around note
                   </Link>
                   <Link
                     to="/knowledge/graph"
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                   >
                     Open graph
                   </Link>
@@ -345,7 +345,7 @@ export function KnowledgeWorkspacePane({
                 <Link
                   to="/note"
                   search={{ p: note.searchPath }}
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                 >
                   Open note in editor
                 </Link>
@@ -358,13 +358,13 @@ export function KnowledgeWorkspacePane({
                       mode: 'semantic',
                     })) as never
                   }
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                 >
                   Search related context
                 </Link>
                 <Link
                   to="/knowledge/graph"
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-white/80"
+                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-black/5"
                 >
                   Open knowledge graph
                 </Link>

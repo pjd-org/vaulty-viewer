@@ -1,19 +1,22 @@
-import React from 'react'
-import { Link, useRouterState } from '@tanstack/react-router'
+import React from 'react';
+import { Link, useRouterState } from '@tanstack/react-router';
 
-import { PROJECT_ROUTE_TABS, getProjectTabPath } from '../../../src/lib/routes/v3-routing'
-import { projectSearchParams } from '../../../src/lib/routes/search-params'
-import { PageContainer } from './PageContainer'
-import { PageFrame } from './PageFrame'
-import { ProjectRouteShellProvider } from './ProjectRouteContext'
-import { SummaryRow, type SummaryRowItem } from './SummaryRow'
-import type { ProjectSurfacePayload } from '../../lib/viewer-adapter'
+import {
+  PROJECT_ROUTE_TABS,
+  getProjectTabPath,
+} from '../../../src/lib/routes/v3-routing';
+import { projectSearchParams } from '../../../src/lib/routes/search-params';
+import { PageContainer } from './PageContainer';
+import { PageFrame } from './PageFrame';
+import { ProjectRouteShellProvider } from './ProjectRouteContext';
+import { SummaryRow, type SummaryRowItem } from './SummaryRow';
+import type { ProjectSurfacePayload } from '../../lib/viewer-adapter';
 
 interface ProjectRouteShellProps {
-  slug: string
-  summaryItems?: readonly SummaryRowItem[]
-  projectSurface?: ProjectSurfacePayload | null
-  children: React.ReactNode
+  slug: string;
+  summaryItems?: readonly SummaryRowItem[];
+  projectSurface?: ProjectSurfacePayload | null;
+  children: React.ReactNode;
 }
 
 export function ProjectRouteShell({
@@ -22,11 +25,13 @@ export function ProjectRouteShell({
   projectSurface = null,
   children,
 }: ProjectRouteShellProps) {
-  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
   const projectSearch = useRouterState({
     select: (state) => projectSearchParams(state.location.search),
-  })
-  const projectPath = `/project/${encodeURIComponent(slug)}`
+  });
+  const projectPath = `/project/${encodeURIComponent(slug)}`;
   const shellContext = React.useMemo(
     () => ({
       projectId: slug,
@@ -34,8 +39,8 @@ export function ProjectRouteShell({
       summaryItems,
       projectSurface,
     }),
-    [projectPath, projectSurface, slug, summaryItems],
-  )
+    [projectPath, projectSurface, slug, summaryItems]
+  );
 
   return (
     <PageContainer>
@@ -45,8 +50,12 @@ export function ProjectRouteShell({
         actions={
           <Link
             to="/work"
-            search={{ tab: undefined, status: undefined, selectedId: undefined }}
-            className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-100"
+            search={{
+              tab: undefined,
+              status: undefined,
+              selectedId: undefined,
+            }}
+            className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700"
           >
             Back to Work
           </Link>
@@ -55,9 +64,10 @@ export function ProjectRouteShell({
         <div className="genie-surface genie-surface--utility rounded-[24px] p-2">
           <div className="flex flex-wrap gap-2">
             {PROJECT_ROUTE_TABS.map((tab) => {
-              const to = getProjectTabPath(slug, tab.to)
+              const to = getProjectTabPath(slug, tab.to);
               const active =
-                pathname === to || (to !== `/project/${slug}` && pathname.startsWith(`${to}/`))
+                pathname === to ||
+                (to !== `/project/${slug}` && pathname.startsWith(`${to}/`));
 
               return (
                 <Link
@@ -67,19 +77,21 @@ export function ProjectRouteShell({
                   search={projectSearch}
                   className={[
                     'tab rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                    active ? 'active text-slate-100' : 'text-slate-300',
+                    active ? 'active text-slate-800' : 'text-slate-600',
                   ].join(' ')}
                 >
                   {tab.label}
                 </Link>
-              )
+              );
             })}
           </div>
         </div>
 
         <SummaryRow items={summaryItems} />
-        <ProjectRouteShellProvider value={shellContext}>{children}</ProjectRouteShellProvider>
+        <ProjectRouteShellProvider value={shellContext}>
+          {children}
+        </ProjectRouteShellProvider>
       </PageFrame>
     </PageContainer>
-  )
+  );
 }

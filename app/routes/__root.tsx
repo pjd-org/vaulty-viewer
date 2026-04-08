@@ -44,7 +44,7 @@ const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true';
 const THEME_SCRIPT = [
   '(function(){try{',
   `var t=localStorage.getItem('${THEME_STORAGE_KEY}');`,
-  "if(t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches))",
+  "if(t==='dark')",
   "document.documentElement.classList.add('dark');",
   '}catch(e){}})();',
 ].join('');
@@ -177,10 +177,10 @@ function RootDocument({
     : '';
 
   return (
-    <html lang="en" style={{ colorScheme: 'dark' }}>
+    <html lang="en" style={{ colorScheme: 'light' }}>
       <head>
         <HeadContent />
-        <meta name="theme-color" content="#0f1117" />
+        <meta name="theme-color" content="#e9edf5" />
         {/* Theme script must be in <head> to block paint before body renders */}
         <script
           suppressHydrationWarning

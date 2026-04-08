@@ -1,5 +1,7 @@
 /* Design-system tokens — single source of truth */
 @import '@vault/ui/tokens.css';
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
 
 /* shadcn/ui CSS variable bridge — maps shadcn expected names to vault tokens.
    Do NOT add raw values here; all values must resolve through --vault-* / --color-* tokens. */
@@ -47,9 +49,6 @@
   }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -84,6 +83,34 @@
   --text-primary: var(--color-text);
   --text-secondary: var(--color-text-2);
   --text-tertiary: var(--color-text-3);
+}
+
+/* ── Force light theme — override tokens.css dark media query ───────────── */
+/* tokens.css redefines --color-* to dark values inside
+   @media (prefers-color-scheme: dark). This block overrides that with the
+   same specificity (media query + :root) but comes later in the cascade,
+   so the viewer always renders in light mode regardless of OS color scheme. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #f6f7fb;
+    --color-surface: #ffffff;
+    --color-surface-2: #f3f1f8;
+    --color-surface-3: #ece8f3;
+    --color-text: #17141f;
+    --color-text-2: #5e586b;
+    --color-text-3: rgba(23, 20, 31, 0.45);
+    --color-border: rgba(191, 201, 218, 0.5);
+    --color-border-soft: #f0edf4;
+    --color-input-bg: #f3f1f8;
+    --color-chip-bg: #ece8f3;
+    --shadow-sm: 0 2px 8px rgba(100, 110, 140, 0.1);
+    --shadow-md: 0 6px 20px rgba(100, 110, 140, 0.14);
+    --shadow-lg: 0 16px 40px rgba(100, 110, 140, 0.18);
+    --vault-glow: rgba(79, 140, 255, 0.08);
+    --vault-surface-container-high: #e8e4f2;
+    --vault-surface-container-highest: #ddd8ec;
+    --vault-secondary-container: rgba(52, 199, 89, 0.07);
+  }
 }
 
 /* ── Genie utility classes ──────────────────────────────────────────────── */
@@ -1802,156 +1829,121 @@ img {
   color: #6366f1;
 }
 
-/* Dark mode card adjustments */
+/* Dark mode card adjustments — LIGHT-THEME OVERRIDE (viewer forces light glass theme) */
 @media (prefers-color-scheme: dark) {
-  /* --bg/--surface/etc. aliases automatically resolve to dark --vault-* values
-     because tokens.css already overrides them in this same media query. */
-
-  body {
-    background: var(--bg);
-  }
+  /* body background intentionally NOT overridden here — the viewer forces light
+     theme via colorScheme:'light' and an explicit gradient on <body> in __root.tsx. */
 
   .hero__content h1 {
-    background: linear-gradient(135deg, #f0f0f5, var(--accent));
+    background: linear-gradient(135deg, #1c2230, var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
   }
 
   .hero__panel {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(0, 0, 0, 0.06);
   }
 
   .stat {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.55);
   }
 
   .stat:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.8);
   }
 
   .stat__value {
-    color: #f0f0f5;
+    color: #1c2230;
   }
 
   .stat-mini__value {
-    color: #f0f0f5;
+    color: #1c2230;
   }
 
   .stats-secondary {
-    border-top-color: rgba(255, 255, 255, 0.06);
+    border-top-color: rgba(0, 0, 0, 0.06);
   }
 
   .search {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
   }
 
   .search input {
-    color: #f0f0f5;
+    color: #1c2230;
   }
 
   .filter-button {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: rgba(240, 240, 245, 0.7);
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #667085;
   }
 
   .filter-button:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.8);
   }
 
   .card {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.07);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   }
 
   .card:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.88);
     border-color: var(--card-accent, var(--accent));
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
   .card__title {
-    color: #f0f0f5;
+    color: #1c2230;
   }
 
   .card__excerpt {
-    color: rgba(240, 240, 245, 0.6);
+    color: #667085;
   }
 
   .card__path {
-    color: rgba(240, 240, 245, 0.5);
-    border-top-color: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border-top-color: rgba(0, 0, 0, 0.06);
   }
 
   .card__status {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .card__tag {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(240, 240, 245, 0.7);
+    background: rgba(0, 0, 0, 0.05);
+    color: #667085;
   }
 
   .card__goal {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(99, 102, 241, 0.1);
   }
 
   .card__time {
-    color: rgba(240, 240, 245, 0.6);
+    color: #94a3b8;
   }
 
   .card[data-status='completed'] .card__title {
-    text-decoration-color: rgba(255, 255, 255, 0.3);
+    text-decoration-color: rgba(0, 0, 0, 0.25);
   }
 
   .card::after {
-    opacity: 0.6;
+    opacity: 0.4;
   }
 
   .pill {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.05);
   }
 
-  .pill[data-collection='tasks'] {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
-  }
-  .pill[data-collection='goals'] {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
-  }
-  .pill[data-collection='projects'] {
-    background: rgba(139, 92, 246, 0.2);
-    color: #a78bfa;
-  }
-  .pill[data-collection='specs'] {
-    background: rgba(236, 72, 153, 0.2);
-    color: #f472b6;
-  }
-  .pill[data-collection='knowledge'] {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-  }
-  .pill[data-collection='reports'] {
-    background: rgba(20, 184, 166, 0.2);
-    color: #2dd4bf;
-  }
-  .pill[data-collection='ideas'] {
-    background: rgba(249, 115, 22, 0.2);
-    color: #fb923c;
-  }
-  .pill[data-collection='notes'] {
-    background: rgba(99, 102, 241, 0.2);
-    color: #818cf8;
-  }
+  /* Collection pills keep their light-mode colors (already defined above, no override needed) */
 
   .empty {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: rgba(240, 240, 245, 0.6);
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #667085;
   }
 }
 
@@ -4327,13 +4319,14 @@ img {
 }
 
 @media (prefers-color-scheme: dark) {
+  /* Viewer forces light glass theme — pin goal tokens to light values */
   .goals-page {
-    --goal-bg: #0d0d12;
-    --goal-surface: rgba(255, 255, 255, 0.03);
-    --goal-surface-2: rgba(255, 255, 255, 0.06);
-    --goal-border: rgba(255, 255, 255, 0.08);
-    --goal-text: #f0f0f5;
-    --goal-text-muted: rgba(240, 240, 245, 0.6);
+    --goal-bg: transparent;
+    --goal-surface: rgba(255, 255, 255, 0.65);
+    --goal-surface-2: rgba(255, 255, 255, 0.82);
+    --goal-border: rgba(0, 0, 0, 0.07);
+    --goal-text: #1c2230;
+    --goal-text-muted: #667085;
   }
 }
 
@@ -5704,14 +5697,14 @@ img {
   border-radius: 16px;
 }
 
-/* Dark mode skeleton adjustments */
+/* Light-theme skeleton shimmer override */
 @media (prefers-color-scheme: dark) {
   .skeleton {
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.04) 25%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.04) 75%
+      rgba(0, 0, 0, 0.04) 25%,
+      rgba(0, 0, 0, 0.08) 50%,
+      rgba(0, 0, 0, 0.04) 75%
     );
     background-size: 200% 100%;
   }
@@ -6010,18 +6003,18 @@ img {
   margin: 0 4px;
 }
 
-/* Dark mode keyboard help */
+/* Dark mode keyboard help — light theme override */
 @media (prefers-color-scheme: dark) {
   .keyboard-help {
-    background: var(--surface);
-    border-color: var(--border-subtle);
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(0, 0, 0, 0.08);
   }
 
   .keyboard-help__kbd,
   .keyboard-help__footer kbd {
-    background: var(--surface-2);
-    border-color: var(--border-soft);
-    color: var(--ink);
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #1c2230;
   }
 }
 
@@ -6074,14 +6067,15 @@ img {
 }
 
 @media (prefers-color-scheme: dark) {
+  /* Light theme override for keyboard hint */
   .keyboard-hint {
-    background: var(--surface);
-    border-color: var(--border-soft);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
   }
 
   .keyboard-hint kbd {
-    background: var(--surface-2);
-    border-color: var(--border-soft);
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -7598,32 +7592,32 @@ img {
   flex: 1;
 }
 
-/* Dark mode adjustments */
+/* Dark mode adjustments — light theme override */
 @media (prefers-color-scheme: dark) {
   .na-card {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .session-banner {
-    background: #022c22;
+    background: #dcfce7;
   }
 
   .session-plan {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .focus-backlog {
-    border-color: var(--border, #2d2d3d);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .focus-backlog__item {
-    border-bottom-color: var(--border, #2d2d3d);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
   }
 
   .focus-backlog[open] .focus-backlog__summary {
-    border-bottom-color: var(--border, #2d2d3d);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -7948,20 +7942,20 @@ img {
   text-decoration: underline;
 }
 
-/* Dark mode */
+/* Dark mode — light theme override */
 @media (prefers-color-scheme: dark) {
   .action-guidance {
-    background: var(--card-bg, #1e1e2e);
-    border-color: var(--border, #2d2d3d);
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.07);
   }
   .avatar-progression {
-    border-color: var(--border, #2d2d3d);
+    border-color: rgba(0, 0, 0, 0.07);
   }
   .avatar-progression[open] .avatar-progression__summary {
-    border-bottom-color: var(--border, #2d2d3d);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
   }
   .os-header {
-    border-bottom-color: var(--border, #2d2d3d);
+    border-bottom-color: rgba(0, 0, 0, 0.07);
   }
 }
 
@@ -8148,47 +8142,48 @@ img {
   margin-top: 4px;
 }
 
-/* Dark mode overrides */
+/* Dark mode overrides — light theme */
 @media (prefers-color-scheme: dark) {
   .cmd-bar {
-    border-bottom-color: var(--border, #2d2d3d);
+    border-bottom-color: rgba(0, 0, 0, 0.07);
   }
 
   .cmd-bar__link:hover {
-    background: var(--surface-hover, #2d2d3d);
-    color: var(--text, #f9fafb);
+    background: rgba(0, 0, 0, 0.05);
+    color: #1c2230;
   }
 
   .recent-sessions__item {
-    border-color: var(--border, #2d2d3d);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .recent-sessions__item:hover {
-    background: var(--surface-hover, #1a1a2a);
+    background: rgba(255, 255, 255, 0.7);
   }
 
+  /* Session status chips — light semantic colors */
   .chip--active {
-    background: #064e3b;
-    color: #6ee7b7;
+    background: #dcfce7;
+    color: #065f46;
   }
 
   .chip--completed {
-    background: #1e1b4b;
-    color: #a5b4fc;
+    background: #ede9fe;
+    color: #4338ca;
   }
 
   .chip--aborted {
-    background: #450a0a;
-    color: #fca5a5;
+    background: #fee2e2;
+    color: #991b1b;
   }
 
   .chip--planned {
-    background: #2d2d3d;
-    color: #9ca3af;
+    background: rgba(0, 0, 0, 0.06);
+    color: #667085;
   }
 
   .focus-empty-card {
-    border-color: var(--border, #2d2d3d);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 }
 
@@ -8691,65 +8686,66 @@ img {
   border: 0;
 }
 
-/* Dark mode overrides */
+/* Dark mode overrides — light glass theme */
 @media (prefers-color-scheme: dark) {
   .project-card:hover {
-    background: var(--surface-hover, #1a1a2a);
+    background: rgba(255, 255, 255, 0.8);
   }
 
+  /* Project status badges — light semantic colors */
   .project-status--active {
-    background: #064e3b;
-    color: #6ee7b7;
+    background: #dcfce7;
+    color: #065f46;
   }
 
   .project-status--at-risk {
-    background: #451a03;
-    color: #fcd34d;
+    background: #fef3c7;
+    color: #92400e;
   }
 
   .project-status--blocked {
-    background: #450a0a;
-    color: #fca5a5;
+    background: #fee2e2;
+    color: #991b1b;
   }
 
   .project-status--completed {
-    background: #1e1b4b;
-    color: #a5b4fc;
+    background: #ede9fe;
+    color: #4338ca;
   }
 
   .project-progress__track {
-    background: #2d2d3d;
+    background: rgba(0, 0, 0, 0.08);
   }
 
   .project-board__col-header {
-    background: #1e1e2e;
-    border-color: #2d2d3d;
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .project-board__cards {
-    border-color: #2d2d3d;
+    border-color: rgba(0, 0, 0, 0.06);
   }
 
   .project-board__empty {
-    border-color: #2d2d3d;
-    color: #374151;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #94a3b8;
   }
 
   .project-board__completed {
-    border-color: #2d2d3d;
+    border-color: rgba(0, 0, 0, 0.06);
   }
 
   .project-board__done-item {
-    border-color: #1e1e2e;
+    border-color: rgba(0, 0, 0, 0.05);
   }
 
   .blockers-panel__item {
-    border-color: #7f1d1d;
-    background: #1a0a0a;
+    border-color: #fca5a5;
+    background: #fff5f5;
   }
 
   .blockers-panel__item:hover {
-    background: #2a0f0f;
+    background: #fee2e2;
   }
 
   .best-move-panel__card {
@@ -8757,18 +8753,19 @@ img {
   }
 
   .projects-filter--active {
-    background: var(--text, #f9fafb);
-    color: var(--bg, #0f0f1a);
+    background: #1c2230;
+    color: #fff;
   }
 
   .projects-sort__select {
-    border-color: #2d2d3d;
-    color: #f9fafb;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1c2230;
   }
 
+  /* Blocked chip — light */
   .chip--blocked {
-    background: #450a0a;
-    color: #fca5a5;
+    background: #fee2e2;
+    color: #991b1b;
   }
 }
 

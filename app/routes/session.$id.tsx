@@ -39,8 +39,8 @@ function SessionTaskCard({
       className={[
         'rounded-xl border p-4 transition',
         hero
-          ? 'border-emerald-400/30 bg-emerald-400/8'
-          : 'border-white/8 bg-white/4 hover:bg-white/6',
+          ? 'border-emerald-300 bg-emerald-100'
+          : 'border-slate-200 bg-black/3 hover:bg-black/5',
       ].join(' ')}
     >
       <div className="mb-3 flex items-start gap-3">
@@ -48,13 +48,13 @@ function SessionTaskCard({
           <p
             className={[
               'font-medium leading-snug',
-              hero ? 'text-base text-slate-100' : 'text-sm text-slate-200',
+              hero ? 'text-base text-slate-800' : 'text-sm text-slate-700',
             ].join(' ')}
           >
             {task.title}
           </p>
           {task.effortScore !== undefined && task.effortScore > 0 && (
-            <span className="mt-1 inline-block rounded-full bg-white/8 px-2 py-0.5 text-[11px] text-slate-400">
+            <span className="mt-1 inline-block rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
               effort {task.effortScore}
             </span>
           )}
@@ -63,7 +63,7 @@ function SessionTaskCard({
       <div className="flex gap-2">
         <button
           type="button"
-          className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
+          className="rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-40"
           onClick={onDone}
           disabled={mutating}
         >
@@ -71,7 +71,7 @@ function SessionTaskCard({
         </button>
         <button
           type="button"
-          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:bg-white/8 disabled:opacity-40"
+          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-500 transition hover:bg-black/5 disabled:opacity-40"
           onClick={onSkip}
           disabled={mutating}
         >
@@ -167,7 +167,7 @@ function SessionRoute() {
         <Link
           to="/"
           search={{}}
-          className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/8"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-black/5"
         >
           ← Back to Focus
         </Link>
@@ -193,7 +193,7 @@ function SessionRoute() {
     <div className="space-y-6">
       {mutationError && (
         <div
-          className="rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+          className="rounded-lg border border-red-100 bg-red-100 px-4 py-3 text-sm text-red-700"
           role="alert"
         >
           {mutationError}
@@ -255,14 +255,14 @@ function SessionRoute() {
       <div className="space-y-2">
         {confirmAction ? (
           <>
-            <p className="mb-3 text-sm text-slate-300">
+            <p className="mb-3 text-sm text-slate-600">
               {confirmAction === 'completed'
                 ? 'End session?'
                 : 'Abort session?'}
             </p>
             <button
               type="button"
-              className="w-full rounded-lg bg-emerald-500/20 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
+              className="w-full rounded-lg bg-emerald-100 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-40"
               onClick={() => {
                 endSessionMutation.mutate(confirmAction);
                 setConfirmAction(null);
@@ -273,7 +273,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="w-full rounded-lg border border-white/10 py-2 text-sm text-slate-400 transition hover:bg-white/8"
+              className="w-full rounded-lg border border-slate-200 py-2 text-sm text-slate-600 transition hover:bg-black/5"
               onClick={() => setConfirmAction(null)}
             >
               Cancel
@@ -283,7 +283,7 @@ function SessionRoute() {
           <>
             <button
               type="button"
-              className="w-full rounded-lg bg-emerald-500/20 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-40"
+              className="w-full rounded-lg bg-emerald-100 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-40"
               onClick={() => setConfirmAction('completed')}
               disabled={endSessionMutation.isPending}
             >
@@ -291,7 +291,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="w-full rounded-lg border border-red-400/20 py-2 text-sm text-red-400 transition hover:bg-red-400/8 disabled:opacity-40"
+              className="w-full rounded-lg border border-red-200 py-2 text-sm text-red-700 transition hover:bg-red-100 disabled:opacity-40"
               onClick={() => setConfirmAction('aborted')}
               disabled={endSessionMutation.isPending}
             >
@@ -313,15 +313,15 @@ function SessionRoute() {
                 key={t.id}
                 className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
               >
-                <span className="min-w-0 truncate text-slate-400">
+                <span className="min-w-0 truncate text-slate-600">
                   {t.title}
                 </span>
                 <span
                   className={[
                     'shrink-0 rounded-full px-2 py-0.5 text-[11px]',
                     t.status === 'done'
-                      ? 'bg-emerald-400/15 text-emerald-300'
-                      : 'bg-white/8 text-slate-500',
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-black/5 text-slate-500',
                   ].join(' ')}
                 >
                   {t.status}
@@ -342,7 +342,7 @@ function SessionRoute() {
         <Link
           to="/"
           search={{}}
-          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:bg-white/8"
+          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-500 transition hover:bg-black/5"
         >
           ← Focus
         </Link>

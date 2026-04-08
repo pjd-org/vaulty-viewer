@@ -164,7 +164,7 @@ function ActionsRoute() {
               simulatableOnly,
             })
           }
-          className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-100 transition focus:border-sky-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
+          className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-sm text-slate-800 transition focus:border-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
         >
           <option value="urgency">Urgency</option>
           <option value="impact">Impact</option>
@@ -173,7 +173,7 @@ function ActionsRoute() {
           <option value="reversibility">Reversibility</option>
         </select>
       </div>
-      <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-slate-100">
+      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-sm text-slate-800">
         <input
           id="actions-simulatable-only"
           type="checkbox"
@@ -184,16 +184,16 @@ function ActionsRoute() {
               simulatableOnly: event.target.checked ? true : undefined,
             })
           }
-          className="h-4 w-4 rounded border-white/20 bg-transparent text-sky-400"
+          className="h-4 w-4 rounded border-slate-300 bg-transparent text-sky-600"
         />
         <span>Simulatable only</span>
       </label>
-      <div className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-right text-xs text-slate-300">
+      <div className="rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-right text-xs text-slate-600">
         <p>
           Showing {recommendations.length} of {allRecommendations.length}{' '}
           recommendations
         </p>
-        <p className="mt-1 font-medium text-slate-100">
+        <p className="mt-1 font-medium text-slate-800">
           Selected: {selected?.title ?? 'None'}
         </p>
       </div>
@@ -241,7 +241,7 @@ function ActionsRoute() {
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-24 animate-pulse rounded-2xl border border-white/10 bg-white/5"
+                className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-black/3"
               />
             ))}
           </div>
@@ -265,20 +265,20 @@ function ActionsRoute() {
                   className={[
                     'rounded-[22px] border p-4 transition',
                     active
-                      ? 'border-sky-300/40 bg-white/10 shadow-[0_18px_45px_rgba(56,189,248,0.14)]'
-                      : 'border-white/8 bg-white/5',
+                      ? 'border-sky-300 bg-sky-50 shadow-[0_18px_45px_rgba(56,189,248,0.10)]'
+                      : 'border-slate-200 bg-black/3',
                   ].join(' ')}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-base font-semibold text-slate-100">
+                      <h3 className="text-base font-semibold text-slate-800">
                         {item.title}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 text-sm text-slate-600">
                         {item.summary}
                       </p>
                     </div>
-                    <span className="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
+                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
                       {item.actionType.replace('_', ' ')}
                     </span>
                   </div>
@@ -287,7 +287,7 @@ function ActionsRoute() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                         Why now
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 text-sm text-slate-600">
                         {item.whyNow}
                       </p>
                     </div>
@@ -295,7 +295,7 @@ function ActionsRoute() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                         Expected effect
                       </p>
-                      <p className="mt-1 text-sm text-slate-300">
+                      <p className="mt-1 text-sm text-slate-600">
                         {item.expectedEffect}
                       </p>
                     </div>
@@ -303,10 +303,10 @@ function ActionsRoute() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                         Score
                       </p>
-                      <p className="mt-1 text-sm text-slate-200">
+                      <p className="mt-1 text-sm text-slate-800">
                         {item.score.toFixed(1)} / 10
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500">
                         Confidence {(item.confidence * 100).toFixed(0)}% ·{' '}
                         {item.reversibility} reversibility
                       </p>
@@ -322,18 +322,18 @@ function ActionsRoute() {
       asideSubtitle="Selection-driven explanation and controls."
       aside={
         selected ? (
-          <div className="space-y-5 text-sm text-slate-300">
-            <div className="rounded-[22px] border border-white/8 bg-white/5 p-4">
+          <div className="space-y-5 text-sm text-slate-600">
+            <div className="rounded-[22px] border border-slate-200 bg-black/3 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Selected action
               </p>
-              <h3 className="mt-3 text-lg font-semibold text-slate-100">
+              <h3 className="mt-3 text-lg font-semibold text-slate-800">
                 {selected.title}
               </h3>
-              <p className="mt-2 text-sm text-slate-300">{selected.summary}</p>
+              <p className="mt-2 text-sm text-slate-600">{selected.summary}</p>
             </div>
             <div className="grid gap-3">
-              <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Score breakdown
                 </p>
@@ -344,29 +344,29 @@ function ActionsRoute() {
                         key={key}
                         className="flex items-center justify-between gap-3"
                       >
-                        <span className="text-slate-400 capitalize">
+                        <span className="text-slate-500 capitalize">
                           {key.replace(/([A-Z])/g, ' $1')}
                         </span>
-                        <span className="text-slate-200">{value}</span>
+                        <span className="text-slate-800">{value}</span>
                       </div>
                     )
                   )}
                 </div>
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Mutation path
                 </p>
-                <p className="mt-3 text-slate-200">
+                <p className="mt-3 text-slate-800">
                   {selected.mutationRef
                     ? `${selected.mutationRef.domain} / ${selected.mutationRef.operation}`
                     : 'Simulation only'}
                 </p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Source entities: {selected.sourceEntities.length}
                 </p>
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Source signals
                 </p>
@@ -375,27 +375,27 @@ function ActionsRoute() {
                     {selected.sourceSignalIds.map((signalId) => (
                       <span
                         key={signalId}
-                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-slate-100"
+                        className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-700"
                       >
                         {signalId}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-400">
+                  <p className="mt-3 text-sm text-slate-500">
                     No source signals surfaced.
                   </p>
                 )}
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Verification preview
                 </p>
                 {verificationPhase === 'pending' && (
-                  <p className="mt-3 text-sm text-sky-300">Verifying…</p>
+                  <p className="mt-3 text-sm text-sky-700">Verifying…</p>
                 )}
                 {verificationPhase === 'failed' && (
-                  <p className="mt-3 text-sm text-red-400">
+                  <p className="mt-3 text-sm text-red-700">
                     Verification failed.
                   </p>
                 )}
@@ -404,18 +404,18 @@ function ActionsRoute() {
                     {surface?.verificationRail.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[14px] border border-white/10 bg-white/5 p-3"
+                        className="rounded-[14px] border border-slate-200 bg-black/3 p-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm font-medium text-slate-100">
+                            <p className="text-sm font-medium text-slate-800">
                               {item.summary}
                             </p>
-                            <p className="mt-1 text-xs text-slate-400">
+                            <p className="mt-1 text-xs text-slate-500">
                               {item.actionId}
                             </p>
                           </div>
-                          <span className="rounded-full bg-sky-400/15 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-100">
+                          <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700">
                             {item.status}
                           </span>
                         </div>
@@ -423,12 +423,12 @@ function ActionsRoute() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-400">
+                  <p className="mt-3 text-sm text-slate-500">
                     Ready for post-action verification.
                   </p>
                 )}
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/5 p-4">
+              <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Action controls
                 </p>
@@ -437,7 +437,7 @@ function ActionsRoute() {
                     type="button"
                     disabled={!selected.taskPath || executeMutation.isPending}
                     onClick={handleExecute}
-                    className="rounded-full border border-sky-300/30 bg-sky-400/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100 transition disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-sky-300 bg-sky-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {executeMutation.isPending ? 'Starting…' : 'Execute'}
                   </button>
@@ -449,7 +449,7 @@ function ActionsRoute() {
                       simulationLoading
                     }
                     onClick={handleSimulate}
-                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {simulationLoading ? 'Loading…' : 'Simulate'}
                   </button>
@@ -457,15 +457,15 @@ function ActionsRoute() {
                     type="button"
                     disabled={!selected.taskPath || deferMutation.isPending}
                     onClick={handleDefer}
-                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {deferMutation.isPending ? 'Deferring…' : 'Defer'}
                   </button>
                 </div>
               </div>
               {simulationData && (
-                <div className="rounded-[18px] border border-amber-300/20 bg-amber-400/5 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-400">
+                <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">
                     Simulation preview
                   </p>
                   <div className="mt-3 space-y-2">
@@ -492,8 +492,8 @@ function ActionsRoute() {
                         key={label}
                         className="flex items-center justify-between gap-3"
                       >
-                        <span className="text-slate-400">{label}</span>
-                        <span className="text-slate-200">{value}</span>
+                        <span className="text-slate-500">{label}</span>
+                        <span className="text-slate-800">{value}</span>
                       </div>
                     ))}
                   </div>

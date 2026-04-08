@@ -3,10 +3,10 @@ import { useUIStore } from '../../../src/store/ui';
 import { useHomeSurface } from '../../lib/viewer-adapter';
 
 const STATUS_COLOR: Record<string, string> = {
-  success: 'text-emerald-300',
-  warning: 'text-amber-300',
-  failed: 'text-red-400',
-  pending: 'text-sky-300',
+  success: 'text-emerald-600',
+  warning: 'text-amber-600',
+  failed: 'text-red-500',
+  pending: 'text-sky-600',
 };
 
 export function VerificationRailHost() {
@@ -25,7 +25,7 @@ export function VerificationRailHost() {
         </p>
 
         {verification.phase === 'pending' && (
-          <p className="text-sm text-sky-300">Verifying…</p>
+          <p className="text-sm text-sky-600">Verifying…</p>
         )}
         {verification.phase === 'failed' && (
           <p className="text-sm text-red-400">Verification failed.</p>
@@ -36,10 +36,10 @@ export function VerificationRailHost() {
             {outcomes.map((item) => (
               <div
                 key={item.id}
-                className="rounded-[14px] border border-white/8 bg-white/5 p-3 space-y-1"
+                className="rounded-[14px] border border-slate-200 bg-black/5 p-3 space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-100 leading-snug">
+                  <p className="text-sm font-medium text-slate-800 leading-snug">
                     {item.summary}
                   </p>
                   <span
