@@ -14,10 +14,9 @@ import {
   type DehydratedState,
 } from '@tanstack/react-query';
 import {
-  AppShell,
-  SidebarRail,
   TopCommandBar,
   VerificationRailHost,
+  ViewerSidebar,
 } from '../components/layout';
 import { CommandHost, ModalHost } from '../components/shell';
 import { Toaster } from '../components/ui/sonner';
@@ -149,12 +148,12 @@ function RootComponent() {
           {hideShell ? (
             <Outlet />
           ) : (
-            <AppShell rail={<SidebarRail />}>
+            <ViewerSidebar>
               <div className="min-h-screen pb-10">
                 <TopCommandBar />
                 <Outlet />
               </div>
-            </AppShell>
+            </ViewerSidebar>
           )}
           {!hideShell && <VerificationRailHost />}
           {!routeHasOwnOverlay && navOverlay === 'avatar' && (

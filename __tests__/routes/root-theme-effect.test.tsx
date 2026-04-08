@@ -52,8 +52,9 @@ vi.mock('@tanstack/react-query', async () => {
 });
 
 vi.mock('../../app/components/layout', () => ({
-  AppShell: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SidebarRail: () => null,
+  ViewerSidebar: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
   TopCommandBar: () => null,
   VerificationRailHost: () => null,
 }));
