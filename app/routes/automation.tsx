@@ -345,6 +345,7 @@ function AutomationRoute() {
           </div>
         )
       }
+      aside={selection ? <AutomationDetail selection={selection} /> : null}
     />
   );
 }
