@@ -34,9 +34,9 @@ function RecommendationCard({
   return (
     <article className="rounded-[18px] border border-slate-200 bg-white/70 p-4 shadow-sm space-y-2">
       <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
+        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
           {rec.title}
-        </p>
+        </h3>
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-700">
             {confidencePct}%
@@ -53,7 +53,7 @@ function RecommendationCard({
           {rec.whyNow}
         </p>
       )}
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex items-center gap-2 pt-1 flex-wrap">
         {onExecute && (
           <button
             type="button"
@@ -81,6 +81,12 @@ function RecommendationCard({
             Defer
           </button>
         )}
+        <Link
+          to="/actions"
+          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 hover:bg-slate-50"
+        >
+          Inspect in Actions
+        </Link>
       </div>
     </article>
   );

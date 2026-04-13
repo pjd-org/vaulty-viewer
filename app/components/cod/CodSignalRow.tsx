@@ -55,9 +55,9 @@ function SignalCard({
   return (
     <article className="rounded-[18px] border border-slate-200 bg-white/70 p-4 shadow-sm space-y-2">
       <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
+        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
           {signal.title}
-        </p>
+        </h3>
         <SeverityBadge severity={signal.severity} />
       </div>
       {signal.whySurfaced && (
@@ -65,6 +65,21 @@ function SignalCard({
           {signal.whySurfaced}
         </p>
       )}
+      {/* Signal metadata */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        {signal.sourceType && (
+          <span className="text-[11px] text-slate-500 flex items-center gap-1">
+            <span className="font-medium text-slate-600">Source type</span>
+            <span>{signal.sourceType}</span>
+          </span>
+        )}
+        {signal.confidence != null && (
+          <span className="text-[11px] text-slate-500 flex items-center gap-1">
+            <span className="font-medium text-slate-600">Confidence</span>
+            <span>{Math.round(signal.confidence * 100)}%</span>
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-2 pt-1">
         {onOpen && (
           <button
