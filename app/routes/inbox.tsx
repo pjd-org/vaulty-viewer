@@ -473,91 +473,91 @@ function InboxRoute() {
 
             <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
               <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setView('queue')}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                  activeView === 'queue'
-                    ? 'border-slate-800 bg-slate-800 text-white'
-                    : 'border-slate-200 bg-white text-slate-600'
-                }`}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setView('archive');
-                  setRejectedTab('user');
-                }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                  activeView === 'archive' && rejectedTab === 'user'
-                    ? 'border-slate-800 bg-slate-800 text-white'
-                    : 'border-slate-200 bg-white text-slate-600'
-                }`}
-              >
-                Rejected
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('workbench')}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                  activeView === 'workbench'
-                    ? 'border-slate-800 bg-slate-800 text-white'
-                    : 'border-slate-200 bg-white text-slate-600'
-                }`}
-              >
-                Validated
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setView('archive');
-                  setRejectedTab('automated');
-                }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                  activeView === 'archive' && rejectedTab === 'automated'
-                    ? 'border-slate-800 bg-slate-800 text-white'
-                    : 'border-slate-200 bg-white text-slate-600'
-                }`}
-              >
-                Auto-rejected
-              </button>
-              <div className="ml-auto flex items-center gap-2">
-                <select
-                  id="inbox-severity"
-                  value={severity ?? ''}
-                  onChange={(e) =>
-                    navigate({
-                      to: '/inbox',
-                      search: {
-                        view: activeView,
-                        rejectedTab,
-                        selectedId,
-                        severity:
-                          (e.target.value as 'high' | 'medium' | 'low') ||
-                          undefined,
-                      },
-                      replace: true,
-                    })
-                  }
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
-                >
-                  {SEVERITY_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
                 <button
                   type="button"
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-                  onClick={refresh}
-                  disabled={loading || anyActionInFlight}
+                  onClick={() => setView('queue')}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    activeView === 'queue'
+                      ? 'border-slate-800 bg-slate-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
                 >
-                  {loading ? 'Loading…' : 'Refresh'}
+                  All
                 </button>
-              </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView('archive');
+                    setRejectedTab('user');
+                  }}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    activeView === 'archive' && rejectedTab === 'user'
+                      ? 'border-slate-800 bg-slate-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  Rejected
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView('workbench')}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    activeView === 'workbench'
+                      ? 'border-slate-800 bg-slate-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  Validated
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView('archive');
+                    setRejectedTab('automated');
+                  }}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    activeView === 'archive' && rejectedTab === 'automated'
+                      ? 'border-slate-800 bg-slate-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  Auto-rejected
+                </button>
+                <div className="ml-auto flex items-center gap-2">
+                  <select
+                    id="inbox-severity"
+                    value={severity ?? ''}
+                    onChange={(e) =>
+                      navigate({
+                        to: '/inbox',
+                        search: {
+                          view: activeView,
+                          rejectedTab,
+                          selectedId,
+                          severity:
+                            (e.target.value as 'high' | 'medium' | 'low') ||
+                            undefined,
+                        },
+                        replace: true,
+                      })
+                    }
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
+                  >
+                    {SEVERITY_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                    onClick={refresh}
+                    disabled={loading || anyActionInFlight}
+                  >
+                    {loading ? 'Loading…' : 'Refresh'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -603,6 +603,7 @@ function InboxRoute() {
                         runId: run?.runId,
                         runAction: run?.action,
                         sourceId: item.sourceId,
+                        reversibility: item.reversibility ?? null,
                       }}
                       isExpanded={expanded}
                       onToggle={() =>

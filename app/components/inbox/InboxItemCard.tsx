@@ -21,6 +21,7 @@ interface InboxItemDetail {
   runId?: string | null;
   runAction?: string | null;
   sourceId?: string | null;
+  reversibility?: 'low' | 'medium' | 'high' | null;
 }
 
 interface InboxItemCardProps {
@@ -82,6 +83,25 @@ function formatBucket(bucket?: string) {
   if (!bucket) return null;
   return bucket.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+/* ── reversibility chip config ── */
+const REVERSIBILITY_CONFIG: Record<
+  'low' | 'medium' | 'high',
+  { label: string; className: string }
+> = {
+  high: {
+    label: 'Reversible',
+    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  },
+  medium: {
+    label: 'Partially reversible',
+    className: 'bg-yellow-50 text-yellow-700 ring-yellow-200',
+  },
+  low: {
+    label: 'Irreversible',
+    className: 'bg-red-50 text-red-700 ring-red-200',
+  },
+};
 
 /* ── path shortener — show only the last 2 segments ── */
 function shortPath(path?: string | null) {
@@ -466,6 +486,29 @@ export function InboxItemCard({
               <p className="mt-1 text-[11px] text-slate-400 leading-relaxed line-clamp-1 font-mono">
                 {shortPath(item.contextSnippet) ?? item.contextSnippet}
               </p>
+            )}
+
+            {/* ── row 3: why surfaced + reversibility chip ── */}
+            {(detail?.whySurfaced || detail?.reversibility) && (
+              <div className="mt-2 flex items-start gap-2 min-w-0">
+                {detail.whySurfaced && (
+                  <p className="flex-1 min-w-0 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                    {detail.whySurfaced}
+                  </p>
+                )}
+                {detail.reversibility &&
+                  REVERSIBILITY_CONFIG[detail.reversibility] && (
+                    <span
+                      className={cn(
+                        'shrink-0 inline-flex items-center rounded-full px-2 py-0.5',
+                        'text-[10px] font-semibold ring-1 ring-inset',
+                        REVERSIBILITY_CONFIG[detail.reversibility].className
+                      )}
+                    >
+                      {REVERSIBILITY_CONFIG[detail.reversibility].label}
+                    </span>
+                  )}
+              </div>
             )}
 
             {detail?.summary && (
