@@ -52,6 +52,7 @@ function upsertOutcome(
   queryClient: ReturnType<typeof useQueryClient>,
   outcome: VerificationOutcome
 ): void {
+  if (typeof queryClient.setQueryData !== 'function') return;
   queryClient.setQueryData<VerificationOutcome[]>(
     VERIFICATION_OUTCOMES_KEY,
     (prev = []) => {
