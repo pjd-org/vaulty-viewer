@@ -31,8 +31,7 @@ function LoginRoute() {
     <main
       className="relative min-h-dvh overflow-hidden bg-[#f4f2ed] px-4 py-8 text-[#181615] antialiased"
       style={{
-        fontFamily:
-          '"Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif',
+        fontFamily: '"Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif',
       }}
     >
       <div
@@ -60,24 +59,35 @@ function LoginRoute() {
 
       <section className="relative mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-5xl items-center justify-center">
         <div className="grid w-full gap-6 md:grid-cols-[1.1fr_minmax(320px,430px)]">
-          <aside className="hidden rounded-[36px] border border-[#171310]/20 bg-[#f7f4ef]/80 p-10 md:flex md:flex-col md:justify-between">
+          <aside className="hidden rounded-[36px] border border-[#171310]/25 bg-[#1a1714] p-10 md:flex md:flex-col md:justify-between shadow-[0_32px_80px_rgba(20,15,10,0.35)]">
             <div>
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#6a5950]">
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#9c8070]">
                 Vault Control
               </p>
               <h1
-                className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[#171411]"
+                className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[#f0ebe3]"
                 style={{ fontFamily: '"Iowan Old Style", "Palatino", serif' }}
               >
                 Signal before noise.
               </h1>
-              <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[#4a3f39]">
+              <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[#a89585]">
                 Authenticate to continue into your planning surface, execution
                 loop, and cod-level controls.
               </p>
             </div>
-            <div className="mt-8 border-t border-[#171310]/15 pt-6 text-xs uppercase tracking-[0.22em] text-[#78685d]">
-              Runtime secured · Paris node
+            <div className="mt-8 space-y-3 border-t border-[#ffffff]/10 pt-6">
+              {[
+                { label: 'Surfaces', value: 'Home · Inbox · Actions' },
+                { label: 'Runtime', value: 'Paris node' },
+                { label: 'Security', value: 'Audit logged' },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#6a5848]">
+                    {label}
+                  </span>
+                  <span className="text-[10px] text-[#8a7060]">{value}</span>
+                </div>
+              ))}
             </div>
           </aside>
 
