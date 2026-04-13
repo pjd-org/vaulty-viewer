@@ -9,7 +9,7 @@ import {
 } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
-import { InboxItemCard, InboxViewSwitcher } from '../components/inbox';
+import { InboxItemCard } from '../components/inbox';
 import { EmptyState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
 import {
@@ -98,7 +98,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
     return (
       <button
         type="button"
-        className="text-xs text-slate-700 hover:text-slate-900 font-medium px-2 py-1 rounded-lg hover:bg-white/50 transition-colors"
+        className="btn-secondary rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
         onClick={() => mutate(rawText)}
       >
         ✦ Convert to task
@@ -257,6 +257,12 @@ function InboxRoute() {
       queue: groupedItems.queue.length,
       workbench: groupedItems.workbench.length,
       archive: groupedItems.archive.length,
+      rejectedUser: groupedItems.archive.filter(
+        (i) => i.rejectionType === 'user'
+      ).length,
+      rejectedAutomated: groupedItems.archive.filter(
+        (i) => i.rejectionType === 'automated'
+      ).length,
     }),
     [groupedItems]
   );
@@ -284,6 +290,17 @@ function InboxRoute() {
   const setView = useCallback(
     (v: InboxView) => {
       navigate({ to: '/inbox', search: { view: v }, replace: true });
+    },
+    [navigate]
+  );
+
+  const setRejectedTab = useCallback(
+    (tab: 'user' | 'automated' | undefined) => {
+      navigate({
+        to: '/inbox',
+        search: { view: 'archive', rejectedTab: tab },
+        replace: true,
+      });
     },
     [navigate]
   );
@@ -369,66 +386,12 @@ function InboxRoute() {
     [rejectRun, refresh]
   );
 
-  /* ─── toolbar ─────────────────────────────────────────────────────────── */
-
-  const toolbar = (
-    <div className="flex flex-wrap items-end gap-3">
-      <span className={`api-badge api-badge--${apiStatus}`}>
-        {apiStatus === 'online'
-          ? 'API online'
-          : apiStatus === 'offline'
-            ? 'API offline'
-            : 'API'}
-      </span>
-      <button
-        type="button"
-        className="btn-secondary rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-white/80 disabled:opacity-60"
-        onClick={refresh}
-        disabled={loading || anyActionInFlight}
-      >
-        {loading ? 'Loading…' : '↻ Refresh'}
-      </button>
-    </div>
-  );
-
-  /* ─── filter bar ──────────────────────────────────────────────────────── */
-
-  const filterBar = (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
-      <div className="flex items-center gap-1.5">
-        <label
-          htmlFor="inbox-severity"
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 shrink-0"
-        >
-          Severity
-        </label>
-        <select
-          id="inbox-severity"
-          value={severity ?? ''}
-          onChange={(e) =>
-            navigate({
-              to: '/inbox',
-              search: {
-                view: activeView,
-                rejectedTab,
-                selectedId,
-                severity:
-                  (e.target.value as 'high' | 'medium' | 'low') || undefined,
-              },
-              replace: true,
-            })
-          }
-          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
-        >
-          {SEVERITY_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
+  const visibleItems =
+    activeView === 'queue'
+      ? groupedItems.queue
+      : activeView === 'workbench'
+        ? groupedItems.workbench
+        : archiveItems;
 
   /* ─── primary list ────────────────────────────────────────────────────── */
 
@@ -453,28 +416,184 @@ function InboxRoute() {
 
       {!loading && !error && (
         <>
-          <InboxViewSwitcher
-            view={activeView}
-            onChange={setView}
-            counts={counts}
-          />
-          {filterBar}
+          <div className="mt-2 space-y-5">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => setView('queue')}
+                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                  activeView === 'queue'
+                    ? 'border-sky-300 bg-gradient-to-br from-sky-50 to-white shadow-[0_8px_24px_-16px_rgba(2,132,199,0.7)]'
+                    : 'border-slate-200 bg-white/80 hover:bg-white'
+                }`}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Queue
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
+                  {counts.queue}
+                </p>
+                <div className="mt-2 h-px w-12 bg-slate-300" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('workbench')}
+                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                  activeView === 'workbench'
+                    ? 'border-violet-300 bg-gradient-to-br from-violet-50 to-white shadow-[0_8px_24px_-16px_rgba(124,58,237,0.7)]'
+                    : 'border-slate-200 bg-white/80 hover:bg-white'
+                }`}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Workbench
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
+                  {counts.workbench}
+                </p>
+                <div className="mt-2 h-px w-12 bg-slate-300" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('archive')}
+                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                  activeView === 'archive'
+                    ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white shadow-[0_8px_24px_-16px_rgba(217,119,6,0.7)]'
+                    : 'border-slate-200 bg-white/80 hover:bg-white'
+                }`}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Archive
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
+                  {counts.archive}
+                </p>
+                <div className="mt-2 h-px w-12 bg-slate-300" />
+              </button>
+            </div>
 
-          <div className="mt-2 space-y-3">
+            <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setView('queue')}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  activeView === 'queue'
+                    ? 'border-slate-800 bg-slate-800 text-white'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setView('archive');
+                  setRejectedTab('user');
+                }}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  activeView === 'archive' && rejectedTab === 'user'
+                    ? 'border-slate-800 bg-slate-800 text-white'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                Rejected
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('workbench')}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  activeView === 'workbench'
+                    ? 'border-slate-800 bg-slate-800 text-white'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                Validated
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setView('archive');
+                  setRejectedTab('automated');
+                }}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  activeView === 'archive' && rejectedTab === 'automated'
+                    ? 'border-slate-800 bg-slate-800 text-white'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                Auto-rejected
+              </button>
+              <div className="ml-auto flex items-center gap-2">
+                <select
+                  id="inbox-severity"
+                  value={severity ?? ''}
+                  onChange={(e) =>
+                    navigate({
+                      to: '/inbox',
+                      search: {
+                        view: activeView,
+                        rejectedTab,
+                        selectedId,
+                        severity:
+                          (e.target.value as 'high' | 'medium' | 'low') ||
+                          undefined,
+                      },
+                      replace: true,
+                    })
+                  }
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
+                >
+                  {SEVERITY_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                  onClick={refresh}
+                  disabled={loading || anyActionInFlight}
+                >
+                  {loading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+              </div>
+            </div>
+
             {activeView === 'queue' && groupedItems.queue.length === 0 && (
               <EmptyState
                 title="Queue is clear"
-                description="No staged proposals waiting. Continue in Workbench →"
+                description="No staged proposals waiting."
+                action={
+                  <button
+                    type="button"
+                    className="rounded-full px-5 py-2 text-sm font-medium transition-colors"
+                    style={{
+                      background: 'rgba(22,163,74,0.12)',
+                      color: '#166534',
+                      border: '1px solid rgba(22,163,74,0.25)',
+                    }}
+                    onClick={() => setView('workbench')}
+                  >
+                    Continue in Workbench →
+                  </button>
+                }
               />
             )}
-            {activeView === 'queue' &&
-              groupedItems.queue.map((item) => {
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {visibleItems.map((item) => {
                 const run = runById.get(item.sourceId);
+                const note = noteByPath.get(item.sourceId);
                 const expanded = selectedId === item.id;
                 return (
                   <div key={item.id} className="space-y-1">
                     <InboxItemCard
-                      item={inboxItemToDisplay(item, undefined, run)}
+                      item={inboxItemToDisplay(
+                        item,
+                        activeView === 'queue' ? undefined : note,
+                        run
+                      )}
                       detail={{
                         summary: item.summary ?? undefined,
                         whySurfaced: item.whySurfaced,
@@ -483,6 +602,7 @@ function InboxRoute() {
                         rejectionReason: item.rejectionReason,
                         runId: run?.runId,
                         runAction: run?.action,
+                        sourceId: item.sourceId,
                       }}
                       isExpanded={expanded}
                       onToggle={() =>
@@ -490,19 +610,23 @@ function InboxRoute() {
                       }
                       onInspect={() => setSelectedId(item.id)}
                       onPromote={
-                        run && run.runType !== 'signals_infer'
+                        activeView === 'queue' &&
+                        run &&
+                        run.runType !== 'signals_infer'
                           ? () => handleCommit(run.runId)
                           : undefined
                       }
                       onReject={
-                        run
-                          ? () => handleReject(run.runId)
-                          : item.sourceId
-                            ? () => handleReject(item.sourceId)
-                            : undefined
+                        activeView === 'queue'
+                          ? run
+                            ? () => handleReject(run.runId)
+                            : item.sourceId
+                              ? () => handleReject(item.sourceId)
+                              : undefined
+                          : undefined
                       }
                     />
-                    {run && (
+                    {activeView === 'queue' && run && (
                       <ConvertPanel
                         runId={run.runId}
                         rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
@@ -511,6 +635,7 @@ function InboxRoute() {
                   </div>
                 );
               })}
+            </div>
 
             {activeView === 'workbench' &&
               groupedItems.workbench.length === 0 && (
@@ -519,30 +644,6 @@ function InboxRoute() {
                   description="New notes will appear here when they arrive."
                 />
               )}
-            {activeView === 'workbench' &&
-              groupedItems.workbench.map((item) => {
-                const note = noteByPath.get(item.sourceId);
-                const expanded = selectedId === item.id;
-                return (
-                  <InboxItemCard
-                    key={item.id}
-                    item={inboxItemToDisplay(item, note)}
-                    detail={{
-                      summary: item.summary ?? undefined,
-                      whySurfaced: item.whySurfaced,
-                      severity: item.severity,
-                      inboxBucket: item.inboxBucket,
-                      rejectionReason: item.rejectionReason,
-                    }}
-                    isExpanded={expanded}
-                    onToggle={() =>
-                      setSelectedId(expanded ? undefined : item.id)
-                    }
-                    onInspect={() => setSelectedId(item.id)}
-                  />
-                );
-              })}
-
             {activeView === 'archive' && archiveItems.length === 0 && (
               <EmptyState
                 title={
@@ -555,29 +656,6 @@ function InboxRoute() {
                 description="The archive is empty for the selected rejection tab."
               />
             )}
-            {activeView === 'archive' &&
-              archiveItems.map((item) => {
-                const note = noteByPath.get(item.sourceId);
-                const expanded = selectedId === item.id;
-                return (
-                  <InboxItemCard
-                    key={item.id}
-                    item={inboxItemToDisplay(item, note)}
-                    detail={{
-                      summary: item.summary ?? undefined,
-                      whySurfaced: item.whySurfaced,
-                      severity: item.severity,
-                      inboxBucket: item.inboxBucket,
-                      rejectionReason: item.rejectionReason,
-                    }}
-                    isExpanded={expanded}
-                    onToggle={() =>
-                      setSelectedId(expanded ? undefined : item.id)
-                    }
-                    onInspect={() => setSelectedId(item.id)}
-                  />
-                );
-              })}
           </div>
         </>
       )}
@@ -588,68 +666,10 @@ function InboxRoute() {
 
   // Detail is now rendered inline within each InboxItemCard — no aside needed.
 
-  const summaryItems = [
-    {
-      label: 'Queue',
-      value: String(counts.queue),
-      detail:
-        counts.queue > 0
-          ? `${counts.queue} proposal${counts.queue !== 1 ? 's' : ''} staged — commit or reject to clear`
-          : 'Queue is empty — no staged proposals waiting',
-    },
-    {
-      label: 'Workbench',
-      value: String(counts.workbench),
-      detail:
-        counts.workbench > 0
-          ? `${counts.workbench} draft note${counts.workbench !== 1 ? 's' : ''} deferred — inspect or promote`
-          : 'No notes in workbench',
-    },
-    {
-      label: 'Archive',
-      value: String(counts.archive),
-      detail:
-        counts.archive > 0
-          ? `${counts.archive} rejected item${counts.archive !== 1 ? 's' : ''} — browse or clear`
-          : 'Archive is empty',
-    },
-    {
-      label: 'API',
-      value:
-        apiStatus === 'online'
-          ? 'Online'
-          : apiStatus === 'offline'
-            ? 'Offline'
-            : 'Unknown',
-      detail:
-        apiStatus === 'online'
-          ? 'MCP/API reachable — commits will go through'
-          : apiStatus === 'offline'
-            ? 'API unreachable — commit and reject actions are blocked'
-            : 'API status unknown',
-    },
-  ] as const;
-
   return (
     <WorkspaceScaffold
       title="Inbox"
       subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
-      statusLine={
-        loading
-          ? undefined
-          : `${counts.queue} queued · ${counts.workbench} in workbench · ${counts.archive} archived`
-      }
-      nextAction={
-        counts.queue > 0
-          ? `→ ${counts.queue} proposal${counts.queue !== 1 ? 's' : ''} waiting — commit, reject, or inspect each one.`
-          : counts.workbench > 0
-            ? `→ Queue is clear. ${counts.workbench} workbench note${counts.workbench !== 1 ? 's' : ''} deferred — review them next.`
-            : '→ Inbox is clear. Nothing staged or deferred right now.'
-      }
-      summaryItems={summaryItems}
-      actions={toolbar}
-      primaryTitle="Triage Queue"
-      primarySubtitle="Sorted by COD rank, filtered by severity."
       primary={primaryContent}
     />
   );

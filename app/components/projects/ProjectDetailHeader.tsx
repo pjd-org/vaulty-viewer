@@ -30,137 +30,119 @@ export function ProjectDetailHeader({
   };
 
   return (
-    <div className="genie-surface genie-surface--hero rounded-[28px] p-6">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-        <div className="min-w-0 flex-1 space-y-5">
-          <div className="flex flex-wrap items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Project command center
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-800">
-                {project.title}
-              </h1>
-            </div>
-            <SoftChip
-              label={project.statusLabel}
-              variant={project.statusVariant}
+    <div className="genie-surface genie-surface--hero rounded-[28px] p-6 space-y-6">
+      {/* ── Row 1: title + status ────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Project command center
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-800">
+            {project.title}
+          </h1>
+        </div>
+        <SoftChip label={project.statusLabel} variant={project.statusVariant} />
+      </div>
+
+      {/* ── Row 2: stat cards + jump-to-lane ─────────────────────────── */}
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
+      >
+        {/* Progress */}
+        <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Progress
+          </p>
+          <p className="mt-2 text-sm font-semibold text-slate-800">
+            {project.progressText}
+          </p>
+          <div
+            className="mt-3 h-2 overflow-hidden rounded-full bg-black/10"
+            role="progressbar"
+            aria-valuenow={progressWidth}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${project.title} progress`}
+          >
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-sky-300 to-cyan-300"
+              style={{ width: `${progressWidth}%` }}
             />
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Progress
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-800">
-                {project.progressText}
-              </p>
-              <div
-                className="mt-3 h-2 overflow-hidden rounded-full bg-black/10"
-                role="progressbar"
-                aria-valuenow={progressWidth}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${project.title} progress`}
-              >
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-300 to-cyan-300"
-                  style={{ width: `${progressWidth}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                ETA
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-800">
-                {project.etaLabel ?? 'No ETA surfaced'}
-              </p>
-              <p className="mt-2 text-sm text-slate-500">
-                Live project timing from the summary feed.
-              </p>
-            </div>
-
-            <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Best move
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-800">
-                {project.bestMoveTitle ?? 'No best move surfaced'}
-              </p>
-              <p className="mt-2 text-sm text-slate-500">
-                COD-ranked next step from the current project summary.
-              </p>
-            </div>
           </div>
         </div>
 
-        <div className="w-full max-w-[360px] space-y-3">
+        {/* ETA */}
+        <div className="rounded-[18px] border border-slate-200 bg-black/5 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            ETA
+          </p>
+          <p className="mt-2 text-sm font-semibold text-slate-800">
+            {project.etaLabel ?? 'No ETA surfaced'}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            Live project timing from the summary feed.
+          </p>
+        </div>
+
+        {/* Best Move — spans both columns */}
+        <div className="col-span-2 rounded-[18px] border border-slate-200 bg-black/5 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Best move
+          </p>
+          <p className="mt-2 text-sm font-semibold leading-snug text-slate-800">
+            {project.bestMoveTitle ?? 'No best move surfaced'}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            COD-ranked next step from the current project summary.
+          </p>
+        </div>
+
+        {/* Jump to Lane — spans both columns */}
+        <div className="col-span-2 rounded-[18px] border border-slate-200 bg-black/5 p-4 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
             Jump to lane
           </p>
-          <div className="grid gap-3">
+          {[
+            {
+              to: '/project/$slug/tasks' as const,
+              label: 'Tasks',
+              desc: 'Board & execution queue',
+              search: projectLaneSearch,
+            },
+            {
+              to: '/project/$slug/knowledge' as const,
+              label: 'Knowledge',
+              desc: 'Workspace & notes',
+              search: projectLaneSearch,
+            },
+            {
+              to: '/project/$slug/automation' as const,
+              label: 'Automation',
+              desc: 'Pipelines & runners',
+              search: automationLaneSearch as never,
+            },
+          ].map((lane) => (
             <Link
-              to="/project/$slug/tasks"
+              key={lane.label}
+              to={lane.to}
               params={{ slug: projectId }}
-              search={projectLaneSearch}
-              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
+              search={lane.search}
+              className="group flex items-center justify-between gap-2 rounded-[14px] border border-slate-200 bg-white/60 px-3 py-2 transition-colors hover:border-sky-500/40 hover:bg-sky-50"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">Tasks</p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Open the project board and execution queue.
-                  </p>
-                </div>
-                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
-                  Open
-                </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-800 truncate">
+                  {lane.label}
+                </p>
+                <p className="text-[11px] text-slate-500 truncate">
+                  {lane.desc}
+                </p>
               </div>
+              <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                Open
+              </span>
             </Link>
-            <Link
-              to="/project/$slug/knowledge"
-              params={{ slug: projectId }}
-              search={projectLaneSearch}
-              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Knowledge
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Jump to the project workspace and notes.
-                  </p>
-                </div>
-                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
-                  Open
-                </span>
-              </div>
-            </Link>
-            <Link
-              to="/project/$slug/automation"
-              params={{ slug: projectId }}
-              search={automationLaneSearch as never}
-              className="group rounded-[22px] border border-slate-200 bg-black/5 px-4 py-3 text-left transition-colors hover:border-sky-500/40 hover:bg-sky-50"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Automation
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Inspect pipelines, runners, and schedules.
-                  </p>
-                </div>
-                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
-                  Open
-                </span>
-              </div>
-            </Link>
-          </div>
+          ))}
         </div>
       </div>
     </div>

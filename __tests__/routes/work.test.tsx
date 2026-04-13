@@ -1,12 +1,16 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { UnauthenticatedError } from '../../src/utils/api';
+
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
   useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  useNavigate: () => mockNavigate,
   Link: ({ children }: { children: React.ReactNode }) => (
     <span>{children}</span>
   ),
@@ -47,6 +51,7 @@ const WorkComponent = WorkRouteModule.options.component as React.ComponentType;
 
 describe('work route — loading state', () => {
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: true,
       data: undefined,
@@ -62,6 +67,7 @@ describe('work route — loading state', () => {
 
 describe('work route — empty / null data', () => {
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: undefined,
@@ -114,6 +120,7 @@ describe('work route — with task data', () => {
   };
 
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: WORK_DATA,
@@ -140,6 +147,25 @@ describe('work route — with task data', () => {
   it('does not render task empty state', () => {
     render(<WorkComponent />);
     expect(screen.queryByTestId('work-task-empty-state')).toBeNull();
+  });
+});
+
+describe('work route — unauthorized data', () => {
+  beforeEach(() => {
+    mockNavigate.mockReset();
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: undefined,
+      error: new UnauthenticatedError('Failed to fetch work surface: 401'),
+      isError: true,
+    });
+  });
+
+  it('redirects to login instead of rendering the empty state', () => {
+    render(<WorkComponent />);
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(screen.queryByTestId('work-task-empty-state')).toBeNull();
+    expect(screen.queryByTestId('projects-workspace')).toBeNull();
   });
 });
 

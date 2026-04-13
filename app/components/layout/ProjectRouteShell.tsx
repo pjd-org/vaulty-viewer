@@ -7,9 +7,9 @@ import {
 } from '../../../src/lib/routes/v3-routing';
 import { projectSearchParams } from '../../../src/lib/routes/search-params';
 import { PageContainer } from './PageContainer';
-import { PageFrame } from './PageFrame';
+import { SoftPanel } from './SoftPanel';
 import { ProjectRouteShellProvider } from './ProjectRouteContext';
-import { SummaryRow, type SummaryRowItem } from './SummaryRow';
+import type { SummaryRowItem } from './SummaryRow';
 import type { ProjectSurfacePayload } from '../../lib/viewer-adapter';
 
 interface ProjectRouteShellProps {
@@ -44,24 +44,60 @@ export function ProjectRouteShell({
 
   return (
     <PageContainer>
-      <PageFrame
-        title={`Project: ${slug}`}
-        subtitle="Scoped command center"
-        actions={
-          <Link
-            to="/work"
-            search={{
-              tab: undefined,
-              status: undefined,
-              selectedId: undefined,
-            }}
-            className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700"
-          >
-            Back to Work
-          </Link>
-        }
-      >
-        <div className="genie-surface genie-surface--utility rounded-[24px] p-2">
+      <SoftPanel variant="elevated" className="overflow-hidden" noPadding>
+        {/* ── Hero header ─────────────────────────────────────────────── */}
+        <div className="px-6 py-5 genie-surface--hero border-b border-white/60 rounded-t-lg">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
+                Project: {slug}
+              </h1>
+              <p className="mt-1.5 text-sm text-slate-600">
+                Scoped command center
+              </p>
+            </div>
+            <Link
+              to="/work"
+              search={{
+                tab: undefined,
+                status: undefined,
+                selectedId: undefined,
+              }}
+              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700 shrink-0"
+            >
+              Back to Work
+            </Link>
+          </div>
+
+          {/* ── Inline stat strip ──────────────────────────────────────── */}
+          {summaryItems.length > 0 && (
+            <div
+              className="mt-4 pt-4 border-t border-white/40 grid gap-x-6 gap-y-3"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(summaryItems.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {summaryItems.map((item) => (
+                <div key={item.label} className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    {item.label}
+                  </p>
+                  <p className="mt-0.5 text-xl font-semibold tabular-nums text-slate-800">
+                    {item.value}
+                  </p>
+                  {item.detail && (
+                    <p className="mt-0.5 text-xs text-slate-500 leading-snug truncate">
+                      {item.detail}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Tab nav ─────────────────────────────────────────────────── */}
+        <div className="px-6 py-3 border-b border-border bg-card">
           <div className="flex flex-wrap gap-2">
             {PROJECT_ROUTE_TABS.map((tab) => {
               const to = getProjectTabPath(slug, tab.to);
@@ -87,11 +123,13 @@ export function ProjectRouteShell({
           </div>
         </div>
 
-        <SummaryRow items={summaryItems} />
-        <ProjectRouteShellProvider value={shellContext}>
-          {children}
-        </ProjectRouteShellProvider>
-      </PageFrame>
+        {/* ── Content ─────────────────────────────────────────────────── */}
+        <div className="p-6">
+          <ProjectRouteShellProvider value={shellContext}>
+            {children}
+          </ProjectRouteShellProvider>
+        </div>
+      </SoftPanel>
     </PageContainer>
   );
 }

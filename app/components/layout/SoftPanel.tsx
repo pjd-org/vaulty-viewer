@@ -7,6 +7,8 @@ interface SoftPanelProps {
   actions?: React.ReactNode;
   variant?: 'base' | 'elevated' | 'hero' | 'utility' | 'overlay';
   className?: string;
+  /** When true, removes the default p-6 padding from the content wrapper. */
+  noPadding?: boolean;
   children: React.ReactNode;
 }
 
@@ -14,11 +16,11 @@ const VARIANT_CLASSES: Record<
   NonNullable<SoftPanelProps['variant']>,
   string
 > = {
-  base: '',
-  elevated: 'shadow-md',
-  hero: 'shadow-lg',
-  utility: 'bg-muted/40',
-  overlay: 'bg-background/80 backdrop-blur',
+  base: 'genie-surface',
+  elevated: 'genie-surface genie-surface--elevated',
+  hero: 'genie-surface genie-surface--hero',
+  utility: 'genie-surface genie-surface--utility',
+  overlay: 'genie-surface genie-surface--overlay',
 };
 
 export function SoftPanel({
@@ -27,6 +29,7 @@ export function SoftPanel({
   actions,
   variant = 'base',
   className,
+  noPadding = false,
   children,
 }: SoftPanelProps) {
   const hasHeader = title || subtitle || actions;
@@ -34,7 +37,7 @@ export function SoftPanel({
   return (
     <section
       className={cn(
-        'rounded-lg border bg-card text-card-foreground shadow-sm',
+        'rounded-[22px] border border-white/70 text-card-foreground shadow-sm',
         VARIANT_CLASSES[variant],
         className
       )}
@@ -54,7 +57,11 @@ export function SoftPanel({
           {actions && <div className="shrink-0">{actions}</div>}
         </div>
       )}
-      <div className={cn('p-6', hasHeader && 'pt-2')}>{children}</div>
+      <div
+        className={cn(!noPadding && 'p-6', hasHeader && !noPadding && 'pt-2')}
+      >
+        {children}
+      </div>
     </section>
   );
 }

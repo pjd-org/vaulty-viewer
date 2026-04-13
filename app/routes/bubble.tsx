@@ -266,23 +266,6 @@ function BubbleRoute() {
           <BubbleContent data={data} />
         )
       }
-      asideTitle="Intervention Panel"
-      asideSubtitle="Energy and rewards at a glance."
-      aside={
-        data ? (
-          <BubbleAside data={data} />
-        ) : (
-          <div data-testid="bubble-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
-              No item selected.
-            </p>
-            <p className="text-xs text-neutral-400">
-              Energy, rewards, and behavioral context will appear here once the
-              runtime connects.
-            </p>
-          </div>
-        )
-      }
     />
   );
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef } from 'react';
 import { useStepExtractorQuery } from '../lib/queries/agents';
 import { createFileRoute } from '@tanstack/react-router';
 import {
@@ -13,8 +13,11 @@ import {
   HueyWorkspace,
   HueyAssistantProvider,
 } from '../components/huey';
-import { useThread, useThreadRuntime } from '@assistant-ui/react';
+import { useThread } from '@assistant-ui/react';
+
 import { useWorkSurface, useHomeSurface } from '../lib/viewer-adapter';
+import type { HueyContext } from '../../src/lib/huey-adapter';
+import type { NextAction } from '../../src/lib/focus-logic';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -146,10 +149,33 @@ function HueyRoute() {
     dispatch({ type: 'SWITCH_THREAD', threadId: id });
   }, []);
 
+  // Stable refs so HueyAssistantProvider never needs to recreate the model adapter.
+  const activeIntentRef = useRef<string | null>(activeIntent);
+  activeIntentRef.current = activeIntent;
+
+  const { data: workSurface } = useWorkSurface();
+  const { data: homeSurface } = useHomeSurface();
+
+  const contextRef = useRef<HueyContext | null>(null);
+  const workTasks: NextAction[] = workSurface?.tasks ?? [];
+  const homeTasks: NextAction[] = homeSurface?.tasks ?? [];
+  const allTasks = workTasks.length > 0 ? workTasks : homeTasks;
+  const notes = [
+    ...(homeSurface?.snapshots?.knowledge ?? []),
+    ...(homeSurface?.contextTail ?? []),
+  ];
+  const inbox = homeSurface?.pressureBand ?? [];
+  contextRef.current =
+    allTasks.length > 0 || notes.length > 0 || inbox.length > 0
+      ? { tasks: allTasks, notes, inbox }
+      : null;
+
   return (
     <HueyAssistantProvider
       threadId={threadId}
       onThreadIdChange={handleThreadIdChange}
+      getIntent={() => activeIntentRef.current}
+      getContext={() => contextRef.current}
     >
       <HueyRouteInner
         threads={threads}
@@ -192,7 +218,6 @@ function HueyRouteInner({
   onFirstMessage,
 }: HueyRouteInnerProps) {
   const thread = useThread();
-  const threadRuntime = useThreadRuntime();
 
   /**
    * The composer primitives handle send internally via the runtime.
@@ -222,20 +247,6 @@ function HueyRouteInner({
     };
     onFirstMessage(record);
   }, [thread.messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /**
-   * When an intent is active, inject the intent prompt as the system-level
-   * context before the user sends. We do this by overriding the model context
-   * instructions via useAssistantInstructions if available, or by prepending
-   * to the user message in the model adapter.
-   *
-   * For now: the existing huey-adapter already uses intent-aware prompting
-   * via buildPrompt() called from the route. Since the composer now sends
-   * directly, we instead set the intent description as a system message
-   * by appending it as an instruction to the thread via threadRuntime.
-   * The model adapter already receives the full thread context; the intent
-   * framing is handled server-side. No additional wiring needed here.
-   */
 
   const lastAssistantText =
     [...thread.messages]
@@ -275,7 +286,6 @@ function HueyRouteInner({
       </div>
       <div className="w-full flex-1 min-w-0">
         <HueyWorkspace
-          activeIntent={activeIntent}
           intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
           contextSummary={contextSummary}
         />

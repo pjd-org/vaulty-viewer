@@ -14,29 +14,56 @@
  * useLocalRuntime loads the correct message history for the active thread.
  */
 import React, { useMemo, useRef } from 'react';
-import { AssistantRuntimeProvider, useLocalRuntime } from '@assistant-ui/react';
-import { createHueyModelAdapter } from '../../../src/lib/huey-adapter';
+import {
+  AssistantRuntimeProvider,
+  useLocalRuntime,
+  useAui,
+  Tools,
+} from '@assistant-ui/react';
+import {
+  createHueyModelAdapter,
+  type HueyContext,
+} from '../../../src/lib/huey-adapter';
 import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/huey-thread-history';
+import { hueyToolkit } from '../../../src/lib/huey-toolkit';
 
 interface HueyAssistantProviderProps {
   children: React.ReactNode;
   threadId: string;
   onThreadIdChange: (id: string) => void;
+  getIntent: () => string | null;
+  getContext: () => HueyContext | null;
+}
+
+/**
+ * Inner bridge: must live inside AssistantRuntimeProvider to call useAui.
+ * Registers the hueyToolkit renders on the active runtime.
+ */
+function HueyToolkitBridge({ children }: { children: React.ReactNode }) {
+  useAui({ tools: Tools({ toolkit: hueyToolkit }) });
+  return <>{children}</>;
 }
 
 export function HueyAssistantProvider({
   children,
   threadId,
   onThreadIdChange,
+  getIntent,
+  getContext,
 }: HueyAssistantProviderProps) {
   // Ref keeps onThreadIdChange stable across renders without recreating the model adapter.
   const onThreadIdChangeRef = useRef(onThreadIdChange);
   onThreadIdChangeRef.current = onThreadIdChange;
 
-  // Model adapter is stable — it reads threadId via a ref inside createHueyModelAdapter.
-  // We pass a getter that always returns the latest threadId.
+  // Model adapter is stable — it reads threadId, intent, and context via refs.
   const threadIdRef = useRef(threadId);
   threadIdRef.current = threadId;
+
+  const getIntentRef = useRef(getIntent);
+  getIntentRef.current = getIntent;
+
+  const getContextRef = useRef(getContext);
+  getContextRef.current = getContext;
 
   const modelAdapter = useMemo(
     () =>
@@ -44,6 +71,8 @@ export function HueyAssistantProvider({
         getThreadId: () => threadIdRef.current,
         onThreadIdResolved: (resolvedId) =>
           onThreadIdChangeRef.current(resolvedId),
+        getIntent: () => getIntentRef.current(),
+        getContext: () => getContextRef.current(),
       }),
     [] // stable — refs handle mutability
   );
@@ -61,7 +90,7 @@ export function HueyAssistantProvider({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      {children}
+      <HueyToolkitBridge>{children}</HueyToolkitBridge>
     </AssistantRuntimeProvider>
   );
 }

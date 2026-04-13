@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
+import { RouteLoadingState } from '../components/ui';
 import { KnowledgeNoteCard } from '../../src/components/KnowledgeNoteCard';
 import { notesSearchParams } from '../../src/lib/routes/search-params';
 import {
@@ -193,26 +194,11 @@ function NotesRoute() {
         )}
       </form>
 
-      {/* Results */}
-      {isLoading ? (
-        <p className="py-8 text-center text-sm text-slate-500">Loading…</p>
-      ) : error ? (
-        <p className="py-8 text-center text-sm text-red-400" role="alert">
-          {error.message}
-        </p>
-      ) : (
-        <NoteGrid notes={notes} />
-      )}
-    </div>
-  );
-
-  const asideContent = (
-    <div className="space-y-4">
-      <div>
-        <p className="mb-2 text-[11px] font-medium uppercase tracking-widest text-slate-500">
-          Collection
-        </p>
-        <div className="flex flex-col gap-1">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/75 p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            Collection
+          </p>
           {COLLECTION_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -229,14 +215,23 @@ function NotesRoute() {
             </button>
           ))}
         </div>
-      </div>
 
-      {!searchEnabled && (
-        <div className="pt-2">
-          <p className="text-[11px] text-slate-600">
+        {!searchEnabled && (
+          <p className="text-xs text-slate-600">
             Use the search bar to find notes by content or tags.
           </p>
-        </div>
+        )}
+      </div>
+
+      {/* Results */}
+      {isLoading ? (
+        <RouteLoadingState label="Loading notes index..." />
+      ) : error ? (
+        <p className="py-8 text-center text-sm text-red-400" role="alert">
+          {error.message}
+        </p>
+      ) : (
+        <NoteGrid notes={notes} />
       )}
     </div>
   );
@@ -248,8 +243,6 @@ function NotesRoute() {
       summaryItems={summaryItems}
       primaryTitle={searchEnabled ? `Results for "${q}"` : 'Notes'}
       primary={primaryContent}
-      asideTitle="Filter"
-      aside={asideContent}
     />
   );
 }

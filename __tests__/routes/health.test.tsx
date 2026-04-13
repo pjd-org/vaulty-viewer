@@ -1,12 +1,16 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { UnauthenticatedError } from '../../src/utils/api';
+
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
   useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  useNavigate: () => mockNavigate,
 }));
 
 vi.mock('../../app/components/layout', () => ({
@@ -41,6 +45,7 @@ const HealthComponent = HealthRouteModule.options
 
 describe('health route — loading state', () => {
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: true,
       data: undefined,
@@ -56,6 +61,7 @@ describe('health route — loading state', () => {
 
 describe('health route — empty / null data', () => {
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: undefined,
@@ -92,6 +98,7 @@ describe('health route — with health data', () => {
   };
 
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: HEALTH_DATA,
@@ -136,6 +143,7 @@ describe('health route — degraded state', () => {
   };
 
   beforeEach(() => {
+    mockNavigate.mockReset();
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: DEGRADED_DATA,
@@ -147,5 +155,23 @@ describe('health route — degraded state', () => {
     render(<HealthComponent />);
     const badge = screen.getByTestId('health-overall-status');
     expect(badge.textContent?.toLowerCase()).toContain('degraded');
+  });
+});
+
+describe('health route — unauthorized data', () => {
+  beforeEach(() => {
+    mockNavigate.mockReset();
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: undefined,
+      error: new UnauthenticatedError('Failed to fetch health: 401'),
+      isError: true,
+    });
+  });
+
+  it('redirects to login instead of rendering the empty state', () => {
+    render(<HealthComponent />);
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(screen.queryByTestId('health-empty-state')).toBeNull();
   });
 });

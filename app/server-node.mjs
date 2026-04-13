@@ -65,9 +65,6 @@ const httpServer = createServer(async (req, res) => {
     // Asset not found — fall through to SSR (will likely 404).
   }
 
-  const host = req.headers.host ?? `${HOST}:${PORT}`;
-  const url = `http://${host}${req.url}`;
-
   // Collect request body (skip for bodyless methods)
   const bodylessMethods = new Set(['GET', 'HEAD', 'OPTIONS', 'DELETE']);
   let body = null;
@@ -83,13 +80,49 @@ const httpServer = createServer(async (req, res) => {
     else if (val != null) headers.set(key, val);
   }
 
-  const request = new Request(url, {
+  const requestInit = {
     method: req.method ?? 'GET',
     headers,
     body,
     // Required by Node.js 18+ when body is present
     ...(body ? { duplex: 'half' } : {}),
-  });
+  };
+
+  if (req.url?.startsWith('/api/')) {
+    const apiProxyUrl = process.env.API_PROXY_URL?.trim();
+    if (apiProxyUrl) {
+      const upstreamUrl = new URL(req.url, apiProxyUrl);
+      const proxyHeaders = new Headers(headers);
+      proxyHeaders.delete('host');
+      proxyHeaders.delete('connection');
+      proxyHeaders.delete('content-length');
+
+      try {
+        const upstreamResponse = await fetch(upstreamUrl, {
+          ...requestInit,
+          headers: proxyHeaders,
+        });
+
+        res.statusCode = upstreamResponse.status;
+        upstreamResponse.headers.forEach((val, key) => res.setHeader(key, val));
+
+        if (upstreamResponse.body) {
+          Readable.fromWeb(upstreamResponse.body).pipe(res);
+        } else {
+          res.end();
+        }
+      } catch (err) {
+        console.error('[viewer] API proxy error', err);
+        res.writeHead(502);
+        res.end('Bad Gateway');
+      }
+      return;
+    }
+  }
+
+  const host = req.headers.host ?? `${HOST}:${PORT}`;
+  const url = `http://${host}${req.url}`;
+  const request = new Request(url, requestInit);
 
   let response;
   try {

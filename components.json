@@ -19,6 +19,7 @@
     "hooks": "@/app/hooks"
   },
   "registries": {
-    "@lucide-animated": "https://lucide-animated.com/r/{name}.json"
+    "@lucide-animated": "https://lucide-animated.com/r/{name}.json",
+    "@tool-ui": "https://www.tool-ui.com/r/{name}.json"
   }
 }

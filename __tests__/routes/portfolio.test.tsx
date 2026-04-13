@@ -90,9 +90,9 @@ describe('portfolio route — empty / null data', () => {
     expect(screen.getByTestId('portfolio-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty state', () => {
+  it('renders no aside content', () => {
     render(<PortfolioComponent />);
-    expect(screen.getByTestId('portfolio-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 

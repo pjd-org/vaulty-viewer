@@ -1,8 +1,11 @@
-import { apiFetch } from '../../../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../../../src/utils/api';
 import { normalizeTask, type KanbanTask } from '../../../src/lib/kanban-logic';
 
 export async function fetchAllTasks(): Promise<KanbanTask[]> {
   const res = await apiFetch('/api/v1/tasks?status=all&limit=1000');
+  if (res.status === 401) {
+    throw new UnauthenticatedError('Failed to fetch tasks: 401');
+  }
   if (!res.ok) throw new Error('Failed to fetch tasks');
   const body = await res.json();
   const raw = body.structuredContent?.tasks ?? body.tasks ?? [];
@@ -13,6 +16,9 @@ export async function fetchNextActions(): Promise<
   Array<{ id: string; title: string; path: string }>
 > {
   const res = await apiFetch('/api/v1/tasks/next-actions?max=50');
+  if (res.status === 401) {
+    throw new UnauthenticatedError('Failed to fetch next actions: 401');
+  }
   if (!res.ok) throw new Error('Failed to fetch next actions');
   const body = await res.json();
   const raw = body.structuredContent?.tasks ?? body.tasks ?? [];
@@ -53,6 +59,9 @@ export interface TaskMetrics {
 export async function fetchTaskMetrics(path: string): Promise<TaskMetrics> {
   const encoded = encodeURIComponent(path);
   const res = await apiFetch(`/api/v1/tasks/${encoded}`);
+  if (res.status === 401) {
+    throw new UnauthenticatedError('Failed to fetch task metrics: 401');
+  }
   if (!res.ok) throw new Error('Failed to fetch task metrics');
   const body = await res.json();
   const task = body.structuredContent?.task ?? body.task ?? body;

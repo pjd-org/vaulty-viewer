@@ -1,4 +1,4 @@
-import { apiFetch } from '../../../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../../../src/utils/api';
 import type { ProjectSummaryDisplay } from '../../types/display';
 
 const statusVariantMap: Record<string, ProjectSummaryDisplay['statusVariant']> = {
@@ -40,6 +40,9 @@ export async function fetchProjects(): Promise<ProjectSummaryDisplay[]> {
   // Fetch project list from backend API. The backend may return either
   // { structuredContent: { projects: [...] } } or { projects: [...] }.
   const res = await apiFetch('/api/v1/projects');
+  if (res.status === 401) {
+    throw new UnauthenticatedError('Failed to fetch projects: 401');
+  }
   if (!res.ok) {
     throw new Error('Failed to fetch projects');
   }

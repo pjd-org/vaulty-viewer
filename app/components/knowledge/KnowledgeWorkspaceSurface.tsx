@@ -217,7 +217,7 @@ export function KnowledgeWorkspaceSurface({
                   setDomainFilter('');
                   setMaturityFilter('');
                 }}
-                className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs text-red-500 hover:bg-red-100 transition-colors"
+                className="btn-secondary rounded-full px-3 py-1.5 text-xs transition-colors"
               >
                 Clear filters ×
               </button>

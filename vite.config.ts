@@ -5,6 +5,10 @@ import path from 'node:path';
 
 export default defineConfig({
   base: '/_viewer/',
+  ssr: {
+    // Bundle packages not present in the container's node_modules into SSR output.
+    noExternal: ['radix-ui', '@radix-ui/react-collapsible'],
+  },
   plugins: [
     tanstackStart({
       srcDirectory: 'src',

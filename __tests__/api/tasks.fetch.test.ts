@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchAllTasks, fetchNextActions, updateTaskStatus } from '../../app/lib/api/tasks';
+import { UnauthenticatedError } from '../../src/utils/api';
 
 const originalEnv = { ...process.env };
 const originalWindow = globalThis.window;
@@ -23,6 +24,14 @@ describe('tasks API client', () => {
     const out = await fetchAllTasks();
     expect(out.length).toBe(1);
     expect(out[0].id).toBe('t1');
+  });
+
+  it('fetchAllTasks throws UnauthenticatedError on 401', async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({}) } as any)
+    );
+
+    await expect(fetchAllTasks()).rejects.toBeInstanceOf(UnauthenticatedError);
   });
 
   it('uses the configured server API base for SSR task fetches', async () => {

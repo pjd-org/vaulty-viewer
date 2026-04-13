@@ -2,7 +2,7 @@ import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
-import { EmptyState } from '../components/ui';
+import { EmptyState, RouteLoadingState } from '../components/ui';
 import { timelineSearchParams } from '../../src/lib/routes/search-params';
 import {
   getTimelineSurfaceQueryOptions,
@@ -139,10 +139,12 @@ function EventDetail({ event }: { event: TimelineEventEntry }) {
 function TimelineContent({
   data,
   selectedId,
+  selectedEvent,
   onSelect,
 }: {
   data: { events: TimelineEventEntry[]; total: number };
   selectedId: string | undefined;
+  selectedEvent: TimelineEventEntry | null;
   onSelect: (id: string) => void;
 }) {
   if (data.events.length === 0) {
@@ -174,6 +176,11 @@ function TimelineContent({
           />
         ))}
       </div>
+      {selectedEvent && (
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+          <EventDetail event={selectedEvent} />
+        </div>
+      )}
     </div>
   );
 }
@@ -244,12 +251,7 @@ function TimelineRoute() {
       primarySubtitle="Timeline list and filter controls."
       primary={
         isLoading ? (
-          <div className="space-y-3" data-testid="timeline-loading-state">
-            <div className="h-10 animate-pulse rounded-xl border border-slate-200 bg-black/3" />
-            <div className="h-10 animate-pulse rounded-xl border border-slate-200 bg-black/3" />
-            <div className="h-10 animate-pulse rounded-xl border border-slate-200 bg-black/3" />
-            <div className="h-10 animate-pulse rounded-xl border border-slate-200 bg-black/3" />
-          </div>
+          <RouteLoadingState label="Loading event stream..." />
         ) : error && !data ? (
           <EmptyState
             title="Timeline data temporarily unavailable."
@@ -259,6 +261,7 @@ function TimelineRoute() {
           <TimelineContent
             data={data}
             selectedId={selectedId}
+            selectedEvent={selectedEvent}
             onSelect={(id) =>
               void navigate({ search: (prev) => ({ ...prev, selectedId: id }) })
             }
@@ -271,23 +274,6 @@ function TimelineRoute() {
             <p className="text-xs text-neutral-400">
               Adapter context is wired. Live and audit event streams will appear
               once the runtime surface connects.
-            </p>
-          </div>
-        )
-      }
-      asideTitle="Event Detail"
-      asideSubtitle="Before/after state, actors, context, and replay."
-      aside={
-        selectedEvent ? (
-          <EventDetail event={selectedEvent} />
-        ) : (
-          <div data-testid="timeline-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
-              No event selected.
-            </p>
-            <p className="text-xs text-neutral-400">
-              Select an event from the stream to inspect its before/after state,
-              actors, and replay context.
             </p>
           </div>
         )

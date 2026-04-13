@@ -5,6 +5,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      // Force a single React singleton across all packages (root-hoisted and
+      // viewer-local) so hook dispatchers never split across two module copies.
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react-dom/client': path.resolve(
+        __dirname,
+        'node_modules/react-dom/client'
+      ),
     },
   },
   test: {

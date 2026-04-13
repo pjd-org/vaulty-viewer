@@ -10,7 +10,7 @@ export function TopCommandBar() {
             {/* Mobile-only sidebar toggle — hidden on desktop where the rail is always visible */}
             <SidebarTrigger className="md:hidden shrink-0" />
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Viewer V3
               </p>
               <p className="text-sm font-semibold text-slate-800">
@@ -19,7 +19,7 @@ export function TopCommandBar() {
             </div>
           </div>
 
-          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-slate-200 bg-black/5 px-4 py-2 lg:max-w-xl">
+          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-slate-300/80 bg-white/85 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] lg:max-w-xl">
             <span className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
               Search
             </span>

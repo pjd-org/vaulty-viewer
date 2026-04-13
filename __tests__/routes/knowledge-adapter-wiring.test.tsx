@@ -22,6 +22,29 @@ vi.mock('../../app/lib/viewer-adapter', () => ({
   useKnowledgeByAudience: (_audience: string) => mockUseKnowledgeByAudience(),
 }));
 
+vi.mock('@tanstack/react-router', async () => {
+  const actual = await vi.importActual<typeof import('@tanstack/react-router')>(
+    '@tanstack/react-router'
+  );
+  return {
+    ...actual,
+    Link: ({
+      to,
+      children,
+      className,
+    }: {
+      to?: string;
+      children?: React.ReactNode;
+      className?: string;
+    }) => (
+      <a href={to} className={className}>
+        {children}
+      </a>
+    ),
+    useRouterState: vi.fn(() => ({ location: { pathname: '/' } })),
+  };
+});
+
 // Stub out heavy sub-components that make their own network calls
 vi.mock('../../src/components/KnowledgeHealthBanner', () => ({
   default: () => <div data-testid="health-banner" />,

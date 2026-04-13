@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/src/lib/utils';
 
 import { useAllTasks } from '../../lib/queries/tasks';
 import { toProjectSummaryDisplay } from '../../lib/display';
@@ -19,6 +20,7 @@ import {
   type ProjectSurfacePayload,
 } from '../../lib/viewer-adapter';
 import type { ProjectSummaryDisplay } from '../../types/display';
+import { useLoginRedirectOnUnauthenticated } from '../../hooks/use-login-redirect';
 
 const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   activeTasks: [],
@@ -28,13 +30,35 @@ const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   scheduleItems: [],
 };
 
+function severityBadge(severity?: string) {
+  const s = (severity ?? '').toLowerCase();
+  const map: Record<string, string> = {
+    critical: 'bg-rose-100 text-rose-700',
+    high: 'bg-amber-100 text-amber-700',
+    medium: 'bg-sky-100 text-sky-700',
+    low: 'bg-slate-100 text-slate-500',
+  };
+  return cn(
+    'rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] shrink-0',
+    map[s] ?? 'bg-slate-100 text-slate-500'
+  );
+}
+
 export function ProjectDetailScene({ projectId }: { projectId: string }) {
-  const { data: projectDisplay, isLoading: projectLoading } = useQuery({
+  const {
+    data: projectDisplay,
+    isLoading: projectLoading,
+    error: projectError,
+  } = useQuery({
     ...getProjectQueryOptions(projectId),
     enabled: !!projectId,
   });
 
-  const { data: allTasks = [], isLoading: tasksLoading } = useAllTasks();
+  const {
+    data: allTasks = [],
+    isLoading: tasksLoading,
+    error: tasksError,
+  } = useAllTasks();
 
   const projectTasks = useMemo(
     () => getProjectTasks(allTasks, projectId),
@@ -71,7 +95,11 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
     return derivedProject;
   }, [derivedProject, projectDisplay, projectTasks]);
 
-  const { data: displaySurface } = useProjectSurface(projectId);
+  const { data: displaySurface, error: displaySurfaceError } =
+    useProjectSurface(projectId);
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(
+    projectError ?? tasksError ?? displaySurfaceError
+  );
   const pressureSignals = displaySurface?.pressureBand ?? [];
   const decisionQueue = displaySurface?.decisionQueue ?? [];
   const immediateActions = displaySurface?.immediateActions ?? [];
@@ -109,6 +137,8 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
   );
 
   const anyLoading = tasksLoading || projectLoading;
+
+  if (isUnauthenticated) return null;
 
   if (anyLoading && !project && !displaySurface) {
     return (
@@ -168,7 +198,7 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
                         {signal.summary}
                       </p>
                     </div>
-                    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-amber-700">
+                    <span className={severityBadge(signal.severity)}>
                       {signal.severity}
                     </span>
                   </div>

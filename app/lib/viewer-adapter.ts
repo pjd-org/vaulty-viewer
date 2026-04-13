@@ -1070,15 +1070,21 @@ export function useTimelineSurface(params: TimelineQueryParams = {}) {
 export function getProjectSurfaceQueryOptions(projectId: string) {
   return {
     queryKey: ['viewer-adapter', 'project-surface', projectId] as const,
-    queryFn: async () => {
-      const tasks = await fetchRichNextActions(50);
-      return buildProjectSurfacePayload({
-        projectId,
-        tasks: tasks.filter((task) => task.projectId === projectId),
-      });
+    queryFn: async (): Promise<ProjectSurfacePayload> => {
+      const res = await apiFetch(
+        `/api/v1/surfaces/project/${encodeURIComponent(projectId)}`
+      );
+      if (res.status === 401)
+        throw new UnauthenticatedError(`Failed to fetch project surface: 401`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch project surface: ${res.status}`);
+      const body = await res.json();
+      const sc = (body?.structuredContent ?? body) as ProjectSurfacePayload;
+      return sc;
     },
     staleTime: 60_000,
-    retry: 1,
+    retry: (failureCount: number, error: unknown) =>
+      !(error instanceof UnauthenticatedError) && failureCount < 1,
   };
 }
 

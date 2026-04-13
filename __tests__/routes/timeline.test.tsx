@@ -152,7 +152,7 @@ describe('TimelineRoute — loading state', () => {
 
   it('renders loading state testid', () => {
     render(<TimelineComponent />);
-    expect(screen.getByTestId('timeline-loading-state')).toBeTruthy();
+    expect(screen.getByTestId('route-loading-state')).toBeTruthy();
   });
 
   it('does not render content while loading', () => {
@@ -177,9 +177,9 @@ describe('TimelineRoute — empty state (data null)', () => {
     expect(screen.getByTestId('timeline-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<TimelineComponent />);
-    expect(screen.getByTestId('timeline-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -216,9 +216,9 @@ describe('TimelineRoute — data wired', () => {
     expect(screen.getByTestId('summary-shown').textContent).toBe('2');
   });
 
-  it('renders aside empty-state when no event selected', () => {
+  it('renders no aside content when no event is selected', () => {
     render(<TimelineComponent />);
-    expect(screen.getByTestId('timeline-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 
   it('does not render empty-state when data is present', () => {
@@ -244,9 +244,9 @@ describe('TimelineRoute — event selected', () => {
     expect(screen.getByTestId('timeline-event-detail')).toBeTruthy();
   });
 
-  it('does not render aside empty-state when event is selected', () => {
+  it('still keeps the aside slot empty when event is selected', () => {
     render(<TimelineComponent />);
-    expect(screen.queryByTestId('timeline-aside-empty-state')).toBeNull();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 

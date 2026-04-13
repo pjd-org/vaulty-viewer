@@ -3,7 +3,7 @@
 exports[`ProjectCard > matches snapshot 1`] = `
 <div>
   <div
-    class="rounded-lg border bg-card text-card-foreground shadow-[5px_5px_0px_0px_var(--border)] transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_var(--border)]"
+    class="rounded-lg border bg-card text-card-foreground shadow-[5px_5px_0px_0px_var(--border)] animate-fade-in transition-transform duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_var(--border)]"
   >
     <div
       class="flex flex-col space-y-1.5 p-6 pb-2"
@@ -29,7 +29,7 @@ exports[`ProjectCard > matches snapshot 1`] = `
       </p>
     </div>
     <div
-      class="p-6 pt-0"
+      class="p-6 pt-0 space-y-2"
     >
       <div
         aria-label="Website revamp progress"
@@ -43,6 +43,13 @@ exports[`ProjectCard > matches snapshot 1`] = `
           class="progress-fill h-2"
           style="width: 42%;"
         />
+      </div>
+      <div
+        class="flex items-center justify-between text-xs text-slate-500"
+      >
+        <span>
+          42%
+        </span>
       </div>
     </div>
   </div>

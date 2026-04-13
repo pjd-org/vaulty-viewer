@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
+import { RouteLoadingState } from '../components/ui';
 import { archiveSearchParams } from '../../src/lib/routes/search-params';
 import {
   useArchiveSurface,
@@ -238,7 +239,7 @@ function ArchiveRoute() {
       primarySubtitle="Rejected and deferred inbox items."
       primary={
         isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <RouteLoadingState label="Loading archive queues..." />
         ) : data == null || data.total === 0 ? (
           <div data-testid="archive-empty-state" className="space-y-2">
             <p className="text-sm font-medium text-slate-700">
@@ -254,22 +255,6 @@ function ArchiveRoute() {
             selectedId={selectedItem?.id ?? null}
             onSelect={setSelectedItem}
           />
-        )
-      }
-      asideTitle="Archive Detail"
-      asideSubtitle="Why it was archived and its rejection context."
-      aside={
-        selectedItem ? (
-          <ArchiveItemDetail item={selectedItem} />
-        ) : (
-          <div data-testid="archive-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
-              No item selected.
-            </p>
-            <p className="text-xs text-slate-500">
-              Select an archived item to inspect it here.
-            </p>
-          </div>
         )
       }
     />

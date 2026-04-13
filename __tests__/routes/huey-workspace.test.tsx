@@ -20,6 +20,7 @@ import {
   useLocalRuntime,
   type ChatModelAdapter,
 } from '@assistant-ui/react';
+import { TooltipProvider } from '../../app/components/ui/tooltip';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -60,9 +61,11 @@ const noopAdapter: ChatModelAdapter = {
 function HueyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
   const runtime = useLocalRuntime(noopAdapter);
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      {children}
-    </AssistantRuntimeProvider>
+    <TooltipProvider>
+      <AssistantRuntimeProvider runtime={runtime}>
+        {children}
+      </AssistantRuntimeProvider>
+    </TooltipProvider>
   );
 }
 
@@ -76,16 +79,16 @@ describe('HueyWorkspace — render', () => {
   it('shows greeting placeholder when the thread is empty', () => {
     render(
       <HueyWorkspaceWrapper>
-        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+        <HueyWorkspace intentTemplate={null} />
       </HueyWorkspaceWrapper>
     );
-    expect(screen.getByText(/How can I help/i)).toBeTruthy();
+    expect(screen.getByText(/Execution interface/i)).toBeTruthy();
   });
 
   it('Send button is disabled when composer input is empty', () => {
     render(
       <HueyWorkspaceWrapper>
-        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+        <HueyWorkspace intentTemplate={null} />
       </HueyWorkspaceWrapper>
     );
     const send = screen.getByRole('button', { name: /send/i });
@@ -95,7 +98,7 @@ describe('HueyWorkspace — render', () => {
   it('Send button is enabled once the composer has text', () => {
     render(
       <HueyWorkspaceWrapper>
-        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+        <HueyWorkspace intentTemplate={null} />
       </HueyWorkspaceWrapper>
     );
     fireEvent.change(screen.getByRole('textbox'), {
@@ -108,7 +111,7 @@ describe('HueyWorkspace — render', () => {
   it('Cancel button is not present while thread is idle', () => {
     render(
       <HueyWorkspaceWrapper>
-        <HueyWorkspace activeIntent={null} intentTemplate={null} />
+        <HueyWorkspace intentTemplate={null} />
       </HueyWorkspaceWrapper>
     );
     // Cancel is only shown while running — absent in idle state

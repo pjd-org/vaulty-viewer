@@ -3,6 +3,7 @@ import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router'
 
 import { ProjectDetailScene } from '../components/projects'
 import { ProjectRouteShell } from '../components/layout'
+import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect'
 import {
   getProjectSurfaceQueryOptions,
   useProjectSurface,
@@ -29,7 +30,10 @@ function ProjectRoute() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const canonicalPath = `/project/${encodeURIComponent(slug)}`
   const isOverview = pathname === canonicalPath
-  const { data: summarySurface, isLoading } = useProjectSurface(slug)
+  const { data: summarySurface, isLoading, error } = useProjectSurface(slug)
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(error)
+
+  if (isUnauthenticated) return null
 
   const summaryItems = [
     {

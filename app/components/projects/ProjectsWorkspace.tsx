@@ -6,18 +6,23 @@ import { CardGrid } from '../layout';
 import ProjectCard from './ProjectCard';
 import { EmptyState } from '../ui';
 import { fetchProjects } from '../../lib/api/projects';
+import { useLoginRedirectOnUnauthenticated } from '../../hooks/use-login-redirect';
 
 export function ProjectsWorkspace() {
   const {
     data: projects,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
     staleTime: 60_000,
     retry: 1,
   });
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
+
+  if (isUnauthenticated) return null;
 
   if (isLoading) {
     return (

@@ -3,6 +3,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { cn } from '@/src/lib/utils';
 
 import { WorkspaceScaffold } from '../components/layout';
+import { RouteLoadingState } from '../components/ui';
+import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect';
 import { healthSearchParams } from '../../src/lib/routes/search-params';
 import {
   useHealthSurface,
@@ -149,8 +151,11 @@ function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
 }
 
 function HealthRoute() {
-  const { data, isLoading } = useHealthSurface();
+  const { data, isLoading, error } = useHealthSurface();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
+
+  if (isUnauthenticated) return null;
 
   const selectedSvc = selectedId
     ? (data?.services.find((s) => s.id === selectedId) ?? null)
@@ -194,7 +199,7 @@ function HealthRoute() {
       primarySubtitle="Live health of platform services and dependencies."
       primary={
         isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <RouteLoadingState label="Loading service checks..." />
         ) : data == null ? (
           <div data-testid="health-empty-state" className="space-y-2">
             <p className="text-sm font-medium text-slate-700">
@@ -215,22 +220,6 @@ function HealthRoute() {
               selectedId={selectedId}
               onSelect={handleSelect}
             />
-          </div>
-        )
-      }
-      asideTitle="Service Detail"
-      asideSubtitle="Selected service information and diagnostics."
-      aside={
-        selectedSvc ? (
-          <ServiceDetail svc={selectedSvc} />
-        ) : (
-          <div data-testid="health-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
-              No item selected.
-            </p>
-            <p className="text-xs text-slate-500">
-              Select a service row to view details.
-            </p>
           </div>
         )
       }

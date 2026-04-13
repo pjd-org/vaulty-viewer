@@ -82,9 +82,9 @@ describe('graph route — empty / null data', () => {
     expect(screen.getByTestId('graph-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty state', () => {
+  it('renders no aside content', () => {
     render(<GraphComponent />);
-    expect(screen.getByTestId('graph-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -115,5 +115,10 @@ describe('graph route — with graph data', () => {
   it('renders node list', () => {
     render(<GraphComponent />);
     expect(screen.getByTestId('graph-node-list')).toBeTruthy();
+  });
+
+  it('keeps the aside slot empty', () => {
+    render(<GraphComponent />);
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });

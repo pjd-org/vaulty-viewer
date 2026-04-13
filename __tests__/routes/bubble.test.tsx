@@ -182,9 +182,9 @@ describe('BubbleRoute — empty state (data null)', () => {
     expect(screen.getByTestId('bubble-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<BubbleComponent />);
-    expect(screen.getByTestId('bubble-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -223,15 +223,9 @@ describe('BubbleRoute — data wired', () => {
     expect(screen.getByTestId('bubble-pressure')).toBeTruthy();
   });
 
-  it('renders aside with energy section', () => {
+  it('does not render aside content', () => {
     render(<BubbleComponent />);
-    expect(screen.getByTestId('bubble-aside')).toBeTruthy();
-    expect(screen.getByTestId('bubble-energy')).toBeTruthy();
-  });
-
-  it('renders aside with rewards section', () => {
-    render(<BubbleComponent />);
-    expect(screen.getByTestId('bubble-rewards')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 
   it('summary items reflect live data', () => {
@@ -243,7 +237,7 @@ describe('BubbleRoute — data wired', () => {
   it('does not render empty-state when data is present', () => {
     render(<BubbleComponent />);
     expect(screen.queryByTestId('bubble-empty-state')).toBeNull();
-    expect(screen.queryByTestId('bubble-aside-empty-state')).toBeNull();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 

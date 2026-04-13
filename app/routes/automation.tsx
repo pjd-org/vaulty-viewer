@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
+import { RouteLoadingState } from '../components/ui';
 import { automationSearchParams } from '../../src/lib/routes/search-params';
 import {
   useAutomationSurface,
@@ -313,7 +314,7 @@ function AutomationRoute() {
       primarySubtitle="Registered pipelines and scheduled jobs."
       primary={
         isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <RouteLoadingState label="Loading automation controls..." />
         ) : data == null ? (
           <div data-testid="automation-empty-state" className="space-y-2">
             <p className="text-sm font-medium text-slate-700">
@@ -341,22 +342,6 @@ function AutomationRoute() {
               selectedJobId={selectedJobId}
               onSelectJob={(job) => setSelection({ kind: 'job', job })}
             />
-          </div>
-        )
-      }
-      asideTitle="Detail"
-      asideSubtitle="Pipeline and job inspection."
-      aside={
-        selection ? (
-          <AutomationDetail selection={selection} />
-        ) : (
-          <div data-testid="automation-aside-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
-              No item selected.
-            </p>
-            <p className="text-xs text-slate-500">
-              Select a run, pipeline, or schedule to inspect it here.
-            </p>
           </div>
         )
       }

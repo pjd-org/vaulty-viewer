@@ -4,6 +4,7 @@ import {
   fetchProjectById,
   getProjectQueryOptions,
 } from '../../app/lib/api/projects';
+import { UnauthenticatedError } from '../../src/utils/api';
 
 const originalEnv = { ...process.env };
 const originalWindow = globalThis.window;
@@ -33,6 +34,14 @@ describe('projects API client', () => {
     expect(out[0].id).toBe('p1');
     expect(out[0].progressPercent).toBe(Math.round((2 / 5) * 100));
     expect(out[0].bestMoveTitle).toBe('Do it');
+  });
+
+  it('fetchProjects throws UnauthenticatedError on 401', async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({}) } as any)
+    );
+
+    await expect(fetchProjects()).rejects.toBeInstanceOf(UnauthenticatedError);
   });
 
   it('fetchProjectById finds by id', async () => {

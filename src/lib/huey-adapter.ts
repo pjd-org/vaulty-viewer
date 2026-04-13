@@ -35,6 +35,12 @@ type AgentServerRunPayload = {
   tool_results_degraded?: boolean;
 };
 
+export type HueyContext = {
+  tasks?: unknown[];
+  notes?: unknown[];
+  inbox?: unknown[];
+};
+
 export type HueyAdapterOptions = {
   /** Returns the current threadId (read from a ref — stable, never stale). */
   getThreadId: () => string;
@@ -43,6 +49,10 @@ export type HueyAdapterOptions = {
    * Used to sync the resolved server-side threadId back to the parent route.
    */
   onThreadIdResolved?: (resolvedId: string) => void;
+  /** Returns the active intent id (read from a ref — stable, never stale). */
+  getIntent?: () => string | null;
+  /** Returns the current vault context payload (read from a ref — stable, never stale). */
+  getContext?: () => HueyContext | null;
 };
 
 /**
@@ -51,6 +61,8 @@ export type HueyAdapterOptions = {
 function buildRequestBody(
   threadId: string,
   messages: ChatModelRunOptions['messages'],
+  intent?: string | null,
+  context?: HueyContext | null,
   model?: string
 ): Record<string, unknown> {
   // The adapter sends the last user message as the prompt. The assistant-ui
@@ -68,6 +80,15 @@ function buildRequestBody(
     mode: 'repo+spec',
     messages: [{ role: 'user', content: prompt }],
   };
+  if (intent) {
+    body.intent = intent;
+  }
+  if (
+    context &&
+    Object.values(context).some((v) => v && (v as unknown[]).length > 0)
+  ) {
+    body.context = context;
+  }
   if (model) {
     body.model = model;
   }
@@ -105,7 +126,9 @@ export function createHueyModelAdapter(
       abortSignal,
     }: ChatModelRunOptions): Promise<ChatModelRunResult> {
       const threadId = opts.getThreadId();
-      const requestBody = buildRequestBody(threadId, messages);
+      const intent = opts.getIntent?.() ?? null;
+      const context = opts.getContext?.() ?? null;
+      const requestBody = buildRequestBody(threadId, messages, intent, context);
 
       let [response, payload] = await postToAgentServer(
         threadId,
@@ -119,6 +142,8 @@ export function createHueyModelAdapter(
           const fallbackBody = buildRequestBody(
             threadId,
             messages,
+            intent,
+            context,
             'gpt-4o-mini'
           );
           const [fallbackResp, fallbackPayload] = await postToAgentServer(

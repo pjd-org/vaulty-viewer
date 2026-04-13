@@ -68,9 +68,9 @@ describe('archive route — empty / null data', () => {
     expect(screen.getByTestId('archive-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty state', () => {
+  it('renders no aside content', () => {
     render(<ArchiveComponent />);
-    expect(screen.getByTestId('archive-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 

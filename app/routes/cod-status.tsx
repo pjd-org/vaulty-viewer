@@ -5,6 +5,7 @@ import { CodModal } from '../components/cod';
 import { useSystemSummarizerQuery } from '../lib/queries/agents';
 import { fetchAllTasks } from '../lib/api/tasks';
 import { fetchProjects } from '../lib/api/projects';
+import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect';
 
 export const Route = createFileRoute('/cod-status')({
   component: () => <CODStatusRoute />,
@@ -16,16 +17,20 @@ interface CODStatusRouteProps {
 
 export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
   const navigate = useNavigate();
-  const { data: tasks } = useQuery({
+  const { data: tasks, error: tasksError } = useQuery({
     queryKey: ['tasks'],
     queryFn: fetchAllTasks,
     staleTime: 1000 * 60,
   });
-  const { data: projects } = useQuery({
+  const { data: projects, error: projectsError } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
     staleTime: 1000 * 60,
   });
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(
+    tasksError ?? projectsError
+  );
+
   const closeOverlay = React.useCallback(() => {
     if (onRequestClose) {
       onRequestClose();
@@ -72,6 +77,8 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
       enabled: agentTasks.length > 0,
     }
   );
+
+  if (isUnauthenticated) return null;
 
   return (
     <div className="route-modal-overlay" onClick={closeOverlay}>

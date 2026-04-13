@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import sanitizeHtml from 'sanitize-html';
-import { apiFetch } from '../../src/utils/api';
+import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
   formatNoteLabel,
   getLifecycleContext,
@@ -221,6 +221,17 @@ function reviewReducer(state: ReviewState, action: ReviewAction): ReviewState {
 function NoteRoute() {
   const { p } = Route.useSearch();
   const navigate = useNavigate();
+  const redirectToLogin = React.useCallback(() => {
+    void navigate({ to: '/login' });
+  }, [navigate]);
+  const throwIfUnauthorized = React.useCallback(
+    (response: Response, context: string) => {
+      if (response.status === 401) {
+        throw new UnauthenticatedError(context);
+      }
+    },
+    []
+  );
 
   const [{ note, relatedNotes, loading, error, taskData }, dispatchNote] =
     useReducer(noteReducer, {
@@ -280,6 +291,7 @@ function NoteRoute() {
 
       try {
         const response = await apiFetch(`/api/v1/notes/${encodedPath}`);
+        throwIfUnauthorized(response, `Note not found: ${requestedPath}`);
         if (!response.ok) {
           throw new Error(`Note not found: ${requestedPath}`);
         }
@@ -316,11 +328,13 @@ function NoteRoute() {
         if (lifecycle.isTask) {
           try {
             const taskResponse = await apiFetch(`/api/v1/tasks/${encodedPath}`);
+            throwIfUnauthorized(taskResponse, `Task not found: ${requestedPath}`);
             if (taskResponse.ok) {
               const taskResult = await taskResponse.json();
               loadedTaskData = taskResult.structuredContent || taskResult;
             }
-          } catch {
+          } catch (err) {
+            if (err instanceof UnauthenticatedError) throw err;
             loadedTaskData = null;
           }
         }
@@ -330,13 +344,18 @@ function NoteRoute() {
           const relatedResponse = await apiFetch(
             `/api/v1/graph/related/${encodedPath}?limit=8`
           );
+          throwIfUnauthorized(
+            relatedResponse,
+            `Related notes unavailable: ${requestedPath}`
+          );
           if (relatedResponse.ok) {
             const relatedResult = await relatedResponse.json();
             loadedRelated = (relatedResult?.structuredContent?.related ??
               relatedResult?.related ??
               []) as RelatedNote[];
           }
-        } catch {
+        } catch (err) {
+          if (err instanceof UnauthenticatedError) throw err;
           loadedRelated = [];
         }
 
@@ -347,6 +366,10 @@ function NoteRoute() {
           relatedNotes: loadedRelated,
         });
       } catch (err) {
+        if (err instanceof UnauthenticatedError) {
+          redirectToLogin();
+          return;
+        }
         dispatchNote({ type: 'LOAD_ERROR', error: (err as Error).message });
       }
     };
@@ -408,6 +431,9 @@ function NoteRoute() {
         body: JSON.stringify(body),
       });
 
+      if (res.status === 401) {
+        throw new UnauthenticatedError('Failed to record review: 401');
+      }
       if (!res.ok) {
         const errText = await res.text();
         throw new Error(errText || `HTTP ${res.status}`);
@@ -431,6 +457,10 @@ function NoteRoute() {
         message: 'Review recorded via Tasker API.',
       });
     } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        redirectToLogin();
+        return;
+      }
       dispatchReview({
         type: 'SUBMIT_FAIL',
         message: `Failed to record review: ${(err as Error).message}`,
@@ -461,6 +491,9 @@ function NoteRoute() {
           }),
         }
       );
+      if (res.status === 401) {
+        throw new UnauthenticatedError('Failed to promote note: 401');
+      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
@@ -494,6 +527,10 @@ function NoteRoute() {
         });
       }
     } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        redirectToLogin();
+        return;
+      }
       dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
       dispatchLc({ type: 'DONE' });
@@ -519,6 +556,9 @@ function NoteRoute() {
           method: 'DELETE',
         }
       );
+      if (res.status === 401) {
+        throw new UnauthenticatedError('Failed to reject note: 401');
+      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
@@ -536,6 +576,10 @@ function NoteRoute() {
         });
       }
     } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        redirectToLogin();
+        return;
+      }
       dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
       dispatchLc({ type: 'DONE' });
@@ -555,6 +599,9 @@ function NoteRoute() {
           body: JSON.stringify({ status: 'completed' }),
         }
       );
+      if (res.status === 401) {
+        throw new UnauthenticatedError('Failed to complete task: 401');
+      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(body?.message ?? `HTTP ${res.status}`);
@@ -596,6 +643,10 @@ function NoteRoute() {
           'Task completed. Handler-side archive rules will move it out of notes/tasks when the completion flow finishes.',
       });
     } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        redirectToLogin();
+        return;
+      }
       dispatchLc({ type: 'ERROR', message: (err as Error).message });
     } finally {
       dispatchLc({ type: 'DONE' });
@@ -642,135 +693,173 @@ function NoteRoute() {
   } as const;
 
   return (
-    <PageContainer className="max-w-[1440px] pb-12">
+    <PageContainer className="max-w-[1500px] pb-12">
       {/* Back nav */}
       <nav>
         <Link
           to="/"
           search={{ q: undefined, collection: undefined }}
-          className="inline-flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
         >
           ← Back to vault
         </Link>
       </nav>
 
+      {note && (
+        <div className="rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="h-10 w-10 rounded-xl border border-slate-200 bg-slate-100/80" />
+            <div className="flex-1 min-w-[220px]">
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-sm font-medium text-slate-800 truncate">
+                  {note.title}
+                </span>
+                <span className="hidden sm:inline text-xs text-slate-500 truncate">
+                  {note.path}
+                </span>
+              </div>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              {[
+                { label: 'Huey', short: 'H' },
+                { label: 'Automation', short: 'A' },
+                { label: 'COD', short: 'C' },
+                { label: 'Info', short: 'i' },
+                { label: 'Settings', short: 'S' },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  aria-label={item.label}
+                  className="h-9 w-9 rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
+                >
+                  {item.short}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       {note && (
-        <NoteHeader
-          display={toNoteHeaderDisplay({
-            title: note.title,
-            type: getStringValue(note.frontmatter.type),
-            status: noteStatus,
-            path: note.path,
-          })}
-          extraActions={
-            <>
-              {note.lifecycle.canPromote && (
-                <PrimaryButton
-                  onClick={handlePromote}
-                  disabled={lc.busy !== null}
-                >
-                  {lc.pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
-                </PrimaryButton>
-              )}
-              {note.lifecycle.canReject &&
-                (confirmReject ? (
-                  <>
-                    <span className="text-xs text-red-600 font-medium">
-                      Reject note?
-                    </span>
+        <div className="rounded-2xl border border-slate-200/80 bg-gradient-to-r from-sky-50 via-cyan-50 to-indigo-50 p-4 md:p-5">
+          <NoteHeader
+            display={toNoteHeaderDisplay({
+              title: note.title,
+              type: getStringValue(note.frontmatter.type),
+              status: noteStatus,
+              path: note.path,
+            })}
+            extraActions={
+              <div className="flex flex-wrap items-center gap-2">
+                {note.lifecycle.canPromote && (
+                  <PrimaryButton
+                    onClick={handlePromote}
+                    disabled={lc.busy !== null}
+                  >
+                    {lc.pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
+                  </PrimaryButton>
+                )}
+                {note.lifecycle.canReject &&
+                  (confirmReject ? (
+                    <>
+                      <span className="text-xs text-red-600 font-medium">
+                        Reject note?
+                      </span>
+                      <SecondaryButton
+                        onClick={() => {
+                          handleReject();
+                          setConfirmReject(false);
+                        }}
+                        disabled={lc.busy !== null}
+                        className="text-danger hover:bg-red-50"
+                      >
+                        Confirm
+                      </SecondaryButton>
+                      <SecondaryButton
+                        onClick={() => setConfirmReject(false)}
+                        disabled={lc.busy !== null}
+                      >
+                        Cancel
+                      </SecondaryButton>
+                    </>
+                  ) : (
                     <SecondaryButton
-                      onClick={() => {
-                        handleReject();
-                        setConfirmReject(false);
-                      }}
+                      onClick={() => setConfirmReject(true)}
                       disabled={lc.busy !== null}
                       className="text-danger hover:bg-red-50"
                     >
-                      Confirm
+                      Reject
                     </SecondaryButton>
-                    <SecondaryButton
-                      onClick={() => setConfirmReject(false)}
-                      disabled={lc.busy !== null}
-                    >
-                      Cancel
-                    </SecondaryButton>
-                  </>
-                ) : (
+                  ))}
+                {note.lifecycle.canComplete && (
                   <SecondaryButton
-                    onClick={() => setConfirmReject(true)}
+                    onClick={handleCompleteTask}
                     disabled={lc.busy !== null}
-                    className="text-danger hover:bg-red-50"
                   >
-                    Reject
+                    Complete &amp; Archive
                   </SecondaryButton>
-                ))}
-              {note.lifecycle.canComplete && (
-                <SecondaryButton
-                  onClick={handleCompleteTask}
-                  disabled={lc.busy !== null}
-                >
-                  Complete &amp; Archive
+                )}
+                <SecondaryButton onClick={handleCopyPath}>
+                  {copied ? 'Copied!' : 'Copy Path'}
                 </SecondaryButton>
-              )}
-              <SecondaryButton onClick={handleCopyPath}>
-                {copied ? 'Copied!' : 'Copy Path'}
-              </SecondaryButton>
-              <SecondaryButton onClick={() => void handleShare()}>
-                Share
-              </SecondaryButton>
-              <SecondaryButton onClick={handleOpenInObsidian}>
-                Open in Obsidian
-              </SecondaryButton>
-              {noteSpecPath && (
-                <SecondaryButton
-                  onClick={() =>
-                    navigate({
-                      to: '/note',
-                      search: { p: stripMarkdownExtension(noteSpecPath) },
-                    })
-                  }
-                >
-                  Open Spec
+                <SecondaryButton onClick={() => void handleShare()}>
+                  Share
                 </SecondaryButton>
-              )}
-            </>
-          }
-        />
+                <SecondaryButton onClick={handleOpenInObsidian}>
+                  Open in Obsidian
+                </SecondaryButton>
+                {noteSpecPath && (
+                  <SecondaryButton
+                    onClick={() =>
+                      navigate({
+                        to: '/note',
+                        search: { p: stripMarkdownExtension(noteSpecPath) },
+                      })
+                    }
+                  >
+                    Open Spec
+                  </SecondaryButton>
+                )}
+              </div>
+            }
+          />
+        </div>
       )}
 
       {/* Lifecycle feedback */}
       {lc.message && (
         <p
-          className={`text-sm px-1 ${lc.isError ? 'text-red-500' : 'text-neutral-500'}`}
+          className={`text-sm px-1 ${lc.isError ? 'text-red-600' : 'text-slate-600'}`}
         >
           {lc.message}
         </p>
       )}
       {lc.pendingPromotionExpiry && (
-        <p className="text-xs text-neutral-400 px-1">
+        <p className="text-xs text-slate-500 px-1">
           Promotion window expires at {lc.pendingPromotionExpiry}.
         </p>
       )}
 
       {/* Body + Rail */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-5">
         {/* Content */}
-        <div className="col-span-12 lg:col-span-8">
+        <div className="col-span-12 xl:col-span-8">
           <SoftPanel>
             {loading && (
               <div className="flex flex-col items-center justify-center py-16">
-                <div className="w-7 h-7 rounded-full border-2 border-neutral-200 border-t-blue-500 animate-spin mb-3" />
-                <p className="text-sm text-neutral-400">Loading note…</p>
+                <div className="w-7 h-7 rounded-full border-2 border-slate-200 border-t-sky-500 animate-spin mb-3" />
+                <p className="text-sm text-slate-500">Loading note…</p>
               </div>
             )}
             {!loading && error && (
               <div className="flex flex-col items-center justify-center py-16">
-                <span className="text-3xl mb-3">📄</span>
-                <h2 className="text-lg font-semibold text-neutral-900 mb-1">
+                <h2 className="text-lg font-semibold text-slate-900 mb-1">
                   Note not found
                 </h2>
-                <p className="text-sm text-neutral-500 mb-4">{error}</p>
+                <p className="text-sm text-slate-600 mb-4">{error}</p>
                 <div className="flex gap-3">
                   <PrimaryButton
                     onClick={() =>
@@ -792,20 +881,20 @@ function NoteRoute() {
               <>
                 {/* Task progress */}
                 {note.lifecycle.isTask && taskData?.metrics && (
-                  <div className="mb-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+                  <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-semibold text-neutral-700">
+                      <span className="text-xs font-semibold text-slate-700">
                         Task Progress
                       </span>
                       {taskData.metrics.currentMilestone !== undefined && (
-                        <span className="text-xs text-blue-600 font-medium">
+                        <span className="text-xs text-sky-700 font-medium">
                           {taskData.metrics.currentMilestone}% complete
                         </span>
                       )}
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-1.5 mb-3">
                       <div
-                        className="bg-blue-500 h-full rounded-full transition-[width]"
+                        className="bg-sky-500 h-full rounded-full transition-[width]"
                         style={{
                           width: `${taskData.metrics.currentMilestone ?? 0}%`,
                         }}
@@ -814,10 +903,10 @@ function NoteRoute() {
                     <div className="grid grid-cols-3 gap-3 text-center">
                       {taskData.metrics.effortRemaining !== undefined && (
                         <div>
-                          <p className="text-base font-bold text-neutral-900">
+                          <p className="text-base font-bold text-slate-900">
                             {taskData.metrics.effortRemaining}
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-500">
                             Effort Left
                           </p>
                         </div>
@@ -825,23 +914,23 @@ function NoteRoute() {
                       {taskData.metrics.estimatedCompletionMin !==
                         undefined && (
                         <div>
-                          <p className="text-base font-bold text-neutral-900">
+                          <p className="text-base font-bold text-slate-900">
                             {taskData.metrics.estimatedCompletionMin}m
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-500">
                             Est. Time
                           </p>
                         </div>
                       )}
                       {taskData.metrics.rewardPotential !== undefined && (
                         <div>
-                          <p className="text-base font-bold text-neutral-900">
+                          <p className="text-base font-bold text-slate-900">
                             {(taskData.metrics.rewardPotential * 100).toFixed(
                               0
                             )}
                             %
                           </p>
-                          <p className="text-[10px] uppercase tracking-wide text-neutral-400">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-500">
                             Reward
                           </p>
                         </div>
@@ -855,24 +944,28 @@ function NoteRoute() {
                   noteEffortScore !== null ||
                   noteGoalId ||
                   isDelegatable) && (
-                  <div className="flex flex-wrap gap-3 mb-4 text-xs text-neutral-500">
+                  <div className="flex flex-wrap gap-2 mb-4 text-xs text-slate-600">
                     {noteEstimatedTimeMin !== null && (
-                      <span>~{noteEstimatedTimeMin} min</span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1">
+                        ~{noteEstimatedTimeMin} min
+                      </span>
                     )}
                     {noteEffortScore !== null && (
-                      <span>Effort {noteEffortScore}/10</span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1">
+                        Effort {noteEffortScore}/10
+                      </span>
                     )}
                     {noteGoalId && (
                       <Link
                         to="/note"
                         search={{ p: noteGoalId }}
-                        className="text-blue-500 hover:opacity-80 transition-opacity"
+                        className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700 hover:opacity-80 transition-opacity"
                       >
                         Goal → {formatNoteLabel(noteGoalId)}
                       </Link>
                     )}
                     {isDelegatable && (
-                      <span className="px-1.5 py-0.5 bg-neutral-100 rounded text-neutral-500">
+                      <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-violet-700">
                         delegatable
                       </span>
                     )}
@@ -888,7 +981,7 @@ function NoteRoute() {
         </div>
 
         {/* Meta rail */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="col-span-12 xl:col-span-4 space-y-4 xl:sticky xl:top-4 h-fit">
           {note && (
             <>
               <NoteMetaRail
@@ -901,7 +994,7 @@ function NoteRoute() {
               {/* Task review */}
               {note.lifecycle.canReview && (
                 <SoftPanel title="Task Review">
-                  <div className="text-xs text-neutral-400 mb-3">
+                  <div className="text-xs text-slate-500 mb-3">
                     {note.lifecycle.reviewStatus
                       ? `Current: ${note.lifecycle.reviewStatus}`
                       : 'No review yet'}
@@ -910,7 +1003,7 @@ function NoteRoute() {
                     {['approve', 'needs_changes'].map((val) => (
                       <label
                         key={val}
-                        className="flex items-center gap-1.5 cursor-pointer text-xs text-neutral-700"
+                        className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-700"
                       >
                         <input
                           type="radio"
@@ -923,14 +1016,14 @@ function NoteRoute() {
                               decision: val,
                             })
                           }
-                          className="accent-blue-500"
+                          className="accent-sky-500"
                         />
                         {val === 'approve' ? 'Approve' : 'Needs changes'}
                       </label>
                     ))}
                   </div>
                   <textarea
-                    className="w-full bg-neutral-50 text-neutral-700 text-xs rounded-xl p-2.5 border border-neutral-200 focus:border-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 resize-none"
+                    className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 resize-none"
                     placeholder="Add a short review comment"
                     rows={3}
                     value={review.comment}
@@ -949,7 +1042,7 @@ function NoteRoute() {
                     {review.submitting ? 'Submitting…' : 'Submit review'}
                   </PrimaryButton>
                   {review.message && (
-                    <p className="text-xs text-neutral-400 mt-2">
+                    <p className="text-xs text-slate-500 mt-2">
                       {review.message}
                     </p>
                   )}
@@ -960,13 +1053,13 @@ function NoteRoute() {
               {note.lifecycle.isTask &&
                 !note.lifecycle.canComplete &&
                 noteStatus === 'completed' && (
-                  <p className="text-xs text-neutral-400 px-1">
+                  <p className="text-xs text-slate-500 px-1">
                     Completed tasks archive through the existing handler flow.
                   </p>
                 )}
               {!note.lifecycle.isTask &&
                 note.lifecycle.source === 'canonical' && (
-                  <p className="text-xs text-neutral-400 px-1">
+                  <p className="text-xs text-slate-500 px-1">
                     Archive actions for canonical notes are not yet supported.
                   </p>
                 )}
@@ -976,19 +1069,19 @@ function NoteRoute() {
       </div>
 
       {/* Footer */}
-      <footer className="pt-6 border-t border-neutral-100 flex items-center justify-between">
+      <footer className="pt-6 border-t border-slate-200/70 flex items-center justify-between">
         <div className="flex gap-4">
           <Link
             to="/"
             search={{ q: undefined, collection: undefined }}
-            className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="text-xs text-slate-500 hover:text-slate-700 transition-colors"
           >
             ← Back to Vault
           </Link>
           {note?.collection === 'tasks' && (
             <Link
               to="/goals"
-              className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-700 transition-colors"
             >
               View Goals →
             </Link>

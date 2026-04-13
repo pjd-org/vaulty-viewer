@@ -54,9 +54,9 @@ describe('automation lane', () => {
     expect(screen.getByTestId('automation-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<AutomationComponent />);
-    expect(screen.getByTestId('automation-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -94,9 +94,9 @@ describe('portfolio lane', () => {
     expect(screen.getByTestId('portfolio-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<PortfolioComponent />);
-    expect(screen.getByTestId('portfolio-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -113,9 +113,9 @@ describe('bubble lane', () => {
     expect(screen.getByTestId('bubble-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<BubbleComponent />);
-    expect(screen.getByTestId('bubble-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -132,9 +132,9 @@ describe('health lane', () => {
     expect(screen.getByTestId('health-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<HealthComponent />);
-    expect(screen.getByTestId('health-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -151,9 +151,9 @@ describe('timeline lane', () => {
     expect(screen.getByTestId('timeline-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<TimelineComponent />);
-    expect(screen.getByTestId('timeline-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -170,9 +170,9 @@ describe('archive lane', () => {
     expect(screen.getByTestId('archive-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<ArchiveComponent />);
-    expect(screen.getByTestId('archive-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });
 
@@ -189,8 +189,8 @@ describe('graph lane', () => {
     expect(screen.getByTestId('graph-empty-state')).toBeTruthy();
   });
 
-  it('renders aside empty-state', () => {
+  it('renders no aside content', () => {
     render(<GraphComponent />);
-    expect(screen.getByTestId('graph-aside-empty-state')).toBeTruthy();
+    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
   });
 });

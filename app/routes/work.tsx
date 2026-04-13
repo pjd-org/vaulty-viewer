@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { ProjectsWorkspace } from '../components/projects';
 import { WorkspaceScaffold } from '../components/layout';
+import { RouteLoadingState } from '../components/ui';
+import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect';
 import { workSearchParams } from '../../src/lib/routes/search-params';
 import { useWorkSurface, type WorkSurfacePayload } from '../lib/viewer-adapter';
 import type { NextAction } from '../../src/lib/focus-logic';
@@ -30,37 +32,52 @@ function TaskList({
   onSelect: (task: NextAction | null) => void;
 }) {
   return (
-    <ul data-testid="work-task-list" className="space-y-1">
+    <ul
+      data-testid="work-task-list"
+      className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+    >
       {tasks.map((task) => {
         const isExpanded = selectedId === task.id;
         return (
-          <li key={task.id}>
+          <li key={task.id} className="rounded-2xl border border-slate-200 bg-white/80 shadow-[0_6px_18px_-14px_rgba(15,23,42,0.45)]">
             <button
               type="button"
               onClick={() => onSelect(isExpanded ? null : task)}
               aria-expanded={isExpanded}
               className={[
-                'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+                'flex w-full items-start justify-between rounded-2xl px-4 py-3 text-sm transition-colors',
                 isExpanded
                   ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-black/5',
+                  : 'text-slate-600 hover:bg-slate-50',
               ].join(' ')}
             >
-              <div className="flex min-w-0 items-center gap-2">
+              <div className="flex min-w-0 items-start gap-2">
                 <span
-                  className={`size-2 shrink-0 rounded-full ${
+                  className={`mt-1 size-2 shrink-0 rounded-full ${
                     task.status === 'blocked' ? 'bg-red-400' : 'bg-emerald-400'
                   }`}
                 />
-                <span className="truncate font-medium">{task.title}</span>
+                <div className="min-w-0">
+                  <span className="line-clamp-2 text-left font-semibold text-slate-800">
+                    {task.title}
+                  </span>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                    <span>{task.priority}p</span>
+                    <span>·</span>
+                    <span>{task.estimatedTimeMin ?? 0}m</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-                {task.effortScore != null && (
-                  <span title="Effort">{task.effortScore}e</span>
-                )}
-                {task.estimatedTimeMin != null && (
-                  <span title="Estimated time">{task.estimatedTimeMin}m</span>
-                )}
+              <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                    task.status === 'blocked'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  {task.status}
+                </span>
                 <span
                   className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
                   aria-hidden="true"
@@ -70,7 +87,7 @@ function TaskList({
               </div>
             </button>
             {isExpanded && (
-              <div className="mx-1 mb-1 rounded-b-md border border-t-0 border-slate-200 bg-slate-50 px-4 py-3 animate-fade-in">
+              <div className="mx-2 mb-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 animate-fade-in">
                 <TaskDetail task={task} />
               </div>
             )}
@@ -120,10 +137,12 @@ function TaskSection({
   }
 
   return (
-    <div className="mt-6 space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Next Actions</h3>
-        <span className="text-xs text-muted-foreground">
+    <div className="mt-6 space-y-3">
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-2">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
+          Next Actions
+        </h3>
+        <span className="text-xs font-medium text-slate-500">
           {data.total} tasks · {data.mode}
         </span>
       </div>
@@ -308,15 +327,39 @@ function TaskDetail({ task }: { task: NextAction }) {
 // ---------------------------------------------------------------------------
 
 function WorkRoute() {
-  const { data, isLoading } = useWorkSurface();
+  const { data, isLoading, error } = useWorkSurface();
   const [selectedTask, setSelectedTask] = useState<NextAction | null>(null);
+  const [taskFilter, setTaskFilter] = useState<'all' | 'ready' | 'blocked'>(
+    'all'
+  );
+  const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
+  const blockedCount = useMemo(
+    () => data?.tasks.filter((t) => t.status === 'blocked').length ?? 0,
+    [data]
+  );
+  const readyCount = useMemo(
+    () => data?.tasks.filter((t) => t.status !== 'blocked').length ?? 0,
+    [data]
+  );
+  const filteredData = useMemo(() => {
+    if (!data) return data;
+    if (taskFilter === 'ready') {
+      return { ...data, tasks: data.tasks.filter((t) => t.status !== 'blocked') };
+    }
+    if (taskFilter === 'blocked') {
+      return { ...data, tasks: data.tasks.filter((t) => t.status === 'blocked') };
+    }
+    return data;
+  }, [data, taskFilter]);
 
   // Clear selection if the selected task is no longer in the refreshed data
   useEffect(() => {
-    if (!selectedTask || !data) return;
-    const stillExists = data.tasks.some((t) => t.id === selectedTask.id);
+    if (!selectedTask || !filteredData) return;
+    const stillExists = filteredData.tasks.some((t) => t.id === selectedTask.id);
     if (!stillExists) setSelectedTask(null);
-  }, [data, selectedTask]);
+  }, [filteredData, selectedTask]);
+
+  if (isUnauthenticated) return null;
 
   return (
     <WorkspaceScaffold
@@ -360,12 +403,78 @@ function WorkRoute() {
       primarySubtitle="Projects list and ranked next actions."
       primary={
         isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <RouteLoadingState label="Loading project lanes..." />
         ) : (
           <>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Total
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800">
+                  {data?.total ?? 0}
+                </p>
+                <div className="mt-2 h-px w-12 bg-slate-300" />
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Ready
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-emerald-700">
+                  {readyCount}
+                </p>
+                <div className="mt-2 h-px w-12 bg-emerald-300" />
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Blocked
+                </p>
+                <p className="mt-1 text-3xl font-semibold leading-none text-red-700">
+                  {blockedCount}
+                </p>
+                <div className="mt-2 h-px w-12 bg-red-300" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTaskFilter('all')}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    taskFilter === 'all'
+                      ? 'border-slate-800 bg-slate-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  All ({data?.total ?? 0})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaskFilter('ready')}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    taskFilter === 'ready'
+                      ? 'border-emerald-700 bg-emerald-700 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  Ready ({readyCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaskFilter('blocked')}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                    taskFilter === 'blocked'
+                      ? 'border-red-700 bg-red-700 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  Blocked ({blockedCount})
+                </button>
+              </div>
+            </div>
             <ProjectsWorkspace />
             <TaskSection
-              data={data}
+              data={filteredData}
               selectedId={selectedTask?.id ?? null}
               onSelect={setSelectedTask}
             />
