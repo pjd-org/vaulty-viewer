@@ -328,7 +328,10 @@ function NoteRoute() {
         if (lifecycle.isTask) {
           try {
             const taskResponse = await apiFetch(`/api/v1/tasks/${encodedPath}`);
-            throwIfUnauthorized(taskResponse, `Task not found: ${requestedPath}`);
+            throwIfUnauthorized(
+              taskResponse,
+              `Task not found: ${requestedPath}`
+            );
             if (taskResponse.ok) {
               const taskResult = await taskResponse.json();
               loadedTaskData = taskResult.structuredContent || taskResult;
@@ -844,7 +847,7 @@ function NoteRoute() {
       )}
 
       {/* Body + Rail */}
-      <div className="grid grid-cols-12 gap-5">
+      <div className="grid grid-cols-12 gap-6">
         {/* Content */}
         <div className="col-span-12 xl:col-span-8">
           <SoftPanel>
@@ -981,90 +984,92 @@ function NoteRoute() {
         </div>
 
         {/* Meta rail */}
-        <div className="col-span-12 xl:col-span-4 space-y-4 xl:sticky xl:top-4 h-fit">
-          {note && (
-            <>
-              <NoteMetaRail
-                frontmatter={note.frontmatter}
-                lifecycle={note.lifecycle}
-                relatedNotes={relatedNotes}
-                path={note.path}
-              />
+        <div className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="xl:sticky xl:top-4 h-fit space-y-4">
+            {note && (
+              <>
+                <NoteMetaRail
+                  frontmatter={note.frontmatter}
+                  lifecycle={note.lifecycle}
+                  relatedNotes={relatedNotes}
+                  path={note.path}
+                />
 
-              {/* Task review */}
-              {note.lifecycle.canReview && (
-                <SoftPanel title="Task Review">
-                  <div className="text-xs text-slate-500 mb-3">
-                    {note.lifecycle.reviewStatus
-                      ? `Current: ${note.lifecycle.reviewStatus}`
-                      : 'No review yet'}
-                  </div>
-                  <div className="flex gap-3 mb-3 flex-wrap">
-                    {['approve', 'needs_changes'].map((val) => (
-                      <label
-                        key={val}
-                        className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-700"
-                      >
-                        <input
-                          type="radio"
-                          name="review-decision"
-                          value={val}
-                          checked={review.decision === val}
-                          onChange={() =>
-                            dispatchReview({
-                              type: 'SET_DECISION',
-                              decision: val,
-                            })
-                          }
-                          className="accent-sky-500"
-                        />
-                        {val === 'approve' ? 'Approve' : 'Needs changes'}
-                      </label>
-                    ))}
-                  </div>
-                  <textarea
-                    className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 resize-none"
-                    placeholder="Add a short review comment"
-                    rows={3}
-                    value={review.comment}
-                    onChange={(e) =>
-                      dispatchReview({
-                        type: 'SET_COMMENT',
-                        comment: e.target.value,
-                      })
-                    }
-                  />
-                  <PrimaryButton
-                    onClick={() => void handleReviewSubmit()}
-                    disabled={review.submitting || lc.busy !== null}
-                    className="mt-2 w-full"
-                  >
-                    {review.submitting ? 'Submitting…' : 'Submit review'}
-                  </PrimaryButton>
-                  {review.message && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      {review.message}
+                {/* Task review */}
+                {note.lifecycle.canReview && (
+                  <SoftPanel title="Task Review">
+                    <div className="text-xs text-slate-500 mb-3">
+                      {note.lifecycle.reviewStatus
+                        ? `Current: ${note.lifecycle.reviewStatus}`
+                        : 'No review yet'}
+                    </div>
+                    <div className="flex gap-3 mb-3 flex-wrap">
+                      {['approve', 'needs_changes'].map((val) => (
+                        <label
+                          key={val}
+                          className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-700"
+                        >
+                          <input
+                            type="radio"
+                            name="review-decision"
+                            value={val}
+                            checked={review.decision === val}
+                            onChange={() =>
+                              dispatchReview({
+                                type: 'SET_DECISION',
+                                decision: val,
+                              })
+                            }
+                            className="accent-sky-500"
+                          />
+                          {val === 'approve' ? 'Approve' : 'Needs changes'}
+                        </label>
+                      ))}
+                    </div>
+                    <textarea
+                      className="w-full bg-slate-50 text-slate-700 text-xs rounded-xl p-2.5 border border-slate-200 focus:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 resize-none"
+                      placeholder="Add a short review comment"
+                      rows={3}
+                      value={review.comment}
+                      onChange={(e) =>
+                        dispatchReview({
+                          type: 'SET_COMMENT',
+                          comment: e.target.value,
+                        })
+                      }
+                    />
+                    <PrimaryButton
+                      onClick={() => void handleReviewSubmit()}
+                      disabled={review.submitting || lc.busy !== null}
+                      className="mt-2 w-full"
+                    >
+                      {review.submitting ? 'Submitting…' : 'Submit review'}
+                    </PrimaryButton>
+                    {review.message && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        {review.message}
+                      </p>
+                    )}
+                  </SoftPanel>
+                )}
+
+                {/* Informational notes */}
+                {note.lifecycle.isTask &&
+                  !note.lifecycle.canComplete &&
+                  noteStatus === 'completed' && (
+                    <p className="text-xs text-slate-500 px-1">
+                      Completed tasks archive through the existing handler flow.
                     </p>
                   )}
-                </SoftPanel>
-              )}
-
-              {/* Informational notes */}
-              {note.lifecycle.isTask &&
-                !note.lifecycle.canComplete &&
-                noteStatus === 'completed' && (
-                  <p className="text-xs text-slate-500 px-1">
-                    Completed tasks archive through the existing handler flow.
-                  </p>
-                )}
-              {!note.lifecycle.isTask &&
-                note.lifecycle.source === 'canonical' && (
-                  <p className="text-xs text-slate-500 px-1">
-                    Archive actions for canonical notes are not yet supported.
-                  </p>
-                )}
-            </>
-          )}
+                {!note.lifecycle.isTask &&
+                  note.lifecycle.source === 'canonical' && (
+                    <p className="text-xs text-slate-500 px-1">
+                      Archive actions for canonical notes are not yet supported.
+                    </p>
+                  )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
