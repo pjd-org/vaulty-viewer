@@ -24,6 +24,7 @@ import { useMutationWithVerification } from '../hooks/use-mutation-with-verifica
 import { updateTaskStatus } from '../lib/api/tasks';
 import { CodSignalRow } from '../components/cod/CodSignalRow';
 import { CodActionRow } from '../components/cod/CodActionRow';
+import { useUIStore } from '../../src/store/ui';
 
 export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
@@ -311,6 +312,7 @@ function FocusRoute() {
   const { data: activeSession } = useActiveSession();
   const { data: recentSessions } = useRecentSessions();
   const [endingSession, setEndingSession] = useState(false);
+  const verification = useUIStore((state) => state.verification);
 
   const [endSessionError, setEndSessionError] = useState<string | null>(null);
 
@@ -601,9 +603,22 @@ function FocusRoute() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-2">
           Context Tail
         </p>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Context candidates will surface here.
-        </p>
+        {(surface?.contextTail ?? []).length > 0 ? (
+          <div className="space-y-2">
+            {(surface?.contextTail ?? []).map((item) => (
+              <p
+                key={item.id}
+                className="text-xs text-slate-600 leading-relaxed"
+              >
+                {item.title}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Context candidates will surface here.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -662,7 +677,21 @@ function FocusRoute() {
         )}
       </section>
 
-      {/* Section 3: Immediate Interventions (task backlog) */}
+      {/* Section 3: Verification Rail */}
+      <section className="space-y-3">
+        <SectionHeader
+          title="Verification Rail"
+          subtitle="Outcome verification for recent actions."
+        />
+        {verification.phase === 'pending' && (
+          <p className="text-sm text-sky-600">Verifying…</p>
+        )}
+        {verification.phase === 'failed' && (
+          <p className="text-sm text-red-400">Verification failed.</p>
+        )}
+      </section>
+
+      {/* Section 4: Immediate Interventions (task backlog) */}
       {taskCards.length > 0 ? (
         <section className="space-y-4">
           <div className="space-y-4">
@@ -854,7 +883,7 @@ function FocusRoute() {
         primaryTitle="Today's Focus"
         primarySubtitle="Best move, pressure signals, and ranked recommendations."
         primary={primaryContent}
-        asideTitle="Snapshot"
+        asideTitle="Snapshot Grid"
         asideSubtitle="Live module status"
         aside={asideContent}
       />
