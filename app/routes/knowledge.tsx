@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { WorkspaceScaffold } from '../components/layout';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import {
@@ -8,6 +8,7 @@ import {
   type KnowledgeNoteRef,
 } from '../lib/viewer-adapter';
 import { knowledgeSearchParams } from '../../src/lib/routes/search-params';
+import { KnowledgeWorkspaceSurface } from '../components/knowledge/KnowledgeWorkspaceSurface';
 
 export const Route = createFileRoute('/knowledge')({
   validateSearch: knowledgeSearchParams,
@@ -18,7 +19,9 @@ type AudienceFilter = 'all' | 'human' | 'agent' | 'bubble';
 type MaturityFilter = '' | 'draft' | 'stable' | 'deprecated';
 
 function getDomains(notes: KnowledgeNoteRef[]) {
-  return Array.from(new Set(notes.map((note) => note.domain).filter(Boolean))).sort();
+  return Array.from(
+    new Set(notes.map((note) => note.domain).filter(Boolean))
+  ).sort();
 }
 
 function KnowledgeRoute() {
@@ -46,7 +49,8 @@ function KnowledgeRoute() {
 
   const filtered = React.useMemo(() => {
     return allNotes.filter((note) => {
-      if (audience !== 'all' && (note.audience ?? 'human') !== audience) return false;
+      if (audience !== 'all' && (note.audience ?? 'human') !== audience)
+        return false;
       if (domain && note.domain !== domain) return false;
       if (maturity && note.status !== maturity) return false;
       return true;
@@ -55,17 +59,36 @@ function KnowledgeRoute() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, totalPages);
-  const pageItems = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const pageItems = filtered.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
 
   React.useEffect(() => {
     setPage(1);
   }, [audience, domain, maturity]);
 
   const metricCards = [
-    { label: 'Context', value: String(surface?.selectedContext.length ?? 0), hint: 'network' },
-    { label: 'Entities', value: String(surface?.linkedEntities.length ?? 0), hint: 'linked notes' },
-    { label: 'Templates', value: String(surface?.suggestedTemplates.length ?? 0), hint: 'discoverable' },
-    { label: 'Actions', value: String(surface?.suggestedActions.length ?? 0), hint: 'authoring' },
+    {
+      label: 'Context',
+      value: String(surface?.selectedContext.length ?? 0),
+      hint: 'network',
+    },
+    {
+      label: 'Entities',
+      value: String(surface?.linkedEntities.length ?? 0),
+      hint: 'linked notes',
+    },
+    {
+      label: 'Templates',
+      value: String(surface?.suggestedTemplates.length ?? 0),
+      hint: 'discoverable',
+    },
+    {
+      label: 'Actions',
+      value: String(surface?.suggestedActions.length ?? 0),
+      hint: 'authoring',
+    },
   ];
 
   return (
@@ -85,8 +108,12 @@ function KnowledgeRoute() {
                 <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-slate-800">{metric.value}</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{metric.hint}</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-800">
+                  {metric.value}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {metric.hint}
+                </p>
               </article>
             ))}
           </div>
@@ -110,6 +137,22 @@ function KnowledgeRoute() {
               Audience: {audience}
             </button>
 
+            {/* Quick-links */}
+            <Link
+              to="/knowledge"
+              search={{ q: 'search' }}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Search
+            </Link>
+            <Link
+              to="/knowledge"
+              search={{ q: 'graph' }}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Graph
+            </Link>
+
             <label className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700">
               Domain
               <select
@@ -130,7 +173,9 @@ function KnowledgeRoute() {
               Maturity
               <select
                 value={maturity}
-                onChange={(event) => setMaturity(event.target.value as MaturityFilter)}
+                onChange={(event) =>
+                  setMaturity(event.target.value as MaturityFilter)
+                }
                 className="ml-2 bg-transparent outline-none"
               >
                 <option value="">All</option>
@@ -154,7 +199,13 @@ function KnowledgeRoute() {
               {pageItems.map((note, index) => (
                 <div
                   key={note.path}
-                  className={index % 5 === 0 ? 'md:row-span-2' : index % 4 === 0 ? 'xl:col-span-2' : ''}
+                  className={
+                    index % 5 === 0
+                      ? 'md:row-span-2'
+                      : index % 4 === 0
+                        ? 'xl:col-span-2'
+                        : ''
+                  }
                 >
                   <KnowledgeNoteCard {...note} />
                 </div>
@@ -183,6 +234,8 @@ function KnowledgeRoute() {
               Next
             </button>
           </div>
+
+          <KnowledgeWorkspaceSurface />
         </div>
       }
     />
