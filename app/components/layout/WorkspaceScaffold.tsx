@@ -49,7 +49,7 @@ function PanelHero({
 }) {
   return (
     <div
-      className="relative px-6 py-5 pb-6 genie-surface--hero rounded-t-lg"
+      className="relative px-5 py-4 pb-5 genie-surface--hero rounded-t-lg"
       style={{ boxShadow: 'none' }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -74,7 +74,7 @@ function PanelHero({
 
       {summaryItems.length > 0 && (
         <div
-          className="mt-5 pt-4 border-t border-slate-200/60 grid gap-x-6 gap-y-3"
+          className="mt-4 pt-3 border-t border-slate-200/60 grid gap-x-5 gap-y-2"
           style={{
             gridTemplateColumns: `repeat(${Math.min(summaryItems.length, 4)}, minmax(0, 1fr))`,
           }}
@@ -84,7 +84,7 @@ function PanelHero({
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                 {item.label}
               </p>
-              <p className="mt-0.5 text-xl font-semibold tabular-nums text-slate-800">
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-800">
                 {item.value}
               </p>
               {item.detail && (
@@ -138,16 +138,18 @@ export function WorkspaceScaffold({
         summaryItems={summaryItems}
         heroContent={heroContent}
       />
-      <div className="p-6">
+      <div className="p-4">
         {(primaryTitle || primarySubtitle) && (
-          <div className="mb-4">
+          <div className="mb-3">
             {primaryTitle && (
-              <h2 className="text-base font-semibold text-slate-800">
+              <h2 className="text-sm font-semibold text-slate-800">
                 {primaryTitle}
               </h2>
             )}
             {primarySubtitle && (
-              <p className="text-sm text-muted-foreground">{primarySubtitle}</p>
+              <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+                {primarySubtitle}
+              </p>
             )}
           </div>
         )}
