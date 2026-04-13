@@ -6,6 +6,8 @@ import {
   type InboxView,
   type InboxNote,
   defaultInboxView,
+  INBOX_BUCKET_CONFIG,
+  type InboxBucket,
 } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
@@ -84,6 +86,23 @@ function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
         ? 'blocked'
         : undefined),
   });
+}
+
+/* ─── source type helper ────────────────────────────────────────────────── */
+
+function itemSourceType(
+  item: InboxItem,
+  run?: Run
+): 'agent' | 'mcp' | 'manual' {
+  if (run?.runType === 'signals_infer' || run?.runType === 'conversation')
+    return 'agent';
+  if (run?.runType === 'mcp' || item.sourceType === 'pipeline') return 'mcp';
+  if (
+    item.inboxBucket === 'rejected_automated' ||
+    item.inboxBucket === 'deferred'
+  )
+    return 'agent';
+  return 'manual';
 }
 
 /* ─── Inline converter panel ─────────────────────────────────────────────── */
@@ -170,6 +189,13 @@ const SEVERITY_OPTIONS = [
   { value: 'low', label: 'Low' },
 ] as const;
 
+const SOURCE_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'agent', label: 'Agent' },
+  { value: 'mcp', label: 'MCP' },
+  { value: 'manual', label: 'Manual' },
+] as const;
+
 /* ─── Route ───────────────────────────────────────────────────────────────── */
 
 export const Route = createFileRoute('/inbox')({
@@ -213,59 +239,14 @@ function InboxRoute() {
   } = Route.useSearch();
   const navigate = useNavigate();
 
+  // ── 8-bucket state ────────────────────────────────────────────────────────
+  const [activeBucket, setActiveBucket] = useState<InboxBucket>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
   );
-  const surfaceItems = surface;
-
-  const filteredSurfaceItems = React.useMemo(() => {
-    if (!severity) return surfaceItems;
-    return surfaceItems.filter((item) => item.severity === severity);
-  }, [surfaceItems, severity]);
-
-  const groupedItems = React.useMemo(() => {
-    const queue: InboxItem[] = [];
-    const workbench: InboxItem[] = [];
-    const archive: InboxItem[] = [];
-
-    filteredSurfaceItems.forEach((item) => {
-      if (item.inboxBucket === 'deferred') {
-        workbench.push(item);
-        return;
-      }
-
-      if (isArchiveBucket(item.inboxBucket)) {
-        archive.push(item);
-        return;
-      }
-
-      queue.push(item);
-    });
-
-    return { queue, workbench, archive };
-  }, [filteredSurfaceItems]);
-
-  const archiveItems = React.useMemo(() => {
-    if (!rejectedTab) return groupedItems.archive;
-    return groupedItems.archive.filter(
-      (item) => item.rejectionType === rejectedTab
-    );
-  }, [groupedItems.archive, rejectedTab]);
-
-  const counts = React.useMemo(
-    () => ({
-      queue: groupedItems.queue.length,
-      workbench: groupedItems.workbench.length,
-      archive: groupedItems.archive.length,
-      rejectedUser: groupedItems.archive.filter(
-        (i) => i.rejectionType === 'user'
-      ).length,
-      rejectedAutomated: groupedItems.archive.filter(
-        (i) => i.rejectionType === 'automated'
-      ).length,
-    }),
-    [groupedItems]
-  );
+  const allItems = surface;
 
   const runById = React.useMemo(
     () => new Map((runs as Run[]).map((run) => [run.runId, run])),
@@ -283,27 +264,45 @@ function InboxRoute() {
     [archiveNotes, workbenchNotes]
   );
 
-  // Determine active view: URL param → smart default → 'workbench'
-  const activeView: InboxView =
-    viewParam ?? (loading ? 'queue' : defaultInboxView(counts.queue));
+  // ── Per-bucket item counts (no filters applied, for tab badges) ──────────
+  const bucketCounts = React.useMemo(() => {
+    const counts: Record<InboxBucket, number> = {
+      all: allItems.length,
+      needs_action: 0,
+      needs_approval: 0,
+      failure: 0,
+      drift_stale: 0,
+      rejected_user: 0,
+      rejected_automated: 0,
+      deferred: 0,
+    };
+    for (const item of allItems) {
+      for (const cfg of INBOX_BUCKET_CONFIG) {
+        if (cfg.bucket !== 'all' && cfg.matches(item)) {
+          counts[cfg.bucket]++;
+        }
+      }
+    }
+    return counts;
+  }, [allItems]);
 
-  const setView = useCallback(
-    (v: InboxView) => {
-      navigate({ to: '/inbox', search: { view: v }, replace: true });
-    },
-    [navigate]
-  );
+  // ── Apply bucket + severity + source filters ─────────────────────────────
+  const visibleItems = React.useMemo(() => {
+    const bucketConfig = INBOX_BUCKET_CONFIG.find(
+      (c) => c.bucket === activeBucket
+    )!;
 
-  const setRejectedTab = useCallback(
-    (tab: 'user' | 'automated' | undefined) => {
-      navigate({
-        to: '/inbox',
-        search: { view: 'archive', rejectedTab: tab },
-        replace: true,
-      });
-    },
-    [navigate]
-  );
+    return allItems.filter((item) => {
+      if (!bucketConfig.matches(item)) return false;
+      if (severity && item.severity !== severity) return false;
+      if (sourceFilter !== 'all') {
+        const run = runById.get(item.sourceId);
+        const src = itemSourceType(item, run);
+        if (src !== sourceFilter) return false;
+      }
+      return true;
+    });
+  }, [allItems, activeBucket, severity, sourceFilter, runById]);
 
   const setSelectedId = useCallback(
     (id: string | undefined) => {
@@ -386,13 +385,6 @@ function InboxRoute() {
     [rejectRun, refresh]
   );
 
-  const visibleItems =
-    activeView === 'queue'
-      ? groupedItems.queue
-      : activeView === 'workbench'
-        ? groupedItems.workbench
-        : archiveItems;
-
   /* ─── primary list ────────────────────────────────────────────────────── */
 
   const primaryContent = (
@@ -416,139 +408,84 @@ function InboxRoute() {
 
       {!loading && !error && (
         <>
-          <div className="mt-2 space-y-5">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => setView('queue')}
-                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
-                  activeView === 'queue'
-                    ? 'border-sky-300 bg-gradient-to-br from-sky-50 to-white shadow-[0_8px_24px_-16px_rgba(2,132,199,0.7)]'
-                    : 'border-slate-200 bg-white/80 hover:bg-white'
-                }`}
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Queue
-                </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
-                  {counts.queue}
-                </p>
-                <div className="mt-2 h-px w-12 bg-slate-300" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('workbench')}
-                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
-                  activeView === 'workbench'
-                    ? 'border-violet-300 bg-gradient-to-br from-violet-50 to-white shadow-[0_8px_24px_-16px_rgba(124,58,237,0.7)]'
-                    : 'border-slate-200 bg-white/80 hover:bg-white'
-                }`}
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Workbench
-                </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
-                  {counts.workbench}
-                </p>
-                <div className="mt-2 h-px w-12 bg-slate-300" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setView('archive')}
-                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
-                  activeView === 'archive'
-                    ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white shadow-[0_8px_24px_-16px_rgba(217,119,6,0.7)]'
-                    : 'border-slate-200 bg-white/80 hover:bg-white'
-                }`}
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Archive
-                </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800 tabular-nums">
-                  {counts.archive}
-                </p>
-                <div className="mt-2 h-px w-12 bg-slate-300" />
-              </button>
-            </div>
-
+          <div className="mt-2 space-y-4">
+            {/* ── 8-bucket pill tab bar ────────────────────────────────── */}
             <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setView('queue')}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                    activeView === 'queue'
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
-                  }`}
+              <div className="overflow-x-auto">
+                <div className="flex items-center gap-1.5 min-w-max pb-0.5">
+                  {INBOX_BUCKET_CONFIG.map((cfg) => {
+                    const isActive = activeBucket === cfg.bucket;
+                    const count = bucketCounts[cfg.bucket];
+                    return (
+                      <button
+                        key={cfg.bucket}
+                        type="button"
+                        onClick={() => setActiveBucket(cfg.bucket)}
+                        className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
+                          isActive
+                            ? 'bg-slate-800 text-white'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {cfg.shortLabel}
+                        {count > 0 && (
+                          <span
+                            className={`ml-1.5 tabular-nums ${
+                              isActive ? 'text-slate-300' : 'text-slate-400'
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Filters row ─────────────────────────────────────────── */}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">
+                  Filter
+                </span>
+                <select
+                  id="inbox-severity"
+                  value={severity ?? ''}
+                  onChange={(e) =>
+                    navigate({
+                      to: '/inbox',
+                      search: {
+                        view: viewParam,
+                        rejectedTab,
+                        selectedId,
+                        severity:
+                          (e.target.value as 'high' | 'medium' | 'low') ||
+                          undefined,
+                      },
+                      replace: true,
+                    })
+                  }
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
                 >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setView('archive');
-                    setRejectedTab('user');
-                  }}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                    activeView === 'archive' && rejectedTab === 'user'
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
-                  }`}
+                  {SEVERITY_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label === 'All' ? 'Severity: All' : o.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  id="inbox-source"
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value)}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
                 >
-                  Rejected
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView('workbench')}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                    activeView === 'workbench'
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
-                  }`}
-                >
-                  Validated
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setView('archive');
-                    setRejectedTab('automated');
-                  }}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
-                    activeView === 'archive' && rejectedTab === 'automated'
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
-                  }`}
-                >
-                  Auto-rejected
-                </button>
-                <div className="ml-auto flex items-center gap-2">
-                  <select
-                    id="inbox-severity"
-                    value={severity ?? ''}
-                    onChange={(e) =>
-                      navigate({
-                        to: '/inbox',
-                        search: {
-                          view: activeView,
-                          rejectedTab,
-                          selectedId,
-                          severity:
-                            (e.target.value as 'high' | 'medium' | 'low') ||
-                            undefined,
-                        },
-                        replace: true,
-                      })
-                    }
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
-                  >
-                    {SEVERITY_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
+                  {SOURCE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.value === 'all' ? 'Source: All' : o.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="ml-auto">
                   <button
                     type="button"
                     className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
@@ -561,39 +498,48 @@ function InboxRoute() {
               </div>
             </div>
 
-            {activeView === 'queue' && groupedItems.queue.length === 0 && (
+            {/* ── Summary line ────────────────────────────────────────── */}
+            <p className="text-xs text-slate-500">
+              {visibleItems.length} of {allItems.length} signal
+              {allItems.length !== 1 ? 's' : ''} ·{' '}
+              <span className="font-medium text-slate-700">
+                {INBOX_BUCKET_CONFIG.find((c) => c.bucket === activeBucket)
+                  ?.label ?? activeBucket}
+              </span>
+            </p>
+
+            {visibleItems.length === 0 && (
               <EmptyState
-                title="Queue is clear"
-                description="No staged proposals waiting."
-                action={
-                  <button
-                    type="button"
-                    className="rounded-full px-5 py-2 text-sm font-medium transition-colors"
-                    style={{
-                      background: 'rgba(22,163,74,0.12)',
-                      color: '#166534',
-                      border: '1px solid rgba(22,163,74,0.25)',
-                    }}
-                    onClick={() => setView('workbench')}
-                  >
-                    Continue in Workbench →
-                  </button>
-                }
+                title="No signals in this bucket"
+                description="Try a different bucket or clear the active filters."
               />
             )}
+
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {visibleItems.map((item) => {
                 const run = runById.get(item.sourceId);
                 const note = noteByPath.get(item.sourceId);
                 const expanded = selectedId === item.id;
+
+                // Promote is available when item has approve/reopen/override action
+                const canPromote =
+                  item.allowedActions.some((a) =>
+                    ['approve', 'reopen', 'override'].includes(a.actionType)
+                  ) ||
+                  (run && run.runType !== 'signals_infer');
+
+                // Reject is available when item has defer action or there's a sourceId
+                const canReject =
+                  item.allowedActions.some((a) =>
+                    ['defer', 'approve'].includes(a.actionType)
+                  ) ||
+                  !!run ||
+                  !!item.sourceId;
+
                 return (
                   <div key={item.id} className="space-y-1">
                     <InboxItemCard
-                      item={inboxItemToDisplay(
-                        item,
-                        activeView === 'queue' ? undefined : note,
-                        run
-                      )}
+                      item={inboxItemToDisplay(item, note, run)}
                       detail={{
                         summary: item.summary ?? undefined,
                         whySurfaced: item.whySurfaced,
@@ -611,14 +557,12 @@ function InboxRoute() {
                       }
                       onInspect={() => setSelectedId(item.id)}
                       onPromote={
-                        activeView === 'queue' &&
-                        run &&
-                        run.runType !== 'signals_infer'
+                        canPromote && run && run.runType !== 'signals_infer'
                           ? () => handleCommit(run.runId)
                           : undefined
                       }
                       onReject={
-                        activeView === 'queue'
+                        canReject
                           ? run
                             ? () => handleReject(run.runId)
                             : item.sourceId
@@ -627,7 +571,7 @@ function InboxRoute() {
                           : undefined
                       }
                     />
-                    {activeView === 'queue' && run && (
+                    {run && (
                       <ConvertPanel
                         runId={run.runId}
                         rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
@@ -637,26 +581,6 @@ function InboxRoute() {
                 );
               })}
             </div>
-
-            {activeView === 'workbench' &&
-              groupedItems.workbench.length === 0 && (
-                <EmptyState
-                  title="No draft or active inbox notes"
-                  description="New notes will appear here when they arrive."
-                />
-              )}
-            {activeView === 'archive' && archiveItems.length === 0 && (
-              <EmptyState
-                title={
-                  rejectedTab === 'user'
-                    ? 'No user rejections'
-                    : rejectedTab === 'automated'
-                      ? 'No automated rejections'
-                      : 'No rejected notes'
-                }
-                description="The archive is empty for the selected rejection tab."
-              />
-            )}
           </div>
         </>
       )}
@@ -670,7 +594,7 @@ function InboxRoute() {
   return (
     <WorkspaceScaffold
       title="Inbox"
-      subtitle="Review staged proposals, triage workbench notes, or browse the rejected archive."
+      subtitle={`${allItems.length} signal${allItems.length !== 1 ? 's' : ''} · ${visibleItems.length} in view`}
       primary={primaryContent}
     />
   );

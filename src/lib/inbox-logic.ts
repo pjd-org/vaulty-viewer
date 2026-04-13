@@ -1,5 +1,81 @@
 export type InboxView = 'queue' | 'workbench' | 'archive';
 
+export type InboxBucket =
+  | 'all'
+  | 'needs_action'
+  | 'needs_approval'
+  | 'failure'
+  | 'drift_stale'
+  | 'rejected_user'
+  | 'rejected_automated'
+  | 'deferred';
+
+export const INBOX_BUCKET_CONFIG: Array<{
+  bucket: InboxBucket;
+  label: string;
+  shortLabel: string;
+  matches: (item: { inboxBucket: string }) => boolean;
+}> = [
+  {
+    bucket: 'all',
+    label: 'All Signals',
+    shortLabel: 'All',
+    matches: () => true,
+  },
+  {
+    bucket: 'needs_action',
+    label: 'Needs Action',
+    shortLabel: 'Action',
+    matches: (i) => i.inboxBucket === 'needs_action',
+  },
+  {
+    bucket: 'needs_approval',
+    label: 'Needs Approval',
+    shortLabel: 'Approval',
+    matches: (i) => i.inboxBucket === 'needs_approval',
+  },
+  {
+    bucket: 'failure',
+    label: 'Failures',
+    shortLabel: 'Failures',
+    matches: (i) => i.inboxBucket === 'failure',
+  },
+  {
+    bucket: 'drift_stale',
+    label: 'Drift / Stale',
+    shortLabel: 'Drift',
+    matches: (i) => i.inboxBucket === 'drift' || i.inboxBucket === 'stale',
+  },
+  {
+    bucket: 'rejected_user',
+    label: 'Rejected',
+    shortLabel: 'Rejected',
+    matches: (i) => i.inboxBucket === 'rejected_user',
+  },
+  {
+    bucket: 'rejected_automated',
+    label: 'Auto-rejected',
+    shortLabel: 'Auto',
+    matches: (i) => i.inboxBucket === 'rejected_automated',
+  },
+  {
+    bucket: 'deferred',
+    label: 'Deferred',
+    shortLabel: 'Deferred',
+    matches: (i) => i.inboxBucket === 'deferred',
+  },
+];
+
+export function getBucketAllowedActions(
+  bucket: InboxBucket
+): Array<'promote' | 'reject'> {
+  if (bucket === 'all') return ['promote', 'reject'];
+  if (bucket === 'rejected_user') return ['promote', 'reject'];
+  if (bucket === 'rejected_automated') return ['promote', 'reject'];
+  if (bucket === 'deferred') return ['promote', 'reject'];
+  return ['promote', 'reject'];
+}
+
 export interface InboxCounts {
   queue: number;
   workbench: number;
@@ -69,7 +145,11 @@ export function filterWorkbenchNotes(
   const q = filter.query.toLowerCase().trim();
   return notes.filter((note) => {
     if (filter.status !== 'all' && note.status !== filter.status) return false;
-    if (q && !note.title.toLowerCase().includes(q) && !note.path.toLowerCase().includes(q))
+    if (
+      q &&
+      !note.title.toLowerCase().includes(q) &&
+      !note.path.toLowerCase().includes(q)
+    )
       return false;
     return true;
   });
