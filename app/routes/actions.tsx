@@ -81,6 +81,7 @@ function ActionsRoute() {
     recommendations[0];
   const verificationCount = surface?.verificationRail.length ?? 0;
   const verificationPhase = useUIStore((s) => s.verification.phase);
+  const setVerificationPhase = useUIStore((s) => s.setVerificationPhase);
   const [simulationData, setSimulationData] =
     React.useState<TaskMetrics | null>(null);
   const [simulationLoading, setSimulationLoading] = React.useState(false);
@@ -106,13 +107,15 @@ function ActionsRoute() {
 
   const handleExecute = React.useCallback(() => {
     if (!selected?.taskPath) return;
+    setVerificationPhase('pending', selected.id);
     executeMutation.mutate(selected.taskPath);
-  }, [selected, executeMutation]);
+  }, [selected, executeMutation, setVerificationPhase]);
 
   const handleDefer = React.useCallback(() => {
     if (!selected?.taskPath) return;
+    setVerificationPhase('pending', selected.id);
     deferMutation.mutate(selected.taskPath);
-  }, [selected, deferMutation]);
+  }, [selected, deferMutation, setVerificationPhase]);
 
   const handleSimulate = React.useCallback(async () => {
     if (!selected?.taskPath) return;
