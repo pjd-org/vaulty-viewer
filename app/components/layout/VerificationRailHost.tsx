@@ -1,8 +1,11 @@
 import React from 'react';
-import { useRouter } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '../../../src/store/ui';
-import type { VerificationOutcome } from '../../lib/viewer-adapter';
+import {
+  useHomeSurface,
+  type VerificationOutcome,
+} from '../../lib/viewer-adapter';
 import { VERIFICATION_OUTCOMES_KEY } from '../../hooks/use-mutation-with-verification';
 import { cn } from '../../../src/lib/utils';
 
@@ -21,17 +24,23 @@ const STATUS_BAR: Record<string, string> = {
 };
 
 export function VerificationRailHost() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const verification = useUIStore((state) => state.verification);
+  const { data: homeSurfaceData } = useHomeSurface();
   const [dismissedIds, setDismissedIds] = React.useState<Set<string>>(
     () => new Set()
   );
 
-  const outcomes =
+  const cacheOutcomes =
     queryClient.getQueryData<VerificationOutcome[]>(
       VERIFICATION_OUTCOMES_KEY
     ) ?? [];
+
+  const outcomes =
+    cacheOutcomes.length > 0
+      ? cacheOutcomes
+      : (homeSurfaceData?.verificationRail ?? []);
 
   // Re-render when the query cache changes
   const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
@@ -48,7 +57,12 @@ export function VerificationRailHost() {
   if (!visible) return null;
 
   const activeOutcomes = outcomes.filter((o) => !dismissedIds.has(o.id));
-  if (activeOutcomes.length === 0 && verification.phase === 'idle') return null;
+  if (
+    activeOutcomes.length === 0 &&
+    verification.phase === 'idle' &&
+    !verification.visible
+  )
+    return null;
 
   const dismiss = (id: string) =>
     setDismissedIds((prev) => new Set([...prev, id]));
@@ -177,7 +191,7 @@ export function VerificationRailHost() {
                         type="button"
                         onClick={() => {
                           dismiss(item.id);
-                          router.navigate({ to: '/inbox' });
+                          navigate({ to: '/inbox' });
                         }}
                         className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 transition-colors"
                       >
