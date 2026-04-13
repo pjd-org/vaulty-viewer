@@ -12,6 +12,7 @@ import {
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard } from '../components/inbox';
+import { InboxViewSwitcher } from '../components/inbox/InboxViewSwitcher';
 import { EmptyState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
 import {
@@ -216,6 +217,7 @@ function InboxRoute() {
     rejectRun,
     actionState,
     pendingConfirmations,
+    counts: inboxHookCounts,
   } = useInbox();
 
   // Derive adapter surface items from the single useInbox() data source
@@ -240,7 +242,24 @@ function InboxRoute() {
   const navigate = useNavigate();
 
   // ── 8-bucket state ────────────────────────────────────────────────────────
-  const [activeBucket, setActiveBucket] = useState<InboxBucket>('all');
+  // When view param is set, derive the active bucket from it + rejectedTab
+  const derivedBucket = React.useMemo((): InboxBucket => {
+    if (viewParam === 'queue') return 'needs_action';
+    if (viewParam === 'workbench') return 'needs_approval';
+    if (viewParam === 'archive') {
+      if (rejectedTab === 'user') return 'rejected_user';
+      if (rejectedTab === 'automated') return 'rejected_automated';
+      return 'rejected_user'; // default archive view shows rejected_user
+    }
+    return 'all';
+  }, [viewParam, rejectedTab]);
+
+  const [activeBucket, setActiveBucket] = useState<InboxBucket>(derivedBucket);
+  // Sync derivedBucket → activeBucket when URL params change
+  React.useEffect(() => {
+    setActiveBucket(derivedBucket);
+  }, [derivedBucket]);
+
   const [sourceFilter, setSourceFilter] = useState<string>('all');
 
   const anyActionInFlight = Object.values(actionState).some(
@@ -288,12 +307,18 @@ function InboxRoute() {
 
   // ── Apply bucket + severity + source filters ─────────────────────────────
   const visibleItems = React.useMemo(() => {
-    const bucketConfig = INBOX_BUCKET_CONFIG.find(
-      (c) => c.bucket === activeBucket
-    )!;
+    // When viewing archive with no specific rejectedTab, show ALL archive items
+    const showAllArchive = viewParam === 'archive' && rejectedTab === undefined;
 
     return allItems.filter((item) => {
-      if (!bucketConfig.matches(item)) return false;
+      if (showAllArchive) {
+        if (!isArchiveBucket(item.inboxBucket)) return false;
+      } else {
+        const bucketConfig = INBOX_BUCKET_CONFIG.find(
+          (c) => c.bucket === activeBucket
+        )!;
+        if (!bucketConfig.matches(item)) return false;
+      }
       if (severity && item.severity !== severity) return false;
       if (sourceFilter !== 'all') {
         const run = runById.get(item.sourceId);
@@ -302,7 +327,15 @@ function InboxRoute() {
       }
       return true;
     });
-  }, [allItems, activeBucket, severity, sourceFilter, runById]);
+  }, [
+    allItems,
+    activeBucket,
+    viewParam,
+    rejectedTab,
+    severity,
+    sourceFilter,
+    runById,
+  ]);
 
   const setSelectedId = useCallback(
     (id: string | undefined) => {
@@ -387,6 +420,15 @@ function InboxRoute() {
 
   /* ─── primary list ────────────────────────────────────────────────────── */
 
+  // Counts for InboxViewSwitcher — prefer hook counts (from server) if available
+  const viewSwitcherCounts = {
+    queue: inboxHookCounts?.queue ?? bucketCounts.needs_action,
+    workbench: inboxHookCounts?.workbench ?? bucketCounts.needs_approval,
+    archive:
+      inboxHookCounts?.archive ??
+      bucketCounts.rejected_user + bucketCounts.rejected_automated,
+  };
+
   const primaryContent = (
     <>
       {loading && (
@@ -409,6 +451,23 @@ function InboxRoute() {
       {!loading && !error && (
         <>
           <div className="mt-2 space-y-4">
+            {/* ── View switcher (Queue / Workbench / Archive) ───────────── */}
+            <InboxViewSwitcher
+              view={(viewParam ?? 'queue') as 'queue' | 'workbench' | 'archive'}
+              onChange={(v) =>
+                navigate({
+                  to: '/inbox',
+                  search: {
+                    view: v as InboxView,
+                    rejectedTab,
+                    selectedId,
+                    severity,
+                  },
+                  replace: true,
+                })
+              }
+              counts={viewSwitcherCounts}
+            />
             {/* ── 8-bucket pill tab bar ────────────────────────────────── */}
             <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
               <div className="overflow-x-auto">
@@ -595,7 +654,10 @@ function InboxRoute() {
     <WorkspaceScaffold
       title="Inbox"
       subtitle={`${allItems.length} signal${allItems.length !== 1 ? 's' : ''} · ${visibleItems.length} in view`}
+      primaryTitle="Signals"
       primary={primaryContent}
+      asideTitle="Detail"
+      aside={null}
     />
   );
 }
