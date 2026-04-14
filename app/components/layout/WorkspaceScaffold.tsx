@@ -49,24 +49,28 @@ function PanelHero({
 }) {
   return (
     <div
-      className="relative px-5 py-4 pb-5 genie-surface--hero rounded-t-lg"
+      className="relative px-5 py-4 pb-5 genie-surface genie-surface--hero rounded-t-lg"
       style={{ boxShadow: 'none' }}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1.5 text-sm text-slate-600">{subtitle}</p>
+            <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
+              {subtitle}
+            </p>
           )}
           {statusLine && (
-            <p className="mt-1 text-sm font-medium text-slate-700">
+            <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
               {statusLine}
             </p>
           )}
           {nextAction && (
-            <p className="mt-1 text-xs text-slate-400">{nextAction}</p>
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              {nextAction}
+            </p>
           )}
         </div>
         {actions && <div className="flex items-center gap-3">{actions}</div>}
@@ -74,21 +78,21 @@ function PanelHero({
 
       {summaryItems.length > 0 && (
         <div
-          className="mt-4 pt-3 border-t border-slate-200/60 grid gap-x-5 gap-y-2"
+          className="mt-4 pt-3 border-t border-[var(--border-glass-soft)] grid gap-x-5 gap-y-2"
           style={{
             gridTemplateColumns: `repeat(${Math.min(summaryItems.length, 4)}, minmax(0, 1fr))`,
           }}
         >
           {summaryItems.map((item) => (
             <div key={item.label} className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                 {item.label}
               </p>
-              <p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-800">
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--text-primary)]">
                 {item.value}
               </p>
               {item.detail && (
-                <p className="mt-0.5 text-xs text-slate-500 leading-snug truncate">
+                <p className="mt-0.5 text-xs text-[var(--text-tertiary)] leading-snug truncate">
                   {item.detail}
                 </p>
               )}
@@ -98,12 +102,12 @@ function PanelHero({
       )}
 
       {heroContent && (
-        <div className="mt-5 pt-4 border-t border-slate-200/60">
+        <div className="mt-5 pt-4 border-t border-[var(--border-glass-soft)]">
           {heroContent}
         </div>
       )}
       {/* bottom separator — sits below gradient, above white content */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-200/80" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--border-glass-soft)]" />
     </div>
   );
 }
@@ -142,12 +146,12 @@ export function WorkspaceScaffold({
         {(primaryTitle || primarySubtitle) && (
           <div className="mb-3">
             {primaryTitle && (
-              <h2 className="text-sm font-semibold text-slate-800">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 {primaryTitle}
               </h2>
             )}
             {primarySubtitle && (
-              <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+              <p className="text-xs text-[var(--text-secondary)] leading-snug mt-0.5">
                 {primarySubtitle}
               </p>
             )}

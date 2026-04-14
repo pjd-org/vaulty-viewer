@@ -87,7 +87,9 @@ export function ProjectKnowledgeLaneShell({
                 })}
                 className={[
                   'tab rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                  active ? 'active text-slate-800' : 'text-slate-600',
+                  active
+                    ? 'active text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)]',
                 ].join(' ')}
               >
                 {lane.charAt(0).toUpperCase() + lane.slice(1)}

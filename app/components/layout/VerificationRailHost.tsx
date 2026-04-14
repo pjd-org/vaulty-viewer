@@ -10,20 +10,25 @@ import { VERIFICATION_OUTCOMES_KEY } from '../../hooks/use-mutation-with-verific
 import { cn } from '../../../src/lib/utils';
 
 const STATUS_COLOR: Record<string, string> = {
-  success: 'text-emerald-600',
-  warning: 'text-amber-600',
-  failed: 'text-red-500',
-  pending: 'text-sky-500',
+  success: 'text-[var(--text-success)]',
+  warning: 'text-[var(--text-warning)]',
+  failed: 'text-[var(--text-danger)]',
+  pending: 'text-[var(--text-info)]',
 };
 
 const STATUS_BAR: Record<string, string> = {
-  success: 'bg-emerald-500',
-  warning: 'bg-amber-400',
-  failed: 'bg-red-500',
-  pending: 'bg-sky-400',
+  success: 'bg-[var(--a-mint)]',
+  warning: 'bg-[var(--a-sun)]',
+  failed: 'bg-[var(--a-rose)]',
+  pending: 'bg-[var(--a-sky)]',
 };
 
-export function VerificationRailHost() {
+export function VerificationRailHost({
+  accentColor,
+}: {
+  accentColor?: string;
+}) {
+  const accent = accentColor ?? 'var(--a-sun)';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const verification = useUIStore((state) => state.verification);
@@ -72,7 +77,7 @@ export function VerificationRailHost() {
       <div className="genie-surface genie-surface--overlay rounded-[22px] p-3 pointer-events-auto space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
             Verification Rail
           </p>
           {activeOutcomes.length > 0 && (
@@ -81,7 +86,7 @@ export function VerificationRailHost() {
               onClick={() =>
                 setDismissedIds(new Set(activeOutcomes.map((o) => o.id)))
               }
-              className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-[11px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
             >
               Clear all
             </button>
@@ -105,8 +110,10 @@ export function VerificationRailHost() {
                 <div
                   key={item.id}
                   className={cn(
-                    'relative overflow-hidden rounded-[14px] border bg-black/5 p-3 space-y-1.5',
-                    isLatest ? 'border-slate-300 shadow-sm' : 'border-slate-200'
+                    'relative overflow-hidden rounded-[14px] border bg-[var(--surf-utility)] p-3 space-y-1.5',
+                    isLatest
+                      ? 'border-[var(--border-glass)] shadow-sm'
+                      : 'border-[var(--border-glass-soft)]'
                   )}
                 >
                   {/* severity/status bar — left edge */}
@@ -122,7 +129,7 @@ export function VerificationRailHost() {
                   <div className="flex items-start justify-between gap-2 pl-2">
                     <p
                       className={cn(
-                        'text-sm font-medium text-slate-800 leading-snug flex-1 min-w-0',
+                        'text-sm font-medium text-[var(--text-primary)] leading-snug flex-1 min-w-0',
                         isLatest && 'font-semibold'
                       )}
                     >
@@ -141,7 +148,7 @@ export function VerificationRailHost() {
                       <button
                         type="button"
                         onClick={() => dismiss(item.id)}
-                        className="size-4 flex items-center justify-center rounded-full text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        className="size-4 flex items-center justify-center rounded-full text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surf-utility)] transition-colors"
                         aria-label="Dismiss"
                       >
                         <svg
@@ -163,14 +170,14 @@ export function VerificationRailHost() {
                   </div>
 
                   {/* Meta row */}
-                  <div className="flex flex-wrap items-center gap-2 pl-2 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2 pl-2 text-[11px] text-[var(--text-tertiary)]">
                     {item.improved && (
-                      <span className="text-emerald-600 font-medium">
+                      <span className="text-[var(--text-success)] font-medium">
                         ↑ Improved
                       </span>
                     )}
                     {item.followUpNeeded && (
-                      <span className="text-amber-600 font-medium">
+                      <span className="text-[var(--text-warning)] font-medium">
                         Follow-up needed
                       </span>
                     )}
@@ -193,7 +200,17 @@ export function VerificationRailHost() {
                           dismiss(item.id);
                           navigate({ to: '/inbox' });
                         }}
-                        className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-[var(--text-warning)] transition-colors"
+                        style={{
+                          background: `color-mix(in srgb, ${accent} 15%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${accent} 30%, transparent)`,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = `color-mix(in srgb, ${accent} 25%, transparent)`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = `color-mix(in srgb, ${accent} 15%, transparent)`;
+                        }}
                       >
                         Review in Inbox →
                       </button>
@@ -208,12 +225,12 @@ export function VerificationRailHost() {
         {activeOutcomes.length === 0 &&
           verification.phase !== 'pending' &&
           verification.phase !== 'failed' && (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[var(--text-tertiary)]">
               Operational verification will surface here.
             </p>
           )}
 
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-[var(--text-secondary)]">
           {verification.pinned ? 'Pinned' : 'Ephemeral'}
           {verification.latestId ? ` · ${verification.latestId}` : ''}
         </p>

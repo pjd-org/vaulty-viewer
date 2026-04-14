@@ -39,15 +39,20 @@ interface KnowledgeNoteCardProps {
 }
 
 const audienceColor: Record<string, string> = {
-  human: 'bg-sky-100 text-sky-700',
-  agent: 'bg-violet-100 text-violet-700',
-  bubble: 'bg-emerald-100 text-emerald-700',
+  human:
+    'bg-[color-mix(in_srgb,var(--a-sky)_20%,transparent)] text-[var(--a-sky)]',
+  agent:
+    'bg-[color-mix(in_srgb,var(--a-lilac)_20%,transparent)] text-[var(--a-lilac)]',
+  bubble:
+    'bg-[color-mix(in_srgb,var(--a-mint)_20%,transparent)] text-[var(--a-mint)]',
 };
 
 const maturityColor: Record<string, string> = {
-  draft: 'bg-slate-100 text-slate-500',
-  stable: 'bg-emerald-100 text-emerald-700',
-  deprecated: 'bg-red-100 text-red-600',
+  draft: 'bg-[var(--surf-utility)] text-[var(--text-tertiary)]',
+  stable:
+    'bg-[color-mix(in_srgb,var(--a-mint)_20%,transparent)] text-[var(--a-mint)]',
+  deprecated:
+    'bg-[color-mix(in_srgb,var(--a-rose)_20%,transparent)] text-[var(--a-rose)]',
 };
 
 export function KnowledgeNoteCard({
@@ -79,8 +84,8 @@ export function KnowledgeNoteCard({
       className={[
         'group block p-4 rounded-xl border transition-all duration-[var(--vault-duration-snappy)]',
         selected
-          ? 'border-sky-300/60 bg-sky-50 shadow-vault-sm'
-          : 'bg-white/80 border-slate-200 hover:border-sky-300/60 hover:shadow-vault-sm',
+          ? 'border-[color-mix(in_srgb,var(--a-sky)_60%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_10%,transparent)] shadow-vault-sm'
+          : 'bg-[var(--surf-glass)] border-[var(--border-glass)] hover:border-[color-mix(in_srgb,var(--a-sky)_60%,transparent)] hover:shadow-vault-sm',
       ].join(' ')}
     >
       {/* Badges row */}
@@ -102,7 +107,7 @@ export function KnowledgeNoteCard({
       </div>
 
       {/* Title */}
-      <h3 className="font-space-grotesk font-semibold text-sm text-slate-800 leading-snug group-hover:text-sky-700 transition-colors line-clamp-2">
+      <h3 className="font-space-grotesk font-semibold text-sm text-[var(--text-primary)] leading-snug group-hover:text-[var(--a-sky)] transition-colors line-clamp-2">
         {displayTitle}
       </h3>
 
@@ -110,7 +115,7 @@ export function KnowledgeNoteCard({
       {(domain || (tags && tags.length > 0)) && (
         <div className="mt-2 flex flex-wrap gap-1">
           {domain && (
-            <span className="font-manrope text-[10px] px-1.5 py-0.5 bg-sky-100 text-sky-700 rounded">
+            <span className="font-manrope text-[10px] px-1.5 py-0.5 bg-[color-mix(in_srgb,var(--a-sky)_15%,transparent)] text-[var(--a-sky)] rounded">
               {domain}
             </span>
           )}
@@ -118,13 +123,13 @@ export function KnowledgeNoteCard({
             tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="font-manrope text-[10px] px-1.5 py-0.5 bg-black/5 text-slate-500 rounded"
+                className="font-manrope text-[10px] px-1.5 py-0.5 bg-[var(--surf-utility)] text-[var(--text-tertiary)] rounded"
               >
                 #{tag}
               </span>
             ))}
           {tags && tags.length > 3 && (
-            <span className="font-manrope text-[10px] text-slate-400">
+            <span className="font-manrope text-[10px] text-[var(--text-tertiary)]">
               +{tags.length - 3}
             </span>
           )}
@@ -132,7 +137,7 @@ export function KnowledgeNoteCard({
       )}
 
       <div className="mt-3">
-        <span className="font-manrope text-[10px] uppercase tracking-widest text-sky-700 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="font-manrope text-[10px] uppercase tracking-widest text-[var(--a-sky)] opacity-0 group-hover:opacity-100 transition-opacity">
           Open →
         </span>
       </div>

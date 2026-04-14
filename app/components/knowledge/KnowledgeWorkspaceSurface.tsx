@@ -23,6 +23,8 @@ interface KnowledgeWorkspaceSurfaceProps {
   workspaceSearch?: Record<string, unknown>;
   workspaceTo?: string;
   workspaceParams?: Record<string, string>;
+  /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 function getAllDomains(notes: KnowledgeNoteRef[]): string[] {
@@ -85,20 +87,22 @@ function AudienceColumn({
       hint: '',
     };
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 space-y-1.5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+      <div className="rounded-2xl border border-dashed border-[var(--border-glass)] bg-[color-mix(in_srgb,var(--surf-utility)_60%,transparent)] p-4 space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
           {audience}
         </p>
-        <p className="text-sm text-slate-600">{meta.description}</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {meta.description}
+        </p>
         {meta.hint && (
-          <p className="text-xs text-slate-400 border-l border-slate-200 pl-2">
+          <p className="text-xs text-[var(--text-tertiary)] border-l border-[var(--border-glass-soft)] pl-2">
             {meta.hint}
           </p>
         )}
         <Link
           to="/huey"
           search={{}}
-          className="inline-block mt-1 text-xs text-primary hover:underline"
+          className="inline-block mt-1 text-xs text-[var(--text-info)] hover:underline"
         >
           Ask Huey to help author →
         </Link>
@@ -131,6 +135,7 @@ export function KnowledgeWorkspaceSurface({
   workspaceSearch,
   workspaceTo,
   workspaceParams,
+  accentColor: _accentColor,
 }: KnowledgeWorkspaceSurfaceProps) {
   const [domainFilter, setDomainFilter] = useState('');
   const [maturityFilter, setMaturityFilter] = useState('');
@@ -172,15 +177,15 @@ export function KnowledgeWorkspaceSurface({
         <section className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             {/* Domain filter */}
-            <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
-              <span className="font-medium text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-glass)] bg-[var(--surf-utility)] px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+              <span className="font-medium text-[var(--text-tertiary)] uppercase tracking-widest">
                 Domain
               </span>
               <select
                 id="knowledge-domain-filter"
                 value={domainFilter}
                 onChange={(e) => setDomainFilter(e.target.value)}
-                className="bg-transparent border-none outline-none text-slate-700 text-xs cursor-pointer"
+                className="bg-transparent border-none outline-none text-[var(--text-secondary)] text-xs cursor-pointer"
               >
                 <option value="">All</option>
                 {allDomains.map((d) => (
@@ -192,15 +197,15 @@ export function KnowledgeWorkspaceSurface({
             </div>
 
             {/* Maturity filter */}
-            <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
-              <span className="font-medium text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-glass)] bg-[var(--surf-utility)] px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+              <span className="font-medium text-[var(--text-tertiary)] uppercase tracking-widest">
                 Maturity
               </span>
               <select
                 id="knowledge-maturity-filter"
                 value={maturityFilter}
                 onChange={(e) => setMaturityFilter(e.target.value)}
-                className="bg-transparent border-none outline-none text-slate-700 text-xs cursor-pointer"
+                className="bg-transparent border-none outline-none text-[var(--text-secondary)] text-xs cursor-pointer"
               >
                 <option value="">All</option>
                 <option value="draft">Draft</option>
@@ -281,7 +286,7 @@ export function KnowledgeWorkspaceSurface({
               className="knowledge-adapter-rail"
               data-testid="knowledge-adapter-loading"
             >
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-[var(--text-tertiary)]">
                 Loading adapter context…
               </p>
             </aside>
@@ -289,12 +294,15 @@ export function KnowledgeWorkspaceSurface({
             <aside className="knowledge-adapter-rail space-y-4">
               {adapterData.selectedContext.length > 0 && (
                 <section>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2">
                     Active context
                   </h3>
                   <ul className="space-y-1">
                     {adapterData.selectedContext.map((ctx) => (
-                      <li key={ctx.id} className="text-sm text-neutral-700">
+                      <li
+                        key={ctx.id}
+                        className="text-sm text-[var(--text-secondary)]"
+                      >
                         {ctx.title}
                       </li>
                     ))}
@@ -308,14 +316,14 @@ export function KnowledgeWorkspaceSurface({
 
               {adapterData.suggestedActions.length > 0 && (
                 <section>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2">
                     Suggested actions
                   </h3>
                   <ul className="space-y-1">
                     {adapterData.suggestedActions.map((action) => (
                       <li
                         key={`${action.actionType}-${action.label}`}
-                        className="text-sm text-neutral-700"
+                        className="text-sm text-[var(--text-secondary)]"
                       >
                         {action.label}
                       </li>

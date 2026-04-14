@@ -46,13 +46,13 @@ export function ProjectRouteShell({
     <PageContainer>
       <SoftPanel variant="elevated" className="overflow-hidden" noPadding>
         {/* ── Hero header ─────────────────────────────────────────────── */}
-        <div className="px-6 py-5 genie-surface--hero border-b border-white/60 rounded-t-lg">
+        <div className="px-6 py-5 genie-surface genie-surface--hero border-b border-[var(--border-glass)] rounded-t-lg">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
+              <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                 Project: {slug}
               </h1>
-              <p className="mt-1.5 text-sm text-slate-600">
+              <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
                 Scoped command center
               </p>
             </div>
@@ -63,7 +63,7 @@ export function ProjectRouteShell({
                 status: undefined,
                 selectedId: undefined,
               }}
-              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium text-slate-700 shrink-0"
+              className="btn-secondary rounded-full px-4 py-2 text-sm font-medium shrink-0"
             >
               Back to Work
             </Link>
@@ -72,21 +72,21 @@ export function ProjectRouteShell({
           {/* ── Inline stat strip ──────────────────────────────────────── */}
           {summaryItems.length > 0 && (
             <div
-              className="mt-4 pt-4 border-t border-white/40 grid gap-x-6 gap-y-3"
+              className="mt-4 pt-4 border-t border-[var(--border-glass-soft)] grid gap-x-6 gap-y-3"
               style={{
                 gridTemplateColumns: `repeat(${Math.min(summaryItems.length, 4)}, minmax(0, 1fr))`,
               }}
             >
               {summaryItems.map((item) => (
                 <div key={item.label} className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     {item.label}
                   </p>
-                  <p className="mt-0.5 text-xl font-semibold tabular-nums text-slate-800">
+                  <p className="mt-0.5 text-xl font-semibold tabular-nums text-[var(--text-primary)]">
                     {item.value}
                   </p>
                   {item.detail && (
-                    <p className="mt-0.5 text-xs text-slate-500 leading-snug truncate">
+                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)] leading-snug truncate">
                       {item.detail}
                     </p>
                   )}
@@ -97,7 +97,7 @@ export function ProjectRouteShell({
         </div>
 
         {/* ── Tab nav ─────────────────────────────────────────────────── */}
-        <div className="px-6 py-3 border-b border-border bg-card">
+        <div className="px-6 py-3 border-b border-[var(--border-glass)] bg-[var(--surf-base)]">
           <div className="flex flex-wrap gap-2">
             {PROJECT_ROUTE_TABS.map((tab) => {
               const to = getProjectTabPath(slug, tab.to);
@@ -113,7 +113,9 @@ export function ProjectRouteShell({
                   search={projectSearch}
                   className={[
                     'tab rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                    active ? 'active text-slate-800' : 'text-slate-600',
+                    active
+                      ? 'active text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)]',
                   ].join(' ')}
                 >
                   {tab.label}

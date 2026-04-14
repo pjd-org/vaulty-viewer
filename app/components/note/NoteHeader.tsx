@@ -1,22 +1,26 @@
-import React from 'react'
-import { SoftPanel } from '../layout'
-import { SoftChip, PrimaryButton, SecondaryButton } from '../ui'
-import type { NoteHeaderDisplay } from '../../types/display'
+import React from 'react';
+import { SoftPanel } from '../layout';
+import { SoftChip, PrimaryButton, SecondaryButton } from '../ui';
+import type { NoteHeaderDisplay } from '../../types/display';
 
 interface NoteHeaderProps {
-  display: NoteHeaderDisplay
-  onAction?: (action: string) => void
-  extraActions?: React.ReactNode
+  display: NoteHeaderDisplay;
+  onAction?: (action: string) => void;
+  extraActions?: React.ReactNode;
 }
 
-export function NoteHeader({ display, onAction, extraActions }: NoteHeaderProps) {
-  const hasActions = display.primaryActions.length > 0 || Boolean(extraActions)
+export function NoteHeader({
+  display,
+  onAction,
+  extraActions,
+}: NoteHeaderProps) {
+  const hasActions = display.primaryActions.length > 0 || Boolean(extraActions);
 
   return (
     <SoftPanel>
       {/* Breadcrumbs + type chip */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-1 text-xs text-slate-400">
+        <div className="flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
           {display.breadcrumbs.map((crumb, i) => (
             <React.Fragment key={crumb.path ?? crumb.label}>
               {i > 0 && <span className="opacity-50 mx-0.5">/</span>}
@@ -28,14 +32,17 @@ export function NoteHeader({ display, onAction, extraActions }: NoteHeaderProps)
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-semibold text-slate-900 mt-2 leading-snug">
+      <h1 className="text-2xl font-semibold text-[var(--text-primary)] mt-2 leading-snug">
         {display.title}
       </h1>
 
       {/* Status chip */}
       {display.statusLabel && (
         <div className="mt-2">
-          <SoftChip label={display.statusLabel} variant={display.statusVariant} />
+          <SoftChip
+            label={display.statusLabel}
+            variant={display.statusVariant}
+          />
         </div>
       )}
 
@@ -63,5 +70,5 @@ export function NoteHeader({ display, onAction, extraActions }: NoteHeaderProps)
         </div>
       )}
     </SoftPanel>
-  )
+  );
 }

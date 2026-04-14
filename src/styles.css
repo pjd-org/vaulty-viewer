@@ -84,6 +84,47 @@
   --text-primary: var(--color-text);
   --text-secondary: var(--color-text-2);
   --text-tertiary: var(--color-text-3);
+  --text-success: var(--color-success-text);
+  --text-warning: var(--color-warning-text);
+  --text-danger: var(--color-danger-text);
+  --text-info: var(--color-sky-text);
+
+  /* Genie accent short aliases (--a-*) — map to tokens.css --accent-* */
+  --a-mint: var(--accent-mint);
+  --a-lime: var(--accent-lime);
+  --a-aqua: var(--accent-aqua);
+  --a-sky: var(--accent-sky);
+  --a-lilac: var(--accent-lilac);
+  --a-peach: var(--accent-peach);
+  --a-rose: var(--accent-rose);
+  --a-sun: var(--accent-sun);
+
+  /* Genie neutral short aliases (--n-*) — map to tokens.css --neutral-* */
+  --n-0: var(--neutral-0);
+  --n-50: var(--neutral-50);
+  --n-100: var(--neutral-100);
+  --n-150: var(--neutral-150);
+  --n-200: var(--neutral-200);
+  --n-300: var(--neutral-300);
+  --n-400: var(--neutral-400);
+  --n-500: var(--neutral-500);
+
+  /* Genie surface short aliases (--surf-*) — map to tokens.css --surface-* */
+  --surf-canvas: var(--surface-canvas);
+  --surf-base: var(--surface-base);
+  --surf-elevated: var(--surface-elevated);
+  --surf-overlay: var(--surface-overlay);
+  --surf-glass: var(--surface-base);
+
+  /* Genie border short aliases */
+  --border-glass: var(--border-glass-default);
+  --border-glass-soft: var(--border-glass-subtle);
+
+  /* Genie radius card alias */
+  --radius-card: var(--radius-lg);
+
+  /* Fix: --vault-border-soft was referencing an undefined var; resolve directly */
+  --vault-border-soft: var(--color-border-soft);
 }
 
 /* ── Force light theme — override tokens.css dark media query ───────────── */
@@ -98,8 +139,8 @@
     --color-surface-2: #f3f1f8;
     --color-surface-3: #ece8f3;
     --color-text: #17141f;
-    --color-text-2: #5e586b;
-    --color-text-3: rgba(23, 20, 31, 0.45);
+    --color-text-2: #4a4558;
+    --color-text-3: #6b6478;
     --color-border: rgba(191, 201, 218, 0.5);
     --color-border-soft: #f0edf4;
     --color-input-bg: #f3f1f8;
@@ -230,6 +271,11 @@
   position: relative;
   border-radius: var(--radius-lg);
   padding: 14px 16px;
+  background: var(--surf-elevated);
+  border: 1px solid var(--border-glass-default);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
 }
 
 .genie-card--hero {
@@ -538,9 +584,9 @@ img {
 }
 
 .tab {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(191, 201, 218, 0.72);
-  color: #57657a;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #4a5568;
 }
 
 .tab.active {

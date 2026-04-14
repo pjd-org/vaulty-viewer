@@ -1,4 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { Badge, Input, PrimaryButton } from '../components/ui';
+import { PageFrame, SoftPanel } from '../components/layout';
 
 type LoginSearch = {
   return_to?: string;
@@ -32,6 +34,8 @@ function LoginRoute() {
       className="relative min-h-dvh overflow-hidden bg-[#f4f2ed] px-4 py-8 text-[#181615] antialiased"
       style={{
         fontFamily: '"Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif',
+        background:
+          'radial-gradient(circle at 14% 18%, rgba(165, 207, 255, 0.28), transparent 28%), radial-gradient(circle at 84% 12%, rgba(216, 199, 255, 0.20), transparent 24%), linear-gradient(180deg, #f7f5f1 0%, #eeebe6 100%)',
       }}
     >
       <div
@@ -58,117 +62,134 @@ function LoginRoute() {
       />
 
       <section className="relative mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-5xl items-center justify-center">
-        <div className="grid w-full gap-6 md:grid-cols-[1.1fr_minmax(320px,430px)]">
-          <aside className="hidden rounded-[36px] border border-[#171310]/25 bg-[#1a1714] p-10 md:flex md:flex-col md:justify-between shadow-[0_32px_80px_rgba(20,15,10,0.35)]">
-            <div>
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#9c8070]">
-                Vault Control
-              </p>
-              <h1
-                className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[#f0ebe3]"
-                style={{ fontFamily: '"Iowan Old Style", "Palatino", serif' }}
-              >
-                Signal before noise.
-              </h1>
-              <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[#a89585]">
-                Authenticate to continue into your planning surface, execution
-                loop, and cod-level controls.
-              </p>
-            </div>
-            <div className="mt-8 space-y-3 border-t border-[#ffffff]/10 pt-6">
-              {[
-                { label: 'Surfaces', value: 'Home · Inbox · Actions' },
-                { label: 'Runtime', value: 'Paris node' },
-                { label: 'Security', value: 'Audit logged' },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#6a5848]">
-                    {label}
-                  </span>
-                  <span className="text-[10px] text-[#8a7060]">{value}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          <div className="relative w-full rounded-[30px] border border-[#1d1815]/18 bg-[#fffdfa]/88 p-6 shadow-[0_24px_90px_rgba(29,23,19,0.2)] backdrop-blur-sm sm:p-8">
-            <div className="mb-7 flex items-start justify-between gap-4">
+        <PageFrame
+          title="Sign in"
+          subtitle="Authenticate to continue into your planning surface, execution loop, and cod-level controls."
+          statusLine="Vault Control"
+          nextAction="Secure access"
+          actions={<Badge variant="secondary">Audit logged</Badge>}
+        >
+          <div className="grid w-full gap-6 md:grid-cols-[1.1fr_minmax(320px,430px)]">
+            <SoftPanel
+              variant="hero"
+              className="hidden min-h-[420px] flex-col justify-between p-10 md:flex"
+            >
               <div>
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.34em] text-[#7c6a5f]">
-                  Vault Auth
+                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#9c8070]">
+                  Vault Control
                 </p>
-                <h2
-                  className="text-4xl tracking-[-0.02em] text-[#171411]"
+                <h1
+                  className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[#f0ebe3]"
                   style={{ fontFamily: '"Iowan Old Style", "Palatino", serif' }}
                 >
-                  Sign in
-                </h2>
+                  Signal before noise.
+                </h1>
+                <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[#d1c8c0]">
+                  Authenticate to continue into your planning surface, execution
+                  loop, and cod-level controls.
+                </p>
               </div>
-              <span className="rounded-full border border-[#1f1915]/20 bg-white/65 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6a5950]">
-                Secure
-              </span>
-            </div>
-
-            {search.error ? (
-              <p
-                className="mb-4 rounded-xl border border-[#d13f25]/40 bg-[#fff1ec] px-3 py-2 text-sm text-[#9e2f1b]"
-                role="alert"
-              >
-                {search.error}
-              </p>
-            ) : null}
-
-            <form className="space-y-4" method="post" action="/auth/login">
-              <input type="hidden" name="return_to" value={returnTo} />
-              <div className="flex flex-col gap-1.5">
-                <label
-                  className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5b4c43]"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
-                <input
-                  className="w-full rounded-xl border border-[#251f1b]/20 bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] outline-none transition duration-200 placeholder:text-[#8c7b70] focus:border-[#cf5426] focus:ring-2 focus:ring-[#cf5426]/25"
-                  id="email"
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  spellCheck={false}
-                  placeholder="you@vault.local"
-                  required
-                />
+              <div className="mt-8 space-y-3 border-t border-[#ffffff]/10 pt-6">
+                {[
+                  { label: 'Surfaces', value: 'Home · Inbox · Actions' },
+                  { label: 'Runtime', value: 'Paris node' },
+                  { label: 'Security', value: 'Audit logged' },
+                ].map(({ label, value }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b6a99b]">
+                      {label}
+                    </span>
+                    <span className="text-[10px] text-[#efe8df]">{value}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label
-                  className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5b4c43]"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-                <input
-                  className="w-full rounded-xl border border-[#251f1b]/20 bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] outline-none transition duration-200 focus:border-[#cf5426] focus:ring-2 focus:ring-[#cf5426]/25"
-                  id="password"
-                  type="password"
-                  name="password"
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-              <button
-                className="group mt-3 inline-flex w-full items-center justify-center rounded-xl bg-[#171411] px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#f7f2ea] transition duration-200 hover:bg-[#2a221e] active:translate-y-px"
-                type="submit"
-              >
-                <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                  Enter Vault
-                </span>
-              </button>
-            </form>
+            </SoftPanel>
 
-            <p className="mt-5 text-[0.72rem] uppercase tracking-[0.14em] text-[#7f6d61]">
-              By continuing, you agree to runtime policy and audit logging.
-            </p>
+            <SoftPanel variant="elevated" className="p-0 overflow-hidden">
+              <div className="p-6 sm:p-8">
+                <div className="mb-7 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.34em] text-[#7c6a5f]">
+                      Vault Auth
+                    </p>
+                    <h2
+                      className="text-4xl tracking-[-0.02em] text-[#171411]"
+                      style={{
+                        fontFamily: '"Iowan Old Style", "Palatino", serif',
+                      }}
+                    >
+                      Enter
+                    </h2>
+                    <p className="mt-2 max-w-[30ch] text-sm leading-relaxed text-[var(--text-secondary)]">
+                      Use your workspace credentials to enter the viewer.
+                    </p>
+                  </div>
+                  <Badge variant="secondary">Secure</Badge>
+                </div>
+
+                {search.error ? (
+                  <p
+                    className="mb-4 rounded-xl border border-[#d13f25]/40 bg-[#fff1ec] px-3 py-2 text-sm text-[#9e2f1b]"
+                    role="alert"
+                  >
+                    {search.error}
+                  </p>
+                ) : null}
+
+                <form className="space-y-4" method="post" action="/auth/login">
+                  <input type="hidden" name="return_to" value={returnTo} />
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]"
+                      htmlFor="email"
+                    >
+                      Email
+                    </label>
+                    <Input
+                      className="h-12 rounded-xl border-[var(--border-glass)] bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] placeholder:text-[#7d776f] focus:border-[var(--a-sky)] focus:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)]"
+                      id="email"
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      spellCheck={false}
+                      placeholder="you@vault.local"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]"
+                      htmlFor="password"
+                    >
+                      Password
+                    </label>
+                    <Input
+                      className="h-12 rounded-xl border-[var(--border-glass)] bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] focus:border-[var(--a-sky)] focus:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)]"
+                      id="password"
+                      type="password"
+                      name="password"
+                      autoComplete="current-password"
+                      required
+                    />
+                  </div>
+                  <PrimaryButton
+                    className="mt-3 w-full rounded-xl px-4 py-3 text-sm uppercase tracking-[0.14em]"
+                    type="submit"
+                  >
+                    Enter Vault
+                  </PrimaryButton>
+                </form>
+
+                <p className="mt-5 text-[0.72rem] uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+                  By continuing, you agree to runtime policy and audit logging.
+                </p>
+              </div>
+            </SoftPanel>
           </div>
-        </div>
+        </PageFrame>
       </section>
     </main>
   );

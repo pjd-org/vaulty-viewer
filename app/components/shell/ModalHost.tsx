@@ -41,7 +41,7 @@ export function ModalHost({ modals = {} }: ModalHostProps) {
           <Dialog.Content
             className={cn(
               'fixed left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2',
-              'w-full max-w-md rounded-[20px] border border-black/10 bg-white/90 p-6 shadow-2xl backdrop-blur-xl',
+              'w-full max-w-md rounded-[20px] border border-[var(--border-glass)] bg-[var(--surf-overlay)] p-6 shadow-2xl backdrop-blur-xl',
               'data-[state=open]:animate-in data-[state=closed]:animate-out',
               'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
               'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -54,7 +54,7 @@ export function ModalHost({ modals = {} }: ModalHostProps) {
               <button
                 type="button"
                 aria-label="Close modal"
-                className="absolute right-4 top-4 rounded-full p-1 text-slate-400 hover:text-slate-700 transition-colors"
+                className="absolute right-4 top-4 rounded-full p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 ✕
               </button>

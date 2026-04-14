@@ -45,11 +45,11 @@ export function HueyWorkspace({
     : null;
 
   return (
-    <div className="h-full flex flex-col rounded-[28px] overflow-hidden bg-white/82 backdrop-blur-[14px] border border-white/70 shadow-[0_20px_44px_rgba(17,21,29,0.12)]">
+    <div className="h-full flex flex-col rounded-[28px] overflow-hidden bg-[var(--surf-overlay)] backdrop-blur-[14px] border border-[var(--border-glass)] shadow-[0_20px_44px_rgba(17,21,29,0.12)]">
       {/* Intent context banner */}
       {intentTemplate && (
         <div className="px-5 pt-4 pb-0 shrink-0">
-          <div className="rounded-2xl bg-white/74 shadow-[0_12px_24px_rgba(17,21,29,0.08)] px-3 py-2.5 text-sm text-slate-700">
+          <div className="rounded-2xl bg-[var(--surf-glass)] shadow-[0_12px_24px_rgba(17,21,29,0.08)] px-3 py-2.5 text-sm text-[var(--text-secondary)]">
             {intentTemplate.description}
           </div>
         </div>
@@ -58,10 +58,12 @@ export function HueyWorkspace({
       {/* Context access summary */}
       {contextLine && (
         <div className="flex items-center gap-1.5 px-5 pt-3 pb-0 shrink-0">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
             Huey has access to:
           </span>
-          <span className="text-[10px] text-slate-500">{contextLine}</span>
+          <span className="text-[10px] text-[var(--text-secondary)]">
+            {contextLine}
+          </span>
         </div>
       )}
 

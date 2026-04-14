@@ -99,7 +99,7 @@ export function CodModal() {
             variant={display.severityVariant}
             label={display.severityLabel}
           />
-          <p className="mt-2 text-base font-medium text-slate-800">
+          <p className="mt-2 text-base font-medium text-[var(--text-primary)]">
             {display.headline}
           </p>
           {display.reasonText && (
@@ -139,7 +139,7 @@ export function CodModal() {
       {/* Why this status */}
       {codState.why.length > 0 && (
         <details className="mt-6 rounded-xl genie-surface genie-surface--utility">
-          <summary className="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer select-none">
+          <summary className="px-4 py-3 text-sm font-medium text-[var(--text-secondary)] cursor-pointer select-none">
             Why this status
           </summary>
           <div className="px-4 pb-4 space-y-1">
@@ -155,7 +155,7 @@ export function CodModal() {
         className="mt-3 rounded-xl genie-surface genie-surface--utility"
         open={showForm}
       >
-        <summary className="px-4 py-3 text-xs text-slate-500 cursor-pointer select-none">
+        <summary className="px-4 py-3 text-xs text-[var(--text-tertiary)] cursor-pointer select-none">
           Update state / debug
         </summary>
         <div className="px-4 pb-4">

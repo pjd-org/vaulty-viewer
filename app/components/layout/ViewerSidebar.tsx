@@ -114,7 +114,7 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                 className="font-bold uppercase tracking-[0.12em]"
               >
                 <Link to={'/' as never} aria-label="Vault home">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] text-xs font-bold shadow-sm">
                     V3
                   </span>
                   <span className="truncate text-sm font-semibold">Vault</span>

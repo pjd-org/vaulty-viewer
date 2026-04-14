@@ -33,18 +33,27 @@ const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
 function severityBadge(severity?: string) {
   const s = (severity ?? '').toLowerCase();
   const map: Record<string, string> = {
-    critical: 'bg-rose-100 text-rose-700',
-    high: 'bg-amber-100 text-amber-700',
-    medium: 'bg-sky-100 text-sky-700',
-    low: 'bg-slate-100 text-slate-500',
+    critical:
+      'bg-[color-mix(in_srgb,var(--a-rose)_15%,transparent)] text-[var(--text-danger)]',
+    high: 'bg-[color-mix(in_srgb,var(--a-sun)_15%,transparent)] text-[var(--text-warning)]',
+    medium:
+      'bg-[color-mix(in_srgb,var(--a-sky)_15%,transparent)] text-[var(--text-info)]',
+    low: 'bg-[var(--surf-utility)] text-[var(--text-tertiary)]',
   };
   return cn(
     'rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] shrink-0',
-    map[s] ?? 'bg-slate-100 text-slate-500'
+    map[s] ?? 'bg-[var(--surf-utility)] text-[var(--text-tertiary)]'
   );
 }
 
-export function ProjectDetailScene({ projectId }: { projectId: string }) {
+export function ProjectDetailScene({
+  projectId,
+  accentColor,
+}: {
+  projectId: string;
+  accentColor?: string;
+}) {
+  const accent = accentColor ?? 'var(--a-sky)';
   const {
     data: projectDisplay,
     isLoading: projectLoading,
@@ -165,18 +174,28 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
       <div className="space-y-6">
         {projectHeader ? (
-          <ProjectDetailHeader projectId={projectId} project={projectHeader} />
+          <ProjectDetailHeader
+            projectId={projectId}
+            project={projectHeader}
+            accentColor={accentColor}
+          />
         ) : (
           <SkeletonCard />
         )}
         {tasksLoading ? (
           <SkeletonCard />
         ) : (
-          <ProjectBoardSection tasks={projectTasks} projectId={projectId} />
+          <ProjectBoardSection
+            tasks={projectTasks}
+            projectId={projectId}
+            accentColor={accentColor}
+          />
         )}
       </div>
       <div className="space-y-4">
-        {!tasksLoading && <BlockersRail blockedTasks={blockedTasks} />}
+        {!tasksLoading && (
+          <BlockersRail blockedTasks={blockedTasks} accentColor={accentColor} />
+        )}
         <SoftPanel
           variant="utility"
           title="Pressure Signals"
@@ -187,14 +206,14 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {pressureSignals.slice(0, 3).map((signal) => (
                 <div
                   key={signal.id}
-                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
                         {signal.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
                         {signal.summary}
                       </p>
                     </div>
@@ -202,7 +221,7 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
                       {signal.severity}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
                     {signal.whySurfaced}
                   </p>
                 </div>
@@ -225,22 +244,27 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {decisionQueue.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
                         {item.whyNow}
                       </p>
                     </div>
-                    <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-info)]"
+                      style={{
+                        background: `color-mix(in srgb, ${accent} 15%, transparent)`,
+                      }}
+                    >
                       {item.score.toFixed(1)}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
                     {item.expectedEffect}
                   </p>
                 </div>
@@ -263,22 +287,29 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {immediateActions.slice(0, 3).map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
                         {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
                         {item.summary}
                       </p>
                     </div>
-                    <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-700">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-info)]"
+                      style={{
+                        background: `color-mix(in srgb, ${accent} 15%, transparent)`,
+                      }}
+                    >
                       {item.reversibility}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">{item.whyNow}</p>
+                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
+                    {item.whyNow}
+                  </p>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <Link
                       to="/actions"
@@ -287,11 +318,11 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
                         simulatableOnly: undefined,
                         selectedId: item.id,
                       }}
-                      className="text-xs font-semibold text-sky-700 underline decoration-sky-500/40 underline-offset-4"
+                      className="text-xs font-semibold text-[var(--text-info)] underline decoration-[var(--text-info)]/40 underline-offset-4"
                     >
                       Inspect in Actions
                     </Link>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-[var(--text-tertiary)]">
                       {item.expectedEffect}
                     </span>
                   </div>
@@ -315,18 +346,18 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {verificationRail.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
                         {item.summary}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
                         {item.status}
                       </p>
                     </div>
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-700">
+                    <span className="rounded-full bg-[color-mix(in_srgb,var(--a-mint)_15%,transparent)] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-success)]">
                       {item.status}
                     </span>
                   </div>
@@ -355,17 +386,17 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
             ].map((group) => (
               <div
                 key={group.label}
-                className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-800">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">
                     {group.label}
                   </p>
-                  <span className="rounded-full bg-black/5 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-600">
+                  <span className="rounded-full bg-[var(--surf-utility)] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                     {group.items.length}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
                   {group.items.length
                     ? group.items
                         .slice(0, 2)
@@ -387,13 +418,15 @@ export function ProjectDetailScene({ projectId }: { projectId: string }) {
               {contextPanel.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-slate-200 bg-black/5 p-4"
+                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
                 >
-                  <p className="text-sm font-semibold text-slate-800">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">
                     {item.title}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">{item.summary}</p>
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                    {item.summary}
+                  </p>
+                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
                     {item.reasonSelected}
                   </p>
                 </div>

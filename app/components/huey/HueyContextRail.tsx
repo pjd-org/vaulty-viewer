@@ -60,6 +60,8 @@ interface HueyContextRailProps {
   intentTemplates: IntentTemplate[];
   activeIntent: IntentType | null;
   onSelectIntent: (t: IntentType) => void;
+  /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 export function HueyContextRail({
@@ -70,8 +72,9 @@ export function HueyContextRail({
   intentTemplates,
   activeIntent,
   onSelectIntent,
+  accentColor,
 }: HueyContextRailProps) {
-  // Defer Date.now()-dependent grouping to client to avoid SSR hydration mismatch
+  const accent = accentColor ?? 'var(--a-sky)';
   const [groups, setGroups] = useState<
     { label: string; items: ThreadRecord[] }[]
   >([]);
@@ -118,7 +121,7 @@ export function HueyContextRail({
 
       <div>
         <SectionHeader title="Workflows" className="mb-2" />
-        <p className="text-xs text-slate-400 mb-2">
+        <p className="text-xs text-[var(--text-tertiary)] mb-2">
           Pick a mode to focus the conversation, or just type.
         </p>
 
@@ -129,17 +132,27 @@ export function HueyContextRail({
           onChange={(e) => setWorkflowSearch(e.target.value)}
           placeholder="Filter workflows…"
           aria-label="Filter workflows"
-          className="w-full rounded-full border border-slate-200 bg-white/60 px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 mb-3"
+          className="w-full rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] px-3 py-1.5 text-xs text-[var(--text-secondary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none mb-3"
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = accent;
+            e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, ${accent} 30%, transparent)`;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = '';
+            e.currentTarget.style.boxShadow = '';
+          }}
         />
 
         {/* Grouped workflow chips */}
         {visibleGroups.length === 0 && workflowSearch.trim() && (
-          <p className="text-xs text-slate-400">No matching workflows.</p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            No matching workflows.
+          </p>
         )}
         <div className="space-y-3">
           {visibleGroups.map((group) => (
             <div key={group.label}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] mb-1.5">
                 {group.label}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -167,11 +180,11 @@ export function HueyContextRail({
       <div className="flex-1 min-h-0 overflow-y-auto">
         <SectionHeader title="Recent" className="mb-2" />
         {groups.length === 0 && (
-          <p className="text-xs text-slate-400">No history yet.</p>
+          <p className="text-xs text-[var(--text-tertiary)]">No history yet.</p>
         )}
         {groups.map((group) => (
           <div key={group.label} className="mb-3">
-            <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wide mb-1">
               {group.label}
             </p>
             {group.items.map((thread) => (
@@ -196,12 +209,12 @@ export function HueyContextRail({
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
                   {thread.intent && (
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide shrink-0">
+                    <span className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wide shrink-0">
                       {thread.intent.replace(/_/g, ' ')}
                     </span>
                   )}
                   <span
-                    className="text-[10px] text-slate-400 shrink-0"
+                    className="text-[10px] text-[var(--text-tertiary)] shrink-0"
                     suppressHydrationWarning
                   >
                     {formatRelativeTime(thread.timestamp)}

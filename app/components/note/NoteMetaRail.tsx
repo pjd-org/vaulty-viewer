@@ -44,6 +44,8 @@ interface NoteMetaRailProps {
   workspaceTo?: string;
   workspaceParams?: Record<string, string>;
   workspaceSearch?: Record<string, unknown>;
+  /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 export function NoteMetaRail({
@@ -55,7 +57,9 @@ export function NoteMetaRail({
   workspaceTo,
   workspaceParams,
   workspaceSearch,
+  accentColor,
 }: NoteMetaRailProps) {
+  const accent = accentColor ?? 'var(--a-sky)';
   const rawStatus = getStringValue(frontmatter.status);
   const priority = getNumberValue(frontmatter.priority);
   const dueDate =
@@ -87,7 +91,7 @@ export function NoteMetaRail({
         <dl className="space-y-3">
           {rawStatus && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Status
               </dt>
               <dd>
@@ -101,7 +105,7 @@ export function NoteMetaRail({
           )}
           {priority !== null && priority >= 7 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Priority
               </dt>
               <dd>
@@ -114,23 +118,27 @@ export function NoteMetaRail({
           )}
           {priority !== null && priority < 7 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Priority
               </dt>
-              <dd className="text-sm text-neutral-700">P{priority}</dd>
+              <dd className="text-sm text-[var(--text-secondary)]">
+                P{priority}
+              </dd>
             </div>
           )}
           {formattedDue && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Due
               </dt>
-              <dd className="text-sm text-neutral-700">{formattedDue}</dd>
+              <dd className="text-sm text-[var(--text-secondary)]">
+                {formattedDue}
+              </dd>
             </div>
           )}
           {tags.length > 0 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Tags
               </dt>
               <dd className="flex flex-wrap gap-1.5 mt-1">
@@ -139,7 +147,26 @@ export function NoteMetaRail({
                     key={tag}
                     to="/"
                     search={{ q: tag, collection: 'all' }}
-                    className="text-[11px] px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    className="text-[11px] px-2 py-0.5 bg-[var(--surf-utility)] text-[var(--text-secondary)] rounded-full transition-colors"
+                    style={
+                      {
+                        '--tag-hover-bg': `color-mix(in srgb,${accent} 10%,transparent)`,
+                      } as React.CSSProperties
+                    }
+                    onMouseEnter={(e) => {
+                      (
+                        e.currentTarget as HTMLAnchorElement
+                      ).style.backgroundColor =
+                        `color-mix(in srgb,${accent} 10%,transparent)`;
+                      (e.currentTarget as HTMLAnchorElement).style.color =
+                        'var(--text-info)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (
+                        e.currentTarget as HTMLAnchorElement
+                      ).style.backgroundColor = '';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '';
+                    }}
                   >
                     #{tag}
                   </Link>
@@ -149,10 +176,12 @@ export function NoteMetaRail({
           )}
           {formattedCreated && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
                 Created
               </dt>
-              <dd className="text-sm text-neutral-700">{formattedCreated}</dd>
+              <dd className="text-sm text-[var(--text-secondary)]">
+                {formattedCreated}
+              </dd>
             </div>
           )}
         </dl>
@@ -161,7 +190,7 @@ export function NoteMetaRail({
       {/* Related notes */}
       <SoftPanel title="Related">
         {relatedNotes.length === 0 ? (
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-[var(--text-tertiary)]">
             No related notes found yet.
           </p>
         ) : (
@@ -180,13 +209,23 @@ export function NoteMetaRail({
                       ? { ...(workspaceSearch ?? {}), noteId: slug }
                       : { p: slug }
                   }
-                  className="block p-2.5 rounded-xl border border-slate-100 bg-neutral-50 hover:bg-blue-50 hover:border-blue-100 transition-all group"
+                  className="block p-2.5 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] transition-all group"
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLAnchorElement;
+                    el.style.backgroundColor = `color-mix(in srgb,${accent} 8%,transparent)`;
+                    el.style.borderColor = `color-mix(in srgb,${accent} 15%,transparent)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLAnchorElement;
+                    el.style.backgroundColor = '';
+                    el.style.borderColor = '';
+                  }}
                 >
-                  <p className="text-xs font-medium text-neutral-700 truncate group-hover:text-blue-700">
+                  <p className="text-xs font-medium text-[var(--text-secondary)] truncate group-hover:text-[var(--text-info)]">
                     {label}
                   </p>
                   {collection && (
-                    <p className="text-[10px] text-neutral-400 mt-0.5">
+                    <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
                       {collection}
                     </p>
                   )}
@@ -198,8 +237,8 @@ export function NoteMetaRail({
       </SoftPanel>
 
       {/* System (collapsed) */}
-      <details className="rounded-[28px] border border-neutral-200 bg-surface shadow-sm overflow-hidden">
-        <summary className="px-6 py-4 text-xs font-medium text-neutral-400 cursor-pointer hover:text-neutral-600 select-none list-none flex items-center justify-between">
+      <details className="rounded-[28px] border border-[var(--border-glass)] bg-[var(--surf-base)] shadow-sm overflow-hidden">
+        <summary className="px-6 py-4 text-xs font-medium text-[var(--text-tertiary)] cursor-pointer hover:text-[var(--text-secondary)] select-none list-none flex items-center justify-between">
           <span>System</span>
           <span aria-hidden="true" className="opacity-50">
             ▸
@@ -208,50 +247,50 @@ export function NoteMetaRail({
         <div className="px-6 pb-5 space-y-3">
           {lifecycle.source !== 'canonical' && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
                 Source
               </p>
-              <p className="text-xs text-neutral-400 break-all mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
                 {lifecycle.source}
               </p>
             </div>
           )}
           {lifecycle.runId && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
                 Run ID
               </p>
-              <p className="text-xs text-neutral-400 break-all mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
                 {lifecycle.runId}
               </p>
             </div>
           )}
           {lifecycle.targetPath && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
                 Target
               </p>
-              <p className="text-xs text-neutral-400 break-all mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
                 {lifecycle.targetPath}
               </p>
             </div>
           )}
           {lifecycle.reviewStatus && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
                 Review
               </p>
-              <p className="text-xs text-neutral-400 mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
                 {lifecycle.reviewStatus}
               </p>
             </div>
           )}
           {path && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-400">
+              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
                 Path
               </p>
-              <p className="text-xs text-neutral-400 break-all mt-0.5">
+              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
                 {path}
               </p>
             </div>

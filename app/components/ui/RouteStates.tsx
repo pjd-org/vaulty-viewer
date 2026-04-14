@@ -19,14 +19,21 @@ export function RouteLoadingState({
       aria-busy="true"
       className={`space-y-3 ${className}`}
     >
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+      <p
+        className="text-xs font-medium uppercase tracking-[0.14em]"
+        style={{ color: 'var(--text-tertiary)' }}
+      >
         {label}
       </p>
       {Array.from({ length: rows }).map((_, index) => (
         <div
           // index is stable enough for a static skeleton list
           key={`route-skeleton-${index}`}
-          className="h-10 animate-pulse rounded-xl border border-slate-200/80 bg-black/3"
+          className="h-10 animate-pulse rounded-[var(--radius-card)]"
+          style={{
+            border: '1px solid var(--border-soft)',
+            background: 'var(--n-100)',
+          }}
         />
       ))}
     </div>
@@ -46,8 +53,15 @@ export function RouteAsideEmptyState({
 }: RouteAsideEmptyStateProps) {
   return (
     <div data-testid={testId} className="space-y-2">
-      <p className="text-sm font-medium text-slate-700">{title}</p>
-      <p className="text-xs text-slate-600">{description}</p>
+      <p
+        className="text-sm font-medium"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {title}
+      </p>
+      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+        {description}
+      </p>
     </div>
   );
 }

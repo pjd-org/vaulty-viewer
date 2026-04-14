@@ -1,15 +1,6 @@
 import React from 'react';
 import { TrendingDownIcon } from '@/app/components/ui/trending-down';
 import { TrendingUpIcon } from '@/app/components/ui/trending-up';
-import { Badge } from '@/app/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/app/components/ui/card';
 
 export interface SummaryRowItem {
   label: string;
@@ -23,9 +14,12 @@ export interface SummaryRowItem {
 
 interface SummaryRowProps {
   items: readonly SummaryRowItem[];
+  /** Override the up-trend badge accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
-export function SummaryRow({ items }: SummaryRowProps) {
+export function SummaryRow({ items, accentColor }: SummaryRowProps) {
+  const accent = accentColor ?? 'var(--a-mint)';
   if (!items.length) {
     return null;
   }
@@ -37,47 +31,74 @@ export function SummaryRow({ items }: SummaryRowProps) {
         const isUp = hasTrend && item.trend! >= 0;
 
         return (
-          <Card key={item.label} className="@container/card">
-            <CardHeader className="relative pb-2">
-              <CardDescription className="text-[10px] font-semibold uppercase tracking-[0.28em]">
-                {item.label}
-              </CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums">
-                {item.value}
-              </CardTitle>
-              {hasTrend && (
-                <div className="absolute right-4 top-4">
-                  <Badge
-                    variant="outline"
-                    className={
-                      isUp
-                        ? 'flex items-center gap-1 border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'flex items-center gap-1 border-red-200 bg-red-50 text-red-700'
-                    }
-                  >
-                    {isUp ? (
-                      <TrendingUpIcon size={12} />
-                    ) : (
-                      <TrendingDownIcon size={12} />
-                    )}
-                    {Math.abs(item.trend!)}%
-                  </Badge>
-                </div>
-              )}
-              {item.icon && !hasTrend && (
-                <div className="absolute right-4 top-4 text-muted-foreground">
-                  {item.icon}
-                </div>
-              )}
-            </CardHeader>
-            {item.detail && (
-              <CardFooter className="flex-col items-start gap-1 pt-0 pb-4 px-6 text-sm">
-                <div className="text-xs text-muted-foreground">
-                  {item.detail}
-                </div>
-              </CardFooter>
+          <div
+            key={item.label}
+            className="genie-card @container/card relative"
+            style={{ containerType: 'inline-size' }}
+          >
+            {/* Trend badge */}
+            {hasTrend && (
+              <div className="absolute right-4 top-4">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                  style={
+                    isUp
+                      ? {
+                          background: `color-mix(in srgb, ${accent} 30%, transparent)`,
+                          color: 'var(--text-primary)',
+                          border: `1px solid color-mix(in srgb, ${accent} 50%, transparent)`,
+                        }
+                      : {
+                          background:
+                            'color-mix(in srgb, var(--a-rose) 25%, transparent)',
+                          color: 'var(--text-primary)',
+                          border:
+                            '1px solid color-mix(in srgb, var(--a-rose) 40%, transparent)',
+                        }
+                  }
+                >
+                  {isUp ? (
+                    <TrendingUpIcon size={12} />
+                  ) : (
+                    <TrendingDownIcon size={12} />
+                  )}
+                  {Math.abs(item.trend!)}%
+                </span>
+              </div>
             )}
-          </Card>
+            {/* Icon (when no trend) */}
+            {item.icon && !hasTrend && (
+              <div
+                className="absolute right-4 top-4"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
+                {item.icon}
+              </div>
+            )}
+            {/* Label */}
+            <p
+              className="text-[10px] font-semibold uppercase tracking-[0.28em]"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
+              {item.label}
+            </p>
+            {/* Value */}
+            <p
+              className="text-2xl font-semibold tabular-nums mt-1"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {item.value}
+            </p>
+            {/* Detail */}
+            {item.detail && (
+              <p
+                className="text-xs mt-2"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
+                {item.detail}
+              </p>
+            )}
+          </div>
         );
       })}
     </div>

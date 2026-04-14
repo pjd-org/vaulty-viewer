@@ -2,17 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useInbox } from '../../src/hooks/useInbox';
-import {
-  type InboxView,
-  type InboxNote,
-  defaultInboxView,
-  INBOX_BUCKET_CONFIG,
-  type InboxBucket,
-} from '../../src/lib/inbox-logic';
+import { type InboxNote, INBOX_BUCKET_CONFIG } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
 import { toInboxItemDisplay } from '../lib/display';
 import { InboxItemCard } from '../components/inbox';
-import { InboxViewSwitcher } from '../components/inbox/InboxViewSwitcher';
 import { EmptyState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
 import {
@@ -23,6 +16,7 @@ import {
   buildInboxSurfacePayload,
   type InboxItem,
 } from '../lib/viewer-adapter';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -44,10 +38,6 @@ interface Run {
 }
 
 /* ─── helpers ────────────────────────────────────────────────────────────── */
-
-function stripMarkdownExtension(path: string) {
-  return path.endsWith('.md') ? path.slice(0, -3) : path;
-}
 
 function runToOriginSource(runType?: string): string {
   if (runType === 'signals_infer') return 'agent';
@@ -89,36 +79,67 @@ function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
   });
 }
 
-/* ─── source type helper ────────────────────────────────────────────────── */
-
 function itemSourceType(
   item: InboxItem,
   run?: Run
-): 'agent' | 'mcp' | 'manual' {
-  if (run?.runType === 'signals_infer' || run?.runType === 'conversation')
-    return 'agent';
-  if (run?.runType === 'mcp' || item.sourceType === 'pipeline') return 'mcp';
-  if (
-    item.inboxBucket === 'rejected_automated' ||
-    item.inboxBucket === 'deferred'
-  )
-    return 'agent';
+): 'signals_infer' | 'conversation' | 'manual' {
+  if (run?.runType === 'signals_infer') return 'signals_infer';
+  if (run?.runType === 'conversation') return 'conversation';
   return 'manual';
 }
 
-/* ─── Inline converter panel ─────────────────────────────────────────────── */
+/* ─── sort helper ────────────────────────────────────────────────────────── */
+
+type SortKey = 'newest' | 'oldest' | 'confidence' | 'itemCount';
+
+function sortItems(
+  items: InboxItem[],
+  sort: SortKey,
+  runById: Map<string, Run>
+): InboxItem[] {
+  const copy = [...items];
+  switch (sort) {
+    case 'oldest':
+      return copy.sort(
+        (a, b) =>
+          new Date(a.surfacedAt ?? 0).getTime() -
+          new Date(b.surfacedAt ?? 0).getTime()
+      );
+    case 'confidence':
+      return copy.sort((a, b) => {
+        const ra = runById.get(a.sourceId);
+        const rb = runById.get(b.sourceId);
+        return (ra?.confidence ?? 1) - (rb?.confidence ?? 1);
+      });
+    case 'itemCount':
+      return copy.sort((a, b) => {
+        const ra = runById.get(a.sourceId);
+        const rb = runById.get(b.sourceId);
+        return (rb?.itemCount ?? 0) - (ra?.itemCount ?? 0);
+      });
+    case 'newest':
+    default:
+      return copy.sort(
+        (a, b) =>
+          new Date(b.surfacedAt ?? 0).getTime() -
+          new Date(a.surfacedAt ?? 0).getTime()
+      );
+  }
+}
+
+/* ─── ConvertPanel (modal footer use only — no inline rendering) ─────────── */
 
 function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
   const { mutate, data, isPending, error, reset } = useInboxConverterMutation();
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed) return null;
+  if (dismissed || data) return null;
 
-  if (!data && !isPending && !error) {
+  if (!isPending && !error) {
     return (
       <button
         type="button"
-        className="btn-secondary rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
         onClick={() => mutate(rawText)}
       >
         ✦ Convert to task
@@ -150,52 +171,261 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
     );
   }
 
-  if (data) {
-    return (
-      <div className="mt-2 genie-surface genie-surface--utility rounded-xl px-3 py-2 space-y-1">
-        <p className="text-xs font-semibold text-slate-800">{data.title}</p>
-        <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-          <span>{data.duration}</span>
-          <span>·</span>
-          <span className="capitalize">{data.effort}</span>
-          <span>·</span>
-          <span className="capitalize">{data.type}</span>
-          {data.project && (
-            <>
-              <span>·</span>
-              <span>{data.project}</span>
-            </>
-          )}
-        </div>
-        <button
-          type="button"
-          className="text-xs text-slate-500 hover:text-slate-800 mt-1"
-          onClick={() => setDismissed(true)}
-        >
-          Dismiss
-        </button>
-      </div>
-    );
-  }
-
   return null;
 }
 
-/* ─── Filter bar ─────────────────────────────────────────────────────────── */
+/* ─── FilterBar ──────────────────────────────────────────────────────────── */
 
-const SEVERITY_OPTIONS = [
-  { value: '', label: 'All' },
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
-] as const;
+interface FilterBarProps {
+  sort: SortKey;
+  onSort: (v: SortKey) => void;
+  runType: string;
+  onRunType: (v: string) => void;
+  reversibility: string;
+  onReversibility: (v: string) => void;
+  severity: string;
+  onSeverity: (v: string) => void;
+  loading: boolean;
+  anyInFlight: boolean;
+  onRefresh: () => void;
+}
 
-const SOURCE_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'agent', label: 'Agent' },
-  { value: 'mcp', label: 'MCP' },
-  { value: 'manual', label: 'Manual' },
-] as const;
+function FilterBar({
+  sort,
+  onSort,
+  runType,
+  onRunType,
+  reversibility,
+  onReversibility,
+  severity,
+  onSeverity,
+  loading,
+  anyInFlight,
+  onRefresh,
+}: FilterBarProps) {
+  const selectCls =
+    'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:ring-offset-1 transition-colors hover:border-slate-300';
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0">
+        Sort
+      </span>
+      <select
+        value={sort}
+        onChange={(e) => onSort(e.target.value as SortKey)}
+        className={selectCls}
+      >
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="confidence">Confidence ↑</option>
+        <option value="itemCount">Item count ↓</option>
+      </select>
+
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0 ml-2">
+        Filter
+      </span>
+      <select
+        value={runType}
+        onChange={(e) => onRunType(e.target.value)}
+        className={selectCls}
+      >
+        <option value="">Run type: All</option>
+        <option value="signals_infer">Signals infer</option>
+        <option value="conversation">Conversation</option>
+        <option value="manual">Manual</option>
+      </select>
+      <select
+        value={reversibility}
+        onChange={(e) => onReversibility(e.target.value)}
+        className={selectCls}
+      >
+        <option value="">Reversibility: All</option>
+        <option value="high">Reversible</option>
+        <option value="medium">Partial</option>
+        <option value="low">Irreversible</option>
+      </select>
+      <select
+        value={severity}
+        onChange={(e) => onSeverity(e.target.value)}
+        className={selectCls}
+      >
+        <option value="">Severity: All</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+
+      <div className="ml-auto">
+        <button
+          type="button"
+          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60 transition-colors"
+          onClick={onRefresh}
+          disabled={loading || anyInFlight}
+        >
+          {loading ? 'Loading…' : 'Refresh'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── InboxRow — single-column list row with hover actions ───────────────── */
+
+interface InboxRowProps {
+  item: InboxItem;
+  note?: InboxNote;
+  run?: Run;
+  onInspect: () => void;
+  onPromote?: () => void;
+  onReject?: () => void;
+  actionInFlight?: boolean;
+}
+
+function InboxRow({
+  item,
+  note,
+  run,
+  onInspect,
+  onPromote,
+  onReject,
+  actionInFlight,
+}: InboxRowProps) {
+  const display = inboxItemToDisplay(item, note, run);
+
+  const severityColor: Record<string, string> = {
+    critical: 'bg-red-500',
+    high: 'bg-orange-400',
+    medium: 'bg-yellow-400',
+    low: 'bg-slate-300',
+  };
+  const sevBar = item.severity
+    ? (severityColor[item.severity] ?? 'bg-slate-200')
+    : undefined;
+
+  const confidence = run?.confidence;
+  const itemCount = run?.itemCount;
+
+  const reversibilityLabel: Record<string, string> = {
+    high: 'Reversible',
+    medium: 'Partial',
+    low: 'Irreversible',
+  };
+  const reversibilityColor: Record<string, string> = {
+    high: 'text-emerald-700 bg-emerald-50 ring-emerald-200',
+    medium: 'text-yellow-700 bg-yellow-50 ring-yellow-200',
+    low: 'text-red-700 bg-red-50 ring-red-200',
+  };
+
+  return (
+    <div
+      className="group relative flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-all duration-150 hover:border-slate-300 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)] cursor-pointer animate-fade-in"
+      onClick={onInspect}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onInspect()}
+    >
+      {/* severity bar */}
+      {sevBar && (
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${sevBar}`}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* main content */}
+      <div className="flex-1 min-w-0 pl-1">
+        {/* row 1: title + chips */}
+        <div className="flex items-start gap-2 min-w-0">
+          <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 leading-snug line-clamp-1">
+            {display.title}
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+              {display.originLabel}
+            </span>
+            {item.reversibility && reversibilityLabel[item.reversibility] && (
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${reversibilityColor[item.reversibility]}`}
+              >
+                {reversibilityLabel[item.reversibility]}
+              </span>
+            )}
+            {display.ageLabel && (
+              <span
+                className="text-[11px] text-slate-400 tabular-nums"
+                suppressHydrationWarning
+              >
+                {display.ageLabel}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* row 2: why surfaced / summary */}
+        {(item.whySurfaced || item.summary) && (
+          <p className="mt-1 text-[12px] text-slate-500 line-clamp-1 leading-relaxed">
+            {item.whySurfaced ?? item.summary}
+          </p>
+        )}
+
+        {/* row 3: meta pills */}
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {run?.runType && (
+            <span className="text-[10px] font-mono text-slate-400">
+              {run.runType}
+            </span>
+          )}
+          {confidence !== undefined && (
+            <span className="text-[10px] text-slate-400">
+              conf{' '}
+              <span className="font-medium text-slate-600">
+                {(confidence * 100).toFixed(0)}%
+              </span>
+            </span>
+          )}
+          {itemCount !== undefined && (
+            <span className="text-[10px] text-slate-400">
+              {itemCount} item{itemCount !== 1 ? 's' : ''}
+            </span>
+          )}
+          {run?.runId && (
+            <span className="text-[10px] font-mono text-slate-300 truncate max-w-[120px]">
+              {run.runId}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* hover actions — stop propagation so they don't open the modal */}
+      <div
+        className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {onReject && (
+          <button
+            type="button"
+            disabled={actionInFlight}
+            onClick={onReject}
+            className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors"
+          >
+            Reject
+          </button>
+        )}
+        {onPromote && (
+          <button
+            type="button"
+            disabled={actionInFlight}
+            onClick={onPromote}
+            className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+          >
+            Promote
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Route ───────────────────────────────────────────────────────────────── */
 
@@ -211,16 +441,13 @@ function InboxRoute() {
     archiveNotes,
     loading,
     error,
-    apiStatus,
     refresh,
     commitRun,
     rejectRun,
     actionState,
-    pendingConfirmations,
     counts: inboxHookCounts,
   } = useInbox();
 
-  // Derive adapter surface items from the single useInbox() data source
   const surface = React.useMemo(
     () =>
       buildInboxSurfacePayload({
@@ -235,37 +462,24 @@ function InboxRoute() {
 
   const {
     view: viewParam,
-    rejectedTab,
-    selectedId,
+    sort: sortParam,
     severity,
+    runType: runTypeParam,
+    reversibility: reversibilityParam,
+    selectedId,
   } = Route.useSearch();
   const navigate = useNavigate();
 
-  // ── 8-bucket state ────────────────────────────────────────────────────────
-  // When view param is set, derive the active bucket from it + rejectedTab
-  const derivedBucket = React.useMemo((): InboxBucket => {
-    if (viewParam === 'queue') return 'needs_action';
-    if (viewParam === 'workbench') return 'needs_approval';
-    if (viewParam === 'archive') {
-      if (rejectedTab === 'user') return 'rejected_user';
-      if (rejectedTab === 'automated') return 'rejected_automated';
-      return 'rejected_user'; // default archive view shows rejected_user
-    }
-    return 'all';
-  }, [viewParam, rejectedTab]);
+  const activeTab = viewParam ?? 'queue';
 
-  const [activeBucket, setActiveBucket] = useState<InboxBucket>(derivedBucket);
-  // Sync derivedBucket → activeBucket when URL params change
-  React.useEffect(() => {
-    setActiveBucket(derivedBucket);
-  }, [derivedBucket]);
-
-  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  // Local state for filters not yet in URL (to avoid excessive navigation noise)
+  // runType + reversibility are written to URL; severity is also URL
+  // sort is URL
+  const currentSort: SortKey = sortParam ?? 'newest';
 
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
   );
-  const allItems = surface;
 
   const runById = React.useMemo(
     () => new Map((runs as Run[]).map((run) => [run.runId, run])),
@@ -283,75 +497,98 @@ function InboxRoute() {
     [archiveNotes, workbenchNotes]
   );
 
-  // ── Per-bucket item counts (no filters applied, for tab badges) ──────────
-  const bucketCounts = React.useMemo(() => {
-    const counts: Record<InboxBucket, number> = {
-      all: allItems.length,
-      needs_action: 0,
-      needs_approval: 0,
-      failure: 0,
-      drift_stale: 0,
-      rejected_user: 0,
-      rejected_automated: 0,
-      deferred: 0,
-    };
-    for (const item of allItems) {
-      for (const cfg of INBOX_BUCKET_CONFIG) {
-        if (cfg.bucket !== 'all' && cfg.matches(item)) {
-          counts[cfg.bucket]++;
-        }
-      }
-    }
-    return counts;
-  }, [allItems]);
+  /* ─── tab → bucket filter ──────────────────────────────────────────────── */
 
-  // ── Apply bucket + severity + source filters ─────────────────────────────
-  const visibleItems = React.useMemo(() => {
-    // When viewing archive with no specific rejectedTab, show ALL archive items
-    const showAllArchive = viewParam === 'archive' && rejectedTab === undefined;
-
-    return allItems.filter((item) => {
-      if (showAllArchive) {
-        if (!isArchiveBucket(item.inboxBucket)) return false;
-      } else {
-        const bucketConfig = INBOX_BUCKET_CONFIG.find(
-          (c) => c.bucket === activeBucket
-        )!;
-        if (!bucketConfig.matches(item)) return false;
+  const tabItems = React.useMemo(() => {
+    return surface.filter((item) => {
+      if (activeTab === 'queue') {
+        return (
+          item.inboxBucket === 'needs_action' ||
+          item.inboxBucket === 'needs_approval'
+        );
       }
+      if (activeTab === 'workbench') {
+        return item.inboxBucket === 'deferred';
+      }
+      if (activeTab === 'archive') {
+        return isArchiveBucket(item.inboxBucket);
+      }
+      return false;
+    });
+  }, [surface, activeTab]);
+
+  /* ─── apply filters ────────────────────────────────────────────────────── */
+
+  const filteredItems = React.useMemo(() => {
+    return tabItems.filter((item) => {
       if (severity && item.severity !== severity) return false;
-      if (sourceFilter !== 'all') {
-        const run = runById.get(item.sourceId);
-        const src = itemSourceType(item, run);
-        if (src !== sourceFilter) return false;
+      if (runTypeParam) {
+        const src = itemSourceType(item, runById.get(item.sourceId));
+        if (src !== runTypeParam) return false;
       }
+      if (reversibilityParam && item.reversibility !== reversibilityParam)
+        return false;
       return true;
     });
-  }, [
-    allItems,
-    activeBucket,
-    viewParam,
-    rejectedTab,
-    severity,
-    sourceFilter,
-    runById,
-  ]);
+  }, [tabItems, severity, runTypeParam, reversibilityParam, runById]);
 
-  const setSelectedId = useCallback(
-    (id: string | undefined) => {
+  /* ─── apply sort ───────────────────────────────────────────────────────── */
+
+  const visibleItems = React.useMemo(
+    () => sortItems(filteredItems, currentSort, runById),
+    [filteredItems, currentSort, runById]
+  );
+
+  /* ─── tab counts ───────────────────────────────────────────────────────── */
+
+  const tabCounts = React.useMemo(() => {
+    const queue = surface.filter(
+      (i) =>
+        i.inboxBucket === 'needs_action' || i.inboxBucket === 'needs_approval'
+    ).length;
+    const workbench = surface.filter(
+      (i) => i.inboxBucket === 'deferred'
+    ).length;
+    const archive = surface.filter((i) =>
+      isArchiveBucket(i.inboxBucket)
+    ).length;
+    return {
+      queue: inboxHookCounts?.queue ?? queue,
+      workbench: inboxHookCounts?.workbench ?? workbench,
+      archive: inboxHookCounts?.archive ?? archive,
+    };
+  }, [surface, inboxHookCounts]);
+
+  /* ─── navigation helpers ────────────────────────────────────────────────── */
+
+  const setSearch = useCallback(
+    (patch: Partial<ReturnType<typeof inboxSearchParams>>) => {
       navigate({
         to: '/inbox',
         search: {
-          view: viewParam,
-          rejectedTab,
+          view: activeTab as 'queue' | 'workbench' | 'archive',
+          sort: currentSort,
           severity,
-          selectedId: id,
+          runType: runTypeParam,
+          reversibility: reversibilityParam,
+          selectedId,
+          ...patch,
         },
         replace: true,
       });
     },
-    [navigate, viewParam, rejectedTab, severity]
+    [
+      navigate,
+      activeTab,
+      currentSort,
+      severity,
+      runTypeParam,
+      reversibilityParam,
+      selectedId,
+    ]
   );
+
+  /* ─── actions ───────────────────────────────────────────────────────────── */
 
   const handleCommit = useCallback(
     async (runId: string) => {
@@ -364,8 +601,8 @@ function InboxRoute() {
             result?.structuredContent?.expiresAt ?? result?.expiresAt;
           toast(
             expiresAt
-              ? `Confirmation armed for ${runId}. Click Commit again before ${expiresAt}.`
-              : `Confirmation armed for ${runId}. Click Commit again to promote.`
+              ? `Confirmation armed for ${runId}. Click Promote again before ${expiresAt}.`
+              : `Confirmation armed for ${runId}. Click Promote again to commit.`
           );
           return;
         }
@@ -418,16 +655,7 @@ function InboxRoute() {
     [rejectRun, refresh]
   );
 
-  /* ─── primary list ────────────────────────────────────────────────────── */
-
-  // Counts for InboxViewSwitcher — prefer hook counts (from server) if available
-  const viewSwitcherCounts = {
-    queue: inboxHookCounts?.queue ?? bucketCounts.needs_action,
-    workbench: inboxHookCounts?.workbench ?? bucketCounts.needs_approval,
-    archive:
-      inboxHookCounts?.archive ??
-      bucketCounts.rejected_user + bucketCounts.rejected_automated,
-  };
+  /* ─── primary content ───────────────────────────────────────────────────── */
 
   const primaryContent = (
     <>
@@ -449,212 +677,180 @@ function InboxRoute() {
       )}
 
       {!loading && !error && (
-        <>
-          <div className="mt-2 space-y-4">
-            {/* ── View switcher (Queue / Workbench / Archive) ───────────── */}
-            <InboxViewSwitcher
-              view={(viewParam ?? 'queue') as 'queue' | 'workbench' | 'archive'}
-              onChange={(v) =>
-                navigate({
-                  to: '/inbox',
-                  search: {
-                    view: v as InboxView,
-                    rejectedTab,
-                    selectedId,
-                    severity,
+        <div className="mt-2 space-y-4">
+          {/* ── 3-tab bar ──────────────────────────────────────────────── */}
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) =>
+              setSearch({ view: v as 'queue' | 'workbench' | 'archive' })
+            }
+          >
+            <TabsList className="h-auto gap-1 bg-transparent p-0">
+              {(
+                [
+                  { value: 'queue', label: 'Queue', count: tabCounts.queue },
+                  {
+                    value: 'workbench',
+                    label: 'Workbench',
+                    count: tabCounts.workbench,
                   },
-                  replace: true,
+                  {
+                    value: 'archive',
+                    label: 'Archive',
+                    count: tabCounts.archive,
+                  },
+                ] as const
+              ).map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="rounded-full px-4 py-2 text-sm font-medium data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=inactive]:bg-white data-[state=inactive]:text-slate-500 data-[state=inactive]:border data-[state=inactive]:border-slate-200 hover:data-[state=inactive]:text-slate-700 hover:data-[state=inactive]:bg-slate-50 transition-colors shadow-none"
+                >
+                  {tab.label}
+                  {tab.count > 0 && (
+                    <span className="ml-1.5 tabular-nums text-[11px] opacity-70">
+                      {tab.count}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          {/* ── Filter + sort toolbar ─────────────────────────────────── */}
+          <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2.5">
+            <FilterBar
+              sort={currentSort}
+              onSort={(v) => setSearch({ sort: v })}
+              runType={runTypeParam ?? ''}
+              onRunType={(v) =>
+                setSearch({
+                  runType:
+                    (v as 'signals_infer' | 'conversation' | 'manual') ||
+                    undefined,
                 })
               }
-              counts={viewSwitcherCounts}
+              reversibility={reversibilityParam ?? ''}
+              onReversibility={(v) =>
+                setSearch({
+                  reversibility: (v as 'high' | 'medium' | 'low') || undefined,
+                })
+              }
+              severity={severity ?? ''}
+              onSeverity={(v) =>
+                setSearch({
+                  severity: (v as 'high' | 'medium' | 'low') || undefined,
+                })
+              }
+              loading={loading}
+              anyInFlight={anyActionInFlight}
+              onRefresh={refresh}
             />
-            {/* ── 8-bucket pill tab bar ────────────────────────────────── */}
-            <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
-              <div className="overflow-x-auto">
-                <div className="flex items-center gap-1.5 min-w-max pb-0.5">
-                  {INBOX_BUCKET_CONFIG.map((cfg) => {
-                    const isActive = activeBucket === cfg.bucket;
-                    const count = bucketCounts[cfg.bucket];
-                    return (
-                      <button
-                        key={cfg.bucket}
-                        type="button"
-                        onClick={() => setActiveBucket(cfg.bucket)}
-                        className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
-                          isActive
-                            ? 'bg-slate-800 text-white'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        {cfg.shortLabel}
-                        {count > 0 && (
-                          <span
-                            className={`ml-1.5 tabular-nums ${
-                              isActive ? 'text-slate-300' : 'text-slate-400'
-                            }`}
-                          >
-                            {count}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+          </div>
 
-              {/* ── Filters row ─────────────────────────────────────────── */}
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">
-                  Filter
-                </span>
-                <select
-                  id="inbox-severity"
-                  value={severity ?? ''}
-                  onChange={(e) =>
+          {/* ── Summary line ──────────────────────────────────────────── */}
+          <p className="text-xs text-slate-500">
+            {visibleItems.length} of {surface.length} item
+            {surface.length !== 1 ? 's' : ''}
+          </p>
+
+          {visibleItems.length === 0 && (
+            <EmptyState
+              title="Nothing here"
+              description="Try a different tab or clear the active filters."
+            />
+          )}
+
+          {/* ── Single-column list ────────────────────────────────────── */}
+          <div className="space-y-2">
+            {visibleItems.map((item) => {
+              const run = runById.get(item.sourceId);
+              const note = noteByPath.get(item.sourceId);
+
+              const canPromote =
+                item.allowedActions.some((a) =>
+                  ['approve', 'reopen', 'override'].includes(a.actionType)
+                ) ||
+                (run && run.runType !== 'signals_infer');
+
+              const canReject =
+                item.allowedActions.some((a) =>
+                  ['defer', 'approve'].includes(a.actionType)
+                ) ||
+                !!run ||
+                !!item.sourceId;
+
+              const runActionId = run?.runId ?? item.sourceId;
+              const actionInflight =
+                !!runActionId &&
+                (actionState[runActionId] === 'committing' ||
+                  actionState[runActionId] === 'rejecting');
+
+              return (
+                <InboxItemCard
+                  key={item.id}
+                  item={inboxItemToDisplay(item, note, run)}
+                  detail={{
+                    summary: item.summary ?? undefined,
+                    whySurfaced: item.whySurfaced,
+                    severity: item.severity,
+                    inboxBucket: item.inboxBucket,
+                    rejectionReason: item.rejectionReason,
+                    runId: run?.runId,
+                    runAction: run?.action,
+                    sourceId: item.sourceId,
+                    reversibility: item.reversibility ?? null,
+                  }}
+                  onInspect={() =>
                     navigate({
                       to: '/inbox',
                       search: {
-                        view: viewParam,
-                        rejectedTab,
-                        selectedId,
-                        severity:
-                          (e.target.value as 'high' | 'medium' | 'low') ||
-                          undefined,
+                        view: activeTab as 'queue' | 'workbench' | 'archive',
+                        sort: currentSort,
+                        severity,
+                        runType: runTypeParam,
+                        reversibility: reversibilityParam,
+                        selectedId: item.id,
                       },
                       replace: true,
                     })
                   }
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
-                >
-                  {SEVERITY_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label === 'All' ? 'Severity: All' : o.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  id="inbox-source"
-                  value={sourceFilter}
-                  onChange={(e) => setSourceFilter(e.target.value)}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
-                >
-                  {SOURCE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.value === 'all' ? 'Source: All' : o.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="ml-auto">
-                  <button
-                    type="button"
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-                    onClick={refresh}
-                    disabled={loading || anyActionInFlight}
-                  >
-                    {loading ? 'Loading…' : 'Refresh'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Summary line ────────────────────────────────────────── */}
-            <p className="text-xs text-slate-500">
-              {visibleItems.length} of {allItems.length} signal
-              {allItems.length !== 1 ? 's' : ''} ·{' '}
-              <span className="font-medium text-slate-700">
-                {INBOX_BUCKET_CONFIG.find((c) => c.bucket === activeBucket)
-                  ?.label ?? activeBucket}
-              </span>
-            </p>
-
-            {visibleItems.length === 0 && (
-              <EmptyState
-                title="No signals in this bucket"
-                description="Try a different bucket or clear the active filters."
-              />
-            )}
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {visibleItems.map((item) => {
-                const run = runById.get(item.sourceId);
-                const note = noteByPath.get(item.sourceId);
-                const expanded = selectedId === item.id;
-
-                // Promote is available when item has approve/reopen/override action
-                const canPromote =
-                  item.allowedActions.some((a) =>
-                    ['approve', 'reopen', 'override'].includes(a.actionType)
-                  ) ||
-                  (run && run.runType !== 'signals_infer');
-
-                // Reject is available when item has defer action or there's a sourceId
-                const canReject =
-                  item.allowedActions.some((a) =>
-                    ['defer', 'approve'].includes(a.actionType)
-                  ) ||
-                  !!run ||
-                  !!item.sourceId;
-
-                return (
-                  <div key={item.id} className="space-y-1">
-                    <InboxItemCard
-                      item={inboxItemToDisplay(item, note, run)}
-                      detail={{
-                        summary: item.summary ?? undefined,
-                        whySurfaced: item.whySurfaced,
-                        severity: item.severity,
-                        inboxBucket: item.inboxBucket,
-                        rejectionReason: item.rejectionReason,
-                        runId: run?.runId,
-                        runAction: run?.action,
-                        sourceId: item.sourceId,
-                        reversibility: item.reversibility ?? null,
-                      }}
-                      isExpanded={expanded}
-                      onToggle={() =>
-                        setSelectedId(expanded ? undefined : item.id)
-                      }
-                      onInspect={() => setSelectedId(item.id)}
-                      onPromote={
-                        canPromote && run && run.runType !== 'signals_infer'
-                          ? () => handleCommit(run.runId)
+                  onPromote={
+                    canPromote && run && run.runType !== 'signals_infer'
+                      ? () => handleCommit(run.runId)
+                      : undefined
+                  }
+                  onReject={
+                    canReject
+                      ? run
+                        ? () => handleReject(run.runId)
+                        : item.sourceId
+                          ? () => handleReject(item.sourceId)
                           : undefined
-                      }
-                      onReject={
-                        canReject
-                          ? run
-                            ? () => handleReject(run.runId)
-                            : item.sourceId
-                              ? () => handleReject(item.sourceId)
-                              : undefined
-                          : undefined
-                      }
-                    />
-                    {run && (
+                      : undefined
+                  }
+                  convertPanel={
+                    run ? (
                       <ConvertPanel
                         runId={run.runId}
                         rawText={`${run.runId}${run.action ? ` — ${run.action}` : ''}${run.templateRef ? ` (${run.templateRef})` : ''}`}
                       />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    ) : undefined
+                  }
+                />
+              );
+            })}
           </div>
-        </>
+        </div>
       )}
     </>
   );
 
-  /* ─── aside detail panel ──────────────────────────────────────────────── */
-
-  // Detail is now rendered inline within each InboxItemCard — no aside needed.
-
   return (
     <WorkspaceScaffold
       title="Inbox"
-      subtitle={`${allItems.length} signal${allItems.length !== 1 ? 's' : ''} · ${visibleItems.length} in view`}
-      primaryTitle="Signals"
+      subtitle={`${surface.length} item${surface.length !== 1 ? 's' : ''} · ${visibleItems.length} in view`}
+      primaryTitle="Review queue"
       primary={primaryContent}
       asideTitle="Detail"
       aside={null}

@@ -2,7 +2,7 @@ export { ViewerSidebar } from './ViewerSidebar';
 export { PageFrame } from './PageFrame';
 export { PageContainer } from './PageContainer';
 export { SoftPanel } from './SoftPanel';
-export { CardGrid, GridCol } from './CardGrid';
+export { CardGrid, GridCol, BentoGrid, BentoCell } from './CardGrid';
 export {
   ProjectRouteShellProvider,
   useProjectRouteShellContext,

@@ -8,7 +8,8 @@ import { EmptyState } from '../ui';
 import { fetchProjects } from '../../lib/api/projects';
 import { useLoginRedirectOnUnauthenticated } from '../../hooks/use-login-redirect';
 
-export function ProjectsWorkspace() {
+export function ProjectsWorkspace({ accentColor }: { accentColor?: string }) {
+  const accent = accentColor ?? 'var(--a-sky)';
   const {
     data: projects,
     isLoading,
@@ -30,7 +31,8 @@ export function ProjectsWorkspace() {
         <div
           role="status"
           aria-label="Loading projects"
-          className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-sky-600"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--border-glass)]"
+          style={{ borderTopColor: accent }}
         />
       </div>
     );

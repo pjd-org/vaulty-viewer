@@ -2,7 +2,12 @@ import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
-import { EmptyState } from '../components/ui';
+import {
+  Badge,
+  EmptyState,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui';
 import {
   getActionsSurfaceQueryOptions,
   useActionsSurface,
@@ -294,9 +299,12 @@ function ActionsRoute() {
                           {item.summary}
                         </p>
                       </div>
-                      <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-700">
+                      <Badge
+                        variant="secondary"
+                        className="px-3 py-1 text-xs uppercase tracking-[0.2em]"
+                      >
                         {item.actionType.replace('_', ' ')}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="mt-4 grid gap-3 md:grid-cols-3">
                       <div>
@@ -424,9 +432,12 @@ function ActionsRoute() {
                                       {vItem.actionId}
                                     </p>
                                   </div>
-                                  <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-sky-700">
+                                  <Badge
+                                    variant="secondary"
+                                    className="px-2.5 py-1 text-[11px] uppercase tracking-[0.18em]"
+                                  >
                                     {vItem.status}
-                                  </span>
+                                  </Badge>
                                 </div>
                               </article>
                             ))}
@@ -444,19 +455,19 @@ function ActionsRoute() {
                           Action controls
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <button
+                          <PrimaryButton
                             type="button"
                             disabled={
                               !item.taskPath || executeMutation.isPending
                             }
                             onClick={handleExecute}
-                            className="rounded-full border border-sky-300 bg-sky-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
                           >
                             {executeMutation.isPending
                               ? 'Starting…'
                               : 'Execute'}
-                          </button>
-                          <button
+                          </PrimaryButton>
+                          <SecondaryButton
                             type="button"
                             disabled={
                               !item.taskPath ||
@@ -464,18 +475,18 @@ function ActionsRoute() {
                               simulationLoading
                             }
                             onClick={handleSimulate}
-                            className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
                           >
                             {simulationLoading ? 'Loading…' : 'Simulate'}
-                          </button>
-                          <button
+                          </SecondaryButton>
+                          <SecondaryButton
                             type="button"
                             disabled={!item.taskPath || deferMutation.isPending}
                             onClick={handleDefer}
-                            className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
                           >
                             {deferMutation.isPending ? 'Deferring…' : 'Defer'}
-                          </button>
+                          </SecondaryButton>
                         </div>
                       </div>
 

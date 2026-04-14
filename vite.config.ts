@@ -24,11 +24,17 @@ export default defineConfig({
     react(),
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(import.meta.dirname, '.'),
+      react: path.resolve(import.meta.dirname, 'node_modules/react'),
+      'react-dom': path.resolve(import.meta.dirname, 'node_modules/react-dom'),
     },
   },
   server: {
     port: 8000,
+    fs: {
+      allow: [path.resolve(import.meta.dirname, '../..')],
+    },
   },
 });

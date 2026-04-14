@@ -10,16 +10,18 @@ const VARIANT_STYLES = {
     dot: 'bg-warning',
   },
   rest: {
-    container: 'bg-white/70 text-slate-700 border-slate-300/70',
-    dot: 'bg-slate-500',
+    container:
+      'bg-[var(--surf-glass)] text-[var(--text-secondary)] border-[var(--border-glass)]',
+    dot: 'bg-[var(--text-tertiary)]',
   },
   stop: {
     container: 'bg-danger/10 text-danger border-danger/20',
     dot: 'bg-danger',
   },
   unknown: {
-    container: 'bg-black/5 text-slate-500 border-slate-200',
-    dot: 'bg-slate-400',
+    container:
+      'bg-[var(--surf-utility)] text-[var(--text-tertiary)] border-[var(--border-glass-soft)]',
+    dot: 'bg-[var(--text-tertiary)]',
   },
 } as const;
 

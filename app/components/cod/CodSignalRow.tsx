@@ -18,21 +18,32 @@ interface CodSignalItem {
 }
 
 // ---------------------------------------------------------------------------
-// Severity badge
+// Severity badge — Genie accent tokens
 // ---------------------------------------------------------------------------
 
-const SEVERITY_CLASSES: Record<string, string> = {
-  low: 'bg-slate-100 text-slate-600',
-  medium: 'bg-amber-100 text-amber-700',
-  high: 'bg-orange-100 text-orange-700',
-  critical: 'bg-red-100 text-red-700',
+const SEVERITY_STYLES: Record<string, React.CSSProperties> = {
+  low: { background: 'var(--n-100)', color: 'var(--text-secondary)' },
+  medium: {
+    background: 'var(--a-sun)',
+    color: 'var(--text-primary)',
+    opacity: 0.9,
+  },
+  high: {
+    background: 'color-mix(in srgb, var(--a-peach) 40%, transparent)',
+    color: 'var(--text-primary)',
+  },
+  critical: {
+    background: 'color-mix(in srgb, var(--a-rose) 40%, transparent)',
+    color: 'var(--text-primary)',
+  },
 };
 
 function SeverityBadge({ severity }: { severity: string }) {
-  const cls = SEVERITY_CLASSES[severity] ?? 'bg-slate-100 text-slate-600';
+  const style = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.low;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${cls}`}
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em]"
+      style={style}
     >
       {severity}
     </span>
@@ -40,42 +51,67 @@ function SeverityBadge({ severity }: { severity: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Signal card
+// Signal card — Genie glass surface
 // ---------------------------------------------------------------------------
 
 function SignalCard({
   signal,
   onOpen,
   onAct,
+  accentColor,
 }: {
   signal: PressureSignal;
   onOpen?: () => void;
   onAct?: () => void;
+  accentColor?: string;
 }) {
+  const accent = accentColor ?? 'var(--a-mint)';
   return (
-    <article className="rounded-[18px] border border-slate-200 bg-white/70 p-4 shadow-sm space-y-2">
+    <article className="genie-card space-y-2">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
+        <h3
+          className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {signal.title}
         </h3>
         <SeverityBadge severity={signal.severity} />
       </div>
       {signal.whySurfaced && (
-        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+        <p
+          className="text-xs line-clamp-2 leading-relaxed"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           {signal.whySurfaced}
         </p>
       )}
       {/* Signal metadata */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         {signal.sourceType && (
-          <span className="text-[11px] text-slate-500 flex items-center gap-1">
-            <span className="font-medium text-slate-600">Source type</span>
+          <span
+            className="text-[11px] flex items-center gap-1"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            <span
+              className="font-medium"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Source type
+            </span>
             <span>{signal.sourceType}</span>
           </span>
         )}
         {signal.confidence != null && (
-          <span className="text-[11px] text-slate-500 flex items-center gap-1">
-            <span className="font-medium text-slate-600">Confidence</span>
+          <span
+            className="text-[11px] flex items-center gap-1"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            <span
+              className="font-medium"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Confidence
+            </span>
             <span>{Math.round(signal.confidence * 100)}%</span>
           </span>
         )}
@@ -85,7 +121,12 @@ function SignalCard({
           <button
             type="button"
             onClick={onOpen}
-            className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50"
+            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            style={{
+              border: '1px solid var(--border-soft)',
+              background: 'var(--surf-glass)',
+              color: 'var(--text-secondary)',
+            }}
           >
             Open
           </button>
@@ -94,7 +135,12 @@ function SignalCard({
           <button
             type="button"
             onClick={onAct}
-            className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100"
+            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            style={{
+              border: `1px solid color-mix(in srgb, ${accent} 40%, transparent)`,
+              background: `color-mix(in srgb, ${accent} 20%, transparent)`,
+              color: 'var(--text-primary)',
+            }}
           >
             Act
           </button>
@@ -116,6 +162,8 @@ interface CodSignalRowProps {
   onAct?: (signal: PressureSignal) => void;
   /** V1 legacy: metadata pairs rendered below signals */
   items?: CodSignalItem[];
+  /** Override the Act button's primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 export function CodSignalRow({
@@ -123,6 +171,7 @@ export function CodSignalRow({
   onOpen,
   onAct,
   items,
+  accentColor,
 }: CodSignalRowProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -134,6 +183,7 @@ export function CodSignalRow({
               signal={signal}
               onOpen={onOpen ? () => onOpen(signal) : undefined}
               onAct={onAct ? () => onAct(signal) : undefined}
+              accentColor={accentColor}
             />
           ))}
         </div>
@@ -147,9 +197,15 @@ export function CodSignalRow({
               key={label}
               className="flex items-center justify-between gap-2"
             >
-              <span className="text-sm text-slate-600">{label}</span>
               <span
-                className={`text-sm font-medium ${variant ? VARIANT_COLOR[variant] : 'text-slate-800'}`}
+                className="text-sm"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {label}
+              </span>
+              <span
+                className={`text-sm font-medium ${variant ? VARIANT_COLOR[variant] : ''}`}
+                style={!variant ? { color: 'var(--text-primary)' } : undefined}
               >
                 {value}
               </span>

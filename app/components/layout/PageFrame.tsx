@@ -24,19 +24,23 @@ export function PageFrame({
       <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
         <div className="genie-content flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-800">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                {subtitle}
+              </p>
             )}
             {statusLine && (
-              <p className="mt-1 text-sm font-medium text-slate-700">
+              <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
                 {statusLine}
               </p>
             )}
             {nextAction && (
-              <p className="mt-1 text-xs text-slate-400">{nextAction}</p>
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                {nextAction}
+              </p>
             )}
           </div>
           {actions && <div className="flex items-center gap-3">{actions}</div>}

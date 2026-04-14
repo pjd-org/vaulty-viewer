@@ -11,6 +11,7 @@ import {
 import { dispatchNavOverlay } from '../../src/lib/nav-overlays';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
+import { SegmentedControl } from '../components/ui/Controls';
 
 export const Route = createFileRoute('/goals')({
   component: GoalsRoute,
@@ -86,35 +87,16 @@ function GoalsRoute() {
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
       {/* Status filter pills */}
-      <div className="flex overflow-hidden rounded-full border border-slate-200 bg-black/3">
-        {(
-          [
-            { key: 'all', label: 'All', count: counts.all },
-            { key: 'active', label: 'Active', count: counts.active },
-            { key: 'at-risk', label: 'At Risk', count: counts.atRisk },
-            { key: 'completed', label: 'Done', count: counts.completed },
-          ] as const
-        ).map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setFilter(tab.key)}
-            className={[
-              'flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
-              filter === tab.key
-                ? 'bg-sky-100 text-sky-700'
-                : 'text-slate-500 hover:text-slate-700',
-            ].join(' ')}
-          >
-            {tab.label}
-            {tab.count > 0 && (
-              <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] leading-none">
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        value={filter}
+        onChange={(v) => setFilter(v as typeof filter)}
+        options={[
+          { value: 'all', label: 'All', badge: counts.all },
+          { value: 'active', label: 'Active', badge: counts.active },
+          { value: 'at-risk', label: 'At Risk', badge: counts.atRisk },
+          { value: 'completed', label: 'Done', badge: counts.completed },
+        ]}
+      />
 
       {/* Sort select */}
       <select

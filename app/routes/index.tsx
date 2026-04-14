@@ -11,7 +11,12 @@ import {
   type NextAction,
 } from '../../src/lib/focus-logic';
 import { SectionHeader, WorkspaceScaffold } from '../components/layout';
-import { EmptyState, PrimaryButton, SecondaryButton } from '../components/ui';
+import {
+  Badge,
+  EmptyState,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui';
 import {
   getHomeSurfaceQueryOptions,
   useHomeSurface,
@@ -152,21 +157,22 @@ function TaskSeverityBadge({
   confidencePct: number;
 }) {
   const severity = taskSeverityFromPriority(priority);
-  const classes =
+  const variant =
     severity === 'critical'
-      ? 'bg-red-100 text-red-700'
+      ? 'destructive'
       : severity === 'high'
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-slate-100 text-slate-700';
+        ? 'secondary'
+        : 'outline';
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${classes}`}
+    <Badge
+      variant={variant}
+      className="inline-flex items-center gap-2 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]"
     >
       <span>{severity}</span>
       <span className="text-[10px] normal-case tracking-normal">
         {confidencePct}%
       </span>
-    </span>
+    </Badge>
   );
 }
 
@@ -226,22 +232,22 @@ function HomeTaskCard({
             Open
           </span>
         )}
-        <button
+        <PrimaryButton
           type="button"
           onClick={() => onStart(task.path)}
           disabled={mutating}
-          className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+          className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em]"
         >
           {mutating ? 'Starting…' : 'Start'}
-        </button>
-        <button
+        </PrimaryButton>
+        <SecondaryButton
           type="button"
           onClick={() => onBacklog(task.path)}
           disabled={mutating}
-          className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+          className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em]"
         >
           {mutating ? 'Updating…' : 'Backlog'}
-        </button>
+        </SecondaryButton>
       </div>
     </article>
   );
@@ -274,22 +280,22 @@ function BacklogStripCard({
               Open
             </Link>
           ) : null}
-          <button
+          <PrimaryButton
             type="button"
             onClick={() => onStart(task.path)}
             disabled={mutating}
-            className="rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-700 disabled:opacity-50"
+            className="rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.14em]"
           >
             Start
-          </button>
-          <button
+          </PrimaryButton>
+          <SecondaryButton
             type="button"
             onClick={() => onBacklog(task.path)}
             disabled={mutating}
-            className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700 disabled:opacity-50"
+            className="rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.14em]"
           >
             Backlog
-          </button>
+          </SecondaryButton>
         </div>
       </div>
     </article>
@@ -524,6 +530,11 @@ function FocusRoute() {
         </Link>
         <Link
           to="/actions"
+          search={{
+            sort: undefined,
+            simulatableOnly: undefined,
+            selectedId: undefined,
+          }}
           className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -536,6 +547,7 @@ function FocusRoute() {
         </Link>
         <Link
           to="/portfolio"
+          search={{ tab: undefined, selectedId: undefined }}
           className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -550,6 +562,12 @@ function FocusRoute() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Link
           to="/automation"
+          search={{
+            tab: undefined,
+            subtab: undefined,
+            selectedId: undefined,
+            autoRefresh: undefined,
+          }}
           className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -562,6 +580,7 @@ function FocusRoute() {
         </Link>
         <Link
           to="/bubble"
+          search={{ tab: undefined, selectedId: undefined }}
           className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -586,6 +605,7 @@ function FocusRoute() {
         </Link>
         <Link
           to="/health"
+          search={{ tab: undefined, selectedId: undefined }}
           className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
         >
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">

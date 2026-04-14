@@ -37,7 +37,7 @@ export function SoftPanel({
   return (
     <section
       className={cn(
-        'rounded-[22px] border border-white/70 text-card-foreground shadow-sm',
+        'rounded-[22px] border border-[var(--border-glass)] text-[var(--text-primary)] shadow-sm',
         VARIANT_CLASSES[variant],
         className
       )}
@@ -51,7 +51,7 @@ export function SoftPanel({
               </h2>
             )}
             {subtitle && (
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{subtitle}</p>
             )}
           </div>
           {actions && <div className="shrink-0">{actions}</div>}

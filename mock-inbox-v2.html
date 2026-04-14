@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inbox v3 — UX Mock</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 14px;
+      }
+
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+      body {
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        background: #f5f4f1;
+        color: #1a1a18;
+        min-height: 100vh;
+        display: flex;
+      }
+      .mono {
+        font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      }
+
+      /* ── App shell ── */
+      .app-shell {
+        display: flex;
+        width: 100%;
+        min-height: 100vh;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        width: 52px;
+        background: #1e1e1c;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 0;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .sidebar-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #2e2e2b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        cursor: pointer;
+      }
+      .sidebar-icon.active {
+        background: #3a3a36;
+        color: #e8e8e4;
+      }
+      .sidebar-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* ── Main ── */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        max-width: 780px;
+        padding: 0 24px 40px;
+      }
+
+      /* ── Page header ── */
+      .page-header {
+        padding: 24px 0 20px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .page-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #1a1a18;
+      }
+      .page-count {
+        font-size: 12px;
+        color: #8a8a80;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .refresh-btn {
+        margin-left: auto;
+        border: 1px solid #d8d8d0;
+        background: white;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #555550;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+        font-family: inherit;
+      }
+      .refresh-btn:hover {
+        background: #f0f0ec;
+      }
+
+      /* ── Tab bar ── */
+      .tab-bar {
+        display: flex;
+        gap: 2px;
+        border-bottom: 1px solid #e0e0d8;
+        margin-bottom: 16px;
+      }
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #8a8a80;
+        cursor: pointer;
+        border: none;
+        background: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+        user-select: none;
+        letter-spacing: 0.01em;
+        font-family: inherit;
+      }
+      .tab:hover {
+        color: #3a3a36;
+      }
+      .tab.active {
+        color: #1a1a18;
+        border-bottom-color: #1a1a18;
+        font-weight: 600;
+      }
+      .tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        padding: 0 5px;
+        font-size: 10px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-weight: 600;
+        background: #e8e8e0;
+        color: #555550;
+        letter-spacing: 0;
+      }
+      .tab.active .tab-badge {
+        background: #1a1a18;
+        color: #f5f4f1;
+      }
+      .tab-badge.urgent {
+        background: #fde8e0;
+        color: #c0401a;
+      }
+      .tab.active .tab-badge.urgent {
+        background: #c0401a;
+        color: white;
+      }
+
+      /* ── Summary line ── */
+      .summary-line {
+        font-size: 11px;
+        color: #aaa89e;
+        font-family: 'IBM Plex Mono', monospace;
+        margin-bottom: 10px;
+        letter-spacing: 0.01em;
+      }
+      .summary-line strong {
+        color: #555550;
+        font-weight: 600;
+      }
+
+      /* ── Inbox list ── */
+      .inbox-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        background: #e0e0d8;
+        border: 1px solid #e0e0d8;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      /* ── Row ── */
+      .inbox-row {
+        background: white;
+        display: flex;
+        align-items: stretch;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.1s;
+      }
+      .inbox-row:hover {
+        background: #fafaf8;
+      }
+      .inbox-row:first-child {
+        border-radius: 10px 10px 0 0;
+      }
+      .inbox-row:last-child {
+        border-radius: 0 0 10px 10px;
+      }
+      .inbox-row:only-child {
+        border-radius: 10px;
+      }
+
+      /* severity bar */
+      .sev-bar {
+        width: 3px;
+        flex-shrink: 0;
+      }
+      .sev-bar.high {
+        background: #f59e0b;
+      }
+      .sev-bar.medium {
+        background: #94a3b8;
+      }
+      .sev-bar.low {
+        background: #e2e8f0;
+      }
+      .inbox-row:first-child .sev-bar {
+        border-top-left-radius: 10px;
+      }
+      .inbox-row:last-child .sev-bar {
+        border-bottom-left-radius: 10px;
+      }
+      .inbox-row:only-child .sev-bar {
+        border-radius: 10px 0 0 10px;
+      }
+
+      /* row body */
+      .row-body {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 14px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .row-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .row-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1a1a18;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
+        letter-spacing: -0.01em;
+      }
+      .row-age {
+        font-size: 11px;
+        color: #aaa89e;
+        font-family: 'IBM Plex Mono', monospace;
+        flex-shrink: 0;
+      }
+      .row-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .row-path {
+        font-size: 10px;
+        font-family: 'IBM Plex Mono', monospace;
+        color: #b0ae9e;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* chips */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .chip.action-needed {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .chip.approval {
+        background: #ede9fe;
+        color: #5b21b6;
+      }
+      .chip.deferred {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+      .chip.rejected {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .chip.agent {
+        background: #f0fdf4;
+        color: #166534;
+      }
+      .chip.source {
+        background: #f8f8f4;
+        color: #78716c;
+        border: 1px solid #e8e8e0;
+      }
+
+      /* row actions — hover only */
+      .row-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 14px 0 8px;
+        opacity: 0;
+        transition: opacity 0.15s;
+        flex-shrink: 0;
+      }
+      .inbox-row:hover .row-actions {
+        opacity: 1;
+      }
+
+      .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 11px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+        transition:
+          background 0.12s,
+          color 0.12s;
+        white-space: nowrap;
+        letter-spacing: 0.01em;
+      }
+      .action-btn.promote {
+        background: #1a1a18;
+        color: #f5f4f1;
+      }
+      .action-btn.promote:hover {
+        background: #2e2e2b;
+      }
+      .action-btn.reject {
+        background: transparent;
+        color: #8a8a80;
+        border: 1px solid #d8d8d0;
+      }
+      .action-btn.reject:hover {
+        background: #fef2f2;
+        color: #c0401a;
+        border-color: #fca5a5;
+      }
+      .action-btn.inspect {
+        background: transparent;
+        color: #8a8a80;
+        border: 1px solid #d8d8d0;
+        padding: 5px 8px;
+      }
+      .action-btn.inspect:hover {
+        background: #f0f0ec;
+        color: #3a3a36;
+      }
+
+      /* ── Modal overlay ── */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(2px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 520px;
+        margin: 24px;
+        box-shadow:
+          0 24px 64px rgba(15, 23, 42, 0.28),
+          0 4px 16px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+        animation: modal-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes modal-in {
+        from {
+          opacity: 0;
+          transform: scale(0.97) translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      /* modal header */
+      .modal-header {
+        position: relative;
+        padding: 20px 48px 16px 20px;
+        background: linear-gradient(to bottom, #f8f8f5, white);
+        border-bottom: 1px solid #e8e8e0;
+      }
+      .modal-sev-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+      }
+      .modal-sev-bar.high {
+        background: #f59e0b;
+      }
+      .modal-sev-bar.medium {
+        background: #94a3b8;
+      }
+      .modal-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a18;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        margin-bottom: 10px;
+      }
+      .modal-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+      .modal-age {
+        font-size: 11px;
+        color: #aaa89e;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: #aaa89e;
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          color 0.12s;
+      }
+      .modal-close:hover {
+        background: #f0f0ec;
+        color: #3a3a36;
+      }
+
+      /* modal body */
+      .modal-body {
+        padding: 18px 20px 0;
+      }
+      .modal-summary {
+        font-size: 13px;
+        color: #555550;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .modal-path {
+        font-size: 10px;
+        font-family: 'IBM Plex Mono', monospace;
+        color: #b0ae9e;
+        margin-bottom: 14px;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 24px;
+        background: #f8f8f4;
+        border: 1px solid #e8e8e0;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+      }
+      .meta-field label {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #aaa89e;
+        margin-bottom: 2px;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+      .meta-field span {
+        font-size: 12px;
+        color: #3a3a36;
+        line-height: 1.4;
+      }
+
+      /* modal footer */
+      .modal-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 20px 18px;
+        border-top: 1px solid #f0f0ec;
+      }
+      .modal-convert {
+        margin-left: auto;
+        font-size: 11px;
+        color: #aaa89e;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-family: inherit;
+      }
+      .modal-convert:hover {
+        color: #555550;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d8d8d0;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <rect x="2" y="2" width="5" height="5" rx="1" />
+            <rect x="9" y="2" width="5" height="5" rx="1" />
+            <rect x="2" y="9" width="5" height="5" rx="1" />
+            <rect x="9" y="9" width="5" height="5" rx="1" />
+          </svg>
+        </div>
+        <div class="sidebar-icon active">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M2 3h12M2 8h8M2 13h5" />
+          </svg>
+        </div>
+        <div class="sidebar-icon">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="8" cy="8" r="5" />
+            <path d="M8 5v3l2 1.5" />
+          </svg>
+        </div>
+        <div class="sidebar-icon">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M8 2v12M2 8h12" stroke-linecap="round" />
+          </svg>
+        </div>
+      </nav>
+
+      <!-- Main -->
+      <main class="main">
+        <div class="page-header">
+          <span class="page-title">Inbox</span>
+          <span class="page-count">4 items</span>
+          <button class="refresh-btn">Refresh</button>
+        </div>
+
+        <div class="tab-bar" role="tablist">
+          <button class="tab active" role="tab" aria-selected="true">
+            Queue <span class="tab-badge urgent">3</span>
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Workbench <span class="tab-badge">1</span>
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Archive <span class="tab-badge">6</span>
+          </button>
+        </div>
+
+        <p class="summary-line">
+          Showing <strong>3 items</strong> · Queue · Promote or reject each run
+        </p>
+
+        <div class="inbox-list" role="list">
+          <!-- Row 1 -->
+          <div
+            class="inbox-row"
+            role="listitem"
+            data-title="Update avatar confidence model — skill calibration run"
+            data-age="2m ago"
+            data-summary="This run inferred 3 avatar skill-confidence updates from the last session. Confidence score: 0.72. Target: notes/core/avatar/Avatar.md"
+            data-path="inbox/extracted/run-a4f2c1 · 3 items"
+            data-sev="high"
+            data-bucket="action-needed"
+            data-run-id="run-a4f2c1"
+            data-template="avatar-skill-calibration"
+            data-items="3 patches"
+            data-reversibility="High — frontmatter only"
+          >
+            <div class="sev-bar high"></div>
+            <div class="row-body">
+              <div class="row-top">
+                <span class="row-title"
+                  >Update avatar confidence model — skill calibration run</span
+                >
+                <span class="row-age">2m ago</span>
+              </div>
+              <div class="row-meta">
+                <span class="chip action-needed">Action needed</span>
+                <span class="chip agent">agent</span>
+                <span class="chip source">run · signals_infer</span>
+              </div>
+              <span class="row-path">inbox/extracted/run-a4f2c1 · 3 items</span>
+            </div>
+            <div class="row-actions">
+              <button class="action-btn inspect" title="Inspect">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <circle cx="5" cy="5" r="3.5" />
+                  <path d="M8 8l2.5 2.5" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="action-btn reject">Reject</button>
+              <button class="action-btn promote">Promote</button>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div
+            class="inbox-row"
+            role="listitem"
+            data-title="World state: flagged constraint — deadline pressure signal"
+            data-age="18m ago"
+            data-summary="Confidence below threshold (0.38). Manual approval required before this run is committed to the vault."
+            data-path="inbox/extracted/run-8b3d90 · 1 item"
+            data-sev="medium"
+            data-bucket="approval"
+            data-run-id="run-8b3d90"
+            data-items="1 item"
+            data-reversibility="Medium"
+          >
+            <div class="sev-bar medium"></div>
+            <div class="row-body">
+              <div class="row-top">
+                <span class="row-title"
+                  >World state: flagged constraint — deadline pressure
+                  signal</span
+                >
+                <span class="row-age">18m ago</span>
+              </div>
+              <div class="row-meta">
+                <span class="chip approval">Needs approval</span>
+                <span class="chip agent">agent</span>
+              </div>
+              <span class="row-path">inbox/extracted/run-8b3d90 · 1 item</span>
+            </div>
+            <div class="row-actions">
+              <button class="action-btn inspect" title="Inspect">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <circle cx="5" cy="5" r="3.5" />
+                  <path d="M8 8l2.5 2.5" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="action-btn reject">Reject</button>
+              <button class="action-btn promote">Promote</button>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div
+            class="inbox-row"
+            role="listitem"
+            data-title="Task dependency graph: 2 new nodes extracted from session"
+            data-age="1h ago"
+            data-summary="Two task nodes were extracted from the last conversation run and are staged for promotion."
+            data-path="inbox/extracted/run-f19a55 · 2 items"
+            data-sev="high"
+            data-bucket="action-needed"
+            data-run-id="run-f19a55"
+            data-items="2 task notes"
+            data-reversibility="High"
+          >
+            <div class="sev-bar high"></div>
+            <div class="row-body">
+              <div class="row-top">
+                <span class="row-title"
+                  >Task dependency graph: 2 new nodes extracted from
+                  session</span
+                >
+                <span class="row-age">1h ago</span>
+              </div>
+              <div class="row-meta">
+                <span class="chip action-needed">Action needed</span>
+                <span class="chip agent">agent</span>
+                <span class="chip source">run · conversation</span>
+              </div>
+              <span class="row-path">inbox/extracted/run-f19a55 · 2 items</span>
+            </div>
+            <div class="row-actions">
+              <button class="action-btn inspect" title="Inspect">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <circle cx="5" cy="5" r="3.5" />
+                  <path d="M8 8l2.5 2.5" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="action-btn reject">Reject</button>
+              <button class="action-btn promote">Promote</button>
+            </div>
+          </div>
+        </div>
+        <!-- /inbox-list -->
+      </main>
+    </div>
+
+    <!-- ── Modal ── -->
+    <div
+      class="modal-backdrop"
+      id="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <div class="modal-sev-bar" id="modal-sev-bar"></div>
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-chips" id="modal-chips"></div>
+          <button class="modal-close" id="modal-close" aria-label="Close">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+            >
+              <path d="M1 1l10 10M11 1L1 11" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-path mono" id="modal-path"></p>
+          <p class="modal-summary" id="modal-summary"></p>
+          <div class="meta-grid" id="modal-meta"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="action-btn reject" id="modal-reject">Reject</button>
+          <button class="action-btn promote" id="modal-promote">Promote</button>
+          <button class="modal-convert" id="modal-convert">
+            Convert to task…
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const backdrop = document.getElementById('modal-backdrop');
+      const modalClose = document.getElementById('modal-close');
+
+      function openModal(row) {
+        const sev = row.dataset.sev;
+        const bucket = row.dataset.bucket;
+
+        document.getElementById('modal-title').textContent = row.dataset.title;
+        document.getElementById('modal-path').textContent = row.dataset.path;
+        document.getElementById('modal-summary').textContent =
+          row.dataset.summary;
+
+        // sev bar
+        const sevBar = document.getElementById('modal-sev-bar');
+        sevBar.className = 'modal-sev-bar ' + sev;
+
+        // chips
+        const chipsEl = document.getElementById('modal-chips');
+        const bucketLabel =
+          bucket === 'action-needed'
+            ? 'Action needed'
+            : bucket === 'approval'
+              ? 'Needs approval'
+              : bucket;
+        const bucketClass = bucket;
+        chipsEl.innerHTML =
+          `<span class="chip ${bucketClass}">${bucketLabel}</span>` +
+          `<span class="chip agent">agent</span>` +
+          `<span class="modal-age">${row.dataset.age}</span>`;
+
+        // meta grid
+        const meta = document.getElementById('modal-meta');
+        meta.innerHTML = '';
+        const fields = [
+          { label: 'Run ID', value: row.dataset.runId, mono: true },
+          { label: 'Template', value: row.dataset.template, mono: true },
+          { label: 'Items', value: row.dataset.items, mono: false },
+          {
+            label: 'Reversibility',
+            value: row.dataset.reversibility,
+            mono: false,
+          },
+        ].filter((f) => f.value);
+        fields.forEach((f) => {
+          const div = document.createElement('div');
+          div.className = 'meta-field';
+          div.innerHTML = `<label>${f.label}</label><span${f.mono ? ' class="mono"' : ''}>${f.value}</span>`;
+          meta.appendChild(div);
+        });
+
+        backdrop.classList.add('open');
+        document.getElementById('modal-close').focus();
+      }
+
+      function closeModal() {
+        backdrop.classList.remove('open');
+      }
+
+      // Row click → modal
+      document.querySelectorAll('.inbox-row').forEach((row) => {
+        row.addEventListener('click', () => openModal(row));
+      });
+
+      // Action buttons stop propagation (don't open modal)
+      document.querySelectorAll('.action-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => e.stopPropagation());
+      });
+
+      // Close modal
+      modalClose.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      // Modal action buttons
+      document
+        .getElementById('modal-reject')
+        .addEventListener('click', closeModal);
+      document
+        .getElementById('modal-promote')
+        .addEventListener('click', closeModal);
+      document.getElementById('modal-convert').addEventListener('click', () => {
+        alert('Convert to task — not wired in mock');
+      });
+
+      // Tab switching
+      document.querySelectorAll('.tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach((t) => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+
+          const label = tab.textContent.trim().replace(/\d/g, '').trim();
+          const summaryLine = document.querySelector('.summary-line');
+          const list = document.querySelector('.inbox-list');
+
+          if (label === 'Queue') {
+            summaryLine.innerHTML =
+              'Showing <strong>3 items</strong> · Queue · Promote or reject each run';
+            list.style.display = 'flex';
+          } else if (label === 'Workbench') {
+            summaryLine.innerHTML =
+              'Showing <strong>1 item</strong> · Workbench · Deferred for later review';
+            list.style.display = 'none';
+          } else {
+            summaryLine.innerHTML =
+              'Showing <strong>6 items</strong> · Archive · Rejected runs';
+            list.style.display = 'none';
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

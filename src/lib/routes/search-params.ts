@@ -49,8 +49,10 @@ export function homeSearchParams(s: S): {
 export function inboxSearchParams(s: S): {
   view?: 'queue' | 'workbench' | 'archive';
   rejectedTab?: 'user' | 'automated';
-  sort?: 'newest' | 'oldest' | 'confidence';
+  sort?: 'newest' | 'oldest' | 'confidence' | 'itemCount';
   severity?: 'high' | 'medium' | 'low';
+  runType?: 'signals_infer' | 'conversation' | 'manual';
+  reversibility?: 'high' | 'medium' | 'low';
   selectedId?: string;
 } {
   return {
@@ -67,8 +69,19 @@ export function inboxSearchParams(s: S): {
       'newest',
       'oldest',
       'confidence',
+      'itemCount',
     ] as const),
     severity: readEnumSearchParam(s.severity, [
+      'high',
+      'medium',
+      'low',
+    ] as const),
+    runType: readEnumSearchParam(s.runType, [
+      'signals_infer',
+      'conversation',
+      'manual',
+    ] as const),
+    reversibility: readEnumSearchParam(s.reversibility, [
       'high',
       'medium',
       'low',

@@ -4,8 +4,6 @@ export type InboxBucket =
   | 'all'
   | 'needs_action'
   | 'needs_approval'
-  | 'failure'
-  | 'drift_stale'
   | 'rejected_user'
   | 'rejected_automated'
   | 'deferred';
@@ -18,7 +16,7 @@ export const INBOX_BUCKET_CONFIG: Array<{
 }> = [
   {
     bucket: 'all',
-    label: 'All Signals',
+    label: 'All Items',
     shortLabel: 'All',
     matches: () => true,
   },
@@ -33,18 +31,6 @@ export const INBOX_BUCKET_CONFIG: Array<{
     label: 'Needs Approval',
     shortLabel: 'Approval',
     matches: (i) => i.inboxBucket === 'needs_approval',
-  },
-  {
-    bucket: 'failure',
-    label: 'Failures',
-    shortLabel: 'Failures',
-    matches: (i) => i.inboxBucket === 'failure',
-  },
-  {
-    bucket: 'drift_stale',
-    label: 'Drift / Stale',
-    shortLabel: 'Drift',
-    matches: (i) => i.inboxBucket === 'drift' || i.inboxBucket === 'stale',
   },
   {
     bucket: 'rejected_user',

@@ -2,8 +2,7 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { cn } from '@/src/lib/utils';
 import type { InboxItemDisplay } from '../../types/display';
-import { Card, CardContent } from '../ui/card';
-import { PrimaryButton, SecondaryButton, IconButton, SoftChip } from '../ui';
+import { PrimaryButton, SoftChip } from '../ui';
 import {
   Dialog,
   DialogContent,
@@ -27,12 +26,17 @@ interface InboxItemDetail {
 interface InboxItemCardProps {
   item: InboxItemDisplay;
   detail?: InboxItemDetail;
+  /** @deprecated no-op, kept for backwards compat */
   isExpanded?: boolean;
+  /** @deprecated no-op, kept for backwards compat */
   onToggle?: () => void;
-  /** @deprecated use onToggle — kept for backwards compat */
   onInspect: () => void;
   onPromote?: () => void;
   onReject?: () => void;
+  /** Optional slot rendered in the modal footer (e.g. "Convert to task" button) */
+  convertPanel?: React.ReactNode;
+  /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 /* ── severity config ── */
@@ -41,27 +45,31 @@ const SEVERITY_CONFIG: Record<
   { bar: string; badge: string; dot: string; label: string }
 > = {
   critical: {
-    bar: 'bg-red-500',
-    badge: 'bg-red-50 text-red-700 border-red-200',
-    dot: 'bg-red-500',
+    bar: 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]',
+    badge:
+      'bg-[color-mix(in_srgb,var(--a-rose)_10%,transparent)] text-[var(--text-danger)] border-[color-mix(in_srgb,var(--a-rose)_20%,transparent)]',
+    dot: 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]',
     label: 'Critical',
   },
   high: {
-    bar: 'bg-orange-400',
-    badge: 'bg-orange-50 text-orange-700 border-orange-200',
-    dot: 'bg-orange-400',
+    bar: 'bg-[color-mix(in_srgb,var(--a-sun)_80%,transparent)]',
+    badge:
+      'bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] text-[var(--text-warning)] border-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
+    dot: 'bg-[color-mix(in_srgb,var(--a-sun)_80%,transparent)]',
     label: 'High',
   },
   medium: {
-    bar: 'bg-yellow-400',
-    badge: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-    dot: 'bg-yellow-400',
+    bar: 'bg-[color-mix(in_srgb,var(--a-sun)_50%,transparent)]',
+    badge:
+      'bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] text-[var(--text-warning)] border-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
+    dot: 'bg-[color-mix(in_srgb,var(--a-sun)_50%,transparent)]',
     label: 'Medium',
   },
   low: {
-    bar: 'bg-slate-300',
-    badge: 'bg-slate-50 text-slate-500 border-slate-200',
-    dot: 'bg-slate-300',
+    bar: 'bg-[var(--surf-utility)]',
+    badge:
+      'bg-[var(--surf-utility)] text-[var(--text-tertiary)] border-[var(--border-glass)]',
+    dot: 'bg-[var(--surf-utility)]',
     label: 'Low',
   },
 };
@@ -70,9 +78,10 @@ function getSeverityConfig(severity?: string | null) {
   if (!severity) return null;
   return (
     SEVERITY_CONFIG[severity] ?? {
-      bar: 'bg-slate-200',
-      badge: 'bg-slate-50 text-slate-500 border-slate-200',
-      dot: 'bg-slate-300',
+      bar: 'bg-[var(--surf-utility)]',
+      badge:
+        'bg-[var(--surf-utility)] text-[var(--text-tertiary)] border-[var(--border-glass)]',
+      dot: 'bg-[var(--surf-utility)]',
       label: severity,
     }
   );
@@ -91,15 +100,18 @@ const REVERSIBILITY_CONFIG: Record<
 > = {
   high: {
     label: 'Reversible',
-    className: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    className:
+      'bg-[color-mix(in_srgb,var(--a-mint)_10%,transparent)] text-[var(--text-success)] ring-[color-mix(in_srgb,var(--a-mint)_20%,transparent)]',
   },
   medium: {
     label: 'Partially reversible',
-    className: 'bg-yellow-50 text-yellow-700 ring-yellow-200',
+    className:
+      'bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] text-[var(--text-warning)] ring-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
   },
   low: {
     label: 'Irreversible',
-    className: 'bg-red-50 text-red-700 ring-red-200',
+    className:
+      'bg-[color-mix(in_srgb,var(--a-rose)_10%,transparent)] text-[var(--text-danger)] ring-[color-mix(in_srgb,var(--a-rose)_20%,transparent)]',
   },
 };
 
@@ -122,12 +134,12 @@ function MetaRow({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
         {label}
       </span>
       <span
         className={cn(
-          'text-sm text-slate-700 leading-snug',
+          'text-sm text-[var(--text-secondary)] leading-snug',
           mono && 'font-mono text-xs'
         )}
       >
@@ -145,6 +157,8 @@ function InspectOverlay({
   detail,
   onPromote,
   onReject,
+  convertPanel,
+  accentColor,
 }: {
   open: boolean;
   onClose: () => void;
@@ -152,7 +166,10 @@ function InspectOverlay({
   detail?: InboxItemDetail;
   onPromote?: () => void;
   onReject?: () => void;
+  convertPanel?: React.ReactNode;
+  accentColor?: string;
 }) {
+  const accent = accentColor ?? 'var(--a-sky)';
   const sev = getSeverityConfig(detail?.severity);
 
   return (
@@ -166,11 +183,11 @@ function InspectOverlay({
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           'duration-200'
         )}
-        style={{ background: 'white' }}
+        style={{ background: 'var(--surf-elevated)' }}
         /* Override the default overlay to get correct scrim opacity */
       >
         {/* ── Hero header ── */}
-        <div className="relative px-6 pt-5 pb-4 bg-gradient-to-b from-slate-50 to-white border-b border-slate-100">
+        <div className="relative px-6 pt-5 pb-4 bg-gradient-to-b from-[var(--surf-utility)] to-[var(--surf-elevated)] border-b border-[var(--border-glass-soft)]">
           {/* severity bar — left edge */}
           {sev && (
             <div
@@ -190,7 +207,7 @@ function InspectOverlay({
                   aria-hidden="true"
                 />
               )}
-              <DialogTitle className="text-[15px] font-semibold text-slate-900 leading-snug">
+              <DialogTitle className="text-[15px] font-semibold text-[var(--text-primary)] leading-snug">
                 {item.title}
               </DialogTitle>
             </div>
@@ -212,7 +229,7 @@ function InspectOverlay({
               )}
               {item.ageLabel && (
                 <span
-                  className="text-[11px] text-slate-400"
+                  className="text-[11px] text-[var(--text-tertiary)]"
                   suppressHydrationWarning
                 >
                   {item.ageLabel}
@@ -222,7 +239,15 @@ function InspectOverlay({
           </DialogHeader>
 
           {/* close — clean rounded button */}
-          <DialogClose className="absolute right-4 top-4 size-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/50">
+          <DialogClose
+            className="absolute right-4 top-4 size-7 rounded-full flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surf-utility)] transition-colors focus-visible:outline-none"
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, ${accent} 40%, transparent)`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = '';
+            }}
+          >
             <svg
               width="12"
               height="12"
@@ -244,19 +269,19 @@ function InspectOverlay({
         {/* ── Body ── */}
         <div className="px-6 py-5 space-y-4">
           {item.contextSnippet && (
-            <p className="font-mono text-[11px] text-slate-400 leading-relaxed truncate">
+            <p className="font-mono text-[11px] text-[var(--text-tertiary)] leading-relaxed truncate">
               {shortPath(item.contextSnippet) ?? item.contextSnippet}
             </p>
           )}
 
           {detail?.summary && detail.summary !== item.contextSnippet && (
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
               {detail.summary}
             </p>
           )}
 
           {/* metadata grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3.5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 rounded-xl bg-[var(--surf-utility)] border border-[var(--border-glass-soft)] px-4 py-3.5">
             {detail?.whySurfaced && (
               <div className="col-span-2">
                 <MetaRow label="Why surfaced">{detail.whySurfaced}</MetaRow>
@@ -284,7 +309,7 @@ function InspectOverlay({
                 <MetaRow label="Run" mono>
                   {detail.runId}
                   {detail.runAction && (
-                    <span className="block text-[11px] text-slate-400 mt-0.5 font-sans">
+                    <span className="block text-[11px] text-[var(--text-tertiary)] mt-0.5 font-sans">
                       {detail.runAction}
                     </span>
                   )}
@@ -300,7 +325,19 @@ function InspectOverlay({
                 to="/note"
                 search={{ p: detail.sourceId.replace(/\.md$/i, '') }}
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 border border-sky-200 px-3.5 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100 hover:border-sky-300 transition-colors"
+                style={{
+                  background: `color-mix(in srgb, ${accent} 10%, transparent)`,
+                  borderColor: `color-mix(in srgb, ${accent} 20%, transparent)`,
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium text-[var(--text-info)] transition-colors"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = `color-mix(in srgb, ${accent} 18%, transparent)`;
+                  e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 30%, transparent)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = `color-mix(in srgb, ${accent} 10%, transparent)`;
+                  e.currentTarget.style.borderColor = `color-mix(in srgb, ${accent} 20%, transparent)`;
+                }}
               >
                 Open note
                 <svg
@@ -323,7 +360,7 @@ function InspectOverlay({
             <Link
               to="/huey"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surf-elevated)] border border-[var(--border-glass)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:border-[var(--border-glass-soft)] transition-colors"
             >
               Ask Huey
               <svg
@@ -346,30 +383,33 @@ function InspectOverlay({
         </div>
 
         {/* ── Footer actions (only when promote/reject available) ── */}
-        {(onPromote || onReject) && (
-          <div className="border-t border-slate-100 bg-slate-50/70 px-6 py-3.5 flex items-center justify-end gap-2">
-            {onReject && (
-              <button
-                type="button"
-                className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
-                onClick={() => {
-                  onReject();
-                  onClose();
-                }}
-              >
-                Reject
-              </button>
-            )}
-            {onPromote && (
-              <PrimaryButton
-                onClick={() => {
-                  onPromote();
-                  onClose();
-                }}
-              >
-                Promote
-              </PrimaryButton>
-            )}
+        {(onPromote || onReject || convertPanel) && (
+          <div className="border-t border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-6 py-3.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">{convertPanel}</div>
+            <div className="flex items-center gap-2">
+              {onReject && (
+                <button
+                  type="button"
+                  className="rounded-full border border-[color-mix(in_srgb,var(--a-rose)_20%,transparent)] bg-[var(--surf-elevated)] px-4 py-2 text-xs font-medium text-[var(--text-danger)] hover:bg-[color-mix(in_srgb,var(--a-rose)_8%,transparent)] hover:border-[color-mix(in_srgb,var(--a-rose)_30%,transparent)] transition-colors"
+                  onClick={() => {
+                    onReject();
+                    onClose();
+                  }}
+                >
+                  Reject
+                </button>
+              )}
+              {onPromote && (
+                <PrimaryButton
+                  onClick={() => {
+                    onPromote();
+                    onClose();
+                  }}
+                >
+                  Promote
+                </PrimaryButton>
+              )}
+            </div>
           </div>
         )}
       </DialogContent>
@@ -382,13 +422,15 @@ function InspectOverlay({
 export function InboxItemCard({
   item,
   detail,
-  isExpanded = false,
-  onToggle,
+  isExpanded: _isExpanded,
+  onToggle: _onToggle,
   onInspect,
   onPromote,
   onReject,
+  convertPanel,
+  accentColor,
 }: InboxItemCardProps) {
-  const [confirmingReject, setConfirmingReject] = React.useState(false);
+  const accent = accentColor ?? 'var(--a-sky)';
   const [overlayOpen, setOverlayOpen] = React.useState(false);
 
   const sev = getSeverityConfig(detail?.severity);
@@ -400,7 +442,6 @@ export function InboxItemCard({
 
   const handleClose = () => {
     setOverlayOpen(false);
-    if (onToggle && isExpanded) onToggle();
   };
 
   return (
@@ -412,6 +453,8 @@ export function InboxItemCard({
         detail={detail}
         onPromote={onPromote}
         onReject={onReject}
+        convertPanel={convertPanel}
+        accentColor={accentColor}
       />
 
       <div
@@ -432,19 +475,19 @@ export function InboxItemCard({
           />
         )}
 
-        <Card
+        <div
           className={cn(
-            'z-10 isolate transition-all duration-150 group',
-            'border border-slate-200 min-h-[212px] rounded-2xl',
+            'genie-card z-10 isolate transition-all duration-150 group',
+            'min-h-[212px] rounded-2xl',
             !item.isBlocked && [
-              'bg-gradient-to-b from-white to-slate-50/50',
-              'hover:-translate-y-[2px] hover:border-slate-300',
+              'bg-[var(--surf-elevated)]',
+              'hover:-translate-y-[2px] hover:border-[var(--border-glass)]',
               'hover:shadow-[0_14px_28px_-20px_rgba(15,23,42,0.45)]',
               'shadow-[0_4px_14px_-12px_rgba(15,23,42,0.3)]',
               'animate-fade-in',
             ],
             item.isBlocked &&
-              'bg-transparent border-border border-2 shadow-none'
+              'bg-transparent border-[var(--border-glass)] border-2 shadow-none'
           )}
         >
           {/* severity accent bar */}
@@ -459,10 +502,10 @@ export function InboxItemCard({
             />
           )}
 
-          <CardContent className="flex h-full flex-col px-4 py-3.5 pl-5">
+          <div className="flex h-full flex-col px-4 py-3.5 pl-5">
             {/* ── row 1: title + chips + age ── */}
             <div className="flex items-start gap-2 min-w-0">
-              <span className="text-sm font-semibold text-slate-800 flex-1 min-w-0 line-clamp-2 leading-snug">
+              <span className="text-sm font-semibold text-[var(--text-primary)] flex-1 min-w-0 line-clamp-2 leading-snug">
                 {item.title}
               </span>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -472,7 +515,7 @@ export function InboxItemCard({
                 )}
                 {item.ageLabel && (
                   <span
-                    className="text-[11px] text-slate-400 tabular-nums"
+                    className="text-[11px] text-[var(--text-tertiary)] tabular-nums"
                     suppressHydrationWarning
                   >
                     {item.ageLabel}
@@ -483,7 +526,7 @@ export function InboxItemCard({
 
             {/* ── row 2: short path ── */}
             {item.contextSnippet && (
-              <p className="mt-1 text-[11px] text-slate-400 leading-relaxed line-clamp-1 font-mono">
+              <p className="mt-1 text-[11px] text-[var(--text-tertiary)] leading-relaxed line-clamp-1 font-mono">
                 {shortPath(item.contextSnippet) ?? item.contextSnippet}
               </p>
             )}
@@ -492,7 +535,7 @@ export function InboxItemCard({
             {(detail?.whySurfaced || detail?.reversibility) && (
               <div className="mt-2 flex items-start gap-2 min-w-0">
                 {detail.whySurfaced && (
-                  <p className="flex-1 min-w-0 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                  <p className="flex-1 min-w-0 text-[11px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
                     {detail.whySurfaced}
                   </p>
                 )}
@@ -512,24 +555,30 @@ export function InboxItemCard({
             )}
 
             {detail?.summary && (
-              <p className="mt-3 text-sm text-slate-600 line-clamp-3 leading-relaxed">
+              <p className="mt-3 text-sm text-[var(--text-secondary)] line-clamp-3 leading-relaxed">
                 {detail.summary}
               </p>
             )}
 
             {/* ── row 3: actions ── */}
             <div className="mt-auto flex items-center gap-2 pt-4">
-              {/* Inspect — styled to suggest "opens detail" */}
+              {/* Inspect — opens modal */}
               <button
                 type="button"
                 onClick={handleInspect}
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5',
                   'text-xs font-medium transition-all duration-150',
-                  'border-slate-200 bg-white text-slate-600 shadow-sm',
-                  'hover:border-slate-400 hover:text-slate-800 hover:bg-slate-50',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/50'
+                  'border-[var(--border-glass)] bg-[var(--surf-elevated)] text-[var(--text-secondary)] shadow-sm',
+                  'hover:border-[var(--border-glass-soft)] hover:text-[var(--text-primary)] hover:bg-[var(--surf-utility)]',
+                  'focus-visible:outline-none'
                 )}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, ${accent} 40%, transparent)`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = '';
+                }}
               >
                 <svg
                   width="11"
@@ -537,7 +586,7 @@ export function InboxItemCard({
                   viewBox="0 0 11 11"
                   fill="none"
                   aria-hidden="true"
-                  className="text-slate-400"
+                  className="text-[var(--text-tertiary)]"
                 >
                   <circle
                     cx="5"
@@ -555,65 +604,9 @@ export function InboxItemCard({
                 </svg>
                 Inspect
               </button>
-
-              {item.actions.includes('promote') && onPromote && (
-                <PrimaryButton onClick={onPromote}>Promote</PrimaryButton>
-              )}
-
-              {onReject &&
-                (confirmingReject ? (
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-red-600 font-medium">
-                      Reject?
-                    </span>
-                    <IconButton
-                      icon={
-                        <span
-                          aria-hidden="true"
-                          className="text-base leading-none"
-                        >
-                          ✓
-                        </span>
-                      }
-                      label="Confirm reject"
-                      onClick={() => {
-                        onReject();
-                        setConfirmingReject(false);
-                      }}
-                      className="text-red-600 hover:text-red-700"
-                    />
-                    <IconButton
-                      icon={
-                        <span
-                          aria-hidden="true"
-                          className="text-base leading-none"
-                        >
-                          ✕
-                        </span>
-                      }
-                      label="Cancel reject"
-                      onClick={() => setConfirmingReject(false)}
-                      className="text-slate-500 hover:text-slate-700"
-                    />
-                  </div>
-                ) : (
-                  <IconButton
-                    icon={
-                      <span
-                        aria-hidden="true"
-                        className="text-base leading-none"
-                      >
-                        ×
-                      </span>
-                    }
-                    label="Reject"
-                    onClick={() => setConfirmingReject(true)}
-                    className="text-slate-400 hover:text-red-500"
-                  />
-                ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </>
   );

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/src/lib/utils';
 import { formatDuration, type NextAction } from '../../../src/lib/focus-logic';
-import { Card, CardContent } from '../ui/card';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -13,6 +12,8 @@ import { useSessionPlannerQuery } from '../../lib/queries/agents';
 interface SessionPlannerCardProps {
   tasks: NextAction[];
   onStart: (taskIds: string[], budgetMin: number) => void;
+  /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 const BUDGET_OPTIONS = [
@@ -24,7 +25,9 @@ const BUDGET_OPTIONS = [
 
 /** Corner bracket accent — card-5 pattern */
 const CornerBracket = ({ className }: { className: string }) => (
-  <div className={cn('size-5 absolute border-border', className)} />
+  <div
+    className={cn('size-5 absolute border-[var(--border-glass)]', className)}
+  />
 );
 
 const CornerBrackets = () => (
@@ -39,7 +42,9 @@ const CornerBrackets = () => (
 export function SessionPlannerCard({
   tasks,
   onStart,
+  accentColor,
 }: SessionPlannerCardProps) {
+  const accent = accentColor ?? 'var(--color-primary)';
   const [expanded, setExpanded] = useState(false);
   const [budgetMin, setBudgetMin] = useState('45');
   const [selected, setSelected] = useState<Set<string>>(
@@ -91,22 +96,24 @@ export function SessionPlannerCard({
 
   if (!expanded) {
     return (
-      <Card className="shadow-[0px_4px_0px_0px_var(--border)]">
-        <CardContent className="px-4 py-3">
+      <div className="genie-card shadow-[0px_4px_0px_0px_var(--border-glass)]">
+        <div className="px-4 py-3">
           <SecondaryButton onClick={() => setExpanded(true)} className="w-full">
             Plan a session →
           </SecondaryButton>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="relative rounded-md bg-muted/20">
+    <div className="genie-card relative rounded-md">
       <CornerBrackets />
-      <CardContent className="p-4 space-y-4">
+      <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-800">Plan a session</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
+            Plan a session
+          </p>
           <IconButton
             onClick={() => {
               setExpanded(false);
@@ -114,12 +121,12 @@ export function SessionPlannerCard({
             }}
             label="Close"
             icon={<span className="text-lg leading-none">×</span>}
-            className="text-slate-400"
+            className="text-[var(--text-tertiary)]"
           />
         </div>
 
         <div>
-          <p className="text-xs text-slate-600 mb-2">Duration</p>
+          <p className="text-xs text-[var(--text-secondary)] mb-2">Duration</p>
           <SegmentedControl
             options={BUDGET_OPTIONS}
             value={budgetMin}
@@ -133,40 +140,43 @@ export function SessionPlannerCard({
         {/* AI plan result */}
         {aiPlan && !aiLoading && (
           <div className="genie-surface genie-surface--utility rounded-xl p-3 space-y-2">
-            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
               AI Session Plan
             </p>
-            <p className="text-xs text-slate-600 italic">
+            <p className="text-xs text-[var(--text-secondary)] italic">
               {aiPlan.expected_outcome}
             </p>
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
+              <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
                 <span
                   aria-hidden="true"
-                  className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: accent }}
                 />
                 {aiPlan.main_task.title}
-                <span className="text-xs text-slate-500 ml-auto">
+                <span className="text-xs text-[var(--text-tertiary)] ml-auto">
                   {aiPlan.main_task.duration}
                 </span>
               </div>
               {aiPlan.supporting_tasks.map((t) => (
                 <div
                   key={t.id}
-                  className="flex items-center gap-2 text-sm text-slate-700 pl-4"
+                  className="flex items-center gap-2 text-sm text-[var(--text-secondary)] pl-4"
                 >
                   <span
                     aria-hidden="true"
-                    className="w-1.5 h-1.5 rounded-full bg-neutral-300 shrink-0"
+                    className="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)] shrink-0"
                   />
                   {t.title}
-                  <span className="text-xs text-slate-500 ml-auto">
+                  <span className="text-xs text-[var(--text-tertiary)] ml-auto">
                     {t.duration}
                   </span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500">Total: {aiPlan.total_time}</p>
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Total: {aiPlan.total_time}
+            </p>
             <PrimaryButton onClick={handleUseAiPlan} className="w-full">
               Start this session
             </PrimaryButton>
@@ -176,7 +186,7 @@ export function SessionPlannerCard({
         {/* Manual task picker (shown when AI hasn't run or loaded) */}
         {!aiPlan && (
           <div>
-            <p className="text-xs text-slate-600 mb-2">Tasks</p>
+            <p className="text-xs text-[var(--text-secondary)] mb-2">Tasks</p>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {tasks.map((t) => (
                 <label
@@ -189,10 +199,10 @@ export function SessionPlannerCard({
                     onChange={() => toggle(t.id)}
                     className="rounded"
                   />
-                  <span className="flex-1 truncate text-slate-800">
+                  <span className="flex-1 truncate text-[var(--text-primary)]">
                     {t.title}
                   </span>
-                  <span className="text-xs text-slate-500 shrink-0">
+                  <span className="text-xs text-[var(--text-tertiary)] shrink-0">
                     {t.estimatedTimeMin > 0
                       ? formatDuration(t.estimatedTimeMin)
                       : ''}
@@ -231,7 +241,7 @@ export function SessionPlannerCard({
             </SecondaryButton>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

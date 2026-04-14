@@ -1,7 +1,7 @@
-import React from 'react'
+import React from 'react';
 
 interface CodConstraintTableProps {
-  items: { label: string; value: string }[]
+  items: { label: string; value: string }[];
 }
 
 export function CodConstraintTable({ items }: CodConstraintTableProps) {
@@ -9,10 +9,20 @@ export function CodConstraintTable({ items }: CodConstraintTableProps) {
     <dl className="grid grid-cols-1 gap-2">
       {items.map(({ label, value }) => (
         <div key={label} className="flex items-baseline justify-between gap-2">
-          <dt className="text-xs uppercase tracking-wide text-slate-500 shrink-0">{label}</dt>
-          <dd className="text-sm font-medium text-slate-800 text-right">{value}</dd>
+          <dt
+            className="text-xs uppercase tracking-wide shrink-0"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            {label}
+          </dt>
+          <dd
+            className="text-sm font-medium text-right"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {value}
+          </dd>
         </div>
       ))}
     </dl>
-  )
+  );
 }

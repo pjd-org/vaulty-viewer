@@ -7,10 +7,19 @@ import type { Recommendation } from '../../lib/viewer-adapter';
 // V3: Recommendation card
 // ---------------------------------------------------------------------------
 
-const REVERSIBILITY_CHIP: Record<string, string> = {
-  low: 'bg-red-100 text-red-700',
-  medium: 'bg-amber-100 text-amber-700',
-  high: 'bg-green-100 text-green-700',
+const REVERSIBILITY_STYLES: Record<string, React.CSSProperties> = {
+  low: {
+    background: 'color-mix(in srgb, var(--a-rose) 35%, transparent)',
+    color: 'var(--text-primary)',
+  },
+  medium: {
+    background: 'color-mix(in srgb, var(--a-sun) 45%, transparent)',
+    color: 'var(--text-primary)',
+  },
+  high: {
+    background: 'color-mix(in srgb, var(--a-mint) 35%, transparent)',
+    color: 'var(--text-primary)',
+  },
 };
 
 function RecommendationCard({
@@ -18,38 +27,56 @@ function RecommendationCard({
   onExecute,
   onSimulate,
   onDefer,
+  accentColor,
 }: {
   rec: Recommendation;
   onExecute?: (id: string) => void;
   onSimulate?: (id: string) => void;
   onDefer?: (id: string) => void;
+  accentColor?: string;
 }) {
+  const accent = accentColor ?? 'var(--a-mint)';
   const confidencePct = Math.max(
     1,
     Math.min(99, Math.round(rec.confidence * 100))
   );
-  const revClass =
-    REVERSIBILITY_CHIP[rec.reversibility] ?? 'bg-slate-100 text-slate-600';
+  const revStyle = REVERSIBILITY_STYLES[rec.reversibility] ?? {
+    background: 'var(--n-100)',
+    color: 'var(--text-secondary)',
+  };
 
   return (
-    <article className="rounded-[18px] border border-slate-200 bg-white/70 p-4 shadow-sm space-y-2">
+    <article className="genie-card space-y-2">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-800 line-clamp-2">
+        <h3
+          className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {rec.title}
         </h3>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-700">
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular-nums"
+            style={{
+              background: 'var(--n-100)',
+              color: 'var(--text-secondary)',
+            }}
+          >
             {confidencePct}%
           </span>
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${revClass}`}
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
+            style={revStyle}
           >
             {rec.reversibility}
           </span>
         </div>
       </div>
       {rec.whyNow && (
-        <p className="text-xs text-slate-500 line-clamp-1 leading-relaxed">
+        <p
+          className="text-xs line-clamp-1 leading-relaxed"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           {rec.whyNow}
         </p>
       )}
@@ -58,7 +85,12 @@ function RecommendationCard({
           <button
             type="button"
             onClick={() => onExecute(rec.id)}
-            className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100"
+            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            style={{
+              border: `1px solid color-mix(in srgb, ${accent} 50%, transparent)`,
+              background: `color-mix(in srgb, ${accent} 20%, transparent)`,
+              color: 'var(--text-primary)',
+            }}
           >
             Execute
           </button>
@@ -67,7 +99,13 @@ function RecommendationCard({
           <button
             type="button"
             onClick={() => onSimulate(rec.id)}
-            className="rounded-full border border-violet-300 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-violet-700 hover:bg-violet-100"
+            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            style={{
+              border:
+                '1px solid color-mix(in srgb, var(--a-lilac) 50%, transparent)',
+              background: 'color-mix(in srgb, var(--a-lilac) 20%, transparent)',
+              color: 'var(--text-primary)',
+            }}
           >
             Simulate
           </button>
@@ -76,14 +114,25 @@ function RecommendationCard({
           <button
             type="button"
             onClick={() => onDefer(rec.id)}
-            className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100"
+            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            style={{
+              border:
+                '1px solid color-mix(in srgb, var(--a-sun) 50%, transparent)',
+              background: 'color-mix(in srgb, var(--a-sun) 25%, transparent)',
+              color: 'var(--text-primary)',
+            }}
           >
             Defer
           </button>
         )}
         <Link
           to="/actions"
-          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 hover:bg-slate-50"
+          className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+          style={{
+            border: '1px solid var(--border-soft)',
+            background: 'var(--surf-glass)',
+            color: 'var(--text-secondary)',
+          }}
         >
           Inspect in Actions
         </Link>
@@ -120,6 +169,8 @@ interface CodActionRowProps {
   canWork?: boolean;
   maxSprintMin?: number;
   onCheckIn?: () => void;
+  /** Override the Execute button's primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
+  accentColor?: string;
 }
 
 export function CodActionRow({
@@ -130,6 +181,7 @@ export function CodActionRow({
   actions,
   canWork,
   onCheckIn,
+  accentColor,
 }: CodActionRowProps) {
   return (
     <div className="space-y-3">
@@ -143,6 +195,7 @@ export function CodActionRow({
               onExecute={onExecute}
               onSimulate={onSimulate}
               onDefer={onDefer}
+              accentColor={accentColor}
             />
           ))}
         </div>

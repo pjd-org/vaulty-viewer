@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 export interface SegmentOption {
   value: string;
   label: string;
+  badge?: number;
 }
 
 export interface SegmentedControlProps {
@@ -38,7 +39,7 @@ export function SegmentedControl({
     <div
       ref={containerRef}
       role="tablist"
-      className={`genie-surface genie-surface--utility flex items-center rounded-xl p-1 gap-1 ${className}`}
+      className={`genie-surface genie-surface--utility inline-flex items-center rounded-full p-1 gap-1 ${className}`}
     >
       {options.map((opt, index) => {
         const isActive = opt.value === value;
@@ -51,11 +52,18 @@ export function SegmentedControl({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(opt.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={`tab px-3 py-1.5 text-sm cursor-pointer transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
-              isActive ? 'active font-medium' : 'hover:text-slate-800'
+            className={`tab px-4 py-1.5 text-sm cursor-pointer transition-all rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-sky)]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
+              isActive
+                ? 'active font-medium'
+                : 'hover:text-[var(--text-primary)]'
             }`}
           >
             {opt.label}
+            {opt.badge != null && opt.badge > 0 && (
+              <span className="ml-1 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] leading-none tabular-nums">
+                {opt.badge}
+              </span>
+            )}
           </button>
         );
       })}

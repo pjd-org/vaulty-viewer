@@ -56,7 +56,7 @@ export function CommandHost() {
           aria-label="Command palette"
           className={cn(
             'fixed left-1/2 top-[20%] z-50 w-full max-w-lg -translate-x-1/2',
-            'rounded-[20px] border border-black/10 bg-white/90 shadow-2xl backdrop-blur-xl',
+            'rounded-[20px] border border-[var(--border-glass)] bg-[var(--surf-overlay)] shadow-2xl backdrop-blur-xl',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -67,22 +67,22 @@ export function CommandHost() {
             className="flex flex-col overflow-hidden rounded-[20px]"
             shouldFilter
           >
-            <div className="flex items-center gap-3 border-b border-black/8 px-4 py-3">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <div className="flex items-center gap-3 border-b border-[var(--border-glass-soft)] px-4 py-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                 Cmd
               </span>
               <CommandInput
                 placeholder="Go to a route, run a command…"
-                className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none"
                 autoFocus
               />
-              <kbd className="rounded border border-black/10 bg-black/5 px-1.5 py-0.5 text-[10px] text-slate-500">
+              <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)]">
                 ESC
               </kbd>
             </div>
 
             <CommandList className="max-h-[360px] overflow-y-auto overscroll-contain p-2">
-              <CommandEmpty className="px-3 py-6 text-center text-sm text-slate-500">
+              <CommandEmpty className="px-3 py-6 text-center text-sm text-[var(--text-tertiary)]">
                 No results.
               </CommandEmpty>
 
@@ -94,7 +94,7 @@ export function CommandHost() {
                       value={`${item.label} ${item.to}`}
                       onSelect={() => navigate(item.to)}
                     >
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 w-5">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] w-5">
                         {item.shortLabel}
                       </span>
                       <span>{item.label}</span>
@@ -103,7 +103,7 @@ export function CommandHost() {
                 )}
               </CommandGroup>
 
-              <CommandSeparator className="my-1 h-px bg-black/8" />
+              <CommandSeparator className="my-1 h-px bg-[var(--border-glass-soft)]" />
 
               <CommandGroup heading={<SectionHeading>Utility</SectionHeading>}>
                 {VIEWER_UTILITY_NAV.map(
@@ -113,7 +113,7 @@ export function CommandHost() {
                       value={`${item.label} ${item.to}`}
                       onSelect={() => navigate(item.to)}
                     >
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 w-5">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] w-5">
                         {item.shortLabel}
                       </span>
                       <span>{item.label}</span>
@@ -123,14 +123,16 @@ export function CommandHost() {
               </CommandGroup>
             </CommandList>
 
-            <div className="flex items-center justify-between border-t border-black/8 px-4 py-2">
-              <span className="text-[10px] text-slate-500">Viewer V3</span>
-              <div className="flex items-center gap-2 text-[10px] text-slate-500">
-                <kbd className="rounded border border-black/10 bg-black/5 px-1 py-0.5">
+            <div className="flex items-center justify-between border-t border-[var(--border-glass-soft)] px-4 py-2">
+              <span className="text-[10px] text-[var(--text-tertiary)]">
+                Viewer V3
+              </span>
+              <div className="flex items-center gap-2 text-[10px] text-[var(--text-tertiary)]">
+                <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1 py-0.5">
                   ↑↓
                 </kbd>
                 <span>navigate</span>
-                <kbd className="rounded border border-black/10 bg-black/5 px-1 py-0.5">
+                <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1 py-0.5">
                   ↵
                 </kbd>
                 <span>open</span>
@@ -145,7 +147,7 @@ export function CommandHost() {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <span className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+    <span className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-secondary)]">
       {children}
     </span>
   );
@@ -165,9 +167,9 @@ function PaletteItem({
       value={value}
       onSelect={onSelect}
       className={cn(
-        'flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-700',
-        'transition-colors hover:bg-black/5',
-        'data-[selected=true]:bg-black/8 data-[selected=true]:text-slate-900'
+        'flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-[var(--text-secondary)]',
+        'transition-colors hover:bg-[var(--surf-utility)]',
+        'data-[selected=true]:bg-[color-mix(in_srgb,var(--surf-utility)_160%,transparent)] data-[selected=true]:text-[var(--text-primary)]'
       )}
     >
       {children}
