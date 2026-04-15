@@ -121,7 +121,7 @@ describe('chat-kit', () => {
       '../app/components/chat-kit/ChatComposer'
     );
 
-    render(
+    const { container } = render(
       <ChatComposer
         value="Draft a plan"
         onChange={() => undefined}
@@ -130,6 +130,10 @@ describe('chat-kit', () => {
       />
     );
 
+    const composerShell = container.querySelector(
+      '.genie-surface--overlay'
+    ) as HTMLElement;
+
     expect(screen.getByRole('button', { name: /attach file/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /plan/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /track/i })).toBeTruthy();
@@ -137,5 +141,8 @@ describe('chat-kit', () => {
     expect(screen.getByText('No active thread')).toBeTruthy();
     expect(screen.getByText('mint')).toBeTruthy();
     expect(screen.getByText('sky')).toBeTruthy();
+    expect(composerShell.style.getPropertyValue('--composer-accent')).toBe(
+      'var(--a-lilac)'
+    );
   });
 });

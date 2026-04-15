@@ -42,6 +42,7 @@ export interface DockProps {
   bottomOffset?: string;
   className?: string;
   position?: 'fixed' | 'inline';
+  style?: React.CSSProperties;
 }
 
 export function Dock({
@@ -49,6 +50,7 @@ export function Dock({
   bottomOffset = '60px',
   className,
   position = 'fixed',
+  style,
 }: DockProps) {
   const shell = (
     <div
@@ -57,6 +59,7 @@ export function Dock({
         'bg-white/90 p-[3px] shadow-[0_18px_36px_rgba(15,23,42,0.12)] backdrop-blur-md',
         className
       )}
+      style={style}
     >
       {children}
     </div>

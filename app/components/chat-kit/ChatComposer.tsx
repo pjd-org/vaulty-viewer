@@ -1,49 +1,79 @@
 import type { ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import { cn } from '@/src/lib/utils';
 import { PromptInput } from '@vault/ui';
 import { Dock, DockIcon, DockLink } from '@/app/components/ui';
 import { ChatRuntimeStatus } from './ChatRuntimeStatus';
-import type { ChatRuntimeStatusProps } from './ChatRuntimeStatus';
+import {
+  CHAT_ACCENTS,
+  CHAT_ACCENT_TOKENS,
+  CHAT_RUNTIME_STATE_ACCENTS,
+  type ChatAccentColor,
+  type ChatRuntimeState,
+} from './accent';
 import { Paperclip, Sparkles, Square } from 'lucide-react';
 
-const PALETTE_SWATCHES = [
-  { name: 'mint', color: 'var(--a-mint)' },
-  { name: 'lime', color: 'var(--a-lime)' },
-  { name: 'aqua', color: 'var(--a-aqua)' },
-  { name: 'sky', color: 'var(--a-sky)' },
-  { name: 'lilac', color: 'var(--a-lilac)' },
-  { name: 'peach', color: 'var(--a-peach)' },
-  { name: 'rose', color: 'var(--a-rose)' },
-  { name: 'sun', color: 'var(--a-sun)' },
-] as const;
+type ComposerStyle = CSSProperties & {
+  '--composer-accent'?: string;
+};
+
+const PALETTE_SWATCHES = CHAT_ACCENTS.map((name) => ({
+  name,
+  color: CHAT_ACCENT_TOKENS[name],
+}));
 
 export interface ChatComposerProps {
   value: string;
   placeholder?: string;
   isRunning?: boolean;
+  accentColor?: ChatAccentColor;
   attachments?: ReactNode;
   onChange?: (value: string) => void;
   onSend?: () => void;
   onCancel?: () => void;
   onAttach?: () => void;
   onToolSelect?: (tool: string) => void;
-  runtimeState?: ChatRuntimeStatusProps['state'];
+  runtimeState?: ChatRuntimeState;
   runtimeDetail?: string;
   className?: string;
 }
 
-function ChatPaletteLegend() {
+function ChatPaletteLegend({
+  activeAccent,
+}: {
+  activeAccent: ChatAccentColor;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {PALETTE_SWATCHES.map((swatch) => (
         <span
           key={swatch.name}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.8)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)]"
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-full border bg-[rgba(255,255,255,0.82)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)] transition-all',
+            swatch.name === activeAccent &&
+              'scale-[1.02] text-[var(--text-primary)] shadow-[0_6px_18px_rgba(17,21,29,0.1)]'
+          )}
+          style={{
+            borderColor:
+              swatch.name === activeAccent
+                ? `color-mix(in srgb, ${swatch.color} 42%, var(--border-glass-soft))`
+                : 'var(--border-glass-soft)',
+            background:
+              swatch.name === activeAccent
+                ? `linear-gradient(180deg, color-mix(in srgb, ${swatch.color} 14%, white) 0%, rgba(255,255,255,0.92) 100%)`
+                : 'rgba(255,255,255,0.82)',
+          }}
         >
           <span
             aria-hidden="true"
             className="size-2.5 rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.65)]"
-            style={{ background: swatch.color }}
+            style={{
+              background: swatch.color,
+              boxShadow:
+                swatch.name === activeAccent
+                  ? `0 0 0 4px color-mix(in srgb, ${swatch.color} 16%, transparent)`
+                  : '0 0 0 3px rgba(255,255,255,0.65)',
+            }}
           />
           {swatch.name}
         </span>
@@ -62,12 +92,16 @@ export function ChatComposer({
   onCancel,
   onAttach,
   onToolSelect,
+  accentColor,
   runtimeState,
   runtimeDetail,
   className,
 }: ChatComposerProps) {
   const canShowToolDock = Boolean(onToolSelect);
   const statusState = runtimeState ?? (isRunning ? 'running' : 'idle');
+  const resolvedAccent =
+    accentColor ?? CHAT_RUNTIME_STATE_ACCENTS[statusState];
+  const accent = CHAT_ACCENT_TOKENS[resolvedAccent];
   const statusDetail =
     runtimeDetail ??
     (statusState === 'running'
@@ -81,6 +115,16 @@ export function ChatComposer({
   return (
     <Dock
       position="inline"
+      style={
+        {
+          '--composer-accent': accent,
+          background:
+            'linear-gradient(135deg, color-mix(in srgb, var(--composer-accent) 16%, white) 0%, rgba(255,255,255,0.98) 36%, rgba(248,249,252,0.95) 100%)',
+          border: `1px solid color-mix(in srgb, var(--composer-accent) 22%, rgba(255,255,255,0.9))`,
+          boxShadow:
+            '0 18px 42px color-mix(in srgb, var(--composer-accent) 12%, rgba(17,21,29,0.12))',
+        } as ComposerStyle
+      }
       className={cn(
         'genie-surface genie-surface--overlay flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3',
         className
@@ -89,8 +133,12 @@ export function ChatComposer({
       {attachments && <div className="flex flex-wrap gap-2">{attachments}</div>}
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <ChatRuntimeStatus state={statusState} detail={statusDetail} />
-        <ChatPaletteLegend />
+        <ChatRuntimeStatus
+          state={statusState}
+          detail={statusDetail}
+          accentColor={resolvedAccent}
+        />
+        <ChatPaletteLegend activeAccent={resolvedAccent} />
       </div>
 
       <PromptInput
@@ -99,20 +147,11 @@ export function ChatComposer({
         loading={isRunning}
         disabled={isRunning}
         active={Boolean(value.trim()) || isRunning}
+        accentColor={accent}
         leadingIcon="✦"
         onChange={(event) => onChange?.(event.target.value)}
         onSubmit={onSend}
         className="w-full"
-        style={{
-          width: '100%',
-          background: 'transparent',
-          border: 'none',
-          borderRadius: 0,
-          boxShadow: 'none',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          padding: '0 12px',
-        }}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
