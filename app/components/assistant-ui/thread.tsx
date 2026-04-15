@@ -196,7 +196,7 @@ const Composer: FC = () => {
           <ComposerAttachments />
           <ComposerPrimitive.Input
             placeholder="Send a message..."
-            className="aui-composer-input max-h-32 min-h-10 w-full resize-none rounded-[20px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-[var(--text-tertiary)]"
+            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-[var(--text-tertiary)]"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -209,6 +209,7 @@ const Composer: FC = () => {
 };
 
 const ComposerAction: FC = () => {
+  const aui = useAui();
   return (
     <div className="aui-composer-action-wrapper relative flex items-center justify-between gap-3">
       <ComposerAddAttachment />

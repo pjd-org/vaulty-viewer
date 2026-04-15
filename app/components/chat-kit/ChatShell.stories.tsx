@@ -23,9 +23,15 @@ export const Default: Story = {
         <ChatRuntimeStatus state="idle" detail="No active thread" />
       </div>
     ),
-    footer: <ChatComposer value="" placeholder="Write a message..." />,
+    footer: (
+      <ChatComposer
+        value=""
+        placeholder="Write a message..."
+        onChange={() => undefined}
+      />
+    ),
     children: (
-      <div className="flex h-full min-h-0 flex-col p-4">
+      <div className="flex h-full min-h-0 flex-col gap-6 p-4">
         <ChatEmptyState
           title="Start a conversation"
           subtitle="Ask for planning, execution, or a structured tool surface."

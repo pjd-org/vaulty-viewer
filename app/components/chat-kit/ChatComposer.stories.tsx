@@ -14,6 +14,7 @@ export const Idle: Story = {
   args: {
     value: '',
     placeholder: 'Send a message...',
+    onChange: () => undefined,
   },
 };
 
@@ -21,5 +22,6 @@ export const Running: Story = {
   args: {
     value: 'Run the plan',
     isRunning: true,
+    onChange: () => undefined,
   },
 };

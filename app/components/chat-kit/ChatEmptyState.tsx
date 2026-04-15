@@ -19,7 +19,7 @@ export function ChatEmptyState({
   return (
     <div
       className={cn(
-        'mx-auto flex w-full max-w-(--thread-max-width) grow flex-col justify-center px-4 py-10',
+        'mx-auto flex w-full max-w-(--thread-max-width) flex-col px-4 py-10',
         className
       )}
     >
