@@ -1,5 +1,5 @@
 /**
- * huey-toolkit.tsx — Tool UI toolkit for Huey chat.
+ * primary-agent-toolkit.tsx — Tool UI toolkit for Primary Agent chat.
  *
  * Registers three frontend tool renders:
  *   - show_plan         → renders a Plan card with todo list and progress bar
@@ -29,7 +29,7 @@ import {
   type SerializableProgressTracker,
 } from '../components/tool-ui/progress-tracker/schema';
 
-export const hueyToolkit = {
+export const primaryAgentToolkit = {
   show_plan: {
     type: 'backend' as const,
     description:

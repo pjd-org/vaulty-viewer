@@ -21,7 +21,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
 
       <div className="flex flex-wrap gap-2">
         {task.priority > 0 && (
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-700">
+          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sky)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sky)_28%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_65%,#1c2230)] px-2 py-0.5 text-[11px]">
             p{task.priority}
           </span>
         )}
@@ -41,16 +41,16 @@ export function TaskDetail({ task }: { task: NextAction }) {
           </span>
         )}
         {task.dueDate && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-700">
+          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sun)_14%,white)] [border-color:color-mix(in_srgb,var(--a-sun)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] px-2 py-0.5 text-[11px]">
             due {task.dueDate}
           </span>
         )}
         <span
           className={[
-            'rounded-full px-2 py-0.5 text-[11px]',
+            'rounded-full border px-2 py-0.5 text-[11px]',
             task.status === 'blocked'
-              ? 'bg-red-100 text-red-700'
-              : 'bg-emerald-100 text-emerald-700',
+              ? '[background:color-mix(in_srgb,var(--a-rose)_14%,white)] [border-color:color-mix(in_srgb,var(--a-rose)_28%,transparent)] [color:color-mix(in_srgb,var(--a-rose)_70%,#1c2230)]'
+              : '[background:color-mix(in_srgb,var(--a-mint)_14%,white)] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,#1c2230)]',
           ].join(' ')}
         >
           {task.status}
@@ -77,7 +77,10 @@ export function TaskDetail({ task }: { task: NextAction }) {
           </p>
           <ul className="space-y-1">
             {blockers.map((b, i) => (
-              <li key={i} className="text-xs text-red-600">
+              <li
+                key={i}
+                className="text-xs [color:color-mix(in_srgb,var(--a-rose)_75%,#1c2230)]"
+              >
                 {b.description ?? String(b)}
               </li>
             ))}
@@ -113,17 +116,17 @@ export function TaskDetail({ task }: { task: NextAction }) {
             Related knowledge →
           </Link>
           <Link
-            to="/huey"
+            to="/primary-agent"
             onClick={() => {
               try {
-                sessionStorage.setItem('huey-task-hint', task.title);
+                sessionStorage.setItem('primary-agent-task-hint', task.title);
               } catch {
                 // sessionStorage unavailable — silently skip
               }
             }}
             className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
           >
-            Ask Huey about this →
+            Ask Primary Agent about this →
           </Link>
         </div>
       )}
@@ -147,17 +150,17 @@ export function TaskDetail({ task }: { task: NextAction }) {
             Related knowledge →
           </Link>
           <Link
-            to="/huey"
+            to="/primary-agent"
             onClick={() => {
               try {
-                sessionStorage.setItem('huey-task-hint', task.title);
+                sessionStorage.setItem('primary-agent-task-hint', task.title);
               } catch {
                 // sessionStorage unavailable — silently skip
               }
             }}
             className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
           >
-            Ask Huey about this →
+            Ask Primary Agent about this →
           </Link>
         </div>
       )}

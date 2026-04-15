@@ -2,18 +2,18 @@
  * Tests for createLocalStorageThreadHistoryAdapter
  *
  * The adapter persists ExportedMessageRepositoryItem entries per threadId
- * in localStorage under HUEY_MESSAGES_STORAGE_KEY.
+ * in localStorage under PRIMARY_AGENT_MESSAGES_STORAGE_KEY.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   createLocalStorageThreadHistoryAdapter,
-  HUEY_MESSAGES_STORAGE_KEY,
-} from '../../src/lib/huey-thread-history';
+  PRIMARY_AGENT_MESSAGES_STORAGE_KEY,
+} from '../../src/lib/primary-agent-thread-history';
 import type { ExportedMessageRepositoryItem } from '@assistant-ui/react';
 import type { ThreadMessage } from '@assistant-ui/react';
 
-const THREAD_A = 'huey-thread-a';
-const THREAD_B = 'huey-thread-b';
+const THREAD_A = 'primary-agent-thread-a';
+const THREAD_B = 'primary-agent-thread-b';
 
 function makeItem(
   id: string,
@@ -55,7 +55,7 @@ describe('createLocalStorageThreadHistoryAdapter', () => {
 
   it('append() persists a message and load() restores it', async () => {
     const adapter = createLocalStorageThreadHistoryAdapter(THREAD_A);
-    const item = makeItem('msg-1', 'user', 'Hello Huey');
+    const item = makeItem('msg-1', 'user', 'Hello Primary Agent');
     await adapter.append(item);
 
     const repo = await adapter.load();
@@ -107,7 +107,7 @@ describe('createLocalStorageThreadHistoryAdapter', () => {
   });
 
   it('load() gracefully returns empty repository on corrupt storage', async () => {
-    localStorage.setItem(HUEY_MESSAGES_STORAGE_KEY, '{invalid json!!');
+    localStorage.setItem(PRIMARY_AGENT_MESSAGES_STORAGE_KEY, '{invalid json!!');
     const adapter = createLocalStorageThreadHistoryAdapter(THREAD_A);
     const repo = await adapter.load();
     expect(repo.messages).toHaveLength(0);

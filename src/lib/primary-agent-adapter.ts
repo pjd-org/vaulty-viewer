@@ -1,9 +1,9 @@
 /**
- * huey-adapter.ts — Real ChatModelAdapter for @assistant-ui/react LocalRuntime.
+ * primary-agent-adapter.ts — Real ChatModelAdapter for @assistant-ui/react LocalRuntime.
  *
- * Factory: createHueyModelAdapter({ getThreadId, onThreadIdResolved? })
+ * Factory: createPrimaryAgentModelAdapter({ getThreadId, onThreadIdResolved? })
  *
- * Adapter calls the Huey agent server via apiFetch. On 429 or 5xx it retries
+ * Adapter calls the Primary Agent server via apiFetch. On 429 or 5xx it retries
  * once with model: 'gpt-4o-mini'. On network failure or non-recoverable HTTP
  * errors it throws so the runtime can surface the error to the user.
  */
@@ -14,9 +14,9 @@ import type {
 } from '@assistant-ui/react';
 import { apiFetch } from '../utils/api';
 import {
-  buildHueyAgentServerRunPath,
-  parseHueyAgentServerRunResponse,
-} from './huey-agent-server';
+  buildPrimaryAgentServerRunPath,
+  parsePrimaryAgentServerRunResponse,
+} from './primary-agent-agent-server';
 
 type AgentServerRunPayload = {
   ok?: boolean;
@@ -35,13 +35,13 @@ type AgentServerRunPayload = {
   tool_results_degraded?: boolean;
 };
 
-export type HueyContext = {
+export type PrimaryAgentContext = {
   tasks?: unknown[];
   notes?: unknown[];
   inbox?: unknown[];
 };
 
-export type HueyAdapterOptions = {
+export type PrimaryAgentAdapterOptions = {
   /** Returns the current threadId (read from a ref — stable, never stale). */
   getThreadId: () => string;
   /**
@@ -52,7 +52,7 @@ export type HueyAdapterOptions = {
   /** Returns the active intent id (read from a ref — stable, never stale). */
   getIntent?: () => string | null;
   /** Returns the current vault context payload (read from a ref — stable, never stale). */
-  getContext?: () => HueyContext | null;
+  getContext?: () => PrimaryAgentContext | null;
 };
 
 /**
@@ -62,7 +62,7 @@ function buildRequestBody(
   threadId: string,
   messages: ChatModelRunOptions['messages'],
   intent?: string | null,
-  context?: HueyContext | null,
+  context?: PrimaryAgentContext | null,
   model?: string
 ): Record<string, unknown> {
   // The adapter sends the last user message as the prompt. The assistant-ui
@@ -104,7 +104,7 @@ async function postToAgentServer(
   body: Record<string, unknown>,
   abortSignal: AbortSignal
 ): Promise<[Response, AgentServerRunPayload | null]> {
-  const path = buildHueyAgentServerRunPath(threadId);
+  const path = buildPrimaryAgentServerRunPath(threadId);
   const response = await apiFetch(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -117,8 +117,8 @@ async function postToAgentServer(
   return [response, payload];
 }
 
-export function createHueyModelAdapter(
-  opts: HueyAdapterOptions
+export function createPrimaryAgentModelAdapter(
+  opts: PrimaryAgentAdapterOptions
 ): ChatModelAdapter {
   return {
     async run({
@@ -168,14 +168,20 @@ export function createHueyModelAdapter(
       }
 
       if (!response.ok && !payload) {
-        throw new Error(`Huey request failed (${response.status})`);
+        throw new Error(`Primary Agent request failed (${response.status})`);
       }
 
-      const parsed = parseHueyAgentServerRunResponse(payload, threadId);
+      const parsed = parsePrimaryAgentServerRunResponse(payload, threadId);
 
       // Notify parent if server resolved to a different threadId
       if (parsed.threadId !== threadId && opts.onThreadIdResolved) {
         opts.onThreadIdResolved(parsed.threadId);
+      }
+
+      // Surface 200-envelope failures as thrown errors so @assistant-ui/react
+      // shows an error state rather than rendering the error as a chat message.
+      if (parsed.isError) {
+        throw new Error(parsed.errorDetail ?? 'Primary Agent encountered an error.');
       }
 
       return {

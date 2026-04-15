@@ -270,17 +270,17 @@ function TaskDetail({ task }: { task: NextAction }) {
             Related knowledge →
           </Link>
           <Link
-            to="/huey"
+            to="/primary-agent"
             onClick={() => {
               try {
-                sessionStorage.setItem('huey-task-hint', task.title);
+                sessionStorage.setItem('primary-agent-task-hint', task.title);
               } catch {
                 // sessionStorage unavailable — silently skip
               }
             }}
             className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
           >
-            Ask Huey about this →
+            Ask the Primary Agent about this →
           </Link>
         </div>
       )}
@@ -304,17 +304,17 @@ function TaskDetail({ task }: { task: NextAction }) {
             Related knowledge →
           </Link>
           <Link
-            to="/huey"
+            to="/primary-agent"
             onClick={() => {
               try {
-                sessionStorage.setItem('huey-task-hint', task.title);
+                sessionStorage.setItem('primary-agent-task-hint', task.title);
               } catch {
                 // sessionStorage unavailable — silently skip
               }
             }}
             className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
           >
-            Ask Huey about this →
+            Ask the Primary Agent about this →
           </Link>
         </div>
       )}

@@ -6,26 +6,27 @@ import {
   getTemplate,
   type IntentType,
   type ThreadRecord,
-} from '../../src/lib/huey-intents';
+} from '../../src/lib/primary-agent-intents';
 import { useHydrated } from '../../src/hooks/useHydrated';
 import {
-  HueyContextRail,
-  HueyWorkspace,
-  HueyAssistantProvider,
-} from '../components/huey';
+  PrimaryAgentContextRail,
+  PrimaryAgentWorkspace,
+  PrimaryAgentAssistantProvider,
+} from '../components/primary-agent';
 import { useThread } from '@assistant-ui/react';
 
 import { useWorkSurface, useHomeSurface } from '../lib/viewer-adapter';
-import type { HueyContext } from '../../src/lib/huey-adapter';
+import type { PrimaryAgentContext } from '../../src/lib/primary-agent-adapter';
 import type { NextAction } from '../../src/lib/focus-logic';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const THREADS_STORAGE_KEY = 'huey-threads';
+const THREADS_STORAGE_KEY = 'primary-agent-threads';
+const LEGACY_THREADS_STORAGE_KEY = 'huey-threads';
 const MAX_HISTORY = 40;
-const INITIAL_THREAD_ID = 'huey-thread-initial';
+const INITIAL_THREAD_ID = 'primary-agent-thread-initial';
 
 const INTENT_EMOJIS: Record<string, string> = {
   plan_next_step: '🧭',
@@ -42,7 +43,9 @@ const INTENT_EMOJIS: Record<string, string> = {
 
 function loadThreads(): ThreadRecord[] {
   try {
-    const raw = localStorage.getItem(THREADS_STORAGE_KEY);
+    const raw =
+      localStorage.getItem(THREADS_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_THREADS_STORAGE_KEY);
     return raw ? (JSON.parse(raw) as ThreadRecord[]) : [];
   } catch {
     return [];
@@ -60,26 +63,29 @@ function saveThread(record: ThreadRecord) {
 }
 
 function createThreadId(): string {
-  return `huey-thread-${Date.now()}`;
+  return `primary-agent-thread-${Date.now()}`;
 }
 
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
 
-export type HueyState = {
+export type PrimaryAgentState = {
   threads: ThreadRecord[];
   threadId: string;
   activeIntent: IntentType | null;
 };
 
-export type HueyAction =
+export type PrimaryAgentAction =
   | { type: 'THREADS_REFRESHED'; threads: ThreadRecord[] }
   | { type: 'NEW_THREAD'; threadId: string }
   | { type: 'SWITCH_THREAD'; threadId: string }
   | { type: 'SET_INTENT'; intent: IntentType | null };
 
-export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
+export function primaryAgentReducer(
+  state: PrimaryAgentState,
+  action: PrimaryAgentAction
+): PrimaryAgentState {
   switch (action.type) {
     case 'THREADS_REFRESHED':
       return { ...state, threads: action.threads };
@@ -104,14 +110,14 @@ export function hueyReducer(state: HueyState, action: HueyAction): HueyState {
 // Route
 // ---------------------------------------------------------------------------
 
-export const Route = createFileRoute('/huey')({
-  component: HueyRoute,
+export const Route = createFileRoute('/primary-agent')({
+  component: PrimaryAgentRoute,
 });
 
-function HueyRoute() {
+function PrimaryAgentRoute() {
   const hydrated = useHydrated();
   const [{ threads, threadId, activeIntent }, dispatch] = useReducer(
-    hueyReducer,
+    primaryAgentReducer,
     {
       threads: [],
       threadId: INITIAL_THREAD_ID,
@@ -130,10 +136,10 @@ function HueyRoute() {
     const refresh = () =>
       dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() });
     window.addEventListener('storage', refresh);
-    window.addEventListener('huey-threads-updated', refresh);
+    window.addEventListener('primary-agent-threads-updated', refresh);
     return () => {
       window.removeEventListener('storage', refresh);
-      window.removeEventListener('huey-threads-updated', refresh);
+      window.removeEventListener('primary-agent-threads-updated', refresh);
     };
   }, [hydrated]);
 
@@ -149,14 +155,14 @@ function HueyRoute() {
     dispatch({ type: 'SWITCH_THREAD', threadId: id });
   }, []);
 
-  // Stable refs so HueyAssistantProvider never needs to recreate the model adapter.
+  // Stable refs so PrimaryAgentAssistantProvider never needs to recreate the model adapter.
   const activeIntentRef = useRef<string | null>(activeIntent);
   activeIntentRef.current = activeIntent;
 
   const { data: workSurface } = useWorkSurface();
   const { data: homeSurface } = useHomeSurface();
 
-  const contextRef = useRef<HueyContext | null>(null);
+  const contextRef = useRef<PrimaryAgentContext | null>(null);
   const workTasks: NextAction[] = workSurface?.tasks ?? [];
   const homeTasks: NextAction[] = homeSurface?.tasks ?? [];
   const allTasks = workTasks.length > 0 ? workTasks : homeTasks;
@@ -171,13 +177,13 @@ function HueyRoute() {
       : null;
 
   return (
-    <HueyAssistantProvider
+    <PrimaryAgentAssistantProvider
       threadId={threadId}
       onThreadIdChange={handleThreadIdChange}
       getIntent={() => activeIntentRef.current}
       getContext={() => contextRef.current}
     >
-      <HueyRouteInner
+      <PrimaryAgentRouteInner
         threads={threads}
         threadId={threadId}
         activeIntent={activeIntent}
@@ -187,18 +193,18 @@ function HueyRoute() {
         onFirstMessage={(record) => {
           saveThread(record);
           dispatch({ type: 'THREADS_REFRESHED', threads: loadThreads() });
-          window.dispatchEvent(new Event('huey-threads-updated'));
+          window.dispatchEvent(new Event('primary-agent-threads-updated'));
         }}
       />
-    </HueyAssistantProvider>
+    </PrimaryAgentAssistantProvider>
   );
 }
 
 // ---------------------------------------------------------------------------
-// HueyRouteInner — lives inside AssistantRuntimeProvider, uses runtime hooks
+// PrimaryAgentRouteInner — lives inside AssistantRuntimeProvider, uses runtime hooks
 // ---------------------------------------------------------------------------
 
-interface HueyRouteInnerProps {
+interface PrimaryAgentRouteInnerProps {
   threads: ThreadRecord[];
   threadId: string;
   activeIntent: IntentType | null;
@@ -208,7 +214,7 @@ interface HueyRouteInnerProps {
   onFirstMessage: (record: ThreadRecord) => void;
 }
 
-function HueyRouteInner({
+function PrimaryAgentRouteInner({
   threads,
   threadId,
   activeIntent,
@@ -216,7 +222,7 @@ function HueyRouteInner({
   onSwitchThread,
   onSetIntent,
   onFirstMessage,
-}: HueyRouteInnerProps) {
+}: PrimaryAgentRouteInnerProps) {
   const thread = useThread();
 
   /**
@@ -274,7 +280,7 @@ function HueyRouteInner({
   return (
     <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
       <div className="w-full lg:w-[250px] shrink-0">
-        <HueyContextRail
+        <PrimaryAgentContextRail
           threads={threads}
           activeThreadId={threadId}
           onSelectThread={onSwitchThread}
@@ -285,7 +291,7 @@ function HueyRouteInner({
         />
       </div>
       <div className="w-full flex-1 min-w-0">
-        <HueyWorkspace
+        <PrimaryAgentWorkspace
           intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
           contextSummary={contextSummary}
         />

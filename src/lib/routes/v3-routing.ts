@@ -53,7 +53,7 @@ export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [
-  { label: 'Huey', shortLabel: '✦', to: '/huey' },
+  { label: 'Primary Agent', shortLabel: '✦', to: '/huey' },
   { label: 'Settings', shortLabel: '⚒', to: '/settings' },
 ] as const;
 

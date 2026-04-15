@@ -113,7 +113,7 @@ describe('ProjectDetail (skeleton)', () => {
           activeTasks: [],
           activePipelines: [],
           activeRunners: [],
-          hueyJobs: [],
+          primaryAgentJobs: [],
           scheduleItems: [],
         },
         contextPanel: [],
@@ -296,11 +296,11 @@ describe('ProjectDetail (skeleton)', () => {
               title: 'Runner alpha',
             },
           ],
-          hueyJobs: [
+          primaryAgentJobs: [
             {
               id: 'job-1',
-              type: 'huey_job',
-              title: 'Huey queue',
+              type: 'primary_agent_job',
+              title: 'Primary Agent queue',
             },
           ],
           scheduleItems: [
@@ -335,7 +335,7 @@ describe('ProjectDetail (skeleton)', () => {
     expect(screen.getByText('Prep dossier')).toBeTruthy();
     expect(screen.getByText('Nightly build')).toBeTruthy();
     expect(screen.getByText('Runner alpha')).toBeTruthy();
-    expect(screen.getByText('Huey queue')).toBeTruthy();
+    expect(screen.getByText('Primary Agent queue')).toBeTruthy();
     expect(screen.getByText('Renewal reminder')).toBeTruthy();
   });
 });

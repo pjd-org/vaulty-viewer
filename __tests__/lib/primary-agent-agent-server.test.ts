@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
-  buildHueyAgentServerRunPath,
-  parseHueyAgentServerRunResponse,
-} from '../../src/lib/huey-agent-server'
+  buildPrimaryAgentServerRunPath,
+  parsePrimaryAgentServerRunResponse,
+} from '../../src/lib/primary-agent-agent-server'
 
-describe('huey agent-server helpers', () => {
+describe('primary-agent agent-server helpers', () => {
   it('builds an encoded run path for a thread', () => {
-    expect(buildHueyAgentServerRunPath('huey/thread 1')).toBe(
-      '/tensura/v1/agent-server/threads/huey%2Fthread%201/runs'
+    expect(buildPrimaryAgentServerRunPath('primary-agent/thread 1')).toBe(
+      '/tensura/v1/agent-server/threads/primary-agent%2Fthread%201/runs'
     )
   })
 
-  it('parses a completed run response into Huey UI fields', () => {
-    const parsed = parseHueyAgentServerRunResponse(
+  it('parses a completed run response into PrimaryAgent UI fields', () => {
+    const parsed = parsePrimaryAgentServerRunResponse(
       {
         thread: { id: 'thread-123' },
         run: {
@@ -30,11 +30,13 @@ describe('huey agent-server helpers', () => {
       threadId: 'thread-123',
       assistantText: 'planned the migration',
       meta: 'Thread thread-123 · Next: respond · ⚠ Degraded tools',
+      isError: false,
+      errorDetail: null,
     })
   })
 
   it('falls back to top-level compatibility fields and default text', () => {
-    const parsed = parseHueyAgentServerRunResponse(
+    const parsed = parsePrimaryAgentServerRunResponse(
       {
         threadId: 'thread-compat',
         result: '',
@@ -44,8 +46,10 @@ describe('huey agent-server helpers', () => {
 
     expect(parsed).toEqual({
       threadId: 'thread-compat',
-      assistantText: 'Huey responded without text.',
+      assistantText: '(No response)',
       meta: 'Thread thread-compat',
+      isError: false,
+      errorDetail: null,
     })
   })
 })

@@ -5,7 +5,7 @@ import type {
   ThreadRecord,
   IntentTemplate,
   IntentType,
-} from '../../../src/lib/huey-intents';
+} from '../../../src/lib/primary-agent-intents';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -52,7 +52,7 @@ const WORKFLOW_GROUPS: { label: string; ids: IntentType[] }[] = [
 // Component
 // ---------------------------------------------------------------------------
 
-interface HueyContextRailProps {
+interface PrimaryAgentContextRailProps {
   threads: ThreadRecord[];
   activeThreadId: string | null;
   onSelectThread: (id: string) => void;
@@ -64,7 +64,7 @@ interface HueyContextRailProps {
   accentColor?: string;
 }
 
-export function HueyContextRail({
+export function PrimaryAgentContextRail({
   threads,
   activeThreadId,
   onSelectThread,
@@ -73,7 +73,7 @@ export function HueyContextRail({
   activeIntent,
   onSelectIntent,
   accentColor,
-}: HueyContextRailProps) {
+}: PrimaryAgentContextRailProps) {
   const accent = accentColor ?? 'var(--a-sky)';
   const [groups, setGroups] = useState<
     { label: string; items: ThreadRecord[] }[]
@@ -194,10 +194,10 @@ export function HueyContextRail({
                 onClick={() => onSelectThread(thread.id)}
                 suppressHydrationWarning
                 className={[
-                  'huey-thread-item w-full text-left text-sm rounded-xl px-3 py-2.5 block transition-colors',
+                  'primary-agent-thread-item w-full text-left text-sm rounded-xl px-3 py-2.5 block transition-colors',
                   thread.id === activeThreadId
-                    ? 'huey-thread-item--active'
-                    : 'huey-thread-item--idle',
+                    ? 'primary-agent-thread-item--active'
+                    : 'primary-agent-thread-item--idle',
                 ].join(' ')}
                 title={`${thread.title} · ${formatRelativeTime(thread.timestamp)}`}
               >

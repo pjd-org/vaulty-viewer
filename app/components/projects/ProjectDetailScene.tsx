@@ -26,7 +26,7 @@ const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   activeTasks: [],
   activePipelines: [],
   activeRunners: [],
-  hueyJobs: [],
+  primaryAgentJobs: [],
   scheduleItems: [],
 };
 
@@ -374,14 +374,14 @@ export function ProjectDetailScene({
         <SoftPanel
           variant="utility"
           title="Execution Snapshot"
-          subtitle="Active tasks, pipelines, runners, Huey jobs, and schedules."
+          subtitle="Active tasks, pipelines, runners, Primary Agent jobs, and schedules."
         >
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               { label: 'Active Tasks', items: executionSnapshot.activeTasks },
               { label: 'Pipelines', items: executionSnapshot.activePipelines },
               { label: 'Runners', items: executionSnapshot.activeRunners },
-              { label: 'Huey Jobs', items: executionSnapshot.hueyJobs },
+              { label: 'Primary Agent Jobs', items: executionSnapshot.primaryAgentJobs },
               { label: 'Schedules', items: executionSnapshot.scheduleItems },
             ].map((group) => (
               <div

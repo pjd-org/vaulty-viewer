@@ -19,10 +19,10 @@ function ProjectAutomationRoute() {
 
   const pipelines = surface?.executionSnapshot.activePipelines ?? [];
   const runners = surface?.executionSnapshot.activeRunners ?? [];
-  const hueyJobs = surface?.executionSnapshot.hueyJobs ?? [];
+  const primaryAgentJobs = surface?.executionSnapshot.primaryAgentJobs ?? [];
   const schedules = surface?.executionSnapshot.scheduleItems ?? [];
 
-  const allItems = [...pipelines, ...runners, ...hueyJobs, ...schedules];
+  const allItems = [...pipelines, ...runners, ...primaryAgentJobs, ...schedules];
 
   const selectedItem =
     allItems.find((item) => item.id === search.selectedId) ??
@@ -32,7 +32,7 @@ function ProjectAutomationRoute() {
   const stats = [
     { label: 'Pipelines', value: pipelines.length },
     { label: 'Runners', value: runners.length },
-    { label: 'Huey Jobs', value: hueyJobs.length },
+    { label: 'Primary Agent Jobs', value: primaryAgentJobs.length },
     { label: 'Schedules', value: schedules.length },
   ];
 
@@ -76,7 +76,7 @@ function ProjectAutomationRoute() {
         <SoftPanel
           variant="elevated"
           title="Automation Queue"
-          subtitle="Active pipelines, runners, Huey jobs, and schedules for this project."
+          subtitle="Active pipelines, runners, Primary Agent jobs, and schedules for this project."
         >
           {allItems.length === 0 ? (
             <EmptyState

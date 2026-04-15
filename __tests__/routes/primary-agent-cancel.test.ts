@@ -1,8 +1,8 @@
 /**
- * Huey route — reducer behaviour (Phase 8)
+ * PrimaryAgent route — reducer behaviour (Phase 8)
  *
  * messages/sending/cancelled are now managed by the @assistant-ui/react
- * LocalRuntime. The hueyReducer is responsible only for:
+ * LocalRuntime. The primary-agentReducer is responsible only for:
  *   - threads sidebar state
  *   - active threadId
  *   - activeIntent
@@ -16,47 +16,47 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  hueyReducer,
-  type HueyState,
-  type HueyAction,
-} from '../../app/routes/huey';
+  primaryAgentReducer,
+  type PrimaryAgentState,
+  type PrimaryAgentAction,
+} from '../../app/routes/primary-agent';
 
-const baseState: HueyState = {
+const baseState: PrimaryAgentState = {
   threads: [],
-  threadId: 'huey-thread-initial',
+  threadId: 'primary-agent-thread-initial',
   activeIntent: null,
 };
 
-describe('huey reducer', () => {
+describe('primary-agent reducer', () => {
   it('NEW_THREAD sets a new threadId and clears activeIntent', () => {
-    const withIntent: HueyState = {
+    const withIntent: PrimaryAgentState = {
       ...baseState,
       activeIntent: 'plan_next_step',
     };
-    const next = hueyReducer(withIntent, {
+    const next = primaryAgentReducer(withIntent, {
       type: 'NEW_THREAD',
-      threadId: 'huey-thread-1234',
+      threadId: 'primary-agent-thread-1234',
     });
-    expect(next.threadId).toBe('huey-thread-1234');
+    expect(next.threadId).toBe('primary-agent-thread-1234');
     expect(next.activeIntent).toBeNull();
   });
 
   it('SWITCH_THREAD changes threadId and clears activeIntent', () => {
-    const withIntent: HueyState = {
+    const withIntent: PrimaryAgentState = {
       ...baseState,
-      threadId: 'huey-thread-aaa',
+      threadId: 'primary-agent-thread-aaa',
       activeIntent: 'debug_blocker',
     };
-    const next = hueyReducer(withIntent, {
+    const next = primaryAgentReducer(withIntent, {
       type: 'SWITCH_THREAD',
-      threadId: 'huey-thread-bbb',
+      threadId: 'primary-agent-thread-bbb',
     });
-    expect(next.threadId).toBe('huey-thread-bbb');
+    expect(next.threadId).toBe('primary-agent-thread-bbb');
     expect(next.activeIntent).toBeNull();
   });
 
   it('SET_INTENT updates activeIntent', () => {
-    const next = hueyReducer(baseState, {
+    const next = primaryAgentReducer(baseState, {
       type: 'SET_INTENT',
       intent: 'generate_code',
     });
@@ -64,33 +64,33 @@ describe('huey reducer', () => {
   });
 
   it('SET_INTENT to null clears activeIntent', () => {
-    const withIntent: HueyState = {
+    const withIntent: PrimaryAgentState = {
       ...baseState,
       activeIntent: 'summarize_state',
     };
-    const next = hueyReducer(withIntent, { type: 'SET_INTENT', intent: null });
+    const next = primaryAgentReducer(withIntent, { type: 'SET_INTENT', intent: null });
     expect(next.activeIntent).toBeNull();
   });
 
   it('THREADS_REFRESHED replaces threads without touching threadId or activeIntent', () => {
     const threads = [
       {
-        id: 'huey-thread-x',
+        id: 'primary-agent-thread-x',
         title: 'Test thread',
         intent: null,
         emoji: '💬',
         timestamp: Date.now(),
       },
     ];
-    const withIntent: HueyState = {
+    const withIntent: PrimaryAgentState = {
       ...baseState,
-      threadId: 'huey-thread-current',
+      threadId: 'primary-agent-thread-current',
       activeIntent: 'review_spec',
     };
-    const action: HueyAction = { type: 'THREADS_REFRESHED', threads };
-    const next = hueyReducer(withIntent, action);
+    const action: PrimaryAgentAction = { type: 'THREADS_REFRESHED', threads };
+    const next = primaryAgentReducer(withIntent, action);
     expect(next.threads).toBe(threads);
-    expect(next.threadId).toBe('huey-thread-current');
+    expect(next.threadId).toBe('primary-agent-thread-current');
     expect(next.activeIntent).toBe('review_spec');
   });
 });

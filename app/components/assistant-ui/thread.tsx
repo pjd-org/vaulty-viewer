@@ -4,6 +4,7 @@ import {
   UserMessageAttachments,
 } from '@/app/components/assistant-ui/attachment';
 import { ToolFallback } from '@/app/components/assistant-ui/tool-fallback';
+import { PrimaryAgentToolInvocation } from '@/src/components/tool-ui/primary-agent-tool-invocation';
 import { lazy, Suspense } from 'react';
 
 // Lazy-load MarkdownText so unified/remark (ESM-only) are excluded from the SSR bundle
@@ -101,7 +102,7 @@ const ThreadWelcome: FC = () => {
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-4 gap-1">
           <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both font-semibold text-2xl duration-200">
-            Huey
+            Primary Agent
           </h1>
           <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-muted-foreground text-base delay-75 duration-200">
             Execution interface for the vault system. Ask about tasks, context,
@@ -265,7 +266,7 @@ const AssistantMessage: FC = () => {
                 </Suspense>
               );
             if (part.type === 'tool-call')
-              return part.toolUI ?? <ToolFallback {...part} />;
+              return part.toolUI ?? <PrimaryAgentToolInvocation {...part} />;
             return null;
           }}
         </MessagePrimitive.Parts>

@@ -59,7 +59,7 @@ const ROUTE_ICONS: Record<string, React.ElementType> = {
   '/graph': Share2,
   '/timeline': Clock,
   '/archive': Archive,
-  '/huey': Bot,
+  '/primary-agent': Bot,
   '/settings': Settings,
 };
 

@@ -1,7 +1,7 @@
 /**
- * huey-adapter.test.ts — Unit tests for createHueyModelAdapter
+ * primary-agent-adapter.test.ts — Unit tests for createPrimaryAgentModelAdapter
  *
- * Mocks apiFetch and huey-agent-server helpers. Tests:
+ * Mocks apiFetch and primary-agent-agent-server helpers. Tests:
  *   1. Sends correct path and body to agent server
  *   2. Returns assistant text from parsed response
  *   3. Retries with gpt-4o-mini on 429
@@ -30,18 +30,18 @@ import type {
 // ---------------------------------------------------------------------------
 
 vi.mock('../../src/utils/api', () => ({ apiFetch: vi.fn() }));
-vi.mock('../../src/lib/huey-agent-server', () => ({
-  buildHueyAgentServerRunPath: (threadId: string) =>
+vi.mock('../../src/lib/primary-agent-agent-server', () => ({
+  buildPrimaryAgentServerRunPath: (threadId: string) =>
     `/tensura/v1/agent-server/threads/${encodeURIComponent(threadId)}/runs`,
-  parseHueyAgentServerRunResponse: vi.fn(),
+  parsePrimaryAgentServerRunResponse: vi.fn(),
 }));
 
 import { apiFetch } from '../../src/utils/api';
-import { parseHueyAgentServerRunResponse } from '../../src/lib/huey-agent-server';
-import { createHueyModelAdapter } from '../../src/lib/huey-adapter';
+import { parsePrimaryAgentServerRunResponse } from '../../src/lib/primary-agent-agent-server';
+import { createPrimaryAgentModelAdapter } from '../../src/lib/primary-agent-adapter';
 
 const mockApiFetch = apiFetch as unknown as MockInstance;
-const mockParse = parseHueyAgentServerRunResponse as unknown as MockInstance;
+const mockParse = parsePrimaryAgentServerRunResponse as unknown as MockInstance;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -92,7 +92,7 @@ function makeRunOptions(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('createHueyModelAdapter', () => {
+describe('createPrimaryAgentModelAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -107,7 +107,7 @@ describe('createHueyModelAdapter', () => {
       meta: 'Thread thread-abc',
     });
 
-    const adapter = createHueyModelAdapter({ getThreadId: () => 'thread-abc' });
+    const adapter = createPrimaryAgentModelAdapter({ getThreadId: () => 'thread-abc' });
     await adapter.run(makeRunOptions('hello'));
 
     expect(mockApiFetch).toHaveBeenCalledOnce();
@@ -131,7 +131,7 @@ describe('createHueyModelAdapter', () => {
       meta: 'Thread thread-abc',
     });
 
-    const adapter = createHueyModelAdapter({ getThreadId: () => 'thread-abc' });
+    const adapter = createPrimaryAgentModelAdapter({ getThreadId: () => 'thread-abc' });
     const result = await (adapter.run(
       makeRunOptions('plan')
     ) as Promise<ChatModelRunResult>);
@@ -153,7 +153,7 @@ describe('createHueyModelAdapter', () => {
       meta: 'Thread thread-abc',
     });
 
-    const adapter = createHueyModelAdapter({ getThreadId: () => 'thread-abc' });
+    const adapter = createPrimaryAgentModelAdapter({ getThreadId: () => 'thread-abc' });
     const result = await (adapter.run(
       makeRunOptions('retry test')
     ) as Promise<ChatModelRunResult>);
@@ -176,7 +176,7 @@ describe('createHueyModelAdapter', () => {
       meta: 'Thread thread-abc',
     });
 
-    const adapter = createHueyModelAdapter({ getThreadId: () => 'thread-abc' });
+    const adapter = createPrimaryAgentModelAdapter({ getThreadId: () => 'thread-abc' });
     await adapter.run(makeRunOptions('server error'));
 
     expect(mockApiFetch).toHaveBeenCalledTimes(2);
@@ -189,9 +189,9 @@ describe('createHueyModelAdapter', () => {
   it('throws when primary fails non-retryable with no payload', async () => {
     mockApiFetch.mockResolvedValueOnce(makeResponse(false, 403, null));
 
-    const adapter = createHueyModelAdapter({ getThreadId: () => 'thread-abc' });
+    const adapter = createPrimaryAgentModelAdapter({ getThreadId: () => 'thread-abc' });
     await expect(adapter.run(makeRunOptions('forbidden'))).rejects.toThrow(
-      'Huey request failed (403)'
+      'Primary Agent request failed (403)'
     );
     // No fallback attempted for 403
     expect(mockApiFetch).toHaveBeenCalledOnce();
@@ -208,7 +208,7 @@ describe('createHueyModelAdapter', () => {
     });
 
     const onThreadIdResolved = vi.fn();
-    const adapter = createHueyModelAdapter({
+    const adapter = createPrimaryAgentModelAdapter({
       getThreadId: () => 'thread-local',
       onThreadIdResolved,
     });
@@ -228,7 +228,7 @@ describe('createHueyModelAdapter', () => {
     });
 
     const onThreadIdResolved = vi.fn();
-    const adapter = createHueyModelAdapter({
+    const adapter = createPrimaryAgentModelAdapter({
       getThreadId: () => 'thread-same',
       onThreadIdResolved,
     });

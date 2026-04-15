@@ -1,7 +1,7 @@
 /**
- * Huey workspace — basic render and interaction wiring
+ * PrimaryAgent workspace — basic render and interaction wiring
  *
- * Tests the HueyWorkspace component wrapped in a lightweight
+ * Tests the PrimaryAgentWorkspace component wrapped in a lightweight
  * AssistantRuntimeProvider + useLocalRuntime so that all
  * @assistant-ui/react primitives have the context they need.
  *
@@ -58,7 +58,7 @@ const noopAdapter: ChatModelAdapter = {
   run: () => new Promise(() => {}), // never resolves
 };
 
-function HueyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
+function PrimaryAgentWorkspaceWrapper({ children }: { children: React.ReactNode }) {
   const runtime = useLocalRuntime(noopAdapter);
   return (
     <TooltipProvider>
@@ -71,25 +71,25 @@ function HueyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
 
 // ── Import component after mocks ──────────────────────────────────────────────
 
-import { HueyWorkspace } from '../../app/components/huey/HueyWorkspace';
+import { PrimaryAgentWorkspace } from '../../app/components/primary-agent/PrimaryAgentWorkspace';
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('HueyWorkspace — render', () => {
+describe('PrimaryAgentWorkspace — render', () => {
   it('shows greeting placeholder when the thread is empty', () => {
     render(
-      <HueyWorkspaceWrapper>
-        <HueyWorkspace intentTemplate={null} />
-      </HueyWorkspaceWrapper>
+      <PrimaryAgentWorkspaceWrapper>
+        <PrimaryAgentWorkspace intentTemplate={null} />
+      </PrimaryAgentWorkspaceWrapper>
     );
     expect(screen.getByText(/Execution interface/i)).toBeTruthy();
   });
 
   it('Send button is disabled when composer input is empty', () => {
     render(
-      <HueyWorkspaceWrapper>
-        <HueyWorkspace intentTemplate={null} />
-      </HueyWorkspaceWrapper>
+      <PrimaryAgentWorkspaceWrapper>
+        <PrimaryAgentWorkspace intentTemplate={null} />
+      </PrimaryAgentWorkspaceWrapper>
     );
     const send = screen.getByRole('button', { name: /send/i });
     expect(send).toBeDisabled();
@@ -97,9 +97,9 @@ describe('HueyWorkspace — render', () => {
 
   it('Send button is enabled once the composer has text', () => {
     render(
-      <HueyWorkspaceWrapper>
-        <HueyWorkspace intentTemplate={null} />
-      </HueyWorkspaceWrapper>
+      <PrimaryAgentWorkspaceWrapper>
+        <PrimaryAgentWorkspace intentTemplate={null} />
+      </PrimaryAgentWorkspaceWrapper>
     );
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: 'hello' },
@@ -110,9 +110,9 @@ describe('HueyWorkspace — render', () => {
 
   it('Cancel button is not present while thread is idle', () => {
     render(
-      <HueyWorkspaceWrapper>
-        <HueyWorkspace intentTemplate={null} />
-      </HueyWorkspaceWrapper>
+      <PrimaryAgentWorkspaceWrapper>
+        <PrimaryAgentWorkspace intentTemplate={null} />
+      </PrimaryAgentWorkspaceWrapper>
     );
     // Cancel is only shown while running — absent in idle state
     expect(screen.queryByRole('button', { name: /cancel/i })).toBeNull();

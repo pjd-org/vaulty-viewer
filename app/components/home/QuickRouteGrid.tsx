@@ -31,11 +31,11 @@ export function QuickRouteGrid() {
       </Link>
 
       <Link
-        to="/huey"
+        to="/primary-agent"
         className="genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5"
       >
         <div className="text-xl mb-2">🤖</div>
-        <p className="text-sm font-semibold text-[var(--text-primary)]">Huey</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)]">Primary Agent</p>
         <p className="text-xs text-[var(--text-secondary)] mt-0.5">
           Guided assistant
         </p>

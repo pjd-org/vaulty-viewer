@@ -1,22 +1,22 @@
 /**
- * HueyWorkspace — wraps the assistant-ui Thread component.
+ * PrimaryAgentWorkspace — wraps the assistant-ui Thread component.
  *
  * Renders an optional intent banner and context summary above the full
  * production-grade Thread UI from @/app/components/assistant-ui/thread.tsx.
  *
- * Must be rendered inside HueyAssistantProvider (AssistantRuntimeProvider).
+ * Must be rendered inside PrimaryAgentAssistantProvider (AssistantRuntimeProvider).
  */
 import React from 'react';
 import { Thread } from '../assistant-ui/thread';
-import type { IntentTemplate } from '../../../src/lib/huey-intents';
+import type { IntentTemplate } from '../../../src/lib/primary-agent-intents';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-interface HueyWorkspaceProps {
+interface PrimaryAgentWorkspaceProps {
   intentTemplate: IntentTemplate | null;
-  /** Optional summary of what Huey has access to in the current context */
+  /** Optional summary of what the Primary Agent has access to in the current context */
   contextSummary?: {
     taskCount: number;
     noteCount: number;
@@ -24,10 +24,10 @@ interface HueyWorkspaceProps {
   };
 }
 
-export function HueyWorkspace({
+export function PrimaryAgentWorkspace({
   intentTemplate,
   contextSummary,
-}: HueyWorkspaceProps) {
+}: PrimaryAgentWorkspaceProps) {
   const contextLine = contextSummary
     ? [
         contextSummary.taskCount > 0
@@ -59,7 +59,7 @@ export function HueyWorkspace({
       {contextLine && (
         <div className="flex items-center gap-1.5 px-5 pt-3 pb-0 shrink-0">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
-            Huey has access to:
+            Primary Agent has access to:
           </span>
           <span className="text-[10px] text-[var(--text-secondary)]">
             {contextLine}

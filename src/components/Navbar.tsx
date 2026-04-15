@@ -79,8 +79,8 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
         >
           Avatar
         </button>
-        <Link to="/huey" onClick={closeMenu} className={`navbar__huey-link ${navLinkClass('/huey') ?? ''}`.trim()}>
-          Huey
+        <Link to="/primary-agent" onClick={closeMenu} className={`navbar__primary-agent-link ${navLinkClass('/primary-agent') ?? ''}`.trim()}>
+          Primary Agent
         </Link>
         <button
           type="button"

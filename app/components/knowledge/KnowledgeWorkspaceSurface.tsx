@@ -100,11 +100,11 @@ function AudienceColumn({
           </p>
         )}
         <Link
-          to="/huey"
+          to="/primary-agent"
           search={{}}
           className="inline-block mt-1 text-xs text-[var(--text-info)] hover:underline"
         >
-          Ask Huey to help author →
+          Ask Primary Agent to help author →
         </Link>
       </div>
     );

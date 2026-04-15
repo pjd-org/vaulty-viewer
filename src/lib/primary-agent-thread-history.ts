@@ -1,12 +1,12 @@
 /**
- * huey-thread-history.ts — localStorage-backed ThreadHistoryAdapter for @assistant-ui/react.
+ * primary-agent-thread-history.ts — localStorage-backed ThreadHistoryAdapter for @assistant-ui/react.
  *
  * One adapter instance is scoped to a single threadId. The adapter:
  *   - load()   → reads stored messages for this thread (empty if none)
  *   - append() → pushes a new message item into storage for this thread
  *
  * Storage layout:
- *   localStorage[HUEY_MESSAGES_STORAGE_KEY] = {
+ *   localStorage[PRIMARY_AGENT_MESSAGES_STORAGE_KEY] = {
  *     [threadId]: {
  *       headId: string | null,
  *       messages: ExportedMessageRepositoryItem[]
@@ -21,7 +21,8 @@ import type {
   ExportedMessageRepositoryItem,
 } from '@assistant-ui/react';
 
-export const HUEY_MESSAGES_STORAGE_KEY = 'huey-thread-messages';
+export const PRIMARY_AGENT_MESSAGES_STORAGE_KEY = 'primary-agent-thread-messages';
+const LEGACY_MESSAGES_STORAGE_KEY = 'huey-thread-messages';
 
 type PerThreadStore = {
   headId: string | null;
@@ -32,7 +33,9 @@ type AllThreadsStore = Record<string, PerThreadStore>;
 
 function readStore(): AllThreadsStore {
   try {
-    const raw = localStorage.getItem(HUEY_MESSAGES_STORAGE_KEY);
+    const raw =
+      localStorage.getItem(PRIMARY_AGENT_MESSAGES_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_MESSAGES_STORAGE_KEY);
     if (!raw) return {};
     return JSON.parse(raw) as AllThreadsStore;
   } catch {
@@ -42,7 +45,7 @@ function readStore(): AllThreadsStore {
 
 function writeStore(store: AllThreadsStore): void {
   try {
-    localStorage.setItem(HUEY_MESSAGES_STORAGE_KEY, JSON.stringify(store));
+    localStorage.setItem(PRIMARY_AGENT_MESSAGES_STORAGE_KEY, JSON.stringify(store));
   } catch {
     // Ignore quota/security errors — message history is best-effort
   }

@@ -111,7 +111,7 @@ export function automationSearchParams(s: S) {
     tab: readEnumSearchParam(s.tab, [
       'pipelines',
       'runners',
-      'huey',
+      'primary-agent',
       'schedules',
     ] as const),
     subtab: readStringSearchParam(s.subtab),

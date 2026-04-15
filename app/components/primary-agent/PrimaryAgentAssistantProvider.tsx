@@ -1,13 +1,14 @@
 /**
- * HueyAssistantProvider — scoped @assistant-ui/react runtime wrapper.
+ * PrimaryAgentAssistantProvider — scoped @assistant-ui/react runtime wrapper.
  *
  * SCOPE INVARIANT: This file is the only entry point for @assistant-ui/react
- * in the viewer. It must NOT be imported from any route other than /huey.
+ * in the viewer. It must NOT be imported from any route other than the
+ * Primary Agent route alias (/huey).
  *
  * Usage:
- *   <HueyAssistantProvider threadId={threadId} onThreadIdChange={handleChange}>
+ *   <PrimaryAgentAssistantProvider threadId={threadId} onThreadIdChange={handleChange}>
  *     <YourChatUI />
- *   </HueyAssistantProvider>
+ *   </PrimaryAgentAssistantProvider>
  *
  * Thread persistence: each threadId gets its own localStorage-backed
  * ThreadHistoryAdapter. The adapter is re-created when threadId changes so
@@ -21,36 +22,36 @@ import {
   Tools,
 } from '@assistant-ui/react';
 import {
-  createHueyModelAdapter,
-  type HueyContext,
-} from '../../../src/lib/huey-adapter';
-import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/huey-thread-history';
-import { hueyToolkit } from '../../../src/lib/huey-toolkit';
+  createPrimaryAgentModelAdapter,
+  type PrimaryAgentContext,
+} from '../../../src/lib/primary-agent-adapter';
+import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/primary-agent-thread-history';
+import { primaryAgentToolkit } from '../../../src/lib/primary-agent-toolkit';
 
-interface HueyAssistantProviderProps {
+interface PrimaryAgentAssistantProviderProps {
   children: React.ReactNode;
   threadId: string;
   onThreadIdChange: (id: string) => void;
   getIntent: () => string | null;
-  getContext: () => HueyContext | null;
+  getContext: () => PrimaryAgentContext | null;
 }
 
 /**
  * Inner bridge: must live inside AssistantRuntimeProvider to call useAui.
- * Registers the hueyToolkit renders on the active runtime.
+ * Registers the primaryAgentToolkit renders on the active runtime.
  */
-function HueyToolkitBridge({ children }: { children: React.ReactNode }) {
-  useAui({ tools: Tools({ toolkit: hueyToolkit }) });
+function PrimaryAgentToolkitBridge({ children }: { children: React.ReactNode }) {
+  useAui({ tools: Tools({ toolkit: primaryAgentToolkit as any }) });
   return <>{children}</>;
 }
 
-export function HueyAssistantProvider({
+export function PrimaryAgentAssistantProvider({
   children,
   threadId,
   onThreadIdChange,
   getIntent,
   getContext,
-}: HueyAssistantProviderProps) {
+}: PrimaryAgentAssistantProviderProps) {
   // Ref keeps onThreadIdChange stable across renders without recreating the model adapter.
   const onThreadIdChangeRef = useRef(onThreadIdChange);
   onThreadIdChangeRef.current = onThreadIdChange;
@@ -67,7 +68,7 @@ export function HueyAssistantProvider({
 
   const modelAdapter = useMemo(
     () =>
-      createHueyModelAdapter({
+      createPrimaryAgentModelAdapter({
         getThreadId: () => threadIdRef.current,
         onThreadIdResolved: (resolvedId) =>
           onThreadIdChangeRef.current(resolvedId),
@@ -90,7 +91,7 @@ export function HueyAssistantProvider({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <HueyToolkitBridge>{children}</HueyToolkitBridge>
+      <PrimaryAgentToolkitBridge>{children}</PrimaryAgentToolkitBridge>
     </AssistantRuntimeProvider>
   );
 }

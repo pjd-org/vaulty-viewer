@@ -63,7 +63,7 @@ describe('search-param schemas — canonical validateSearch contracts', () => {
   describe('automationSearchParams (/automation)', () => {
     it('parses tab enum', () => {
       expect(automationSearchParams({ tab: 'pipelines' }).tab).toBe('pipelines')
-      expect(automationSearchParams({ tab: 'huey' }).tab).toBe('huey')
+      expect(automationSearchParams({ tab: 'primary-agent' }).tab).toBe('primary-agent')
     })
     it('parses autoRefresh boolean', () => {
       expect(automationSearchParams({ autoRefresh: 'true' }).autoRefresh).toBe(true)

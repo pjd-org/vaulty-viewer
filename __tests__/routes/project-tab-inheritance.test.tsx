@@ -142,7 +142,7 @@ const projectSurface: ProjectSurfacePayload = {
     activeTasks: [{ id: 'task-1', type: 'task', title: 'Lease docs' }],
     activePipelines: [{ id: 'pipeline-1', type: 'pipeline', title: 'Release pipeline' }],
     activeRunners: [{ id: 'runner-1', type: 'runner', title: 'Primary runner' }],
-    hueyJobs: [{ id: 'job-1', type: 'huey_job', title: 'Queued job' }],
+    primaryAgentJobs: [{ id: 'job-1', type: 'primary_agent_job', title: 'Queued job' }],
     scheduleItems: [{ id: 'schedule-1', type: 'schedule', title: 'Daily sync' }],
   },
   contextPanel: [

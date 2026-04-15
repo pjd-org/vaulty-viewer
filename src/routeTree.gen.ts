@@ -13,6 +13,7 @@ import { Route as WorkRouteImport } from './../app/routes/work'
 import { Route as TimelineRouteImport } from './../app/routes/timeline'
 import { Route as SettingsRouteImport } from './../app/routes/settings'
 import { Route as ProjectsRouteImport } from './../app/routes/projects'
+import { Route as PrimaryAgentRouteImport } from './../app/routes/primary-agent'
 import { Route as PortfolioRouteImport } from './../app/routes/portfolio'
 import { Route as NotesRouteImport } from './../app/routes/notes'
 import { Route as NoteRouteImport } from './../app/routes/note'
@@ -20,7 +21,6 @@ import { Route as LoginRouteImport } from './../app/routes/login'
 import { Route as KnowledgeRouteImport } from './../app/routes/knowledge'
 import { Route as KanbanRouteImport } from './../app/routes/kanban'
 import { Route as InboxRouteImport } from './../app/routes/inbox'
-import { Route as HueyRouteImport } from './../app/routes/huey'
 import { Route as HealthRouteImport } from './../app/routes/health'
 import { Route as GraphRouteImport } from './../app/routes/graph'
 import { Route as GoalsRouteImport } from './../app/routes/goals'
@@ -65,6 +65,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
   path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrimaryAgentRoute = PrimaryAgentRouteImport.update({
+  id: '/primary-agent',
+  path: '/primary-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -98,11 +103,6 @@ const KanbanRoute = KanbanRouteImport.update({
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HueyRoute = HueyRouteImport.update({
-  id: '/huey',
-  path: '/huey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthRoute = HealthRouteImport.update({
@@ -232,7 +232,6 @@ export interface FileRoutesByFullPath {
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
-  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -240,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/note': typeof NoteRoute
   '/notes': typeof NotesRoute
   '/portfolio': typeof PortfolioRoute
+  '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -269,7 +269,6 @@ export interface FileRoutesByTo {
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
-  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -277,6 +276,7 @@ export interface FileRoutesByTo {
   '/note': typeof NoteRoute
   '/notes': typeof NotesRoute
   '/portfolio': typeof PortfolioRoute
+  '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -307,7 +307,6 @@ export interface FileRoutesById {
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
-  '/huey': typeof HueyRoute
   '/inbox': typeof InboxRoute
   '/kanban': typeof KanbanRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -315,6 +314,7 @@ export interface FileRoutesById {
   '/note': typeof NoteRoute
   '/notes': typeof NotesRoute
   '/portfolio': typeof PortfolioRoute
+  '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -346,7 +346,6 @@ export interface FileRouteTypes {
     | '/goals'
     | '/graph'
     | '/health'
-    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -354,6 +353,7 @@ export interface FileRouteTypes {
     | '/note'
     | '/notes'
     | '/portfolio'
+    | '/primary-agent'
     | '/projects'
     | '/settings'
     | '/timeline'
@@ -383,7 +383,6 @@ export interface FileRouteTypes {
     | '/goals'
     | '/graph'
     | '/health'
-    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -391,6 +390,7 @@ export interface FileRouteTypes {
     | '/note'
     | '/notes'
     | '/portfolio'
+    | '/primary-agent'
     | '/projects'
     | '/settings'
     | '/timeline'
@@ -420,7 +420,6 @@ export interface FileRouteTypes {
     | '/goals'
     | '/graph'
     | '/health'
-    | '/huey'
     | '/inbox'
     | '/kanban'
     | '/knowledge'
@@ -428,6 +427,7 @@ export interface FileRouteTypes {
     | '/note'
     | '/notes'
     | '/portfolio'
+    | '/primary-agent'
     | '/projects'
     | '/settings'
     | '/timeline'
@@ -458,7 +458,6 @@ export interface RootRouteChildren {
   GoalsRoute: typeof GoalsRoute
   GraphRoute: typeof GraphRoute
   HealthRoute: typeof HealthRoute
-  HueyRoute: typeof HueyRoute
   InboxRoute: typeof InboxRoute
   KanbanRoute: typeof KanbanRoute
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
@@ -466,6 +465,7 @@ export interface RootRouteChildren {
   NoteRoute: typeof NoteRoute
   NotesRoute: typeof NotesRoute
   PortfolioRoute: typeof PortfolioRoute
+  PrimaryAgentRoute: typeof PrimaryAgentRoute
   ProjectsRoute: typeof ProjectsRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   TimelineRoute: typeof TimelineRoute
@@ -503,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/primary-agent': {
+      id: '/primary-agent'
+      path: '/primary-agent'
+      fullPath: '/primary-agent'
+      preLoaderRoute: typeof PrimaryAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -552,13 +559,6 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/inbox'
       preLoaderRoute: typeof InboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/huey': {
-      id: '/huey'
-      path: '/huey'
-      fullPath: '/huey'
-      preLoaderRoute: typeof HueyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/health': {
@@ -786,7 +786,6 @@ const rootRouteChildren: RootRouteChildren = {
   GoalsRoute: GoalsRoute,
   GraphRoute: GraphRoute,
   HealthRoute: HealthRoute,
-  HueyRoute: HueyRoute,
   InboxRoute: InboxRoute,
   KanbanRoute: KanbanRoute,
   KnowledgeRoute: KnowledgeRouteWithChildren,
@@ -794,6 +793,7 @@ const rootRouteChildren: RootRouteChildren = {
   NoteRoute: NoteRoute,
   NotesRoute: NotesRoute,
   PortfolioRoute: PortfolioRoute,
+  PrimaryAgentRoute: PrimaryAgentRoute,
   ProjectsRoute: ProjectsRouteWithChildren,
   SettingsRoute: SettingsRoute,
   TimelineRoute: TimelineRoute,

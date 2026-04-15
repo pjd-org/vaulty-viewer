@@ -358,11 +358,11 @@ function InspectOverlay({
               </Link>
             )}
             <Link
-              to="/huey"
+              to="/primary-agent"
               onClick={onClose}
               className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surf-elevated)] border border-[var(--border-glass)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:border-[var(--border-glass-soft)] transition-colors"
             >
-              Ask Huey
+              Ask Primary Agent
               <svg
                 width="10"
                 height="10"

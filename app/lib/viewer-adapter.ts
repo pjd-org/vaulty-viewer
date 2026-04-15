@@ -26,7 +26,7 @@ export type AdapterEntityType =
   | 'note'
   | 'pipeline'
   | 'runner'
-  | 'huey_job'
+  | 'primary_agent_job'
   | 'schedule'
   | 'incident'
   | 'memory'
@@ -326,7 +326,7 @@ export interface ProjectSurfacePayload {
     activeTasks: AdapterEntityRef[];
     activePipelines: AdapterEntityRef[];
     activeRunners: AdapterEntityRef[];
-    hueyJobs: AdapterEntityRef[];
+    primaryAgentJobs: AdapterEntityRef[];
     scheduleItems: AdapterEntityRef[];
   };
   contextPanel: ContextCandidate[];
@@ -824,7 +824,7 @@ export function buildProjectSurfacePayload(args: {
       activeTasks: args.tasks.slice(0, 5).map(taskEntity),
       activePipelines: [],
       activeRunners: [],
-      hueyJobs: [],
+      primaryAgentJobs: [],
       scheduleItems: [],
     },
     contextPanel,

@@ -1,5 +1,5 @@
 /**
- * huey-intents.ts — intent templates for Huey execution interface.
+ * primary-agent-intents.ts — intent templates for the Primary Agent execution interface.
  * Pure data and functions. No API calls.
  */
 
@@ -170,7 +170,7 @@ export const INTENT_TEMPLATES: IntentTemplate[] = [
       {
         key: 'message',
         label: 'Message',
-        placeholder: 'Ask Huey to plan, inspect, explain, or act...',
+        placeholder: 'Ask the Primary Agent to plan, inspect, explain, or act...',
         required: true,
         multiline: true,
       },
