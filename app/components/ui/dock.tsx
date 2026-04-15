@@ -5,6 +5,38 @@ import React from 'react';
 
 import { cn } from '@/src/lib/utils';
 
+type DockTone =
+  | 'neutral'
+  | 'mint'
+  | 'lime'
+  | 'aqua'
+  | 'sky'
+  | 'lilac'
+  | 'peach'
+  | 'rose'
+  | 'sun';
+
+const dockToneClassName: Record<DockTone, string> = {
+  neutral:
+    'border border-white/80 bg-white/75 text-neutral-700 shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-white',
+  mint:
+    'border border-[color-mix(in_srgb,var(--a-mint)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-mint)_20%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-mint)_28%,white)]',
+  lime:
+    'border border-[color-mix(in_srgb,var(--a-lime)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-lime)_20%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-lime)_28%,white)]',
+  aqua:
+    'border border-[color-mix(in_srgb,var(--a-aqua)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-aqua)_20%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-aqua)_28%,white)]',
+  sky:
+    'border border-[color-mix(in_srgb,var(--a-sky)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_18%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-sky)_26%,white)]',
+  lilac:
+    'border border-[color-mix(in_srgb,var(--a-lilac)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-lilac)_18%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-lilac)_26%,white)]',
+  peach:
+    'border border-[color-mix(in_srgb,var(--a-peach)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-peach)_18%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-peach)_26%,white)]',
+  rose:
+    'border border-[color-mix(in_srgb,var(--a-rose)_40%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_18%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-rose)_26%,white)]',
+  sun:
+    'border border-[color-mix(in_srgb,var(--a-sun)_42%,transparent)] bg-[color-mix(in_srgb,var(--a-sun)_20%,white)] text-[var(--n-800)] shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 hover:bg-[color-mix(in_srgb,var(--a-sun)_28%,white)]',
+};
+
 export interface DockProps {
   children: React.ReactNode;
   bottomOffset?: string;
@@ -52,6 +84,7 @@ export interface DockIconProps {
   onClick?: () => void;
   className?: string;
   ariaLabel?: string;
+  tone?: DockTone;
 }
 
 export function DockIcon({
@@ -60,9 +93,11 @@ export function DockIcon({
   onClick,
   className,
   ariaLabel,
+  tone = 'neutral',
 }: DockIconProps) {
   const sharedClassName = cn(
-    'flex h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-full border border-white/80 bg-white/75 text-neutral-700 shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white',
+    'flex h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-full transition-transform duration-200',
+    dockToneClassName[tone],
     className
   );
 
@@ -101,6 +136,7 @@ export interface DockLinkProps {
   external?: boolean;
   onClick?: () => void;
   className?: string;
+  tone?: DockTone;
 }
 
 export function DockLink({
@@ -110,10 +146,11 @@ export function DockLink({
   external,
   onClick,
   className,
+  tone = 'neutral',
 }: DockLinkProps) {
   const baseClassName = cn(
-    'flex h-[42px] items-center gap-1 rounded-full px-[18px] text-[14px] leading-[10px] transition-colors duration-200',
-    'border border-white/80 bg-white/70 text-black shadow-[0_1px_1px_rgba(15,23,42,0.04),0_8px_18px_rgba(15,23,42,0.08)] hover:bg-white',
+    'flex h-[42px] items-center gap-1 rounded-full px-[18px] text-[14px] leading-[10px] transition-all duration-200',
+    dockToneClassName[tone],
     className
   );
 

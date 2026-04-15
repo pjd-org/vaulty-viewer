@@ -133,5 +133,9 @@ describe('chat-kit', () => {
     expect(screen.getByRole('button', { name: /attach file/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /plan/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /track/i })).toBeTruthy();
+    expect(screen.getByText('IDLE')).toBeTruthy();
+    expect(screen.getByText('No active thread')).toBeTruthy();
+    expect(screen.getByText('mint')).toBeTruthy();
+    expect(screen.getByText('sky')).toBeTruthy();
   });
 });

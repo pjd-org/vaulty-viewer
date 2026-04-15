@@ -30,3 +30,10 @@ export const Degraded: Story = {
     detail: 'Tool fallback is active',
   },
 };
+
+export const Error: Story = {
+  args: {
+    state: 'error',
+    detail: 'Execution blocked by policy',
+  },
+};

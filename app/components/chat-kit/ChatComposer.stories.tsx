@@ -14,6 +14,8 @@ export const Idle: Story = {
   args: {
     value: '',
     placeholder: 'Send a message...',
+    runtimeState: 'idle',
+    runtimeDetail: 'No active thread',
     onChange: () => undefined,
     onAttach: () => undefined,
     onToolSelect: () => undefined,
@@ -24,6 +26,8 @@ export const Running: Story = {
   args: {
     value: 'Run the plan',
     isRunning: true,
+    runtimeState: 'running',
+    runtimeDetail: 'Generating response',
     onChange: () => undefined,
     onAttach: () => undefined,
     onToolSelect: () => undefined,

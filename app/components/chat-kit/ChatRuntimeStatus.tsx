@@ -11,24 +11,48 @@ export function ChatRuntimeStatus({
   detail,
   className,
 }: ChatRuntimeStatusProps) {
-  const toneClass =
+  const statusTone =
     state === 'running'
-      ? 'border-[color-mix(in_srgb,var(--a-sky)_36%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_16%,white)] text-[var(--text-info)]'
+      ? {
+          badge:
+            'border-[color-mix(in_srgb,var(--a-sky)_36%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_16%,white)] text-[var(--text-info)]',
+          dot: 'bg-[var(--a-sky)]',
+          label: 'RUNNING',
+        }
       : state === 'degraded'
-        ? 'border-[color-mix(in_srgb,var(--a-sun)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sun)_18%,white)] text-[var(--text-warning)]'
-          : state === 'error'
-          ? 'border-[color-mix(in_srgb,var(--s-danger)_32%,transparent)] bg-[color-mix(in_srgb,var(--s-danger)_14%,white)] text-[var(--text-danger)]'
-          : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]';
+        ? {
+            badge:
+              'border-[color-mix(in_srgb,var(--a-sun)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sun)_18%,white)] text-[var(--text-warning)]',
+            dot: 'bg-[var(--a-sun)]',
+            label: 'DEGRADED',
+          }
+        : state === 'error'
+          ? {
+              badge:
+                'border-[color-mix(in_srgb,var(--a-rose)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_14%,white)] text-[var(--text-danger)]',
+              dot: 'bg-[var(--a-rose)]',
+              label: 'ERROR',
+            }
+          : {
+              badge:
+                'border-[color-mix(in_srgb,var(--a-lilac)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-lilac)_14%,white)] text-[var(--text-secondary)]',
+              dot: 'bg-[var(--a-lilac)]',
+              label: 'IDLE',
+            };
 
   return (
     <div className={cn('flex items-center gap-2 text-xs', className)}>
       <span
         className={cn(
-          'inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-          toneClass
+          'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
+          statusTone.badge
         )}
       >
-        {state}
+        <span
+          aria-hidden="true"
+          className={cn('size-2 rounded-full', statusTone.dot)}
+        />
+        {statusTone.label}
       </span>
       {detail && <span className="text-[var(--text-secondary)]">{detail}</span>}
     </div>

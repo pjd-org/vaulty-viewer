@@ -2,7 +2,20 @@ import type { ReactNode } from 'react';
 import { cn } from '@/src/lib/utils';
 import { PromptInput } from '@vault/ui';
 import { Dock, DockIcon, DockLink } from '@/app/components/ui';
+import { ChatRuntimeStatus } from './ChatRuntimeStatus';
+import type { ChatRuntimeStatusProps } from './ChatRuntimeStatus';
 import { Paperclip, Sparkles, Square } from 'lucide-react';
+
+const PALETTE_SWATCHES = [
+  { name: 'mint', color: 'var(--a-mint)' },
+  { name: 'lime', color: 'var(--a-lime)' },
+  { name: 'aqua', color: 'var(--a-aqua)' },
+  { name: 'sky', color: 'var(--a-sky)' },
+  { name: 'lilac', color: 'var(--a-lilac)' },
+  { name: 'peach', color: 'var(--a-peach)' },
+  { name: 'rose', color: 'var(--a-rose)' },
+  { name: 'sun', color: 'var(--a-sun)' },
+] as const;
 
 export interface ChatComposerProps {
   value: string;
@@ -14,7 +27,29 @@ export interface ChatComposerProps {
   onCancel?: () => void;
   onAttach?: () => void;
   onToolSelect?: (tool: string) => void;
+  runtimeState?: ChatRuntimeStatusProps['state'];
+  runtimeDetail?: string;
   className?: string;
+}
+
+function ChatPaletteLegend() {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {PALETTE_SWATCHES.map((swatch) => (
+        <span
+          key={swatch.name}
+          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.8)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)]"
+        >
+          <span
+            aria-hidden="true"
+            className="size-2.5 rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.65)]"
+            style={{ background: swatch.color }}
+          />
+          {swatch.name}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 export function ChatComposer({
@@ -27,9 +62,21 @@ export function ChatComposer({
   onCancel,
   onAttach,
   onToolSelect,
+  runtimeState,
+  runtimeDetail,
   className,
 }: ChatComposerProps) {
   const canShowToolDock = Boolean(onToolSelect);
+  const statusState = runtimeState ?? (isRunning ? 'running' : 'idle');
+  const statusDetail =
+    runtimeDetail ??
+    (statusState === 'running'
+      ? 'Generating response'
+      : statusState === 'degraded'
+        ? 'Tool fallback active'
+        : statusState === 'error'
+          ? 'Attention needed'
+          : 'No active thread');
 
   return (
     <Dock
@@ -40,6 +87,11 @@ export function ChatComposer({
       )}
     >
       {attachments && <div className="flex flex-wrap gap-2">{attachments}</div>}
+
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <ChatRuntimeStatus state={statusState} detail={statusDetail} />
+        <ChatPaletteLegend />
+      </div>
 
       <PromptInput
         value={value}
@@ -70,6 +122,7 @@ export function ChatComposer({
               icon={<Paperclip className="size-4" />}
               onClick={onAttach}
               ariaLabel="Attach file"
+              tone="sky"
             />
           )}
 
@@ -79,21 +132,25 @@ export function ChatComposer({
                 label="Plan"
                 onClick={() => onToolSelect?.('show_plan')}
                 icon={<Sparkles className="size-3.5" />}
+                tone="mint"
               />
 
               <DockLink
                 label="Track"
                 onClick={() => onToolSelect?.('show_progress')}
+                tone="aqua"
               />
 
               <DockLink
                 label="Approval"
                 onClick={() => onToolSelect?.('approval-card')}
+                tone="rose"
               />
 
               <DockLink
                 label="Draft"
                 onClick={() => onToolSelect?.('message-draft')}
+                tone="lilac"
               />
             </>
           )}
@@ -104,6 +161,7 @@ export function ChatComposer({
             label="Stop"
             onClick={onCancel}
             icon={<Square className="size-3 fill-current" />}
+            tone="sun"
           />
         )}
       </div>
