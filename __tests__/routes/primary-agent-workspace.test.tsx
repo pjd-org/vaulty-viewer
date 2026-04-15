@@ -82,6 +82,7 @@ describe('PrimaryAgentWorkspace — render', () => {
         <PrimaryAgentWorkspace intentTemplate={null} />
       </PrimaryAgentWorkspaceWrapper>
     );
+    expect(screen.getByRole('dialog')).toBeTruthy();
     expect(screen.getByText(/Execution interface/i)).toBeTruthy();
   });
 

@@ -63,6 +63,26 @@ describe('chat-kit', () => {
     expect(screen.getByText('Thread content')).toBeTruthy();
   });
 
+  it('renders the thread shell inside a modal frame', async () => {
+    const { ChatThreadModal } = await import(
+      '../app/components/chat-kit/ChatThreadModal'
+    );
+
+    render(
+      <ChatThreadModal
+        title="Primary Agent"
+        subtitle="Reusable chat kit"
+        sidebar={<div>Thread list</div>}
+      >
+        <div>Thread content</div>
+      </ChatThreadModal>
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Primary Agent' })).toBeTruthy();
+    expect(screen.getByText('Thread list')).toBeTruthy();
+    expect(screen.getByText('Thread content')).toBeTruthy();
+  });
+
   it('renders a plan tool surface and falls back for unknown tools', async () => {
     const { ChatToolSurface } = await import(
       '../app/components/chat-kit/ChatToolSurface'

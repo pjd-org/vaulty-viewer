@@ -1,5 +1,5 @@
 /**
- * PrimaryAgentWorkspace — wraps the assistant-ui Thread component.
+ * PrimaryAgentWorkspace — wraps the assistant-ui Thread component in a modal shell.
  *
  * Renders an optional intent banner and context summary above the full
  * production-grade Thread UI from @/app/components/assistant-ui/thread.tsx.
@@ -7,7 +7,7 @@
  * Must be rendered inside PrimaryAgentAssistantProvider (AssistantRuntimeProvider).
  */
 import React from 'react';
-import { ChatShell, ChatThread } from '../chat-kit';
+import { ChatThreadModal, ChatThread } from '../chat-kit';
 import type { IntentTemplate } from '../../../src/lib/primary-agent-intents';
 
 // ---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ export function PrimaryAgentWorkspace({
     : null;
 
   return (
-    <ChatShell
+    <ChatThreadModal
       header={
         <div className="flex flex-col gap-3">
           {intentTemplate && (
@@ -69,6 +69,6 @@ export function PrimaryAgentWorkspace({
       <div className="min-h-0 flex-1">
         <ChatThread />
       </div>
-    </ChatShell>
+    </ChatThreadModal>
   );
 }

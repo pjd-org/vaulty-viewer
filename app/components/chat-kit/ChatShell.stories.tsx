@@ -3,13 +3,13 @@ import { ChatComposer } from './ChatComposer';
 import { ChatEmptyState } from './ChatEmptyState';
 import { ChatMessage } from './ChatMessage';
 import { ChatRuntimeStatus } from './ChatRuntimeStatus';
-import { ChatShell } from './ChatShell';
+import { ChatThreadModal } from './ChatThreadModal';
 
 const meta = {
   title: 'Chat/ChatShell',
-  component: ChatShell,
+  component: ChatThreadModal,
   parameters: { layout: 'fullscreen' },
-} satisfies Meta<typeof ChatShell>;
+} satisfies Meta<typeof ChatThreadModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
