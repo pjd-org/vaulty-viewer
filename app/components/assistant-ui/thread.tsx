@@ -4,7 +4,7 @@ import {
   UserMessageAttachments,
 } from '@/app/components/assistant-ui/attachment';
 import { ToolFallback } from '@/app/components/assistant-ui/tool-fallback';
-import { PrimaryAgentToolInvocation } from '@/src/components/tool-ui/primary-agent-tool-invocation';
+import { ChatToolSurface } from '@/app/components/chat-kit/ChatToolSurface';
 import { lazy, Suspense } from 'react';
 
 // Lazy-load MarkdownText so unified/remark (ESM-only) are excluded from the SSR bundle
@@ -266,7 +266,7 @@ const AssistantMessage: FC = () => {
                 </Suspense>
               );
             if (part.type === 'tool-call')
-              return part.toolUI ?? <PrimaryAgentToolInvocation {...part} />;
+              return part.toolUI ?? <ChatToolSurface {...part} />;
             return null;
           }}
         </MessagePrimitive.Parts>

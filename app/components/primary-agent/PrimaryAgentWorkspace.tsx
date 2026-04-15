@@ -7,7 +7,7 @@
  * Must be rendered inside PrimaryAgentAssistantProvider (AssistantRuntimeProvider).
  */
 import React from 'react';
-import { Thread } from '../assistant-ui/thread';
+import { ChatShell, ChatThread } from '../chat-kit';
 import type { IntentTemplate } from '../../../src/lib/primary-agent-intents';
 
 // ---------------------------------------------------------------------------
@@ -45,32 +45,30 @@ export function PrimaryAgentWorkspace({
     : null;
 
   return (
-    <div className="h-full flex flex-col rounded-[28px] overflow-hidden bg-[var(--surf-overlay)] backdrop-blur-[14px] border border-[var(--border-glass)] shadow-[0_20px_44px_rgba(17,21,29,0.12)]">
-      {/* Intent context banner */}
-      {intentTemplate && (
-        <div className="px-5 pt-4 pb-0 shrink-0">
-          <div className="rounded-2xl bg-[var(--surf-glass)] shadow-[0_12px_24px_rgba(17,21,29,0.08)] px-3 py-2.5 text-sm text-[var(--text-secondary)]">
-            {intentTemplate.description}
-          </div>
+    <ChatShell
+      header={
+        <div className="flex flex-col gap-2">
+          {intentTemplate && (
+            <div className="rounded-2xl bg-[var(--surf-glass)] px-3 py-2.5 text-sm text-[var(--text-secondary)] shadow-[0_12px_24px_rgba(17,21,29,0.08)]">
+              {intentTemplate.description}
+            </div>
+          )}
+          {contextLine && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
+                Primary Agent has access to:
+              </span>
+              <span className="text-[10px] text-[var(--text-secondary)]">
+                {contextLine}
+              </span>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Context access summary */}
-      {contextLine && (
-        <div className="flex items-center gap-1.5 px-5 pt-3 pb-0 shrink-0">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
-            Primary Agent has access to:
-          </span>
-          <span className="text-[10px] text-[var(--text-secondary)]">
-            {contextLine}
-          </span>
-        </div>
-      )}
-
-      {/* Full assistant-ui Thread */}
-      <div className="flex-1 min-h-0">
-        <Thread />
+      }
+    >
+      <div className="min-h-0 flex-1">
+        <ChatThread />
       </div>
-    </div>
+    </ChatShell>
   );
 }
