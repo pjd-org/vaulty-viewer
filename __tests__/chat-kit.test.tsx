@@ -115,4 +115,23 @@ describe('chat-kit', () => {
     expect(screen.getByText('Used tool: mystery_tool')).toBeTruthy();
     expect(screen.getByText('Result:')).toBeTruthy();
   });
+
+  it('renders dock actions inside the composer', async () => {
+    const { ChatComposer } = await import(
+      '../app/components/chat-kit/ChatComposer'
+    );
+
+    render(
+      <ChatComposer
+        value="Draft a plan"
+        onChange={() => undefined}
+        onAttach={() => undefined}
+        onToolSelect={() => undefined}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /attach file/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /plan/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /track/i })).toBeTruthy();
+  });
 });

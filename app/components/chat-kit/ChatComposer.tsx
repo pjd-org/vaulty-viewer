@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { Button } from '@/app/components/ui/button';
 import { cn } from '@/src/lib/utils';
 import { PromptInput } from '@vault/ui';
+import { Dock, DockIcon, DockLink } from '@/app/components/ui';
+import { Paperclip, Sparkles, Square } from 'lucide-react';
 
 export interface ChatComposerProps {
   value: string;
@@ -11,6 +12,8 @@ export interface ChatComposerProps {
   onChange?: (value: string) => void;
   onSend?: () => void;
   onCancel?: () => void;
+  onAttach?: () => void;
+  onToolSelect?: (tool: string) => void;
   className?: string;
 }
 
@@ -22,12 +25,17 @@ export function ChatComposer({
   onChange,
   onSend,
   onCancel,
+  onAttach,
+  onToolSelect,
   className,
 }: ChatComposerProps) {
+  const canShowToolDock = Boolean(onToolSelect);
+
   return (
-    <div
+    <Dock
+      position="inline"
       className={cn(
-        'genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[32px] px-4 py-4',
+        'genie-surface genie-surface--overlay flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3',
         className
       )}
     >
@@ -43,21 +51,62 @@ export function ChatComposer({
         onChange={(event) => onChange?.(event.target.value)}
         onSubmit={onSend}
         className="w-full"
-        style={{ width: '100%' }}
+        style={{
+          width: '100%',
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+          boxShadow: 'none',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          padding: '0 12px',
+        }}
       />
 
-      {isRunning && onCancel && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 text-sm text-[var(--text-secondary)] shadow-none hover:bg-white"
-          >
-            Stop generating
-          </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {onAttach && (
+            <DockIcon
+              icon={<Paperclip className="size-4" />}
+              onClick={onAttach}
+              ariaLabel="Attach file"
+            />
+          )}
+
+          {canShowToolDock && (
+            <>
+              <DockLink
+                label="Plan"
+                onClick={() => onToolSelect?.('show_plan')}
+                icon={<Sparkles className="size-3.5" />}
+              />
+
+              <DockLink
+                label="Track"
+                onClick={() => onToolSelect?.('show_progress')}
+              />
+
+              <DockLink
+                label="Approval"
+                onClick={() => onToolSelect?.('approval-card')}
+              />
+
+              <DockLink
+                label="Draft"
+                onClick={() => onToolSelect?.('message-draft')}
+              />
+            </>
+          )}
         </div>
-      )}
-    </div>
+
+        {isRunning && onCancel && (
+          <DockLink
+            label="Stop"
+            onClick={onCancel}
+            icon={<Square className="size-3 fill-current" />}
+          />
+        )}
+      </div>
+    </Dock>
   );
 }

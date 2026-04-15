@@ -15,6 +15,8 @@ export const Idle: Story = {
     value: '',
     placeholder: 'Send a message...',
     onChange: () => undefined,
+    onAttach: () => undefined,
+    onToolSelect: () => undefined,
   },
 };
 
@@ -23,5 +25,8 @@ export const Running: Story = {
     value: 'Run the plan',
     isRunning: true,
     onChange: () => undefined,
+    onAttach: () => undefined,
+    onToolSelect: () => undefined,
+    onCancel: () => undefined,
   },
 };
