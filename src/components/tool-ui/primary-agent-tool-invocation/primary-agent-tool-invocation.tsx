@@ -77,7 +77,7 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
       open={isOpen}
       onOpenChange={handleOpenChange}
       className={cn(
-        'primary-agent-tool-invocation genie-surface genie-surface--utility w-full rounded-[24px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] py-3 shadow-[0_10px_24px_rgba(17,21,29,0.08)]',
+        'primary-agent-tool-invocation genie-surface genie-surface--utility w-full rounded-[24px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.92)] py-3 shadow-[0_10px_24px_rgba(17,21,29,0.08)]',
         'group/tool-invocation',
         isCancelled && 'border-muted-foreground/30 bg-muted/30'
       )}
@@ -88,10 +88,10 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
       }
     >
       {/* ---- Trigger ---- */}
-      <CollapsibleTrigger className="group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors">
+      <CollapsibleTrigger className="group/trigger flex w-full items-center gap-3 px-4 text-sm transition-colors">
         <Icon
           className={cn(
-            'size-4 shrink-0',
+            'size-4 shrink-0 rounded-full bg-[var(--surf-base)] p-0.5',
             isCancelled && 'text-muted-foreground',
             isRunning && 'animate-spin',
             isError && 'text-destructive'
@@ -99,19 +99,27 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
         />
         <span
           className={cn(
-            'relative inline-block grow text-left leading-none',
+            'relative inline-flex grow items-center gap-2 text-left leading-none',
             isCancelled && 'text-muted-foreground line-through'
           )}
         >
-          <span>
-            {label}: <b>{toolName}</b>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+              {label}
+            </span>
+            <b className="text-[var(--text-primary)]">{toolName}</b>
           </span>
           {isRunning && (
             <span
               aria-hidden
               className="shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
             >
-              {label}: <b>{toolName}</b>
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+                  {label}
+                </span>
+                <b className="text-[var(--text-primary)]">{toolName}</b>
+              </span>
             </span>
           )}
         </span>

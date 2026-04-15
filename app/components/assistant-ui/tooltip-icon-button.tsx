@@ -28,7 +28,7 @@ export const TooltipIconButton = forwardRef<
           size="icon"
           {...rest}
           className={cn(
-            'aui-button-icon size-6 p-1 text-foreground hover:text-foreground',
+            'aui-button-icon size-8 rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.76)] p-1.5 text-[var(--text-secondary)] shadow-[0_8px_18px_rgba(17,21,29,0.08)] transition-colors hover:border-[var(--border-glass-default)] hover:bg-white hover:text-[var(--text-primary)]',
             className
           )}
           ref={ref}

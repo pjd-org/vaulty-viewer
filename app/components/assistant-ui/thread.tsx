@@ -98,9 +98,9 @@ const ThreadScrollToBottom: FC = () => {
 
 const ThreadWelcome: FC = () => {
   return (
-    <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col gap-4">
-      <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center py-2">
-        <div className="aui-thread-welcome-message genie-surface genie-surface--hero flex w-full flex-col justify-center rounded-[32px] px-6 py-8 shadow-none">
+    <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) flex-col gap-3">
+      <div className="aui-thread-welcome-center flex w-full flex-col items-stretch py-2">
+        <div className="aui-thread-welcome-message genie-surface genie-surface--hero flex w-full flex-col justify-center rounded-[32px] px-6 py-7 shadow-none">
           <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
             Primary Agent
           </p>
@@ -116,7 +116,9 @@ const ThreadWelcome: FC = () => {
           </p>
         </div>
       </div>
-      <ThreadSuggestions />
+      <div className="pt-1">
+        <ThreadSuggestions />
+      </div>
     </div>
   );
 };
@@ -189,12 +191,12 @@ const Composer: FC = () => {
       <ComposerPrimitive.AttachmentDropzone asChild>
         <div
           data-slot="composer-shell"
-          className="genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[28px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.9)] p-(--composer-padding) shadow-[0_14px_34px_rgba(17,21,29,0.12)] transition-shadow focus-within:border-[var(--border-glass-default)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] data-[dragging=true]:border-[color-mix(in_srgb,var(--a-sky)_40%,var(--border-glass-soft))] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[rgba(255,255,255,0.96)]"
+          className="genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[30px] border-[var(--border-glass-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,251,253,0.9))] p-(--composer-padding) shadow-[0_14px_34px_rgba(17,21,29,0.10)] transition-shadow focus-within:border-[var(--border-glass-default)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] data-[dragging=true]:border-[color-mix(in_srgb,var(--a-sky)_40%,var(--border-glass-soft))] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[rgba(255,255,255,0.98)]"
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
             placeholder="Send a message..."
-            className="aui-composer-input max-h-32 min-h-10 w-full resize-none bg-transparent px-1.75 py-1 text-sm leading-6 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+            className="aui-composer-input max-h-32 min-h-10 w-full resize-none rounded-[20px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-[var(--text-tertiary)]"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -208,35 +210,35 @@ const Composer: FC = () => {
 
 const ComposerAction: FC = () => {
   return (
-      <div className="aui-composer-action-wrapper relative flex items-center justify-between">
-        <ComposerAddAttachment />
-        <AuiIf condition={(s) => !s.thread.isRunning}>
-          <ComposerPrimitive.Send asChild>
-            <TooltipIconButton
-              tooltip="Send message"
-              side="bottom"
-              type="button"
-              variant="default"
-              size="icon"
-              className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-white shadow-[0_8px_20px_rgba(17,21,29,0.16)] hover:bg-[var(--n-800)]"
-              aria-label="Send message"
-            >
-              <ArrowUpIcon className="aui-composer-send-icon size-4" />
-            </TooltipIconButton>
-          </ComposerPrimitive.Send>
+    <div className="aui-composer-action-wrapper relative flex items-center justify-between gap-3">
+      <ComposerAddAttachment />
+      <AuiIf condition={(s) => !s.thread.isRunning}>
+        <ComposerPrimitive.Send asChild>
+          <TooltipIconButton
+            tooltip="Send message"
+            side="bottom"
+            type="button"
+            variant="default"
+            size="icon"
+            className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-white shadow-[0_8px_20px_rgba(17,21,29,0.16)] hover:bg-[var(--n-800)]"
+            aria-label="Send message"
+          >
+            <ArrowUpIcon className="aui-composer-send-icon size-4" />
+          </TooltipIconButton>
+        </ComposerPrimitive.Send>
       </AuiIf>
       <AuiIf condition={(s) => s.thread.isRunning}>
-          <ComposerPrimitive.Cancel asChild>
-            <Button
-              type="button"
-              variant="default"
-              size="icon"
-              className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-white"
-              aria-label="Stop generating"
-            >
-              <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
-            </Button>
-          </ComposerPrimitive.Cancel>
+        <ComposerPrimitive.Cancel asChild>
+          <Button
+            type="button"
+            variant="default"
+            size="icon"
+            className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-white"
+            aria-label="Stop generating"
+          >
+            <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
+          </Button>
+        </ComposerPrimitive.Cancel>
       </AuiIf>
     </div>
   );
@@ -309,7 +311,7 @@ const AssistantActionBar: FC = () => {
         <ActionBarMorePrimitive.Trigger asChild>
           <TooltipIconButton
             tooltip="More"
-            className="data-[state=open]:bg-accent"
+            className="data-[state=open]:bg-white"
           >
             <MoreHorizontalIcon />
           </TooltipIconButton>
