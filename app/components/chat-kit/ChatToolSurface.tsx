@@ -39,18 +39,31 @@ function ApprovalCard({
   description?: string;
 }) {
   return (
-    <Card className="border-[var(--border-glass)] bg-[var(--surf-glass)]">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-sm">{title}</CardTitle>
+    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
+      <CardHeader className="space-y-2 px-4 pb-2 pt-4">
+        <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
+          {title}
+        </CardTitle>
         {description && (
-          <p className="text-sm text-[var(--text-secondary)]">{description}</p>
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">
+            {description}
+          </p>
         )}
       </CardHeader>
-      <CardContent className="flex items-center gap-2">
-        <Button type="button" size="sm">
+      <CardContent className="flex items-center gap-2 px-4 pb-4 pt-0">
+        <Button
+          type="button"
+          size="sm"
+          className="rounded-full bg-[var(--n-900)] px-4 text-white hover:bg-[var(--n-800)]"
+        >
           Approve
         </Button>
-        <Button type="button" size="sm" variant="secondary">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 text-[var(--text-secondary)] hover:bg-white"
+        >
           Review
         </Button>
       </CardContent>
@@ -66,13 +79,24 @@ function MessageDraft({
   body?: string;
 }) {
   return (
-    <Card className="border-[var(--border-glass)] bg-[var(--surf-glass)]">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-sm">{title}</CardTitle>
-        {body && <p className="text-sm text-[var(--text-secondary)]">{body}</p>}
+    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
+      <CardHeader className="space-y-1 px-4 pb-2 pt-4">
+        <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
+          {title}
+        </CardTitle>
+        {body && (
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">
+            {body}
+          </p>
+        )}
       </CardHeader>
-      <CardContent className="flex items-center gap-2">
-        <Badge variant="secondary">Draft</Badge>
+      <CardContent className="flex items-center gap-2 px-4 pb-4 pt-0">
+        <Badge
+          variant="secondary"
+          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]"
+        >
+          Draft
+        </Badge>
         <span className="text-xs text-[var(--text-secondary)]">
           Ready for review before send
         </span>
@@ -94,7 +118,7 @@ export function ChatToolSurface({
     const plan = safeParseSerializablePlan(result);
     if (plan) {
       return (
-        <div className={cn('w-full', className)}>
+        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
           <Plan {...plan} />
         </div>
       );
@@ -109,7 +133,7 @@ export function ChatToolSurface({
     const tracker = safeParseSerializableProgressTracker(result);
     if (tracker) {
       return (
-        <div className={cn('w-full', className)}>
+        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
           <ProgressTracker {...tracker} />
         </div>
       );
@@ -120,7 +144,7 @@ export function ChatToolSurface({
     const stats = safeParseSerializableStatsDisplay(result);
     if (stats) {
       return (
-        <div className={cn('w-full', className)}>
+        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
           <StatsDisplay {...stats} />
         </div>
       );

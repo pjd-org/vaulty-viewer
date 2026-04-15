@@ -29,26 +29,38 @@ export function ChatComposer({
   return (
     <div
       className={cn(
-        'flex w-full flex-col gap-2 rounded-3xl border border-[var(--border-glass)] bg-[var(--surf-glass)] p-3 shadow-[0_12px_24px_rgba(17,21,29,0.08)]',
+        'genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[32px] px-4 py-4',
         className
       )}
     >
       {attachments && <div className="flex flex-wrap gap-2">{attachments}</div>}
 
-      <Textarea
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange?.(event.target.value)}
-        className="min-h-24 resize-none border-0 bg-transparent px-1 py-1 text-sm shadow-none outline-none focus-visible:ring-0"
-      />
+      <div className="rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.78)]">
+        <Textarea
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange?.(event.target.value)}
+          className="min-h-24 resize-none border-0 bg-transparent px-0 py-0 text-sm leading-6 shadow-none outline-none focus-visible:ring-0"
+        />
+      </div>
 
       <div className="flex items-center justify-end gap-2">
         {isRunning ? (
-          <Button type="button" variant="secondary" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 text-sm text-[var(--text-secondary)] shadow-none hover:bg-white"
+          >
             Stop generating
           </Button>
         ) : (
-          <Button type="button" disabled={!canSend} onClick={onSend}>
+          <Button
+            type="button"
+            disabled={!canSend}
+            onClick={onSend}
+            className="rounded-full bg-[var(--n-900)] px-5 text-sm text-white shadow-[0_10px_24px_rgba(17,21,29,0.16)] hover:bg-[var(--n-800)]"
+          >
             Send message
           </Button>
         )}

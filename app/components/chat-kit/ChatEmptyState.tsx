@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/src/lib/utils';
 
@@ -25,30 +24,33 @@ export function ChatEmptyState({
       )}
     >
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
+          Primary Agent
+        </p>
+        <h2 className="text-[28px] font-semibold tracking-tight text-[var(--text-primary)]">
           {title}
         </h2>
         {subtitle && (
-          <p className="max-w-xl text-sm text-[var(--text-secondary)]">
+          <p className="max-w-xl text-sm leading-6 text-[var(--text-secondary)]">
             {subtitle}
           </p>
         )}
       </div>
 
       {suggestions.length > 0 && (
-        <div className="mt-6 grid gap-2 md:grid-cols-2">
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
           {suggestions.map((suggestion) => (
             <Button
               key={suggestion.title}
               type="button"
               variant="ghost"
-              className="h-auto flex-col items-start justify-start gap-1 rounded-3xl border border-[var(--border-glass)] bg-[var(--surf-glass)] px-4 py-3 text-left hover:bg-[var(--surf-glass)]"
+              className="genie-surface genie-surface--utility h-auto flex-col items-start justify-start gap-1 rounded-[24px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-left shadow-[0_10px_24px_rgba(17,21,29,0.08)] hover:bg-white"
               onClick={() => onSuggestionClick?.(suggestion.title)}
             >
               <span className="text-sm font-medium text-[var(--text-primary)]">
                 {suggestion.title}
               </span>
-              <span className="text-xs text-[var(--text-secondary)]">
+              <span className="text-xs leading-5 text-[var(--text-secondary)]">
                 {suggestion.description}
               </span>
             </Button>

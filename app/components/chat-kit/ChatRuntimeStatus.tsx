@@ -1,4 +1,3 @@
-import { Badge } from '@/app/components/ui/badge';
 import { cn } from '@/src/lib/utils';
 
 export interface ChatRuntimeStatusProps {
@@ -12,20 +11,25 @@ export function ChatRuntimeStatus({
   detail,
   className,
 }: ChatRuntimeStatusProps) {
-  const tone =
+  const toneClass =
     state === 'running'
-      ? 'secondary'
+      ? 'border-[color-mix(in_srgb,var(--a-sky)_36%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_16%,white)] text-[var(--text-info)]'
       : state === 'degraded'
-        ? 'outline'
-        : state === 'error'
-          ? 'destructive'
-          : 'default';
+        ? 'border-[color-mix(in_srgb,var(--a-sun)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sun)_18%,white)] text-[var(--text-warning)]'
+          : state === 'error'
+          ? 'border-[color-mix(in_srgb,var(--s-danger)_32%,transparent)] bg-[color-mix(in_srgb,var(--s-danger)_14%,white)] text-[var(--text-danger)]'
+          : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]';
 
   return (
     <div className={cn('flex items-center gap-2 text-xs', className)}>
-      <Badge variant={tone as never} className="uppercase tracking-[0.16em]">
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
+          toneClass
+        )}
+      >
         {state}
-      </Badge>
+      </span>
       {detail && <span className="text-[var(--text-secondary)]">{detail}</span>}
     </div>
   );

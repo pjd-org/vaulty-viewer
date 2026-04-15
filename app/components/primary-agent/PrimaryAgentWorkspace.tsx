@@ -47,15 +47,15 @@ export function PrimaryAgentWorkspace({
   return (
     <ChatShell
       header={
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {intentTemplate && (
-            <div className="rounded-2xl bg-[var(--surf-glass)] px-3 py-2.5 text-sm text-[var(--text-secondary)] shadow-[0_12px_24px_rgba(17,21,29,0.08)]">
+            <div className="genie-surface genie-surface--hero rounded-[24px] px-4 py-3 text-sm text-[var(--text-secondary)] shadow-none">
               {intentTemplate.description}
             </div>
           )}
           {contextLine && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                 Primary Agent has access to:
               </span>
               <span className="text-[10px] text-[var(--text-secondary)]">

@@ -77,7 +77,7 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
       open={isOpen}
       onOpenChange={handleOpenChange}
       className={cn(
-        'primary-agent-tool-invocation w-full rounded-lg border py-3',
+        'primary-agent-tool-invocation genie-surface genie-surface--utility w-full rounded-[24px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] py-3 shadow-[0_10px_24px_rgba(17,21,29,0.08)]',
         'group/tool-invocation',
         isCancelled && 'border-muted-foreground/30 bg-muted/30'
       )}
@@ -138,7 +138,7 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
           'data-[state=closed]:duration-(--animation-duration)'
         )}
       >
-        <div className="mt-3 flex flex-col gap-2 border-t pt-2">
+        <div className="mt-3 flex flex-col gap-2 border-t border-[var(--border-glass-soft)] pt-3">
           {/* Error / cancel reason */}
           {status?.type === 'incomplete' &&
             (() => {
@@ -151,10 +151,10 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
               if (!errorText) return null;
               return (
                 <div className="px-4">
-                  <p className="font-semibold text-muted-foreground">
+                  <p className="font-semibold text-[var(--text-tertiary)]">
                     {isCancelled ? 'Cancelled reason:' : 'Error:'}
                   </p>
-                  <p className="text-muted-foreground">{errorText}</p>
+                  <p className="text-[var(--text-secondary)]">{errorText}</p>
                 </div>
               );
             })()}
@@ -162,19 +162,21 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
           {/* Args */}
           {argsText && (
             <div className={cn('px-4', isCancelled && 'opacity-60')}>
-              <pre className="whitespace-pre-wrap">{argsText}</pre>
+              <pre className="whitespace-pre-wrap text-[var(--text-primary)]">
+                {argsText}
+              </pre>
             </div>
           )}
 
           {/* Result — widget or raw */}
           {!isCancelled && result !== undefined && (
-            <div className="border-t border-dashed px-4 pt-2">
+            <div className="border-t border-dashed border-[var(--border-glass-soft)] px-4 pt-3">
               {widget ? (
                 <WidgetRenderer widget={widget} disabled />
               ) : (
                 <>
-                  <p className="font-semibold">Result:</p>
-                  <pre className="whitespace-pre-wrap">
+                  <p className="font-semibold text-[var(--text-primary)]">Result:</p>
+                  <pre className="whitespace-pre-wrap text-[var(--text-primary)]">
                     {typeof result === 'string'
                       ? result
                       : JSON.stringify(result, null, 2)}

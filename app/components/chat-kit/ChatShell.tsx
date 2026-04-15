@@ -23,21 +23,21 @@ export function ChatShell({
   return (
     <section
       className={cn(
-        'h-full flex flex-col overflow-hidden rounded-[28px] border border-[var(--border-glass)] bg-[var(--surf-overlay)] shadow-[0_20px_44px_rgba(17,21,29,0.12)] backdrop-blur-[14px]',
+        'genie-surface genie-surface--overlay relative flex h-full min-h-0 flex-col overflow-hidden rounded-[32px] text-[var(--text-primary)]',
         className
       )}
     >
       {(header || title || subtitle) && (
-        <div className="shrink-0 border-b border-[var(--border-glass)] px-5 py-4">
+        <div className="shrink-0 border-b border-[var(--border-glass-soft)] bg-[color-mix(in_srgb,var(--surf-base)_88%,transparent)] px-6 py-5">
           {header ?? (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               {title && (
-                <div className="text-lg font-semibold text-[var(--text-primary)]">
+                <div className="text-[18px] font-semibold tracking-tight text-[var(--text-primary)]">
                   {title}
                 </div>
               )}
               {subtitle && (
-                <div className="text-sm text-[var(--text-secondary)]">
+                <div className="max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
                   {subtitle}
                 </div>
               )}
@@ -48,12 +48,12 @@ export function ChatShell({
 
       <div
         className={cn(
-          'grid min-h-0 flex-1',
+          'grid min-h-0 flex-1 bg-[linear-gradient(180deg,rgba(255,255,255,0.46),rgba(255,255,255,0.24))]',
           sidebar ? 'lg:grid-cols-[18rem_minmax(0,1fr)]' : 'grid-cols-1'
         )}
       >
         {sidebar && (
-          <aside className="min-h-0 border-b border-[var(--border-glass)] lg:border-r lg:border-b-0">
+          <aside className="min-h-0 border-b border-[var(--border-glass-soft)] bg-[color-mix(in_srgb,var(--surf-base)_82%,transparent)] lg:border-r lg:border-b-0">
             {sidebar}
           </aside>
         )}
@@ -61,7 +61,7 @@ export function ChatShell({
       </div>
 
       {footer && (
-        <div className="shrink-0 border-t border-[var(--border-glass)] px-5 py-4">
+        <div className="shrink-0 border-t border-[var(--border-glass-soft)] bg-[color-mix(in_srgb,var(--surf-base)_88%,transparent)] px-6 py-5">
           {footer}
         </div>
       )}
