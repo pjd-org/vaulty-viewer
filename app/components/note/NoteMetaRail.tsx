@@ -17,6 +17,13 @@ const KNOWN_STATUSES: TaskStatus[] = [
   'backlog',
 ];
 
+const metaDtClass =
+  'text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1';
+const sysDtClass =
+  'text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]';
+const sysValueClass = 'text-xs text-[var(--text-tertiary)] break-all mt-0.5';
+const metaValueClass = 'text-sm text-[var(--text-secondary)]';
+
 function isKnownStatus(s: string): s is TaskStatus {
   return (KNOWN_STATUSES as string[]).includes(s);
 }
@@ -91,9 +98,7 @@ export function NoteMetaRail({
         <dl className="space-y-3">
           {rawStatus && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Status
-              </dt>
+              <dt className={metaDtClass}>Status</dt>
               <dd>
                 {isKnownStatus(rawStatus) ? (
                   <StatusPill status={rawStatus} />
@@ -105,9 +110,7 @@ export function NoteMetaRail({
           )}
           {priority !== null && priority >= 7 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Priority
-              </dt>
+              <dt className={metaDtClass}>Priority</dt>
               <dd>
                 <SoftChip
                   label={`P${priority} · High priority`}
@@ -118,29 +121,19 @@ export function NoteMetaRail({
           )}
           {priority !== null && priority < 7 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Priority
-              </dt>
-              <dd className="text-sm text-[var(--text-secondary)]">
-                P{priority}
-              </dd>
+              <dt className={metaDtClass}>Priority</dt>
+              <dd className={metaValueClass}>P{priority}</dd>
             </div>
           )}
           {formattedDue && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Due
-              </dt>
-              <dd className="text-sm text-[var(--text-secondary)]">
-                {formattedDue}
-              </dd>
+              <dt className={metaDtClass}>Due</dt>
+              <dd className={metaValueClass}>{formattedDue}</dd>
             </div>
           )}
           {tags.length > 0 && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Tags
-              </dt>
+              <dt className={metaDtClass}>Tags</dt>
               <dd className="flex flex-wrap gap-1.5 mt-1">
                 {tags.map((tag) => (
                   <Link
@@ -176,12 +169,8 @@ export function NoteMetaRail({
           )}
           {formattedCreated && (
             <div>
-              <dt className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-                Created
-              </dt>
-              <dd className="text-sm text-[var(--text-secondary)]">
-                {formattedCreated}
-              </dd>
+              <dt className={metaDtClass}>Created</dt>
+              <dd className={metaValueClass}>{formattedCreated}</dd>
             </div>
           )}
         </dl>
@@ -247,39 +236,25 @@ export function NoteMetaRail({
         <div className="px-6 pb-5 space-y-3">
           {lifecycle.source !== 'canonical' && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
-                Source
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
-                {lifecycle.source}
-              </p>
+              <p className={sysDtClass}>Source</p>
+              <p className={sysValueClass}>{lifecycle.source}</p>
             </div>
           )}
           {lifecycle.runId && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
-                Run ID
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
-                {lifecycle.runId}
-              </p>
+              <p className={sysDtClass}>Run ID</p>
+              <p className={sysValueClass}>{lifecycle.runId}</p>
             </div>
           )}
           {lifecycle.targetPath && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
-                Target
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
-                {lifecycle.targetPath}
-              </p>
+              <p className={sysDtClass}>Target</p>
+              <p className={sysValueClass}>{lifecycle.targetPath}</p>
             </div>
           )}
           {lifecycle.reviewStatus && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
-                Review
-              </p>
+              <p className={sysDtClass}>Review</p>
               <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
                 {lifecycle.reviewStatus}
               </p>
@@ -287,12 +262,8 @@ export function NoteMetaRail({
           )}
           {path && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)]">
-                Path
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)] break-all mt-0.5">
-                {path}
-              </p>
+              <p className={sysDtClass}>Path</p>
+              <p className={sysValueClass}>{path}</p>
             </div>
           )}
         </div>

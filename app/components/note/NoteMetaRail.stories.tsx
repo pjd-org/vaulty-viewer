@@ -23,6 +23,13 @@ const RouterDecorator = (Story: () => React.ReactNode) => (
 
 const canonicalLifecycle: NoteLifecycle = {
   source: 'canonical',
+  isTask: false,
+  isCanonicalTask: false,
+  isStaged: false,
+  canPromote: false,
+  canReject: false,
+  canComplete: false,
+  canReview: false,
   runId: null,
   targetPath: null,
   reviewStatus: null,
@@ -30,6 +37,13 @@ const canonicalLifecycle: NoteLifecycle = {
 
 const inboxLifecycle: NoteLifecycle = {
   source: 'inbox',
+  isTask: false,
+  isCanonicalTask: false,
+  isStaged: true,
+  canPromote: true,
+  canReject: true,
+  canComplete: false,
+  canReview: false,
   runId: 'run-2026-04-14-001',
   targetPath: 'notes/tasks/implement-feature.md',
   reviewStatus: 'pending',

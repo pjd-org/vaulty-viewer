@@ -4,6 +4,14 @@ import { Link } from '@tanstack/react-router';
 import type { ProjectSummaryDisplay } from '../../types/display';
 import { SoftChip } from '../ui';
 
+const statCardClass =
+  'rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4';
+const statLabelClass =
+  'text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]';
+const statValueClass = 'mt-2 text-sm font-semibold text-[var(--text-primary)]';
+const statSubtextClass =
+  'mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]';
+
 interface ProjectDetailHeaderProps {
   projectId: string;
   project: ProjectSummaryDisplay;
@@ -38,9 +46,7 @@ export function ProjectDetailHeader({
       {/* ── Row 1: title + status ────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-            Project command center
-          </p>
+          <p className={statLabelClass}>Project command center</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
             {project.title}
           </h1>
@@ -54,13 +60,9 @@ export function ProjectDetailHeader({
         style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}
       >
         {/* Progress */}
-        <div className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-            Progress
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
-            {project.progressText}
-          </p>
+        <div className={statCardClass}>
+          <p className={statLabelClass}>Progress</p>
+          <p className={statValueClass}>{project.progressText}</p>
           <div
             className="mt-3 h-2 overflow-hidden rounded-full bg-black/10"
             role="progressbar"
@@ -80,36 +82,30 @@ export function ProjectDetailHeader({
         </div>
 
         {/* ETA */}
-        <div className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-            ETA
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
+        <div className={statCardClass}>
+          <p className={statLabelClass}>ETA</p>
+          <p className={statValueClass}>
             {project.etaLabel ?? 'No ETA surfaced'}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+          <p className={statSubtextClass}>
             Live project timing from the summary feed.
           </p>
         </div>
 
         {/* Best Move — spans both columns */}
-        <div className="col-span-2 rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-            Best move
-          </p>
-          <p className="mt-2 text-sm font-semibold leading-snug text-[var(--text-primary)]">
+        <div className={`col-span-2 ${statCardClass}`}>
+          <p className={statLabelClass}>Best move</p>
+          <p className={`${statValueClass} leading-snug`}>
             {project.bestMoveTitle ?? 'No best move surfaced'}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+          <p className={statSubtextClass}>
             COD-ranked next step from the current project summary.
           </p>
         </div>
 
         {/* Jump to Lane — spans both columns */}
-        <div className="col-span-2 rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-            Jump to lane
-          </p>
+        <div className={`col-span-2 ${statCardClass} space-y-2`}>
+          <p className={statLabelClass}>Jump to lane</p>
           {[
             {
               to: '/project/$slug/tasks' as const,

@@ -16,6 +16,9 @@ interface SessionPlannerCardProps {
   accentColor?: string;
 }
 
+const sectionLabelClass = 'text-xs text-[var(--text-secondary)] mb-2';
+const durationLabelClass = 'text-xs text-[var(--text-tertiary)] ml-auto';
+
 const BUDGET_OPTIONS = [
   { value: '25', label: '25m' },
   { value: '45', label: '45m' },
@@ -126,7 +129,7 @@ export function SessionPlannerCard({
         </div>
 
         <div>
-          <p className="text-xs text-[var(--text-secondary)] mb-2">Duration</p>
+          <p className={sectionLabelClass}>Duration</p>
           <SegmentedControl
             options={BUDGET_OPTIONS}
             value={budgetMin}
@@ -154,7 +157,7 @@ export function SessionPlannerCard({
                   style={{ background: accent }}
                 />
                 {aiPlan.main_task.title}
-                <span className="text-xs text-[var(--text-tertiary)] ml-auto">
+                <span className={durationLabelClass}>
                   {aiPlan.main_task.duration}
                 </span>
               </div>
@@ -168,9 +171,7 @@ export function SessionPlannerCard({
                     className="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)] shrink-0"
                   />
                   {t.title}
-                  <span className="text-xs text-[var(--text-tertiary)] ml-auto">
-                    {t.duration}
-                  </span>
+                  <span className={durationLabelClass}>{t.duration}</span>
                 </div>
               ))}
             </div>
@@ -186,7 +187,7 @@ export function SessionPlannerCard({
         {/* Manual task picker (shown when AI hasn't run or loaded) */}
         {!aiPlan && (
           <div>
-            <p className="text-xs text-[var(--text-secondary)] mb-2">Tasks</p>
+            <p className={sectionLabelClass}>Tasks</p>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {tasks.map((t) => (
                 <label

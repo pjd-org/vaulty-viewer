@@ -19,9 +19,7 @@ export function HomeTaskCard({
 }: HomeTaskCardProps) {
   const confidencePct = Math.max(1, Math.min(99, Math.round(task.score * 10)));
   return (
-    <article
-      className={`rounded-[18px] border border-slate-200 bg-white/70 shadow-sm ${compact ? 'p-3' : 'p-4'}`}
-    >
+    <article className={`genie-card ${compact ? '!p-3' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3
@@ -64,7 +62,7 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onStart(task.path)}
           disabled={mutating}
-          className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+          className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100 disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,#1c2230)] hover:[background:color-mix(in_srgb,var(--a-sky)_22%,white)]"
         >
           {mutating ? 'Starting…' : 'Start'}
         </button>
@@ -72,7 +70,7 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onBacklog(task.path)}
           disabled={mutating}
-          className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+          className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100 disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] hover:[background:color-mix(in_srgb,var(--a-sun)_22%,white)]"
         >
           {mutating ? 'Updating…' : 'Backlog'}
         </button>

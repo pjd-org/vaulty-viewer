@@ -4,7 +4,7 @@ import { SoftChip, StatusPill } from './Chips';
 
 /* ── SoftChip ──────────────────────────────────────────────────────────────── */
 const chipMeta = {
-  title: 'UI / Chips / SoftChip',
+  title: 'UI / Molecules / SoftChip',
   component: SoftChip,
   parameters: { layout: 'centered' },
   args: { label: 'Label' },
@@ -25,4 +25,15 @@ export const WithRemove: Story = {
 };
 export const WithIcon: Story = {
   args: { label: 'Tagged', icon: <span aria-hidden>🏷</span> },
+};
+export const AllVariants: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      <SoftChip label="Default" variant="default" />
+      <SoftChip label="Primary" variant="primary" />
+      <SoftChip label="Success" variant="success" />
+      <SoftChip label="Warning" variant="warning" />
+      <SoftChip label="Danger" variant="danger" />
+    </div>
+  ),
 };

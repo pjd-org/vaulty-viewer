@@ -18,6 +18,8 @@ interface BestMoveCardProps {
   mutating: boolean;
 }
 
+const whyNowTextClass = 'text-xs mt-2 font-medium';
+
 /** Derive a short "why now" line from available signal. */
 function getWhyNowLine(task: NextAction): string | null {
   const reasons = task.scoreBreakdown?.compoundReasons;
@@ -63,10 +65,7 @@ export function BestMoveCard({
 
       {/* Why this is the best move right now */}
       {whyNow && (
-        <p
-          className="text-xs mt-2 font-medium"
-          style={{ color: 'var(--text-success)' }}
-        >
+        <p className={whyNowTextClass} style={{ color: 'var(--text-success)' }}>
           {whyNow}
         </p>
       )}
@@ -79,10 +78,7 @@ export function BestMoveCard({
       </div>
 
       {blocked && (
-        <p
-          className="text-xs mt-2 font-medium"
-          style={{ color: 'var(--text-warning)' }}
-        >
+        <p className={whyNowTextClass} style={{ color: 'var(--text-warning)' }}>
           This task has dependencies
         </p>
       )}

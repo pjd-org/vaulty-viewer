@@ -4,7 +4,7 @@ import { PrimaryButton, SecondaryButton, IconButton } from './Buttons';
 
 /* ── PrimaryButton ─────────────────────────────────────────────────────────── */
 const primaryMeta = {
-  title: 'UI / Buttons / PrimaryButton',
+  title: 'UI / Atoms / PrimaryButton',
   component: PrimaryButton,
   parameters: { layout: 'centered' },
   args: { children: 'Save changes' },

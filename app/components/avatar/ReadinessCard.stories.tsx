@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
 import {
   createRouter,
   createMemoryHistory,
   createRootRoute,
   RouterProvider,
 } from '@tanstack/react-router';
-import { ReadinessCard } from './ReadinessCard';
+import { ReadinessCard } from '../ui/ReadinessCard';
 import type { ReadinessState } from '../../../src/lib/readiness-logic';
 
 function makeStubRouter(Story: () => React.ReactNode) {
@@ -109,3 +110,28 @@ export const NoTimeBudget: Story = {
     timeBudgetLabel: null,
   },
 };
+
+export const WithCodeEditor: Story = { ...Deep };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './ReadinessCard': { ReadinessCard },
+  },
+  code: `import { ReadinessCard } from '../ui/ReadinessCard';
+
+export default () => (
+  <ReadinessCard
+    readiness={{
+      level: 'deep',
+      label: 'Deep work window',
+      description: 'Good for focused, high-effort execution.',
+      color: 'var(--readiness-deep)',
+      sessionType: 'deep work',
+      maxFocusCost: 10,
+      maxEffortScore: 10,
+    }}
+    capacityLabel="Full capacity"
+    timeBudgetLabel="2 h available"
+  />
+);`,
+});

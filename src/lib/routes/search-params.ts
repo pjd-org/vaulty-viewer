@@ -145,6 +145,7 @@ export function knowledgeSearchParams(s: S): {
   templateId?: string;
   memoryTab?: string;
   projectId?: string;
+  q?: string;
 } {
   return {
     tab: readEnumSearchParam(s.tab, ['notes', 'views', 'memories'] as const),
@@ -153,6 +154,7 @@ export function knowledgeSearchParams(s: S): {
     templateId: readStringSearchParam(s.templateId),
     memoryTab: readStringSearchParam(s.memoryTab),
     projectId: readStringSearchParam(s.projectId),
+    q: readStringSearchParam(s.q),
   };
 }
 

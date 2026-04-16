@@ -3,6 +3,12 @@ import { Link } from '@tanstack/react-router';
 import { PrimaryButton, SecondaryButton } from '../ui';
 import type { Recommendation } from '../../lib/viewer-adapter';
 
+export const codActionBtnClass =
+  'rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80';
+
+export const codBadgeBaseClass =
+  'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold';
+
 // ---------------------------------------------------------------------------
 // V3: Recommendation card
 // ---------------------------------------------------------------------------
@@ -56,7 +62,7 @@ function RecommendationCard({
         </h3>
         <div className="flex items-center gap-1.5 shrink-0">
           <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular-nums"
+            className={`${codBadgeBaseClass} tabular-nums`}
             style={{
               background: 'var(--n-100)',
               color: 'var(--text-secondary)',
@@ -65,7 +71,7 @@ function RecommendationCard({
             {confidencePct}%
           </span>
           <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
+            className={`${codBadgeBaseClass} uppercase tracking-[0.12em]`}
             style={revStyle}
           >
             {rec.reversibility}
@@ -85,21 +91,7 @@ function RecommendationCard({
           <button
             type="button"
             onClick={() => onExecute(rec.id)}
-            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
-            style={{
-              border: `1px solid color-mix(in srgb, ${accent} 50%, transparent)`,
-              background: `color-mix(in srgb, ${accent} 20%, transparent)`,
-              color: 'var(--text-primary)',
-            }}
-          >
-            Execute
-          </button>
-        )}
-        {onSimulate && (
-          <button
-            type="button"
-            onClick={() => onSimulate(rec.id)}
-            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            className={codActionBtnClass}
             style={{
               border:
                 '1px solid color-mix(in srgb, var(--a-lilac) 50%, transparent)',
@@ -114,7 +106,7 @@ function RecommendationCard({
           <button
             type="button"
             onClick={() => onDefer(rec.id)}
-            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            className={codActionBtnClass}
             style={{
               border:
                 '1px solid color-mix(in srgb, var(--a-sun) 50%, transparent)',
@@ -127,7 +119,12 @@ function RecommendationCard({
         )}
         <Link
           to="/actions"
-          className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+          search={{
+            sort: undefined,
+            simulatableOnly: undefined,
+            selectedId: undefined,
+          }}
+          className={codActionBtnClass}
           style={{
             border: '1px solid var(--border-soft)',
             background: 'var(--surf-glass)',

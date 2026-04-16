@@ -18,6 +18,8 @@ interface SummaryRowProps {
   accentColor?: string;
 }
 
+const cornerIconClass = 'absolute right-4 top-4';
+
 export function SummaryRow({ items, accentColor }: SummaryRowProps) {
   const accent = accentColor ?? 'var(--a-mint)';
   if (!items.length) {
@@ -38,7 +40,7 @@ export function SummaryRow({ items, accentColor }: SummaryRowProps) {
           >
             {/* Trend badge */}
             {hasTrend && (
-              <div className="absolute right-4 top-4">
+              <div className={cornerIconClass}>
                 <span
                   className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
                   style={
@@ -69,7 +71,7 @@ export function SummaryRow({ items, accentColor }: SummaryRowProps) {
             {/* Icon (when no trend) */}
             {item.icon && !hasTrend && (
               <div
-                className="absolute right-4 top-4"
+                className={cornerIconClass}
                 style={{ color: 'var(--text-tertiary)' }}
               >
                 {item.icon}

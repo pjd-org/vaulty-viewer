@@ -110,12 +110,10 @@ export default function Navbar({ apiStatus = 'unknown' }: NavbarProps) {
 
       {/* Mobile menu overlay */}
       {menuOpen && (
-        <div
+        <button
+          type="button"
           className="navbar__overlay"
           onClick={closeMenu}
-          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') closeMenu(); }}
-          role="button"
-          tabIndex={0}
           aria-label="Close menu"
         />
       )}

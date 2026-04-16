@@ -1,18 +1,18 @@
-import { Button } from "@/app/components/ui/button";
-import { Skeleton } from "@/app/components/ui/skeleton";
+import { Button } from '@vault/ui';
+import { Skeleton } from '@/app/components/ui/skeleton';
 import {
   AuiIf,
   ThreadListItemMorePrimitive,
   ThreadListItemPrimitive,
   ThreadListPrimitive,
-} from "@assistant-ui/react";
+} from '@assistant-ui/react';
 import {
   ArchiveIcon,
   MoreHorizontalIcon,
   PlusIcon,
   TrashIcon,
-} from "lucide-react";
-import type { FC } from "react";
+} from 'lucide-react';
+import type { FC } from 'react';
 
 export const ThreadList: FC = () => {
   return (
@@ -34,7 +34,7 @@ const ThreadListNew: FC = () => {
   return (
     <ThreadListPrimitive.New asChild>
       <Button
-        variant="outline"
+        unstyled
         className="aui-thread-list-new h-10 justify-start gap-2 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 text-sm text-[var(--text-primary)] shadow-none hover:bg-white data-active:bg-white"
       >
         <PlusIcon className="size-4" />
@@ -63,8 +63,8 @@ const ThreadListSkeleton: FC = () => {
 
 const ThreadListItem: FC = () => {
   return (
-    <ThreadListItemPrimitive.Root className="aui-thread-list-item group flex h-10 items-center gap-2 rounded-[18px] transition-colors hover:bg-white focus-visible:bg-white focus-visible:outline-none data-active:bg-white">
-      <ThreadListItemPrimitive.Trigger className="aui-thread-list-item-trigger flex h-full min-w-0 flex-1 items-center px-3 text-start text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
+    <ThreadListItemPrimitive.Root className="aui-thread-list-item group flex h-10 items-center gap-2 rounded-[18px] transition-colors hover:bg-white focus-visible:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent data-active:bg-white">
+      <ThreadListItemPrimitive.Trigger className="aui-thread-list-item-trigger flex h-full min-w-0 flex-1 items-center px-3 text-start text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent">
         <span className="aui-thread-list-item-title min-w-0 flex-1 truncate font-medium">
           <ThreadListItemPrimitive.Title fallback="New Chat" />
         </span>
@@ -79,9 +79,8 @@ const ThreadListItemMore: FC = () => {
     <ThreadListItemMorePrimitive.Root>
       <ThreadListItemMorePrimitive.Trigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
-          className="aui-thread-list-item-more mr-2 size-7 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-0 opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:bg-white data-[state=open]:opacity-100 group-data-active:opacity-100"
+          unstyled
+          className="aui-thread-list-item-more mr-2 size-7 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-0 opacity-0 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group-hover:opacity-100 data-[state=open]:bg-white data-[state=open]:opacity-100 group-data-active:opacity-100"
         >
           <MoreHorizontalIcon className="size-4" />
           <span className="sr-only">More options</span>
@@ -93,13 +92,13 @@ const ThreadListItemMore: FC = () => {
         className="aui-thread-list-item-more-content z-50 min-w-32 overflow-hidden rounded-[16px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.94)] p-1 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.12)]"
       >
         <ThreadListItemPrimitive.Archive asChild>
-          <ThreadListItemMorePrimitive.Item className="aui-thread-list-item-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm outline-none hover:bg-[var(--surf-base)] focus:bg-[var(--surf-base)]">
+          <ThreadListItemMorePrimitive.Item className="aui-thread-list-item-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-[var(--surf-base)] focus:bg-[var(--surf-base)]">
             <ArchiveIcon className="size-4" />
             Archive
           </ThreadListItemMorePrimitive.Item>
         </ThreadListItemPrimitive.Archive>
         <ThreadListItemPrimitive.Delete asChild>
-          <ThreadListItemMorePrimitive.Item className="aui-thread-list-item-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm text-[var(--text-danger)] outline-none hover:bg-[color-mix(in_srgb,var(--s-danger)_12%,white)] hover:text-[var(--text-danger)] focus:bg-[color-mix(in_srgb,var(--s-danger)_12%,white)] focus:text-[var(--text-danger)]">
+          <ThreadListItemMorePrimitive.Item className="aui-thread-list-item-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm text-[var(--text-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-rose)_30%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-[color-mix(in_srgb,var(--s-danger)_12%,white)] hover:text-[var(--text-danger)] focus:bg-[color-mix(in_srgb,var(--s-danger)_12%,white)] focus:text-[var(--text-danger)]">
             <TrashIcon className="size-4" />
             Delete
           </ThreadListItemMorePrimitive.Item>

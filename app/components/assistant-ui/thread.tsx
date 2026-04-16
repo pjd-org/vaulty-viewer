@@ -14,7 +14,7 @@ const MarkdownText = lazy(() =>
   }))
 );
 import { TooltipIconButton } from '@/app/components/assistant-ui/tooltip-icon-button';
-import { Button } from '@/app/components/ui/button';
+import { Button } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import {
   ActionBarMorePrimitive,
@@ -87,7 +87,6 @@ const ThreadScrollToBottom: FC = () => {
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
         tooltip="Scroll to bottom"
-        variant="outline"
         className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[0_8px_20px_rgba(17,21,29,0.08)] disabled:invisible"
       >
         <ArrowDownIcon />
@@ -164,7 +163,7 @@ const ThreadSuggestionItem: FC<{ title: string; description: string }> = ({
   return (
     <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
       <Button
-        variant="ghost"
+        unstyled
         className="aui-thread-welcome-suggestion genie-surface genie-surface--utility h-auto w-full flex-col items-start justify-start gap-1.5 rounded-[24px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.08)] transition-colors hover:bg-white hover:text-[var(--text-primary)]"
         onClick={() => {
           aui.thread().append({
@@ -196,7 +195,7 @@ const Composer: FC = () => {
           <ComposerAttachments />
           <ComposerPrimitive.Input
             placeholder="Send a message..."
-            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-[var(--text-tertiary)]"
+            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -219,8 +218,6 @@ const ComposerAction: FC = () => {
             tooltip="Send message"
             side="bottom"
             type="button"
-            variant="default"
-            size="icon"
             className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-white shadow-[0_8px_20px_rgba(17,21,29,0.16)] hover:bg-[var(--n-800)]"
             aria-label="Send message"
           >
@@ -232,8 +229,7 @@ const ComposerAction: FC = () => {
         <ComposerPrimitive.Cancel asChild>
           <Button
             type="button"
-            variant="default"
-            size="icon"
+            unstyled
             className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-white"
             aria-label="Stop generating"
           >
@@ -323,7 +319,7 @@ const AssistantActionBar: FC = () => {
           className="aui-action-bar-more-content z-50 min-w-32 overflow-hidden rounded-[16px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.94)] p-1 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.12)]"
         >
           <ActionBarPrimitive.ExportMarkdown asChild>
-            <ActionBarMorePrimitive.Item className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm outline-none hover:bg-[var(--surf-base)] focus:bg-[var(--surf-base)]">
+            <ActionBarMorePrimitive.Item className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-[var(--surf-base)] focus:bg-[var(--surf-base)]">
               <DownloadIcon className="size-4" />
               Export as Markdown
             </ActionBarMorePrimitive.Item>
@@ -377,14 +373,13 @@ const EditComposer: FC = () => {
     <MessagePrimitive.Root className="aui-edit-composer-wrapper mx-auto flex w-full max-w-(--thread-max-width) flex-col px-2 py-4">
       <ComposerPrimitive.Root className="aui-edit-composer-root ml-auto flex w-full max-w-[85%] flex-col rounded-[24px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.9)] shadow-[0_10px_24px_rgba(17,21,29,0.08)]">
         <ComposerPrimitive.Input
-          className="aui-edit-composer-input min-h-14 w-full resize-none bg-transparent p-4 text-sm text-[var(--text-primary)] outline-none"
+          className="aui-edit-composer-input min-h-14 w-full resize-none bg-transparent p-4 text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           autoFocus
         />
         <div className="aui-edit-composer-footer mx-3 mb-3 flex items-center gap-2 self-end">
           <ComposerPrimitive.Cancel asChild>
             <Button
-              variant="ghost"
-              size="sm"
+              unstyled
               className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] hover:bg-white"
             >
               Cancel
@@ -392,7 +387,7 @@ const EditComposer: FC = () => {
           </ComposerPrimitive.Cancel>
           <ComposerPrimitive.Send asChild>
             <Button
-              size="sm"
+              unstyled
               className="rounded-full bg-[var(--n-900)] text-white hover:bg-[var(--n-800)]"
             >
               Update

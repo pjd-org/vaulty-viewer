@@ -287,7 +287,7 @@ function AutomationRoute() {
   return (
     <WorkspaceScaffold
       title="Automation"
-      subtitle="Pipelines, Huey, schedules, and runners in one machine-control lane."
+      subtitle="Pipelines, Primary Agent, schedules, and runners in one machine-control lane."
       summaryItems={[
         {
           label: 'Pipelines',

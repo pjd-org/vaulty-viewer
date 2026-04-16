@@ -55,6 +55,7 @@ const mockPayload: WorkSurfacePayload = {
   tasks: mockTasks,
   total: mockTasks.length,
   mode: 'cod',
+  warnings: [],
 };
 
 function StatefulTaskSection(props: { data: WorkSurfacePayload | undefined }) {
@@ -79,21 +80,35 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const WithTasks: Story = {
+  args: { data: mockPayload, selectedId: null, onSelect: () => {} },
   render: () => <StatefulTaskSection data={mockPayload} />,
 };
 
 export const LocalMode: Story = {
+  args: {
+    data: { ...mockPayload, mode: 'local_fallback' },
+    selectedId: null,
+    onSelect: () => {},
+  },
   render: () => (
-    <StatefulTaskSection data={{ ...mockPayload, mode: 'local' }} />
+    <StatefulTaskSection data={{ ...mockPayload, mode: 'local_fallback' }} />
   ),
 };
 
 export const Empty: Story = {
+  args: {
+    data: { tasks: [], total: 0, mode: 'cod', warnings: [] },
+    selectedId: null,
+    onSelect: () => {},
+  },
   render: () => (
-    <StatefulTaskSection data={{ tasks: [], total: 0, mode: 'cod' }} />
+    <StatefulTaskSection
+      data={{ tasks: [], total: 0, mode: 'cod', warnings: [] }}
+    />
   ),
 };
 
 export const NoData: Story = {
+  args: { data: undefined, selectedId: null, onSelect: () => {} },
   render: () => <StatefulTaskSection data={undefined} />,
 };

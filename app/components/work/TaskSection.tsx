@@ -3,6 +3,9 @@ import { TaskList } from './TaskList';
 import type { NextAction } from '../../../src/lib/focus-logic';
 import type { WorkSurfacePayload } from '../../lib/viewer-adapter';
 
+const emptyHeadingClass = 'text-sm font-medium text-neutral-600';
+const emptyBodyClass = 'text-xs text-neutral-400';
+
 export function TaskSection({
   data,
   selectedId,
@@ -15,10 +18,10 @@ export function TaskSection({
   if (!data) {
     return (
       <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-neutral-600">
+        <p className={emptyHeadingClass}>
           Task and dependency data not yet connected.
         </p>
-        <p className="text-xs text-neutral-400">
+        <p className={emptyBodyClass}>
           Adapter context is wired. Task and dependency workspaces will appear
           once the runtime surface connects.
         </p>
@@ -29,8 +32,8 @@ export function TaskSection({
   if (data.tasks.length === 0) {
     return (
       <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-neutral-600">No tasks ready.</p>
-        <p className="text-xs text-neutral-400">
+        <p className={emptyHeadingClass}>No tasks ready.</p>
+        <p className={emptyBodyClass}>
           All tasks may be blocked or no unblocked tasks remain.
         </p>
       </div>

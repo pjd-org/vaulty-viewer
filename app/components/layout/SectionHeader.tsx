@@ -5,6 +5,7 @@ interface SectionHeaderProps {
   subtitle?: string;
   action?: React.ReactNode;
   className?: string;
+  tone?: 'default' | 'muted' | 'accent';
 }
 
 export function SectionHeader({
@@ -12,7 +13,14 @@ export function SectionHeader({
   subtitle,
   action,
   className,
+  tone = 'default',
 }: SectionHeaderProps) {
+  const titleColor =
+    tone === 'accent'
+      ? 'var(--a-sky)'
+      : tone === 'muted'
+        ? 'var(--text-tertiary)'
+        : 'var(--text-secondary)';
   return (
     <div
       className={['flex items-center justify-between mb-4', className ?? '']
@@ -22,7 +30,7 @@ export function SectionHeader({
       <div>
         <h2
           className="text-sm font-semibold uppercase tracking-wide"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: titleColor }}
         >
           {title}
         </h2>

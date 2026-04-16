@@ -57,6 +57,9 @@ interface KnowledgeWorkspacePaneProps {
   workspaceSearch?: Record<string, unknown>;
 }
 
+const workspaceLinkClass =
+  'btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]';
+
 const sanitizeOptions = {
   allowedTags: [
     ...sanitizeHtml.defaults.allowedTags,
@@ -288,7 +291,7 @@ export function KnowledgeWorkspacePane({
                   <Link
                     to="/note"
                     search={{ p: note.searchPath }}
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
+                    className={workspaceLinkClass}
                   >
                     Open full editor
                   </Link>
@@ -301,14 +304,11 @@ export function KnowledgeWorkspacePane({
                         mode: 'semantic',
                       })) as never
                     }
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
+                    className={workspaceLinkClass}
                   >
                     Search around note
                   </Link>
-                  <Link
-                    to="/knowledge/graph"
-                    className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
-                  >
+                  <Link to="/knowledge/graph" className={workspaceLinkClass}>
                     Open graph
                   </Link>
                 </>
@@ -345,7 +345,7 @@ export function KnowledgeWorkspacePane({
                 <Link
                   to="/note"
                   search={{ p: note.searchPath }}
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
+                  className={workspaceLinkClass}
                 >
                   Open note in editor
                 </Link>
@@ -358,14 +358,11 @@ export function KnowledgeWorkspacePane({
                       mode: 'semantic',
                     })) as never
                   }
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
+                  className={workspaceLinkClass}
                 >
                   Search related context
                 </Link>
-                <Link
-                  to="/knowledge/graph"
-                  className="btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]"
-                >
+                <Link to="/knowledge/graph" className={workspaceLinkClass}>
                   Open knowledge graph
                 </Link>
               </div>

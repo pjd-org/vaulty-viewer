@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { RouteAsideEmptyState } from './RouteStates';
 
 const meta = {
-  title: 'UI / RouteAsideEmptyState',
+  title: 'UI / Organisms / RouteAsideEmptyState',
   component: RouteAsideEmptyState,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof RouteAsideEmptyState>;

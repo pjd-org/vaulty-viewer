@@ -27,6 +27,16 @@ interface KnowledgeWorkspaceSurfaceProps {
   accentColor?: string;
 }
 
+const filterPillClass =
+  'flex items-center gap-1.5 rounded-full border border-[var(--border-glass)] bg-[var(--surf-utility)] px-3 py-1.5 text-xs text-[var(--text-secondary)]';
+const filterLabelClass =
+  'font-medium text-[var(--text-tertiary)] uppercase tracking-widest';
+const filterSelectClass =
+  'bg-transparent border-none text-[var(--text-secondary)] text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
+const railSectionTitleClass =
+  'text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2';
+const railListItemClass = 'text-sm text-[var(--text-secondary)]';
+
 function getAllDomains(notes: KnowledgeNoteRef[]): string[] {
   const domains = new Set<string>();
   for (const note of notes) {
@@ -177,15 +187,14 @@ export function KnowledgeWorkspaceSurface({
         <section className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             {/* Domain filter */}
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-glass)] bg-[var(--surf-utility)] px-3 py-1.5 text-xs text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-tertiary)] uppercase tracking-widest">
-                Domain
-              </span>
+            <div className={filterPillClass}>
+              <span className={filterLabelClass}>Domain</span>
               <select
                 id="knowledge-domain-filter"
+                aria-label="Filter notes by domain"
                 value={domainFilter}
                 onChange={(e) => setDomainFilter(e.target.value)}
-                className="bg-transparent border-none outline-none text-[var(--text-secondary)] text-xs cursor-pointer"
+                className={filterSelectClass}
               >
                 <option value="">All</option>
                 {allDomains.map((d) => (
@@ -197,15 +206,14 @@ export function KnowledgeWorkspaceSurface({
             </div>
 
             {/* Maturity filter */}
-            <div className="flex items-center gap-1.5 rounded-full border border-[var(--border-glass)] bg-[var(--surf-utility)] px-3 py-1.5 text-xs text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-tertiary)] uppercase tracking-widest">
-                Maturity
-              </span>
+            <div className={filterPillClass}>
+              <span className={filterLabelClass}>Maturity</span>
               <select
                 id="knowledge-maturity-filter"
+                aria-label="Filter notes by maturity"
                 value={maturityFilter}
                 onChange={(e) => setMaturityFilter(e.target.value)}
-                className="bg-transparent border-none outline-none text-[var(--text-secondary)] text-xs cursor-pointer"
+                className={filterSelectClass}
               >
                 <option value="">All</option>
                 <option value="draft">Draft</option>
@@ -294,15 +302,10 @@ export function KnowledgeWorkspaceSurface({
             <aside className="knowledge-adapter-rail space-y-4">
               {adapterData.selectedContext.length > 0 && (
                 <section>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2">
-                    Active context
-                  </h3>
+                  <h3 className={railSectionTitleClass}>Active context</h3>
                   <ul className="space-y-1">
                     {adapterData.selectedContext.map((ctx) => (
-                      <li
-                        key={ctx.id}
-                        className="text-sm text-[var(--text-secondary)]"
-                      >
+                      <li key={ctx.id} className={railListItemClass}>
                         {ctx.title}
                       </li>
                     ))}
@@ -316,14 +319,12 @@ export function KnowledgeWorkspaceSurface({
 
               {adapterData.suggestedActions.length > 0 && (
                 <section>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2">
-                    Suggested actions
-                  </h3>
+                  <h3 className={railSectionTitleClass}>Suggested actions</h3>
                   <ul className="space-y-1">
                     {adapterData.suggestedActions.map((action) => (
                       <li
                         key={`${action.actionType}-${action.label}`}
-                        className="text-sm text-[var(--text-secondary)]"
+                        className={railListItemClass}
                       >
                         {action.label}
                       </li>

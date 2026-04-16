@@ -5,6 +5,8 @@ import {
   isMetricReal,
   type CapacityInput,
 } from '../../../src/lib/readiness-logic';
+import { SectionLabel } from './AvatarPrimitives';
+import { SoftChip } from './Chips';
 
 export interface CapacityGroupProps {
   capacity: CapacityInput;
@@ -22,24 +24,20 @@ export function CapacityGroup({ capacity }: CapacityGroupProps) {
 
   return (
     <section className="mb-5 space-y-2">
-      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-        Capacity
-      </p>
+      <SectionLabel>Capacity</SectionLabel>
       <div className="flex flex-wrap gap-2">
-        {time && (
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs text-sky-700">
-            {time} available
-          </span>
-        )}
+        {time && <SoftChip variant="sky" label={`${time} available`} />}
         {isMetricReal(capacity.focusCostMax) && (
-          <span className="rounded-full bg-violet-100 px-3 py-1 text-xs text-violet-700">
-            Focus ≤ {capacity.focusCostMax}
-          </span>
+          <SoftChip
+            variant="violet"
+            label={`Focus ≤ ${capacity.focusCostMax}`}
+          />
         )}
         {isMetricReal(capacity.effortScoreMax) && (
-          <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs text-indigo-700">
-            Effort ≤ {capacity.effortScoreMax}
-          </span>
+          <SoftChip
+            variant="indigo"
+            label={`Effort ≤ ${capacity.effortScoreMax}`}
+          />
         )}
       </div>
       {guidance && <p className="mt-1 text-xs text-slate-500">{guidance}</p>}

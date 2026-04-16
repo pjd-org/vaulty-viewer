@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PressureSignal } from '../../lib/viewer-adapter';
+import { codActionBtnClass, codBadgeBaseClass } from './CodActionRow';
 
 // ---------------------------------------------------------------------------
 // Legacy V1 support
@@ -42,7 +43,7 @@ function SeverityBadge({ severity }: { severity: string }) {
   const style = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.low;
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em]"
+      className={`${codBadgeBaseClass} uppercase tracking-[0.16em]`}
       style={style}
     >
       {severity}
@@ -121,7 +122,7 @@ function SignalCard({
           <button
             type="button"
             onClick={onOpen}
-            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            className={codActionBtnClass}
             style={{
               border: '1px solid var(--border-soft)',
               background: 'var(--surf-glass)',
@@ -135,7 +136,7 @@ function SignalCard({
           <button
             type="button"
             onClick={onAct}
-            className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80"
+            className={codActionBtnClass}
             style={{
               border: `1px solid color-mix(in srgb, ${accent} 40%, transparent)`,
               background: `color-mix(in srgb, ${accent} 20%, transparent)`,

@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../app/components/ui/card';
+} from '@vault/ui';
 
 describe('Card smoke tests', () => {
   afterEach(() => {
@@ -43,7 +43,7 @@ describe('Card smoke tests', () => {
     const { container } = render(<Card>Card</Card>);
     const card = container.firstElementChild;
     expect(card).toBeTruthy();
-    expect(card!.className).toContain('bg-card');
+    expect(card!.className).toContain('bg-surface-container-low');
   });
 
   it('CardDescription applies muted-foreground class', () => {

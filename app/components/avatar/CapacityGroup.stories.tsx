@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { CapacityGroup } from './CapacityGroup';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
+import { CapacityGroup } from '../ui/CapacityGroup';
 
 const meta = {
   title: 'Avatar / CapacityGroup',
@@ -73,3 +74,18 @@ export const Empty: Story = {
     capacity: {},
   },
 };
+
+export const WithCodeEditor: Story = { ...FullCapacity };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './CapacityGroup': { CapacityGroup },
+  },
+  code: `import { CapacityGroup } from '../ui/CapacityGroup';
+
+export default () => (
+  <CapacityGroup
+    capacity={{ timeBudgetMin: 90, focusCostMax: 7, effortScoreMax: 7 }}
+  />
+);`,
+});

@@ -82,7 +82,7 @@ export const WithBlockers: Story = {
 
 export const NoPath: Story = {
   args: {
-    task: { ...baseTask, path: undefined },
+    task: { ...baseTask, path: undefined as unknown as string },
   },
 };
 
@@ -90,9 +90,9 @@ export const MinimalTask: Story = {
   args: {
     task: {
       id: 'task-min',
-      path: undefined,
+      path: undefined as unknown as string,
       title: 'Quick task, no extras',
-      score: 0.5,
+      score: 0,
       priority: 2,
       effortScore: 0,
       focusCost: 0,

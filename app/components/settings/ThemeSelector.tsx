@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button } from '../ui/button';
+import { Button } from '@vault/ui';
 import { useUIStore, type ThemePreference } from '../../../src/store/ui';
 import { useShallow } from 'zustand/react/shallow';
 

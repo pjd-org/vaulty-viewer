@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { StatusPill } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import {
   CHAT_ACCENT_TOKENS,
@@ -6,6 +7,9 @@ import {
   type ChatAccentColor,
   type ChatRuntimeState,
 } from './accent';
+
+export const chatStatusPillClass =
+  'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]';
 
 export interface ChatRuntimeStatusProps {
   state: ChatRuntimeState;
@@ -20,9 +24,8 @@ export function ChatRuntimeStatus({
   className,
   accentColor,
 }: ChatRuntimeStatusProps) {
-  const resolvedAccent = CHAT_ACCENT_TOKENS[
-    accentColor ?? CHAT_RUNTIME_STATE_ACCENTS[state]
-  ];
+  const resolvedAccent =
+    CHAT_ACCENT_TOKENS[accentColor ?? CHAT_RUNTIME_STATE_ACCENTS[state]];
 
   const stateTextColor =
     state === 'running'
@@ -39,21 +42,17 @@ export function ChatRuntimeStatus({
     color: stateTextColor,
   };
 
-  const dotStyle: CSSProperties = {
-    background: resolvedAccent,
-  };
-
   return (
     <div className={cn('flex items-center gap-2 text-xs', className)}>
-      <span
-        className={cn(
-          'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-        )}
-        style={badgeStyle}
-      >
-        <span aria-hidden="true" className="size-2 rounded-full" style={dotStyle} />
-        {state.toUpperCase()}
-      </span>
+      <StatusPill
+        dot={resolvedAccent}
+        bg={badgeStyle.background ?? 'rgba(255,255,255,0.82)'}
+        border={badgeStyle.borderColor ?? 'rgba(255,255,255,0.82)'}
+        textColor={stateTextColor}
+        label={state.toUpperCase()}
+        className={chatStatusPillClass}
+        style={{ ...badgeStyle }}
+      />
       {detail && <span className="text-[var(--text-secondary)]">{detail}</span>}
     </div>
   );

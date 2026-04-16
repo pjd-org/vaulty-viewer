@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { apiFetch } from '../utils/api';
+import { activateOnKeyboardEvent } from '../lib/keyboard';
 
 interface GoalStats {
   total: number;
@@ -180,11 +181,15 @@ export function GoalCard({ goal }: GoalCardProps) {
   return (
     <div className={`goal-card goal-card--${status}`}>
       <div 
-        className="goal-card__header"
+        className="goal-card__header focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         onClick={() => setExpanded(!expanded)}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && setExpanded(!expanded)}
+        aria-label={title}
+        aria-expanded={expanded}
+        onKeyDown={(e) =>
+          activateOnKeyboardEvent(e, () => setExpanded((prev) => !prev))
+        }
       >
         <div className="goal-card__title-row">
           <h3 className="goal-card__title">🎯 {title}</h3>

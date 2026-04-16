@@ -63,6 +63,7 @@ export const NoTags: Story = {
 
 // BlockersRail returns null when empty — show a placeholder note instead
 export const Empty: Story = {
+  args: { blockedTasks: [] },
   render: () => (
     <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
       BlockersRail renders nothing when blockedTasks is empty (returns null).

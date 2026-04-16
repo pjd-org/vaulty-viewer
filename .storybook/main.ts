@@ -1,11 +1,13 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getCodeEditorStaticDirs } from 'storybook-addon-code-editor/getStaticDirs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const config: StorybookConfig = {
+  staticDirs: [...getCodeEditorStaticDirs(__filename)],
   stories: [
     '../app/**/*.mdx',
     '../app/**/*.stories.@(js|jsx|mjs|ts|tsx)',
@@ -22,6 +24,7 @@ const config: StorybookConfig = {
     '@storybook/addon-designs',
     '@storybook/addon-themes',
     'storybook-design-token',
+    'storybook-addon-code-editor',
   ],
   framework: '@storybook/react-vite',
   viteFinal(config) {

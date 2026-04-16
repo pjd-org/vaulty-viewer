@@ -2,6 +2,9 @@ import React from 'react';
 import { toInboxItemDisplay } from '../../lib/display';
 import type { InboxItem } from '../../lib/viewer-adapter';
 import type { InboxNote } from '../../../src/lib/inbox-logic';
+import { activateOnKeyboardEvent } from '../../../src/lib/keyboard';
+
+const metaChipClass = 'text-[10px] text-slate-400';
 
 // ---------------------------------------------------------------------------
 // Local types (mirrored from inbox route)
@@ -115,11 +118,12 @@ export function InboxRow({
 
   return (
     <div
-      className="group relative flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-all duration-150 hover:border-slate-300 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)] cursor-pointer animate-fade-in"
+      className="group relative flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-[background-color,border-color,box-shadow,transform,color] duration-150 hover:border-slate-300 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer animate-fade-in"
       onClick={onInspect}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onInspect()}
+      aria-label={display.title}
+      onKeyDown={(e) => activateOnKeyboardEvent(e, onInspect)}
     >
       {/* severity bar */}
       {sevBar && (
@@ -173,7 +177,7 @@ export function InboxRow({
             </span>
           )}
           {confidence !== undefined && (
-            <span className="text-[10px] text-slate-400">
+            <span className={metaChipClass}>
               conf{' '}
               <span className="font-medium text-slate-600">
                 {(confidence * 100).toFixed(0)}%
@@ -181,7 +185,7 @@ export function InboxRow({
             </span>
           )}
           {itemCount !== undefined && (
-            <span className="text-[10px] text-slate-400">
+            <span className={metaChipClass}>
               {itemCount} item{itemCount !== 1 ? 's' : ''}
             </span>
           )}

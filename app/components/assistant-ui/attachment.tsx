@@ -10,18 +10,14 @@ import {
   useAui,
 } from "@assistant-ui/react";
 import { useShallow } from "zustand/shallow";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/app/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@vault/ui';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogTrigger,
-} from "@/app/components/ui/dialog";
-import { Avatar, AvatarImage, AvatarFallback } from "@/app/components/ui/avatar";
+} from '@/app/components/ui/dialog';
+import { Avatar, AvatarImage, AvatarFallback } from '@/app/components/ui/avatar';
 import { TooltipIconButton } from "@/app/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/src/lib/utils";
 
@@ -150,17 +146,17 @@ const AttachmentUI: FC = () => {
           isImage && "aui-attachment-root-composer only:*:first:size-24",
         )}
       >
-        <AttachmentPreviewDialog>
-          <TooltipTrigger asChild>
-            <div
-              className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75"
-              role="button"
-              aria-label={`${typeLabel} attachment`}
-            >
-              <AttachmentThumb />
-            </div>
-          </TooltipTrigger>
-        </AttachmentPreviewDialog>
+      <AttachmentPreviewDialog>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            aria-label={`${typeLabel} attachment`}
+          >
+            <AttachmentThumb />
+          </button>
+        </TooltipTrigger>
+      </AttachmentPreviewDialog>
         {isComposer && <AttachmentRemove />}
       </AttachmentPrimitive.Root>
       <TooltipContent side="top">

@@ -5,7 +5,10 @@ export type ChipVariant =
   | 'primary'
   | 'success'
   | 'warning'
-  | 'danger';
+  | 'danger'
+  | 'sky'
+  | 'violet'
+  | 'indigo';
 
 const variantClasses: Record<ChipVariant, string> = {
   default:
@@ -18,10 +21,14 @@ const variantClasses: Record<ChipVariant, string> = {
     'bg-[color-mix(in_srgb,var(--a-sun)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
   danger:
     'bg-[color-mix(in_srgb,var(--a-rose)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
+  sky: 'bg-sky-100 text-sky-700 border border-sky-200',
+  violet: 'bg-violet-100 text-violet-700 border border-violet-200',
+  indigo: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
 };
 
 export interface SoftChipProps {
-  label: string;
+  label?: string;
+  children?: React.ReactNode;
   icon?: React.ReactNode;
   onRemove?: () => void;
   className?: string;
@@ -30,6 +37,7 @@ export interface SoftChipProps {
 
 export function SoftChip({
   label,
+  children,
   icon,
   onRemove,
   className = '',
@@ -40,7 +48,7 @@ export function SoftChip({
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${variantClasses[variant]} ${className}`}
     >
       {icon && <span className="shrink-0">{icon}</span>}
-      {label}
+      {children ?? label}
       {onRemove && (
         <button
           type="button"

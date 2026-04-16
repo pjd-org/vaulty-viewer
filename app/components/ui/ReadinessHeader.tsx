@@ -1,10 +1,9 @@
 import React from 'react';
-import {
-  type ReadinessState,
-  type CapacityInput,
-} from '../../../src/lib/readiness-logic';
-import { apiBadgeText } from '../../../src/lib/avatar-logic';
+import { type ReadinessState } from '../../../src/lib/readiness-logic';
+import { apiBadgeText, type ApiStatus } from '../../../src/lib/avatar-logic';
 import { ReadinessCard } from './ReadinessCard';
+import { SoftChip } from './Chips';
+import { IconButton } from './Buttons';
 
 export interface ProfileData {
   name?: string;
@@ -25,7 +24,7 @@ export interface ReadinessHeaderProps {
   stale: boolean;
   updated?: string | null;
   loading: boolean;
-  apiStatus: string;
+  apiStatus: ApiStatus;
   onRefresh: () => void;
   capacityLabel: string;
   timeBudgetLabel: string | null;
@@ -73,25 +72,17 @@ export function ReadinessHeader({
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span
-            className={[
-              'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
-              apiStatus === 'online'
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-red-100 text-red-700',
-            ].join(' ')}
-          >
-            {apiBadgeText(apiStatus as Parameters<typeof apiBadgeText>[0])}
-          </span>
-          <button
-            type="button"
+          <SoftChip
+            variant={apiStatus === 'online' ? 'success' : 'danger'}
+            label={apiBadgeText(apiStatus)}
+          />
+          <IconButton
+            icon="↻"
+            label="Refresh state"
             onClick={onRefresh}
             disabled={loading}
             title="Refresh state"
-            className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-600 transition hover:bg-black/5 disabled:opacity-40"
-          >
-            ↻
-          </button>
+          />
         </div>
       </div>
 
@@ -103,19 +94,16 @@ export function ReadinessHeader({
 
       <div className="flex flex-wrap gap-2">
         {flags.stagnation && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-            Stagnation detected
-          </span>
+          <SoftChip variant="warning" label="Stagnation detected" />
         )}
         {flags.entropyWarning && (
-          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
-            High entropy
-          </span>
+          <SoftChip variant="danger" label="High entropy" />
         )}
         {stale && lastUpdatedStr && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700">
-            State may be stale — {lastUpdatedStr}
-          </span>
+          <SoftChip
+            variant="warning"
+            label={`State may be stale — ${lastUpdatedStr}`}
+          />
         )}
         {!stale && lastUpdatedStr && (
           <span className="text-xs text-slate-500">

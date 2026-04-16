@@ -50,7 +50,7 @@ const mockTasks: NextAction[] = [
   },
   {
     id: 'task-003',
-    path: undefined,
+    path: undefined as unknown as string,
     title: 'Fix kanban drag-drop on mobile',
     score: 0.9,
     priority: 5,
@@ -88,14 +88,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: { tasks: mockTasks, selectedId: null, onSelect: () => {} },
   render: () => <StatefulTaskList tasks={mockTasks} />,
 };
 
 export const SingleTask: Story = {
+  args: { tasks: [mockTasks[0]], selectedId: null, onSelect: () => {} },
   render: () => <StatefulTaskList tasks={[mockTasks[0]]} />,
 };
 
 export const AllBlocked: Story = {
+  args: { tasks: mockTasks, selectedId: null, onSelect: () => {} },
   render: () => (
     <StatefulTaskList
       tasks={mockTasks.map((t) => ({

@@ -48,6 +48,8 @@ const WORKFLOW_GROUPS: { label: string; ids: IntentType[] }[] = [
   { label: 'Free', ids: ['freeform'] },
 ];
 
+const railTertiaryTextClass = 'text-xs text-[var(--text-tertiary)]';
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -145,9 +147,7 @@ export function PrimaryAgentContextRail({
 
         {/* Grouped workflow chips */}
         {visibleGroups.length === 0 && workflowSearch.trim() && (
-          <p className="text-xs text-[var(--text-tertiary)]">
-            No matching workflows.
-          </p>
+          <p className={railTertiaryTextClass}>No matching workflows.</p>
         )}
         <div className="space-y-3">
           {visibleGroups.map((group) => (
@@ -180,7 +180,7 @@ export function PrimaryAgentContextRail({
       <div className="flex-1 min-h-0 overflow-y-auto">
         <SectionHeader title="Recent" className="mb-2" />
         {groups.length === 0 && (
-          <p className="text-xs text-[var(--text-tertiary)]">No history yet.</p>
+          <p className={railTertiaryTextClass}>No history yet.</p>
         )}
         {groups.map((group) => (
           <div key={group.label} className="mb-3">

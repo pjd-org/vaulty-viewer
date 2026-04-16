@@ -3,7 +3,7 @@ import React from 'react';
 import { StatusPill } from './Chips';
 
 const meta = {
-  title: 'UI / StatusPill',
+  title: 'UI / Molecules / StatusPill',
   component: StatusPill,
   parameters: { layout: 'centered' },
 } satisfies Meta<typeof StatusPill>;
@@ -18,6 +18,7 @@ export const Done: Story = { args: { status: 'done' } };
 export const Backlog: Story = { args: { status: 'backlog' } };
 
 export const AllStatuses: Story = {
+  args: { status: 'todo' },
   render: () => (
     <div className="flex flex-wrap gap-2">
       <StatusPill status="todo" />

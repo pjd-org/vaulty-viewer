@@ -1,4 +1,4 @@
-import { Button } from '@/app/components/ui/button';
+import { Button } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 
 export interface ChatEmptyStateProps {
@@ -43,7 +43,7 @@ export function ChatEmptyState({
             <Button
               key={suggestion.title}
               type="button"
-              variant="ghost"
+              unstyled
               className="genie-surface genie-surface--utility h-auto flex-col items-start justify-start gap-1 rounded-[24px] border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-left shadow-[0_10px_24px_rgba(17,21,29,0.08)] hover:bg-white"
               onClick={() => onSuggestionClick?.(suggestion.title)}
             >

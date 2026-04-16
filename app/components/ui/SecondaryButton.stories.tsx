@@ -3,7 +3,7 @@ import React from 'react';
 import { SecondaryButton } from './Buttons';
 
 const meta = {
-  title: 'UI / Buttons / SecondaryButton',
+  title: 'UI / Atoms / SecondaryButton',
   component: SecondaryButton,
   parameters: { layout: 'centered' },
   args: { children: 'Cancel' },

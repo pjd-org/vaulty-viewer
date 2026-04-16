@@ -725,7 +725,7 @@ function NoteRoute() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               {[
-                { label: 'Huey', short: 'H' },
+                { label: 'Primary Agent', short: 'H' },
                 { label: 'Automation', short: 'A' },
                 { label: 'COD', short: 'C' },
                 { label: 'Info', short: 'i' },

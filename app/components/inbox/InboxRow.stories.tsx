@@ -18,6 +18,7 @@ const baseItem: InboxItem = {
     'Repeated health check failures detected by the runtime watcher.',
   reversibility: 'high',
   inboxBucket: 'needs_action',
+  allowedActions: [],
 };
 
 const baseRun: Run = {

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ProgressionSummary } from './ProgressionSummary';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
+import { ProgressionSummary } from '../ui/ProgressionSummary';
 
 const meta = {
   title: 'Avatar / ProgressionSummary',
@@ -73,3 +74,21 @@ export const NoStreak: Story = {
     progression: { streakDays: 0 },
   },
 };
+
+export const WithCodeEditor: Story = { ...Default };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './ProgressionSummary': { ProgressionSummary },
+  },
+  code: `import { ProgressionSummary } from '../ui/ProgressionSummary';
+
+export default () => (
+  <ProgressionSummary
+    level={12}
+    currentXp={4750}
+    xpToNext={5000}
+    progression={{ streakDays: 7, streakUpdated: new Date().toISOString() }}
+  />
+);`,
+});

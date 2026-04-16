@@ -4,7 +4,7 @@ import { RouteLoadingState, RouteAsideEmptyState } from './RouteStates';
 // ─── RouteLoadingState ────────────────────────────────────────────────────────
 
 const loadingMeta = {
-  title: 'UI / RouteLoadingState',
+  title: 'UI / Organisms / RouteLoadingState',
   component: RouteLoadingState,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof RouteLoadingState>;

@@ -238,7 +238,7 @@ function TimelineRoute() {
         {
           label: 'Runs',
           value: '—',
-          detail: 'Huey, pipelines, schedules, agents',
+          detail: 'Primary Agent, pipelines, schedules, agents',
         },
       ];
 
@@ -263,7 +263,13 @@ function TimelineRoute() {
             selectedId={selectedId}
             selectedEvent={selectedEvent}
             onSelect={(id) =>
-              void navigate({ search: (prev) => ({ ...prev, selectedId: id }) })
+              void navigate({
+                to: '/timeline',
+                search: (prev) =>
+                  ({ ...prev, selectedId: id }) as ReturnType<
+                    typeof timelineSearchParams
+                  >,
+              })
             }
           />
         ) : (

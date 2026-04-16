@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
 import {
   createRouter,
   createMemoryHistory,
   createRootRoute,
   RouterProvider,
 } from '@tanstack/react-router';
-import { ReadinessHeader } from './ReadinessHeader';
+import { ReadinessHeader } from '../ui/ReadinessHeader';
 import type { ReadinessState } from '../../../src/lib/readiness-logic';
 
 function makeStubRouter(Story: () => React.ReactNode) {
@@ -133,3 +134,35 @@ export const NoTimeBudget: Story = {
     capacityLabel: 'No capacity set',
   },
 };
+
+export const WithCodeEditor: Story = { ...Default };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './ReadinessHeader': { ReadinessHeader },
+  },
+  code: `import { ReadinessHeader } from '../ui/ReadinessHeader';
+
+export default () => (
+  <ReadinessHeader
+    profile={{ name: 'Darry', title: 'Systems Builder' }}
+    readiness={{
+      level: 'deep',
+      label: 'Deep work window',
+      description: 'Good for focused, high-effort execution.',
+      color: '#10b981',
+      sessionType: 'deep',
+      maxFocusCost: undefined,
+      maxEffortScore: undefined,
+    }}
+    flags={{}}
+    stale={false}
+    updated={new Date().toISOString()}
+    loading={false}
+    apiStatus="online"
+    onRefresh={() => {}}
+    capacityLabel="Focus ≤ 6 · Effort ≤ 6"
+    timeBudgetLabel="1h 30m"
+  />
+);`,
+});

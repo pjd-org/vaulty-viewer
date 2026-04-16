@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Button } from '../../../app/components/ui/button';
+import { Button } from '@vault/ui';
 
 describe('Button smoke tests', () => {
   afterEach(() => {
@@ -43,8 +43,7 @@ describe('Button smoke tests', () => {
     const { container } = render(<Button variant="secondary">Sec</Button>);
     const btn = container.querySelector('button');
     expect(btn).toBeTruthy();
-    // Ensure bg-secondary class is present (token-mapped, not hard-coded green)
-    expect(btn!.className).toContain('bg-secondary');
+    expect(btn!.className).toContain('bg-transparent');
   });
 
   it('forwards disabled prop', () => {

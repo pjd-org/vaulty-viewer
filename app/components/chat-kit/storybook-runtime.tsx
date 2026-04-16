@@ -4,7 +4,7 @@ import {
   useLocalRuntime,
   type ChatModelAdapter,
 } from '@assistant-ui/react';
-import { TooltipProvider } from '@/app/components/ui/tooltip';
+import { TooltipProvider } from '@vault/ui';
 
 const noopAdapter: ChatModelAdapter = {
   run: () => new Promise(() => {}),

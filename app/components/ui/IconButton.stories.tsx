@@ -3,7 +3,7 @@ import React from 'react';
 import { IconButton } from './Buttons';
 
 const meta = {
-  title: 'UI / Buttons / IconButton',
+  title: 'UI / Atoms / IconButton',
   component: IconButton,
   parameters: { layout: 'centered' },
 } satisfies Meta<typeof IconButton>;
@@ -32,6 +32,7 @@ export const Menu: Story = {
 };
 
 export const AllVariants: Story = {
+  args: { icon: <span>✕</span> },
   render: () => (
     <div
       style={{

@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { cn } from '@/src/lib/utils';
-import { PromptInput } from '@vault/ui';
-import { Dock, DockIcon, DockLink } from '@/app/components/ui';
-import { ChatRuntimeStatus } from './ChatRuntimeStatus';
+import { Dock, DockIcon, DockLink, PromptInput } from '@vault/ui';
+import { ChatRuntimeStatus, chatStatusPillClass } from './ChatRuntimeStatus';
 import {
   CHAT_ACCENTS,
   CHAT_ACCENT_TOKENS,
@@ -49,7 +48,8 @@ function ChatPaletteLegend({
         <span
           key={swatch.name}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full border bg-[rgba(255,255,255,0.82)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)] transition-all',
+            chatStatusPillClass,
+            'bg-[rgba(255,255,255,0.82)] gap-1.5 px-2.5 text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)] transition-[background-color,box-shadow,color,transform]',
             swatch.name === activeAccent &&
               'scale-[1.02] text-[var(--text-primary)] shadow-[0_6px_18px_rgba(17,21,29,0.1)]'
           )}
@@ -99,8 +99,7 @@ export function ChatComposer({
 }: ChatComposerProps) {
   const canShowToolDock = Boolean(onToolSelect);
   const statusState = runtimeState ?? (isRunning ? 'running' : 'idle');
-  const resolvedAccent =
-    accentColor ?? CHAT_RUNTIME_STATE_ACCENTS[statusState];
+  const resolvedAccent = accentColor ?? CHAT_RUNTIME_STATE_ACCENTS[statusState];
   const accent = CHAT_ACCENT_TOKENS[resolvedAccent];
   const statusDetail =
     runtimeDetail ??
@@ -148,6 +147,7 @@ export function ChatComposer({
         disabled={isRunning}
         active={Boolean(value.trim()) || isRunning}
         accentColor={accent}
+        ariaLabel="Message input"
         leadingIcon="✦"
         onChange={(event) => onChange?.(event.target.value)}
         onSubmit={onSend}

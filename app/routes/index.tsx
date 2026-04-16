@@ -10,12 +10,18 @@ import {
   type SessionSummary,
   type NextAction,
 } from '../../src/lib/focus-logic';
-import { SectionHeader, WorkspaceScaffold } from '../components/layout';
+import {
+  SectionHeader,
+  WorkspaceScaffold,
+  SoftPanel,
+} from '../components/layout';
 import {
   Badge,
   EmptyState,
-  PrimaryButton,
-  SecondaryButton,
+  MetricCard,
+  SurfaceChip,
+  SurfaceLinkChip,
+  SurfaceButtonChip,
 } from '../components/ui';
 import {
   getHomeSurfaceQueryOptions,
@@ -30,6 +36,8 @@ import { updateTaskStatus } from '../lib/api/tasks';
 import { CodSignalRow } from '../components/cod/CodSignalRow';
 import { CodActionRow } from '../components/cod/CodActionRow';
 import { useUIStore } from '../../src/store/ui';
+
+const noteSearch = (path: string) => ({ p: path });
 
 export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
@@ -46,10 +54,10 @@ export const Route = createFileRoute('/')({
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-black/3 p-4 space-y-2">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+    <SoftPanel variant="utility" tone="muted" className="space-y-2 p-4">
+      <SurfaceChip tone="accent" className="mb-3">
         Recent sessions
-      </p>
+      </SurfaceChip>
       {sessions.map((s) => (
         <Link
           key={s.id}
@@ -70,7 +78,7 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
           </div>
         </Link>
       ))}
-    </div>
+    </SoftPanel>
   );
 }
 
@@ -90,11 +98,15 @@ function ActiveSessionBanner({
   const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-black/3 p-4 flex items-center justify-between">
+    <SoftPanel
+      variant="utility"
+      tone="muted"
+      className="flex items-center justify-between p-4"
+    >
       <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">
+        <SurfaceChip tone="accent" className="w-fit">
           Session active
-        </span>
+        </SurfaceChip>
         {session.title && (
           <span className="text-sm font-medium text-slate-800">
             {session.title}
@@ -114,28 +126,40 @@ function ActiveSessionBanner({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
+        <SurfaceButtonChip type="button" onClick={onResume} tone="accent">
+          Resume
+        </SurfaceButtonChip>
         {confirmingEnd ? (
           <>
-            <SecondaryButton
+            <SurfaceButtonChip
+              type="button"
               onClick={() => {
                 onEnd();
                 setConfirmingEnd(false);
               }}
+              tone="neutral"
             >
               Confirm end
-            </SecondaryButton>
-            <SecondaryButton onClick={() => setConfirmingEnd(false)}>
+            </SurfaceButtonChip>
+            <SurfaceButtonChip
+              type="button"
+              onClick={() => setConfirmingEnd(false)}
+              tone="muted"
+            >
               Cancel
-            </SecondaryButton>
+            </SurfaceButtonChip>
           </>
         ) : (
-          <SecondaryButton onClick={() => setConfirmingEnd(true)}>
+          <SurfaceButtonChip
+            type="button"
+            onClick={() => setConfirmingEnd(true)}
+            tone="neutral"
+          >
             End
-          </SecondaryButton>
+          </SurfaceButtonChip>
         )}
       </div>
-    </div>
+    </SoftPanel>
   );
 }
 
@@ -191,65 +215,62 @@ function HomeTaskCard({
 }) {
   const confidencePct = Math.max(1, Math.min(99, Math.round(task.score * 10)));
   return (
-    <article
-      className={`rounded-[18px] border border-slate-200 bg-white/70 shadow-sm ${compact ? 'p-3' : 'p-4'}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h3
-            className={`line-clamp-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-semibold text-slate-800 ${compact ? 'text-xs' : 'text-sm'}`}
-          >
-            {task.title}
-          </h3>
-          <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span className="inline-block size-2 rounded-full bg-slate-300" />
-            <span>Task</span>
-            <span className="inline-block size-2 rounded-full bg-slate-500" />
+    <SoftPanel variant="utility" tone="muted" noPadding className="shadow-sm">
+      <div className={compact ? 'p-3' : 'p-4'}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3
+              className={`line-clamp-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-semibold text-slate-800 ${compact ? 'text-xs' : 'text-sm'}`}
+            >
+              {task.title}
+            </h3>
+            <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+              <span className="inline-block size-2 rounded-full bg-slate-300" />
+              <span>Task</span>
+              <span className="inline-block size-2 rounded-full bg-slate-500" />
+            </div>
           </div>
+          <TaskSeverityBadge
+            priority={task.priority}
+            confidencePct={confidencePct}
+          />
         </div>
-        <TaskSeverityBadge
-          priority={task.priority}
-          confidencePct={confidencePct}
-        />
-      </div>
 
-      <div
-        className={`flex flex-wrap items-center gap-2 ${compact ? 'mt-3' : 'mt-4'}`}
-      >
-        {task.path ? (
-          <Link
-            to="/note"
-            search={{ p: task.path }}
-            className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50"
-          >
-            Open
-          </Link>
-        ) : (
-          <span
-            aria-disabled="true"
-            className="cursor-not-allowed rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
-          >
-            Open
-          </span>
-        )}
-        <PrimaryButton
-          type="button"
-          onClick={() => onStart(task.path)}
-          disabled={mutating}
-          className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em]"
+        <div
+          className={`flex flex-wrap items-center gap-2 ${compact ? 'mt-3' : 'mt-4'}`}
         >
-          {mutating ? 'Starting…' : 'Start'}
-        </PrimaryButton>
-        <SecondaryButton
-          type="button"
-          onClick={() => onBacklog(task.path)}
-          disabled={mutating}
-          className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em]"
-        >
-          {mutating ? 'Updating…' : 'Backlog'}
-        </SecondaryButton>
+          {task.path ? (
+            <SurfaceLinkChip
+              to="/note"
+              search={noteSearch(task.path)}
+              tone="neutral"
+            >
+              Open
+            </SurfaceLinkChip>
+          ) : (
+            <span aria-disabled="true" className="cursor-not-allowed">
+              Open
+            </span>
+          )}
+          <SurfaceButtonChip
+            type="button"
+            onClick={() => onStart(task.path)}
+            disabled={mutating}
+            tone="accent"
+          >
+            {mutating ? 'Starting…' : 'Start'}
+          </SurfaceButtonChip>
+          <SurfaceButtonChip
+            type="button"
+            onClick={() => onBacklog(task.path)}
+            disabled={mutating}
+            tone="muted"
+          >
+            {mutating ? 'Updating…' : 'Backlog'}
+          </SurfaceButtonChip>
+        </div>
       </div>
-    </article>
+    </SoftPanel>
   );
 }
 
@@ -265,40 +286,45 @@ function BacklogStripCard({
   mutating: boolean;
 }) {
   return (
-    <article className="rounded-[18px] border border-slate-200 bg-white/70 p-3 shadow-sm">
+    <SoftPanel
+      variant="utility"
+      tone="muted"
+      noPadding
+      className="p-3 shadow-sm"
+    >
       <div className="flex items-center justify-between gap-3">
         <p className="min-w-0 flex-1 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-semibold text-slate-800">
           {task.title}
         </p>
         <div className="flex items-center gap-2">
           {task.path ? (
-            <Link
+            <SurfaceLinkChip
               to="/note"
-              search={{ p: task.path }}
-              className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700"
+              search={noteSearch(task.path)}
+              tone="neutral"
             >
               Open
-            </Link>
+            </SurfaceLinkChip>
           ) : null}
-          <PrimaryButton
+          <SurfaceButtonChip
             type="button"
             onClick={() => onStart(task.path)}
             disabled={mutating}
-            className="rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.14em]"
+            tone="accent"
           >
             Start
-          </PrimaryButton>
-          <SecondaryButton
+          </SurfaceButtonChip>
+          <SurfaceButtonChip
             type="button"
             onClick={() => onBacklog(task.path)}
             disabled={mutating}
-            className="rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.14em]"
+            tone="muted"
           >
             Backlog
-          </SecondaryButton>
+          </SurfaceButtonChip>
         </div>
       </div>
-    </article>
+    </SoftPanel>
   );
 }
 

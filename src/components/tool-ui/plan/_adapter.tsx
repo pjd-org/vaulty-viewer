@@ -8,11 +8,9 @@ export {
 export {
   Card,
   CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
   CardFooter,
-} from '@/app/components/ui/card';
+} from '@vault/ui';
+export { CardTitle, CardDescription, CardContent } from '@vault/ui';
 export {
   Collapsible,
   CollapsibleTrigger,

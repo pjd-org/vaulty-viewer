@@ -5,7 +5,7 @@ import { MetaRow, ReasonText } from './Labels';
 // ─── MetaRow ─────────────────────────────────────────────────────────────────
 
 const metaRowMeta = {
-  title: 'UI / MetaRow',
+  title: 'UI / Molecules / MetaRow',
   component: MetaRow,
   parameters: { layout: 'padded' },
   args: {

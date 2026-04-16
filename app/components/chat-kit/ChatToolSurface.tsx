@@ -1,23 +1,18 @@
 import type { ComponentProps } from 'react';
-import { Button } from '@/app/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
+import { Button, Badge, Card, CardHeader } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
-import {
-  PrimaryAgentToolInvocation,
-} from '@/src/components/tool-ui/primary-agent-tool-invocation';
+import { PrimaryAgentToolInvocation } from '@/src/components/tool-ui/primary-agent-tool-invocation';
 import { Plan } from '@/src/components/tool-ui/plan';
 import { safeParseSerializablePlan } from '@/src/components/tool-ui/plan/schema';
-import {
-  ProgressTracker,
-} from '@/src/components/tool-ui/progress-tracker';
-import {
-  safeParseSerializableProgressTracker,
-} from '@/src/components/tool-ui/progress-tracker/schema';
+import { ProgressTracker } from '@/src/components/tool-ui/progress-tracker';
+import { safeParseSerializableProgressTracker } from '@/src/components/tool-ui/progress-tracker/schema';
 import { StatsDisplay } from '@/src/components/tool-ui/stats-display';
 import { safeParseSerializableStatsDisplay } from '@/src/components/tool-ui/stats-display/schema';
 
 type ToolStatus = ComponentProps<typeof PrimaryAgentToolInvocation>['status'];
+
+const toolSurfaceWrapClass =
+  'genie-surface genie-surface--utility w-full rounded-[24px] p-3';
 
 export interface ChatToolSurfaceProps {
   toolName: string;
@@ -39,60 +34,45 @@ function ApprovalCard({
   description?: string;
 }) {
   return (
-    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
-      <CardHeader className="space-y-2 px-4 pb-2 pt-4">
-        <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-          {title}
-        </CardTitle>
-        {description && (
-          <p className="text-sm leading-6 text-[var(--text-secondary)]">
-            {description}
-          </p>
-        )}
-      </CardHeader>
-      <CardContent className="flex items-center gap-2 px-4 pb-4 pt-0">
+    <Card
+      padding={false}
+      className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]"
+    >
+      <CardHeader
+        label={title}
+        subtitle={description}
+        className="px-4 pb-2 pt-4"
+      />
+      <div className="flex items-center gap-2 px-4 pb-4 pt-0">
         <Button
           type="button"
-          size="sm"
-          className="rounded-full bg-[var(--n-900)] px-4 text-white hover:bg-[var(--n-800)]"
+          unstyled
+          className="rounded-full bg-[var(--n-900)] px-4 py-2 text-sm text-white hover:bg-[var(--n-800)]"
         >
           Approve
         </Button>
         <Button
           type="button"
-          size="sm"
-          variant="secondary"
-          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 text-[var(--text-secondary)] hover:bg-white"
+          unstyled
+          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-white"
         >
           Review
         </Button>
-      </CardContent>
+      </div>
     </Card>
   );
 }
 
-function MessageDraft({
-  title,
-  body,
-}: {
-  title: string;
-  body?: string;
-}) {
+function MessageDraft({ title, body }: { title: string; body?: string }) {
   return (
-    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
-      <CardHeader className="space-y-1 px-4 pb-2 pt-4">
-        <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
-          {title}
-        </CardTitle>
-        {body && (
-          <p className="text-sm leading-6 text-[var(--text-secondary)]">
-            {body}
-          </p>
-        )}
-      </CardHeader>
-      <CardContent className="flex items-center gap-2 px-4 pb-4 pt-0">
+    <Card
+      padding={false}
+      className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]"
+    >
+      <CardHeader label={title} subtitle={body} className="px-4 pb-2 pt-4" />
+      <div className="flex items-center gap-2 px-4 pb-4 pt-0">
         <Badge
-          variant="secondary"
+          variant="muted"
           className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]"
         >
           Draft
@@ -100,7 +80,7 @@ function MessageDraft({
         <span className="text-xs text-[var(--text-secondary)]">
           Ready for review before send
         </span>
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -118,7 +98,7 @@ export function ChatToolSurface({
     const plan = safeParseSerializablePlan(result);
     if (plan) {
       return (
-        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
+        <div className={cn(toolSurfaceWrapClass, className)}>
           <Plan {...plan} />
         </div>
       );
@@ -133,7 +113,7 @@ export function ChatToolSurface({
     const tracker = safeParseSerializableProgressTracker(result);
     if (tracker) {
       return (
-        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
+        <div className={cn(toolSurfaceWrapClass, className)}>
           <ProgressTracker {...tracker} />
         </div>
       );
@@ -144,7 +124,7 @@ export function ChatToolSurface({
     const stats = safeParseSerializableStatsDisplay(result);
     if (stats) {
       return (
-        <div className={cn('genie-surface genie-surface--utility w-full rounded-[24px] p-3', className)}>
+        <div className={cn(toolSurfaceWrapClass, className)}>
           <StatsDisplay {...stats} />
         </div>
       );

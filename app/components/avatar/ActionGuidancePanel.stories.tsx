@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
 import {
   createRouter,
   createMemoryHistory,
   createRootRoute,
   RouterProvider,
 } from '@tanstack/react-router';
-import { ActionGuidancePanel } from './ActionGuidancePanel';
+import { ActionGuidancePanel } from '../ui/ActionGuidancePanel';
 import type { ReadinessState } from '../../../src/lib/readiness-logic';
 
 function makeStubRouter(Story: () => React.ReactNode) {
@@ -111,3 +112,27 @@ export const WithFocusFilter: Story = {
     capacity: { timeBudgetMin: 45, focusCostMax: 3, effortScoreMax: 3 },
   },
 };
+
+export const WithCodeEditor: Story = { ...DeepWork };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './ActionGuidancePanel': { ActionGuidancePanel },
+  },
+  code: `import { ActionGuidancePanel } from '../ui/ActionGuidancePanel';
+
+export default () => (
+  <ActionGuidancePanel
+    readiness={{
+      level: 'deep',
+      label: 'Deep work window',
+      description: 'Good for focused, high-effort execution.',
+      color: '#10b981',
+      sessionType: 'deep',
+      maxFocusCost: undefined,
+      maxEffortScore: undefined,
+    }}
+    capacity={{ timeBudgetMin: 90, focusCostMax: 7, effortScoreMax: 7 }}
+  />
+);`,
+});

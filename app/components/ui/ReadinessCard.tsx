@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { MetaRow } from '../ui';
+import { MetaRow } from './Labels';
 import type { ReadinessState } from '../../../src/lib/readiness-logic';
 
 interface ReadinessCardProps {

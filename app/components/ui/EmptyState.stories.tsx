@@ -3,7 +3,7 @@ import React from 'react';
 import { EmptyState } from './EmptyState';
 
 const meta = {
-  title: 'UI / EmptyState',
+  title: 'UI / Organisms / EmptyState',
   component: EmptyState,
   parameters: { layout: 'padded' },
   args: { title: 'Nothing here yet' },

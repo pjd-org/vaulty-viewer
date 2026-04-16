@@ -2,6 +2,13 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import type { NextAction } from '../../../src/lib/focus-logic';
 
+const taskChipClass =
+  'rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500';
+const taskSkyLinkClass =
+  'inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800';
+const taskVioletLinkClass =
+  'inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800';
+
 export function TaskDetail({ task }: { task: NextAction }) {
   const blockers =
     (task.blockers as { description?: string }[] | undefined) ?? [];
@@ -26,19 +33,13 @@ export function TaskDetail({ task }: { task: NextAction }) {
           </span>
         )}
         {task.effortScore > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
-            effort {task.effortScore}
-          </span>
+          <span className={taskChipClass}>effort {task.effortScore}</span>
         )}
         {task.focusCost > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
-            focus {task.focusCost}
-          </span>
+          <span className={taskChipClass}>focus {task.focusCost}</span>
         )}
         {task.estimatedTimeMin > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
-            {task.estimatedTimeMin}m
-          </span>
+          <span className={taskChipClass}>{task.estimatedTimeMin}m</span>
         )}
         {task.dueDate && (
           <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sun)_14%,white)] [border-color:color-mix(in_srgb,var(--a-sun)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] px-2 py-0.5 text-[11px]">
@@ -60,10 +61,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
       {task.tags.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {task.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500"
-            >
+            <span key={tag} className={taskChipClass}>
               {tag}
             </span>
           ))}
@@ -111,7 +109,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+            className={taskSkyLinkClass}
           >
             Related knowledge →
           </Link>
@@ -124,7 +122,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+            className={taskVioletLinkClass}
           >
             Ask Primary Agent about this →
           </Link>
@@ -145,7 +143,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+            className={taskSkyLinkClass}
           >
             Related knowledge →
           </Link>
@@ -158,7 +156,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+            className={taskVioletLinkClass}
           >
             Ask Primary Agent about this →
           </Link>

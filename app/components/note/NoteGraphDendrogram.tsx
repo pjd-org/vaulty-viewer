@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { activateOnKeyboardEvent } from '../../../src/lib/keyboard';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,6 +104,7 @@ export function NoteGraphDendrogram({
     y: 0,
     label: '',
   });
+  const [focusedPath, setFocusedPath] = useState<string | null>(null);
 
   const cx = width / 2;
   const cy = height / 2;
@@ -358,6 +360,7 @@ export function NoteGraphDendrogram({
             ACCENT_PALETTE[ln.groupIdx % ACCENT_PALETTE.length];
           const r = leafR + ln.note.score * 4; // size scales with score
           const label = labelFromPath(ln.note.path);
+          const isFocused = focusedPath === ln.note.path;
           return (
             <g
               key={`leaf-${i}`}
@@ -365,6 +368,9 @@ export function NoteGraphDendrogram({
                 animation: `ngd-scale-in var(--duration-slow) var(--ease-enter) ${180 + i * 40}ms both`,
                 transformOrigin: `${lp.x}px ${lp.y}px`,
                 cursor: onNodeClick ? 'pointer' : 'default',
+                filter: isFocused
+                  ? 'drop-shadow(0 0 8px color-mix(in_srgb,var(--a-sky)_40%,transparent))'
+                  : undefined,
               }}
               role="button"
               aria-label={`Note: ${label}, similarity ${Math.round(ln.note.score * 100)}%`}
@@ -379,20 +385,26 @@ export function NoteGraphDendrogram({
                 )
               }
               onMouseLeave={hideTooltip}
-              onClick={() => onNodeClick?.(ln.note.path)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ')
-                  onNodeClick?.(ln.note.path);
+              onFocus={() => setFocusedPath(ln.note.path)}
+              onBlur={(e) => {
+                const next = e.relatedTarget;
+                if (!(next instanceof Node) || !e.currentTarget.contains(next)) {
+                  setFocusedPath(null);
+                }
               }}
+              onClick={() => onNodeClick?.(ln.note.path)}
+              onKeyDown={(e) =>
+                activateOnKeyboardEvent(e, () => onNodeClick?.(ln.note.path))
+              }
             >
               <circle
                 cx={lp.x}
                 cy={lp.y}
                 r={r}
                 fill={paletteColor}
-                fillOpacity="0.35"
+                fillOpacity={isFocused ? '0.48' : '0.35'}
                 stroke={paletteColor}
-                strokeWidth="1.5"
+                strokeWidth={isFocused ? '2.2' : '1.5'}
                 strokeOpacity="0.7"
               />
               <circle
@@ -400,7 +412,7 @@ export function NoteGraphDendrogram({
                 cy={lp.y}
                 r={r - 3}
                 fill={paletteColor}
-                fillOpacity="0.15"
+                fillOpacity={isFocused ? '0.24' : '0.15'}
               />
             </g>
           );

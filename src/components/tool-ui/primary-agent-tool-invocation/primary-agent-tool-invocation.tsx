@@ -88,7 +88,7 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
       }
     >
       {/* ---- Trigger ---- */}
-      <CollapsibleTrigger className="group/trigger flex w-full items-center gap-3 px-4 text-sm transition-colors">
+      <CollapsibleTrigger className="group/trigger flex w-full items-center gap-3 px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent">
         <Icon
           className={cn(
             'size-4 shrink-0 rounded-full bg-[var(--surf-base)] p-0.5',
@@ -136,7 +136,7 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
       {/* ---- Collapsible content ---- */}
       <CollapsibleContent
         className={cn(
-          'relative overflow-hidden text-sm outline-none',
+          'relative overflow-hidden text-sm',
           'ease-out',
           'data-[state=closed]:animate-collapsible-up',
           'data-[state=open]:animate-collapsible-down',

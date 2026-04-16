@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import SkeletonCard from './SkeletonCard';
 
 const meta = {
-  title: 'UI / SkeletonCard',
+  title: 'UI / Organisms / SkeletonCard',
   component: SkeletonCard,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof SkeletonCard>;

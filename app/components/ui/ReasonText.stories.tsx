@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ReasonText } from './Labels';
 
 const meta = {
-  title: 'UI / Labels / ReasonText',
+  title: 'UI / Atoms / ReasonText',
   component: ReasonText,
   parameters: { layout: 'padded' },
   args: {

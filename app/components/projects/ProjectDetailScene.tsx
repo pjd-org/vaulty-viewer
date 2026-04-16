@@ -22,6 +22,15 @@ import {
 import type { ProjectSummaryDisplay } from '../../types/display';
 import { useLoginRedirectOnUnauthenticated } from '../../hooks/use-login-redirect';
 
+const detailCardClass =
+  'rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4';
+const detailCardTitleClass = 'text-sm font-semibold text-[var(--text-primary)]';
+const detailCardRowClass = 'flex items-start justify-between gap-3';
+const detailCardBodyClass = 'mt-1 text-sm text-[var(--text-secondary)]';
+const detailCardFootClass = 'mt-3 text-xs text-[var(--text-tertiary)]';
+const detailGridClass =
+  'grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]';
+
 const EMPTY_EXECUTION_SNAPSHOT: ProjectSurfacePayload['executionSnapshot'] = {
   activeTasks: [],
   activePipelines: [],
@@ -151,7 +160,7 @@ export function ProjectDetailScene({
 
   if (anyLoading && !project && !displaySurface) {
     return (
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
+      <div className={detailGridClass}>
         <div className="space-y-6">
           <SkeletonCard />
           <SkeletonCard />
@@ -171,7 +180,7 @@ export function ProjectDetailScene({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
+    <div className={detailGridClass}>
       <div className="space-y-6">
         {projectHeader ? (
           <ProjectDetailHeader
@@ -204,26 +213,17 @@ export function ProjectDetailScene({
           {pressureSignals.length ? (
             <div className="space-y-3">
               {pressureSignals.slice(0, 3).map((signal) => (
-                <div
-                  key={signal.id}
-                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <div key={signal.id} className={detailCardClass}>
+                  <div className={detailCardRowClass}>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {signal.title}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                        {signal.summary}
-                      </p>
+                      <p className={detailCardTitleClass}>{signal.title}</p>
+                      <p className={detailCardBodyClass}>{signal.summary}</p>
                     </div>
                     <span className={severityBadge(signal.severity)}>
                       {signal.severity}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
-                    {signal.whySurfaced}
-                  </p>
+                  <p className={detailCardFootClass}>{signal.whySurfaced}</p>
                 </div>
               ))}
             </div>
@@ -242,18 +242,11 @@ export function ProjectDetailScene({
           {decisionQueue.length ? (
             <div className="space-y-3">
               {decisionQueue.slice(0, 3).map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <div key={item.id} className={detailCardClass}>
+                  <div className={detailCardRowClass}>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                        {item.whyNow}
-                      </p>
+                      <p className={detailCardTitleClass}>{item.title}</p>
+                      <p className={detailCardBodyClass}>{item.whyNow}</p>
                     </div>
                     <span
                       className="rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-info)]"
@@ -264,9 +257,7 @@ export function ProjectDetailScene({
                       {item.score.toFixed(1)}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
-                    {item.expectedEffect}
-                  </p>
+                  <p className={detailCardFootClass}>{item.expectedEffect}</p>
                 </div>
               ))}
             </div>
@@ -285,18 +276,11 @@ export function ProjectDetailScene({
           {immediateActions.length ? (
             <div className="space-y-3">
               {immediateActions.slice(0, 3).map((item) => (
-                <article
-                  key={item.id}
-                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <article key={item.id} className={detailCardClass}>
+                  <div className={detailCardRowClass}>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                        {item.summary}
-                      </p>
+                      <p className={detailCardTitleClass}>{item.title}</p>
+                      <p className={detailCardBodyClass}>{item.summary}</p>
                     </div>
                     <span
                       className="rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-info)]"
@@ -307,9 +291,7 @@ export function ProjectDetailScene({
                       {item.reversibility}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
-                    {item.whyNow}
-                  </p>
+                  <p className={detailCardFootClass}>{item.whyNow}</p>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <Link
                       to="/actions"
@@ -344,18 +326,11 @@ export function ProjectDetailScene({
           {verificationRail.length ? (
             <div className="space-y-3">
               {verificationRail.slice(0, 3).map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <div key={item.id} className={detailCardClass}>
+                  <div className={detailCardRowClass}>
                     <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {item.summary}
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                        {item.status}
-                      </p>
+                      <p className={detailCardTitleClass}>{item.summary}</p>
+                      <p className={detailCardBodyClass}>{item.status}</p>
                     </div>
                     <span className="rounded-full bg-[color-mix(in_srgb,var(--a-mint)_15%,transparent)] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-success)]">
                       {item.status}
@@ -381,17 +356,15 @@ export function ProjectDetailScene({
               { label: 'Active Tasks', items: executionSnapshot.activeTasks },
               { label: 'Pipelines', items: executionSnapshot.activePipelines },
               { label: 'Runners', items: executionSnapshot.activeRunners },
-              { label: 'Primary Agent Jobs', items: executionSnapshot.primaryAgentJobs },
+              {
+                label: 'Primary Agent Jobs',
+                items: executionSnapshot.primaryAgentJobs,
+              },
               { label: 'Schedules', items: executionSnapshot.scheduleItems },
             ].map((group) => (
-              <div
-                key={group.label}
-                className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">
-                    {group.label}
-                  </p>
+              <div key={group.label} className={detailCardClass}>
+                <div className={detailCardRowClass}>
+                  <p className={detailCardTitleClass}>{group.label}</p>
                   <span className="rounded-full bg-[var(--surf-utility)] px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                     {group.items.length}
                   </span>
@@ -416,19 +389,10 @@ export function ProjectDetailScene({
           {contextPanel.length ? (
             <div className="space-y-3">
               {contextPanel.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4"
-                >
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                    {item.summary}
-                  </p>
-                  <p className="mt-3 text-xs text-[var(--text-tertiary)]">
-                    {item.reasonSelected}
-                  </p>
+                <div key={item.id} className={detailCardClass}>
+                  <p className={detailCardTitleClass}>{item.title}</p>
+                  <p className={detailCardBodyClass}>{item.summary}</p>
+                  <p className={detailCardFootClass}>{item.reasonSelected}</p>
                 </div>
               ))}
             </div>

@@ -37,7 +37,7 @@ export function ChatThreadModal({
         <DialogPrimitive.Content
           aria-label={ariaLabel}
           className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 outline-none',
+            'fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
             dialogClassName
           )}
         >

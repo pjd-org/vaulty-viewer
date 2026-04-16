@@ -17,6 +17,11 @@ import {
 } from '../../../src/lib/routes/v3-routing';
 import { cn } from '../../../src/lib/utils';
 
+const cmdShortLabelClass =
+  'text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] w-5';
+const cmdKbdClass =
+  'rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1 py-0.5';
+
 interface UIState {
   command: {
     paletteOpen: boolean;
@@ -56,7 +61,7 @@ export function CommandHost() {
           aria-label="Command palette"
           className={cn(
             'fixed left-1/2 top-[20%] z-50 w-full max-w-lg -translate-x-1/2',
-            'rounded-[20px] border border-[var(--border-glass)] bg-[var(--surf-overlay)] shadow-2xl backdrop-blur-xl',
+            'rounded-[20px] border border-[var(--border-glass)] bg-[var(--surf-overlay)] shadow-2xl backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -73,7 +78,8 @@ export function CommandHost() {
               </span>
               <CommandInput
                 placeholder="Go to a route, run a command…"
-                className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none"
+                aria-label="Command input"
+                className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                 autoFocus
               />
               <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)]">
@@ -94,7 +100,7 @@ export function CommandHost() {
                       value={`${item.label} ${item.to}`}
                       onSelect={() => navigate(item.to)}
                     >
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] w-5">
+                      <span className={cmdShortLabelClass}>
                         {item.shortLabel}
                       </span>
                       <span>{item.label}</span>
@@ -113,7 +119,7 @@ export function CommandHost() {
                       value={`${item.label} ${item.to}`}
                       onSelect={() => navigate(item.to)}
                     >
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] w-5">
+                      <span className={cmdShortLabelClass}>
                         {item.shortLabel}
                       </span>
                       <span>{item.label}</span>
@@ -128,13 +134,9 @@ export function CommandHost() {
                 Viewer V3
               </span>
               <div className="flex items-center gap-2 text-[10px] text-[var(--text-tertiary)]">
-                <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1 py-0.5">
-                  ↑↓
-                </kbd>
+                <kbd className={cmdKbdClass}>↑↓</kbd>
                 <span>navigate</span>
-                <kbd className="rounded border border-[var(--border-glass)] bg-[var(--surf-utility)] px-1 py-0.5">
-                  ↵
-                </kbd>
+                <kbd className={cmdKbdClass}>↵</kbd>
                 <span>open</span>
               </div>
             </div>

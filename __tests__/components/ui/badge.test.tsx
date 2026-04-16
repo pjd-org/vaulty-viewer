@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Badge } from '../../../app/components/ui/badge';
+import { Badge } from '@vault/ui';
 
 describe('Badge smoke tests', () => {
   afterEach(() => {
@@ -34,13 +34,13 @@ describe('Badge smoke tests', () => {
     const { container } = render(<Badge>Default</Badge>);
     const badge = container.firstElementChild;
     expect(badge).toBeTruthy();
-    expect(badge!.className).toContain('bg-primary');
+    expect(badge!.className).toContain('bg-surface-2');
   });
 
   it('secondary variant applies bg-secondary class', () => {
     const { container } = render(<Badge variant="secondary">Sec</Badge>);
     const badge = container.firstElementChild;
     expect(badge).toBeTruthy();
-    expect(badge!.className).toContain('bg-secondary');
+    expect(badge!.className).toContain('bg-surface-2');
   });
 });

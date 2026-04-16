@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { STATUS_COLUMNS, type KanbanTask } from '../../../src/lib/kanban-logic';
 
+const kanbanChipClass =
+  'rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500';
+const kanbanChipRowClass = 'flex flex-wrap gap-1 mb-2';
+
 export interface KanbanCardProps {
   task: KanbanTask;
   isDragging: boolean;
@@ -24,15 +28,12 @@ export function KanbanCard({
   return (
     <article
       aria-label={task.title}
-      tabIndex={0}
       draggable={!isReadOnly}
       onDragStart={() => onDragStart(task)}
       onDragEnd={onDragEnd}
       className={[
-        'rounded-[14px] border p-3 transition select-none',
-        isDragging
-          ? 'border-sky-400/40 bg-sky-50 opacity-60'
-          : 'border-slate-200 bg-black/3 hover:bg-black/5',
+        'genie-card !rounded-[14px] !p-3 transition select-none',
+        isDragging ? 'genie-card--sky opacity-60' : '',
         !isReadOnly ? 'cursor-grab active:cursor-grabbing' : '',
       ].join(' ')}
     >
@@ -44,12 +45,12 @@ export function KanbanCard({
         {task.priority > 0 && (
           <span
             className={[
-              'shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
+              'shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold',
               task.priority >= 8
-                ? 'bg-red-100 text-red-700'
+                ? '[background:color-mix(in_srgb,var(--a-rose)_18%,white)] [color:color-mix(in_srgb,var(--a-rose)_70%,#1c2230)] [border-color:color-mix(in_srgb,var(--a-rose)_30%,transparent)]'
                 : task.priority >= 5
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-black/5 text-slate-500',
+                  ? '[background:color-mix(in_srgb,var(--a-sun)_18%,white)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] [border-color:color-mix(in_srgb,var(--a-sun)_30%,transparent)]'
+                  : 'bg-black/5 text-slate-500 border-transparent',
             ].join(' ')}
             title={`Priority ${task.priority}`}
           >
@@ -59,9 +60,9 @@ export function KanbanCard({
       </div>
 
       {/* Meta chips */}
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className={kanbanChipRowClass}>
         {task.estimatedTimeMin ? (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
+          <span className={kanbanChipClass}>
             ⏱{' '}
             {task.estimatedTimeMin >= 60
               ? `${Math.round(task.estimatedTimeMin / 60)}h`
@@ -69,27 +70,25 @@ export function KanbanCard({
           </span>
         ) : null}
         {task.goalId && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
+          <span className={kanbanChipClass}>
             🎯 {task.goalId.replace(/-/g, ' ')}
           </span>
         )}
         {task.projectId && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-slate-500">
-            🚀 {task.projectId}
-          </span>
+          <span className={kanbanChipClass}>🚀 {task.projectId}</span>
         )}
       </div>
 
       {/* Tags */}
       {task.tags?.length ? (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className={kanbanChipRowClass}>
           {task.tags
             .filter((tag) => !tag.startsWith('goal:') && tag !== 'task')
             .slice(0, 3)
             .map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-700"
+                className="rounded-full border [background:color-mix(in_srgb,var(--a-sky)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sky)_28%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_65%,#1c2230)] px-2 py-0.5 text-[10px]"
               >
                 #{tag}
               </span>
@@ -99,7 +98,7 @@ export function KanbanCard({
 
       {/* Blocked badge */}
       {task.status === 'blocked' && (
-        <div className="mb-2 rounded-[8px] bg-red-100 px-2 py-1 text-[11px] text-red-700">
+        <div className="mb-2 rounded-[8px] border [background:color-mix(in_srgb,var(--a-rose)_14%,white)] [border-color:color-mix(in_srgb,var(--a-rose)_28%,transparent)] [color:color-mix(in_srgb,var(--a-rose)_70%,#1c2230)] px-2 py-1 text-[11px]">
           🚫 Blocked
         </div>
       )}
@@ -120,7 +119,7 @@ export function KanbanCard({
                 onClick={() => onStatusChange(task, 'completed')}
                 disabled={mutatingTaskId === task.id}
                 title="Mark completed"
-                className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700 transition hover:bg-emerald-200 disabled:opacity-40"
+                className="rounded-full border [background:color-mix(in_srgb,var(--a-mint)_14%,white)] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,#1c2230)] px-2 py-1 text-[11px] transition hover:[background:color-mix(in_srgb,var(--a-mint)_24%,white)] disabled:opacity-40"
               >
                 ✓
               </button>
@@ -140,7 +139,7 @@ export function KanbanCard({
               value={task.status}
               onChange={(e) => onStatusChange(task, e.target.value)}
               disabled={mutatingTaskId === task.id}
-              className="rounded-full border border-slate-200 bg-black/3 px-2 py-0.5 text-[10px] text-slate-600 focus-visible:outline-none disabled:opacity-40"
+              className="rounded-full border border-slate-200 bg-black/3 px-2 py-0.5 text-[10px] text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:opacity-40"
             >
               {STATUS_COLUMNS.map((col) => (
                 <option key={col.key} value={col.key}>

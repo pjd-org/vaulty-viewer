@@ -7,6 +7,7 @@ import {
   EmptyState,
   PrimaryButton,
   SecondaryButton,
+  SurfaceSectionCard,
 } from '../components/ui';
 import {
   getActionsSurfaceQueryOptions,
@@ -157,7 +158,12 @@ function ActionsRoute() {
   const toolbar = (
     <div className="flex flex-wrap items-end gap-4">
       <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-        <label htmlFor="actions-sort">Sort mode</label>
+        <Badge
+          variant="secondary"
+          className="w-fit px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
+        >
+          Sort mode
+        </Badge>
         <select
           id="actions-sort"
           value={currentSort}
@@ -194,14 +200,18 @@ function ActionsRoute() {
           }
           className="h-4 w-4 rounded border-slate-300 bg-transparent text-sky-600"
         />
-        <span>Simulatable only</span>
+        <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-slate-600">
+          Simulatable only
+        </span>
       </label>
       <div className="rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-right text-xs text-slate-600">
-        <p>
-          Showing {recommendations.length} of {allRecommendations.length}{' '}
-          recommendations
-        </p>
-        <p className="mt-1 font-medium text-slate-800">
+        <Badge
+          variant="secondary"
+          className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
+        >
+          Showing {recommendations.length} of {allRecommendations.length}
+        </Badge>
+        <p className="font-medium text-slate-800">
           Selected: {selected?.title ?? 'None'}
         </p>
       </div>
@@ -342,11 +352,8 @@ function ActionsRoute() {
                   {isExpanded && (
                     <div className="border-t border-sky-200 px-4 pb-4 pt-3 space-y-4 text-sm text-slate-600">
                       {/* Score breakdown */}
-                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          Score breakdown
-                        </p>
-                        <div className="mt-3 space-y-2">
+                      <SurfaceSectionCard title="Score breakdown">
+                        <div className="space-y-2">
                           {Object.entries(item.scoreBreakdown).map(
                             ([key, value]) => (
                               <div
@@ -361,14 +368,11 @@ function ActionsRoute() {
                             )
                           )}
                         </div>
-                      </div>
+                      </SurfaceSectionCard>
 
                       {/* Mutation path */}
-                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          Mutation path
-                        </p>
-                        <p className="mt-3 text-slate-800">
+                      <SurfaceSectionCard title="Mutation path">
+                        <p className="text-slate-800">
                           {item.mutationRef
                             ? `${item.mutationRef.domain} / ${item.mutationRef.operation}`
                             : 'Simulation only'}
@@ -376,15 +380,12 @@ function ActionsRoute() {
                         <p className="mt-1 text-xs text-slate-500">
                           Source entities: {item.sourceEntities.length}
                         </p>
-                      </div>
+                      </SurfaceSectionCard>
 
                       {/* Source signals */}
-                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          Source signals
-                        </p>
+                      <SurfaceSectionCard title="Source signals">
                         {item.sourceSignalIds.length > 0 ? (
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2">
                             {item.sourceSignalIds.map((signalId) => (
                               <span
                                 key={signalId}
@@ -395,29 +396,24 @@ function ActionsRoute() {
                             ))}
                           </div>
                         ) : (
-                          <p className="mt-3 text-sm text-slate-500">
+                          <p className="text-sm text-slate-500">
                             No source signals surfaced.
                           </p>
                         )}
-                      </div>
+                      </SurfaceSectionCard>
 
                       {/* Verification preview */}
-                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          Verification preview
-                        </p>
+                      <SurfaceSectionCard title="Verification preview">
                         {verificationPhase === 'pending' && (
-                          <p className="mt-3 text-sm text-sky-700">
-                            Verifying…
-                          </p>
+                          <p className="text-sm text-sky-700">Verifying…</p>
                         )}
                         {verificationPhase === 'failed' && (
-                          <p className="mt-3 text-sm text-red-700">
+                          <p className="text-sm text-red-700">
                             Verification failed.
                           </p>
                         )}
                         {verificationCount > 0 ? (
-                          <div className="mt-3 space-y-2">
+                          <div className="space-y-2">
                             {surface?.verificationRail.map((vItem) => (
                               <article
                                 key={vItem.id}
@@ -443,18 +439,15 @@ function ActionsRoute() {
                             ))}
                           </div>
                         ) : (
-                          <p className="mt-3 text-sm text-slate-500">
+                          <p className="text-sm text-slate-500">
                             Ready for post-action verification.
                           </p>
                         )}
-                      </div>
+                      </SurfaceSectionCard>
 
                       {/* Action controls */}
-                      <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                          Action controls
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
+                      <SurfaceSectionCard title="Action controls">
+                        <div className="flex flex-wrap gap-2">
                           <PrimaryButton
                             type="button"
                             disabled={
@@ -488,7 +481,7 @@ function ActionsRoute() {
                             {deferMutation.isPending ? 'Deferring…' : 'Defer'}
                           </SecondaryButton>
                         </div>
-                      </div>
+                      </SurfaceSectionCard>
 
                       {/* Simulation preview (item-scoped) */}
                       {simulationData && (

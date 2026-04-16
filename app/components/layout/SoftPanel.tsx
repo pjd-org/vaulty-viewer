@@ -6,6 +6,7 @@ interface SoftPanelProps {
   subtitle?: string;
   actions?: React.ReactNode;
   variant?: 'base' | 'elevated' | 'hero' | 'utility' | 'overlay';
+  tone?: 'default' | 'muted' | 'accent';
   className?: string;
   /** When true, removes the default p-6 padding from the content wrapper. */
   noPadding?: boolean;
@@ -28,17 +29,25 @@ export function SoftPanel({
   subtitle,
   actions,
   variant = 'base',
+  tone = 'default',
   className,
   noPadding = false,
   children,
 }: SoftPanelProps) {
   const hasHeader = title || subtitle || actions;
+  const toneClass =
+    tone === 'accent'
+      ? 'border-[color-mix(in_srgb,var(--a-sky)_26%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_8%,transparent)]'
+      : tone === 'muted'
+        ? 'border-slate-200 bg-black/3'
+        : '';
 
   return (
     <section
       className={cn(
-        'rounded-[22px] border border-[var(--border-glass)] text-[var(--text-primary)] shadow-sm',
+        'rounded-[22px] border text-[var(--text-primary)] shadow-sm',
         VARIANT_CLASSES[variant],
+        toneClass,
         className
       )}
     >

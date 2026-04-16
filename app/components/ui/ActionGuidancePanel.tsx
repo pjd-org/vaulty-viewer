@@ -5,6 +5,8 @@ import {
   type ReadinessState,
   type CapacityInput,
 } from '../../../src/lib/readiness-logic';
+import { SectionLabel } from './AvatarPrimitives';
+import { linkButtonClass } from './LinkButton';
 
 export interface ActionGuidancePanelProps {
   readiness: ReadinessState;
@@ -26,23 +28,18 @@ export function ActionGuidancePanel({
 
   return (
     <section className="mb-5 space-y-3">
-      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-        What to do now
-      </p>
+      <SectionLabel>What to do now</SectionLabel>
       <p className="text-sm text-slate-600">{readiness.description}</p>
       <div className="flex flex-wrap gap-2">
         <Link
           to="/"
           search={{ session: '1' }}
-          className="rounded-lg bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-200"
+          className={linkButtonClass.primary}
         >
           Start {readiness.sessionType} session
           {budget > 0 && ` (${formatTimeBudget(Math.min(budget, 90))})`}
         </Link>
-        <Link
-          to={tasksHref}
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:bg-black/5"
-        >
+        <Link to={tasksHref} className={linkButtonClass.secondary}>
           See matched tasks
         </Link>
       </div>

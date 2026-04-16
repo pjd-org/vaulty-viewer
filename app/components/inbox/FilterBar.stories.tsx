@@ -36,6 +36,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    sort: 'newest',
+    onSort: () => {},
+    runType: '',
+    onRunType: () => {},
+    reversibility: '',
+    onReversibility: () => {},
+    severity: '',
+    onSeverity: () => {},
+    loading: false,
+    anyInFlight: false,
+    onRefresh: () => {},
+  },
   render: () => <StatefulFilterBar />,
 };
 

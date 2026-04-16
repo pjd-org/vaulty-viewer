@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ExecutionStats } from './ExecutionStats';
+import { makeLiveEditStory } from 'storybook-addon-code-editor';
+import { ExecutionStats } from '../ui/ExecutionStats';
 
 const meta = {
   title: 'Avatar / ExecutionStats',
@@ -61,3 +62,18 @@ export const HighVolume: Story = {
     },
   },
 };
+
+export const WithCodeEditor: Story = { ...ActiveDay };
+
+makeLiveEditStory(WithCodeEditor, {
+  availableImports: {
+    './ExecutionStats': { ExecutionStats },
+  },
+  code: `import { ExecutionStats } from '../ui/ExecutionStats';
+
+export default () => (
+  <ExecutionStats
+    vitals={{ tasksCompletedToday: 5, sessionsCompletedThisWeek: 8 }}
+  />
+);`,
+});
