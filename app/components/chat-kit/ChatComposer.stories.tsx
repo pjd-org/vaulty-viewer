@@ -29,6 +29,20 @@ export const Idle: Story = {
   },
 };
 
+export const RunningAccent: Story = {
+  args: {
+    value: 'Run the plan',
+    isRunning: true,
+    runtimeState: 'running',
+    runtimeDetail: 'Generating response',
+    accentColor: 'var(--a-sky)',
+    onChange: () => undefined,
+    onAttach: () => undefined,
+    onToolSelect: () => undefined,
+    onCancel: () => undefined,
+  },
+};
+
 export const Running: Story = {
   args: {
     value: 'Run the plan',
