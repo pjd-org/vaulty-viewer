@@ -2,118 +2,16 @@ import { useEffect } from 'react';
 
 /* ─────────────────────────────────────────────
    Shared CSS for all Genie Design System stories.
-   Exact copy of the CSS block from GenieDesignSystem.stories.tsx.
+
+   Token primitives (--n-*, --a-*, --surf-*, --text-*, --grad-*, etc.) are
+   declared in @vault/ui/src/tokens.css and loaded globally via
+   .storybook/preview.ts → src/styles.css.
+
+   This file contains ONLY story layout and component demo classes.
    Import GENIE_CSS and inject via:
      <style dangerouslySetInnerHTML={{ __html: GENIE_CSS }} />
 ───────────────────────────────────────────── */
 export const GENIE_CSS = `
-:root {
-  --n-0:   #FFFFFF;
-  --n-25:  #FCFCFD;
-  --n-50:  #F8F8FA;
-  --n-100: #F1F2F5;
-  --n-150: #E9EBF0;
-  --n-200: #DFE3EA;
-  --n-300: #C8CFDA;
-  --n-400: #AAB4C3;
-  --n-500: #8793A6;
-  --n-600: #667085;
-  --n-700: #4B5565;
-  --n-800: #313846;
-  --n-900: #1C2230;
-  --n-950: #11151D;
-  --a-mint:  #B8FFD8;
-  --a-lime:  #D9FF8C;
-  --a-aqua:  #97F0FF;
-  --a-sky:   #A9D7FF;
-  --a-lilac: #D8C7FF;
-  --a-peach: #FFD2B8;
-  --a-rose:  #FFC7DE;
-  --a-sun:   #FFF0A6;
-  --s-info:    #7CCBFF;
-  --s-success: #8EE7A0;
-  --s-warning: #FFD66B;
-  --s-danger:  #FF8F8F;
-  --surf-canvas:   rgba(250,250,252,0.92);
-  --surf-base:     rgba(255,255,255,0.72);
-  --surf-elevated: rgba(255,255,255,0.82);
-  --surf-overlay:  rgba(255,255,255,0.58);
-  --border-subtle:  rgba(255,255,255,0.36);
-  --border-default: rgba(255,255,255,0.52);
-  --border-strong:  rgba(198,205,216,0.7);
-  --text-primary:   #1C2230;
-  --text-secondary: #4B5565;
-  --text-tertiary:  #667085;
-  --shadow-xs:   0 2px 8px rgba(17,21,29,0.04);
-  --shadow-sm:   0 8px 20px rgba(17,21,29,0.06);
-  --shadow-md:   0 16px 40px rgba(17,21,29,0.08);
-  --shadow-lg:   0 24px 60px rgba(17,21,29,0.10);
-  --shadow-glow: 0 0 0 1px rgba(184,255,216,0.24), 0 12px 40px rgba(184,255,216,0.18);
-  --blur-sm: 8px;
-  --blur-md: 16px;
-  --blur-lg: 24px;
-  --blur-xl: 32px;
-  --grad-hero:      linear-gradient(135deg, rgba(217,255,140,0.32) 0%, rgba(151,240,255,0.24) 45%, rgba(255,199,222,0.28) 100%);
-  --grad-card-glow: radial-gradient(circle at 20% 20%, rgba(184,255,216,0.35), transparent 42%), radial-gradient(circle at 80% 30%, rgba(216,199,255,0.22), transparent 36%), radial-gradient(circle at 60% 80%, rgba(255,210,184,0.18), transparent 32%);
-  --grad-mint-sky:  linear-gradient(135deg, #B8FFD8 0%, #A9D7FF 100%);
-  --grad-rose-peach:linear-gradient(135deg, #FFC7DE 0%, #FFD2B8 100%);
-  --grad-lime-mint: linear-gradient(135deg, #D9FF8C 0%, #B8FFD8 100%);
-  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-enter:    cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-exit:     cubic-bezier(0.7, 0, 0.84, 0);
-
-  /* @vault/ui token aliases */
-  --surface-canvas:   var(--surf-canvas);
-  --surface-base:     var(--surf-base);
-  --surface-elevated: var(--surf-elevated);
-  --surface-overlay:  var(--surf-overlay);
-  --surface-inverted: rgba(28,34,48,0.92);
-  --border-glass-subtle:  var(--border-subtle);
-  --border-glass-default: var(--border-default);
-  --accent-mint:  var(--a-mint);
-  --accent-lime:  var(--a-lime);
-  --accent-aqua:  var(--a-aqua);
-  --accent-sky:   var(--a-sky);
-  --accent-lilac: var(--a-lilac);
-  --accent-peach: var(--a-peach);
-  --accent-rose:  var(--a-rose);
-  --accent-sun:   var(--a-sun);
-  --neutral-0:   var(--n-0);
-  --neutral-25:  var(--n-25);
-  --neutral-50:  var(--n-50);
-  --neutral-100: var(--n-100);
-  --neutral-150: var(--n-150);
-  --neutral-200: var(--n-200);
-  --neutral-300: var(--n-300);
-  --neutral-400: var(--n-400);
-  --neutral-500: var(--n-500);
-  --neutral-600: var(--n-600);
-  --neutral-700: var(--n-700);
-  --neutral-800: var(--n-800);
-  --neutral-900: var(--n-900);
-  --neutral-950: var(--n-950);
-  --color-success: var(--s-success);
-  --color-danger:  var(--s-danger);
-  --color-warning: var(--s-warning);
-  --color-info:    var(--s-info);
-  --radius-xs:   10px;
-  --radius-sm:   14px;
-  --radius-md:   18px;
-  --radius-lg:   24px;
-  --radius-xl:   28px;
-  --radius-2xl:  32px;
-  --radius-3xl:  40px;
-  --radius-pill: 999px;
-  --shadow-glow-mint: var(--shadow-glow);
-  --vault-accent: var(--n-900);
-  --vault-ink:    var(--text-primary);
-  --vault-muted:  var(--text-tertiary);
-  --color-text:         var(--text-primary);
-  --color-text-2:       var(--text-secondary);
-  --color-text-3:       var(--text-tertiary);
-  --color-text-inverse: var(--n-0);
-}
-
 .text-text   { color: var(--color-text,   var(--text-primary))   !important; }
 .text-text-2 { color: var(--color-text-2, var(--text-secondary)) !important; }
 .text-text-3 { color: var(--color-text-3, var(--text-tertiary))  !important; }
