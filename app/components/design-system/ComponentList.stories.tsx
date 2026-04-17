@@ -18,31 +18,69 @@ function ComponentListSection() {
             motion.
           </p>
         </div>
-        <div className="inventory-grid">
+        {/* Atoms */}
+        <div className="label" style={{ marginBottom: 8 }}>
+          Atoms — Layer 3 · indivisible
+        </div>
+        <div className="inventory-grid" style={{ marginBottom: 20 }}>
+          {['Button', 'Badge', 'Input', 'Avatar', 'Icon', 'Chip'].map(
+            (item, i) => (
+              <div key={item} className="inventory-item">
+                <span
+                  className="inventory-num"
+                  style={{ color: 'var(--color-primary)' }}
+                >
+                  A{String(i + 1).padStart(2, '0')}
+                </span>
+                {item}
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Molecules */}
+        <div className="label" style={{ marginBottom: 8 }}>
+          Molecules — composed atoms
+        </div>
+        <div className="inventory-grid" style={{ marginBottom: 20 }}>
           {[
-            'AppShell',
-            'GlassCard',
-            'Button',
-            'IconButton',
-            'Chip',
-            'Composer',
-            'AssistantCard',
-            'MediaPreviewCard',
-            'FileCard',
-            'SidebarRail',
-            'ProfileBubble',
-            'FloatingDock',
-            'SectionHeader',
-            'LoadingCard',
-            'ToastSoft',
+            'FormField',
+            'SearchBar',
+            'Card',
+            'Tooltip',
+            'Toast',
+            'Dropdown',
           ].map((item, i) => (
             <div key={item} className="inventory-item">
-              <span className="inventory-num">
-                {String(i + 1).padStart(2, '0')}
+              <span
+                className="inventory-num"
+                style={{ color: 'var(--color-primary-2)' }}
+              >
+                M{String(i + 1).padStart(2, '0')}
               </span>
               {item}
             </div>
           ))}
+        </div>
+
+        {/* Organisms */}
+        <div className="label" style={{ marginBottom: 8 }}>
+          Organisms — complex sections
+        </div>
+        <div className="inventory-grid" style={{ marginBottom: 20 }}>
+          {['Navbar', 'Sidebar', 'Modal', 'Table', 'Form', 'AppShell'].map(
+            (item, i) => (
+              <div key={item} className="inventory-item">
+                <span
+                  className="inventory-num"
+                  style={{ color: 'var(--color-success)' }}
+                >
+                  O{String(i + 1).padStart(2, '0')}
+                </span>
+                {item}
+              </div>
+            )
+          )}
         </div>
 
         <div

@@ -22,7 +22,7 @@ export function ThemeSelector() {
           key={value}
           role="radio"
           aria-checked={theme === value}
-          variant={theme === value ? 'default' : 'outline'}
+          variant={theme === value ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => setTheme(value)}
         >

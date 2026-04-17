@@ -183,10 +183,10 @@ function TaskSeverityBadge({
   const severity = taskSeverityFromPriority(priority);
   const variant =
     severity === 'critical'
-      ? 'destructive'
+      ? 'danger'
       : severity === 'high'
-        ? 'secondary'
-        : 'outline';
+        ? 'warning'
+        : 'muted';
   return (
     <Badge
       variant={variant}

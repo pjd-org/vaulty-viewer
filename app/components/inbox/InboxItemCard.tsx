@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from '../ui/dialog';
+} from '@vault/ui';
 
 interface InboxItemDetail {
   summary?: string;

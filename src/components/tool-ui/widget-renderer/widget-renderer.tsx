@@ -8,8 +8,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/app/components/ui/select';
-import { Checkbox } from '@/app/components/ui/checkbox';
+} from '@vault/ui';
+import { Checkbox } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import React, { createContext, useContext, useState } from 'react';
 import type {
@@ -22,39 +22,50 @@ import type {
 // Use the shared form data type
 type FormData = WidgetFormData;
 
-// Local variant types (shadcn doesn't export the Props types)
-type ButtonVariant =
+// Local variant types (vault variants)
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type BadgeVariant =
   | 'default'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'destructive'
-  | 'link';
-type BadgeVariant = 'default' | 'secondary' | 'outline' | 'destructive';
+  | 'accent'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'muted'
+  | 'online'
+  | 'offline'
+  | 'loading'
+  | 'unknown';
 
 const toButtonVariant = (v?: string): ButtonVariant => {
-  if (
-    v === 'default' ||
-    v === 'secondary' ||
-    v === 'outline' ||
-    v === 'ghost' ||
-    v === 'destructive' ||
-    v === 'link'
-  ) {
+  if (v === 'primary' || v === 'secondary' || v === 'ghost' || v === 'danger') {
     return v;
   }
-  return 'default';
+  // shadcn compat mapping
+  if (v === 'default') return 'primary';
+  if (v === 'outline') return 'ghost';
+  if (v === 'destructive') return 'danger';
+  return 'primary';
 };
 
 const toBadgeVariant = (v?: string): BadgeVariant => {
   if (
     v === 'default' ||
-    v === 'secondary' ||
-    v === 'outline' ||
-    v === 'destructive'
+    v === 'accent' ||
+    v === 'success' ||
+    v === 'warning' ||
+    v === 'danger' ||
+    v === 'muted' ||
+    v === 'online' ||
+    v === 'offline' ||
+    v === 'loading' ||
+    v === 'unknown'
   ) {
     return v;
   }
+  // shadcn compat mapping
+  if (v === 'secondary') return 'muted';
+  if (v === 'destructive') return 'danger';
+  if (v === 'outline') return 'muted';
   return 'default';
 };
 
@@ -768,10 +779,7 @@ export const WidgetRenderer = React.memo(
         >
           <Card className={cn('w-full', className)}>
             {widget.title && (
-              <CardHeader
-                label={widget.title}
-                className="pb-2"
-              />
+              <CardHeader label={widget.title} className="pb-2" />
             )}
             <CardBody className="pt-0">{content}</CardBody>
           </Card>

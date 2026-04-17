@@ -1,25 +1,20 @@
-"use client";
+'use client';
 
-import { PropsWithChildren, useEffect, useState, type FC } from "react";
-import { XIcon, PlusIcon, FileText } from "lucide-react";
+import { PropsWithChildren, useEffect, useState, type FC } from 'react';
+import { XIcon, PlusIcon, FileText } from 'lucide-react';
 import {
   AttachmentPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
   useAuiState,
   useAui,
-} from "@assistant-ui/react";
-import { useShallow } from "zustand/shallow";
+} from '@assistant-ui/react';
+import { useShallow } from 'zustand/shallow';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vault/ui';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogTrigger,
-} from '@/app/components/ui/dialog';
-import { Avatar, AvatarImage, AvatarFallback } from '@/app/components/ui/avatar';
-import { TooltipIconButton } from "@/app/components/assistant-ui/tooltip-icon-button";
-import { cn } from "@/src/lib/utils";
+import { Dialog, DialogTitle, DialogContent, DialogTrigger } from '@vault/ui';
+import { Avatar, AvatarImage, AvatarFallback } from '@vault/ui';
+import { TooltipIconButton } from '@/app/components/assistant-ui/tooltip-icon-button';
+import { cn } from '@/src/lib/utils';
 
 const useFileSrc = (file: File | undefined) => {
   const [src, setSrc] = useState<string | undefined>(undefined);
@@ -44,13 +39,13 @@ const useFileSrc = (file: File | undefined) => {
 const useAttachmentSrc = () => {
   const { file, src } = useAuiState(
     useShallow((s): { file?: File; src?: string } => {
-      if (s.attachment.type !== "image") return {};
+      if (s.attachment.type !== 'image') return {};
       if (s.attachment.file) return { file: s.attachment.file };
-      const src = s.attachment.content?.filter((c) => c.type === "image")[0]
+      const src = s.attachment.content?.filter((c) => c.type === 'image')[0]
         ?.image;
       if (!src) return {};
       return { src };
-    }),
+    })
   );
 
   return useFileSrc(file) ?? src;
@@ -67,10 +62,10 @@ const AttachmentPreview: FC<AttachmentPreviewProps> = ({ src }) => {
       src={src}
       alt="Image Preview"
       className={cn(
-        "block h-auto max-h-[80vh] w-auto max-w-full object-contain",
+        'block h-auto max-h-[80vh] w-auto max-w-full object-contain',
         isLoaded
-          ? "aui-attachment-preview-image-loaded"
-          : "aui-attachment-preview-image-loading invisible",
+          ? 'aui-attachment-preview-image-loaded'
+          : 'aui-attachment-preview-image-loading invisible'
       )}
       onLoad={() => setIsLoaded(true)}
     />
@@ -121,18 +116,18 @@ const AttachmentThumb: FC = () => {
 
 const AttachmentUI: FC = () => {
   const aui = useAui();
-  const isComposer = aui.attachment.source !== "message";
+  const isComposer = aui.attachment.source !== 'message';
 
-  const isImage = useAuiState((s) => s.attachment.type === "image");
+  const isImage = useAuiState((s) => s.attachment.type === 'image');
   const typeLabel = useAuiState((s) => {
     const type = s.attachment.type;
     switch (type) {
-      case "image":
-        return "Image";
-      case "document":
-        return "Document";
-      case "file":
-        return "File";
+      case 'image':
+        return 'Image';
+      case 'document':
+        return 'Document';
+      case 'file':
+        return 'File';
       default:
         return type;
     }
@@ -142,21 +137,21 @@ const AttachmentUI: FC = () => {
     <Tooltip>
       <AttachmentPrimitive.Root
         className={cn(
-          "aui-attachment-root relative",
-          isImage && "aui-attachment-root-composer only:*:first:size-24",
+          'aui-attachment-root relative',
+          isImage && 'aui-attachment-root-composer only:*:first:size-24'
         )}
       >
-      <AttachmentPreviewDialog>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            aria-label={`${typeLabel} attachment`}
-          >
-            <AttachmentThumb />
-          </button>
-        </TooltipTrigger>
-      </AttachmentPreviewDialog>
+        <AttachmentPreviewDialog>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              aria-label={`${typeLabel} attachment`}
+            >
+              <AttachmentThumb />
+            </button>
+          </TooltipTrigger>
+        </AttachmentPreviewDialog>
         {isComposer && <AttachmentRemove />}
       </AttachmentPrimitive.Root>
       <TooltipContent side="top">

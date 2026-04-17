@@ -35,7 +35,7 @@ export const RunningAccent: Story = {
     isRunning: true,
     runtimeState: 'running',
     runtimeDetail: 'Generating response',
-    accentColor: 'var(--a-sky)',
+    accentColor: 'sky',
     onChange: () => undefined,
     onAttach: () => undefined,
     onToolSelect: () => undefined,

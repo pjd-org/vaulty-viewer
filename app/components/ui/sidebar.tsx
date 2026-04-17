@@ -13,15 +13,15 @@ import { PanelLeftOpenIcon } from '@/app/components/ui/panel-left-open';
 
 import { useIsMobile } from '@/app/hooks/use-mobile';
 import { cn } from '@/src/lib/utils';
-import { Separator } from '@/app/components/ui/separator';
+import { Separator } from '@vault/ui';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/app/components/ui/sheet';
-import { Skeleton } from '@/app/components/ui/skeleton';
+} from '@vault/ui';
+import { Skeleton } from '@vault/ui';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;

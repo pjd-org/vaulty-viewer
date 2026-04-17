@@ -4,6 +4,7 @@ import {
   HTMLAttributes,
   isValidElement,
   type ReactElement,
+  type ReactNode,
   useContext,
 } from 'react';
 import { cn } from '@/src/lib/utils';
@@ -45,9 +46,7 @@ interface PartitionBarProps
   extends
     HTMLAttributes<HTMLUListElement>,
     VariantProps<typeof partitionBarVariants> {
-  children?:
-    | ReactElement<PartitionBarSegmentProps>
-    | ReactElement<PartitionBarSegmentProps>[];
+  children?: ReactNode;
   gap?: number;
 }
 

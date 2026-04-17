@@ -12,7 +12,7 @@ import {
 } from '../../../src/lib/projects-logic';
 import { SoftPanel } from '../layout';
 import { EmptyState } from '../ui';
-import SkeletonCard from '../ui/SkeletonCard';
+import { SkeletonCard } from '../ui';
 import { BlockersRail, ProjectBoardSection, ProjectDetailHeader } from '.';
 import { getProjectQueryOptions } from '../../lib/api/projects';
 import {

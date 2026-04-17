@@ -23,7 +23,7 @@ export function DensitySelector() {
           key={value}
           role="radio"
           aria-checked={density === value}
-          variant={density === value ? 'default' : 'outline'}
+          variant={density === value ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => setDensity(value)}
         >

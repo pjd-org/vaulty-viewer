@@ -67,7 +67,7 @@ function LoginRoute() {
           subtitle="Authenticate to continue into your planning surface, execution loop, and cod-level controls."
           statusLine="Vault Control"
           nextAction="Secure access"
-          actions={<Badge variant="secondary">Audit logged</Badge>}
+          actions={<Badge variant="muted">Audit logged</Badge>}
         >
           <div className="grid w-full gap-6 md:grid-cols-[1.1fr_minmax(320px,430px)]">
             <SoftPanel
@@ -127,7 +127,7 @@ function LoginRoute() {
                       Use your workspace credentials to enter the viewer.
                     </p>
                   </div>
-                  <Badge variant="secondary">Secure</Badge>
+                  <Badge variant="muted">Secure</Badge>
                 </div>
 
                 {search.error ? (

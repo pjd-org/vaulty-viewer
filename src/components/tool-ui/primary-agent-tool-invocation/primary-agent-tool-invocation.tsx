@@ -13,11 +13,7 @@ import {
   type ToolCallMessagePartComponent,
   type ToolCallMessagePartStatus,
 } from '@assistant-ui/react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/app/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import {
   parseWidget,
@@ -183,7 +179,9 @@ const PrimaryAgentToolInvocationImpl: ToolCallMessagePartComponent = ({
                 <WidgetRenderer widget={widget} disabled />
               ) : (
                 <>
-                  <p className="font-semibold text-[var(--text-primary)]">Result:</p>
+                  <p className="font-semibold text-[var(--text-primary)]">
+                    Result:
+                  </p>
                   <pre className="whitespace-pre-wrap text-[var(--text-primary)]">
                     {typeof result === 'string'
                       ? result

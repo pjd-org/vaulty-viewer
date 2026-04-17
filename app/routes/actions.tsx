@@ -159,7 +159,7 @@ function ActionsRoute() {
     <div className="flex flex-wrap items-end gap-4">
       <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
         <Badge
-          variant="secondary"
+          variant="muted"
           className="w-fit px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
         >
           Sort mode
@@ -206,7 +206,7 @@ function ActionsRoute() {
       </label>
       <div className="rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-right text-xs text-slate-600">
         <Badge
-          variant="secondary"
+          variant="muted"
           className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
         >
           Showing {recommendations.length} of {allRecommendations.length}
@@ -310,7 +310,7 @@ function ActionsRoute() {
                         </p>
                       </div>
                       <Badge
-                        variant="secondary"
+                        variant="muted"
                         className="px-3 py-1 text-xs uppercase tracking-[0.2em]"
                       >
                         {item.actionType.replace('_', ' ')}
@@ -429,7 +429,7 @@ function ActionsRoute() {
                                     </p>
                                   </div>
                                   <Badge
-                                    variant="secondary"
+                                    variant="muted"
                                     className="px-2.5 py-1 text-[11px] uppercase tracking-[0.18em]"
                                   >
                                     {vItem.status}

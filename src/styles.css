@@ -4496,7 +4496,7 @@ img {
    Goal Progress Page Styles
    ============================================================================ */
 
-.goals-page {
+:root {
   --goal-bg: #f8f9fa;
   --goal-surface: #ffffff;
   --goal-surface-2: #f1f3f5;
@@ -4513,7 +4513,7 @@ img {
 
 @media (prefers-color-scheme: dark) {
   /* Viewer forces light glass theme — pin goal tokens to light values */
-  .goals-page {
+  :root {
     --goal-bg: transparent;
     --goal-surface: rgba(255, 255, 255, 0.65);
     --goal-surface-2: rgba(255, 255, 255, 0.82);

@@ -48,7 +48,7 @@ function OAuthConsentRoute() {
             title="Invalid request"
             subtitle="Missing OAuth client parameters."
             statusLine="OAuth Authorization"
-            actions={<Badge variant="secondary">Consent</Badge>}
+            actions={<Badge variant="muted">Consent</Badge>}
           >
             <SoftPanel variant="hero" className="p-8">
               <p className="text-sm text-[var(--text-secondary)]">
@@ -77,7 +77,7 @@ function OAuthConsentRoute() {
           title="Authorize Vault Access"
           subtitle={`Client ${search.client_id} is requesting access.`}
           statusLine="OAuth Authorization"
-          actions={<Badge variant="secondary">Consent</Badge>}
+          actions={<Badge variant="muted">Consent</Badge>}
         >
           <SoftPanel variant="hero" className="p-8">
             <div className="mb-6 rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">

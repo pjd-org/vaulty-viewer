@@ -147,7 +147,6 @@ export function ChatComposer({
         disabled={isRunning}
         active={Boolean(value.trim()) || isRunning}
         accentColor={accent}
-        ariaLabel="Message input"
         leadingIcon="✦"
         onChange={(event) => onChange?.(event.target.value)}
         onSubmit={onSend}

@@ -12,12 +12,7 @@ export function SidebarCollapseToggle() {
   );
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      aria-pressed={collapsed}
-      onClick={toggle}
-    >
+    <Button variant="ghost" size="sm" aria-pressed={collapsed} onClick={toggle}>
       {collapsed ? 'Show sidebar' : 'Hide sidebar'}
     </Button>
   );

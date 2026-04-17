@@ -46,7 +46,7 @@ export function ChatRuntimeStatus({
     <div className={cn('flex items-center gap-2 text-xs', className)}>
       <StatusPill
         dot={resolvedAccent}
-        bg={badgeStyle.background ?? 'rgba(255,255,255,0.82)'}
+        bg={String(badgeStyle.background ?? 'rgba(255,255,255,0.82)')}
         border={badgeStyle.borderColor ?? 'rgba(255,255,255,0.82)'}
         textColor={stateTextColor}
         label={state.toUpperCase()}

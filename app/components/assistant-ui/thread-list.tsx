@@ -1,5 +1,5 @@
 import { Button } from '@vault/ui';
-import { Skeleton } from '@/app/components/ui/skeleton';
+import { Skeleton } from '@vault/ui';
 import {
   AuiIf,
   ThreadListItemMorePrimitive,
