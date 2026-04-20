@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
 
@@ -95,6 +96,7 @@ const mockApiFetch = vi.hoisted(() =>
 );
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => mockRouteState.search,
@@ -172,6 +174,10 @@ vi.mock('../../src/store/ui', () => ({
 import { Route } from '../../app/routes/index';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 function renderWithClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({

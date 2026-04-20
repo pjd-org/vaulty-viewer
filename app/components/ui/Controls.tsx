@@ -60,7 +60,7 @@ export function SegmentedControl({
           >
             {opt.label}
             {opt.badge != null && opt.badge > 0 && (
-              <span className="ml-1 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] leading-none tabular-nums">
+              <span className="ml-1 rounded-full bg-[var(--surf-utility)] px-1.5 py-0.5 text-[10px] leading-none tabular-nums">
                 {opt.badge}
               </span>
             )}

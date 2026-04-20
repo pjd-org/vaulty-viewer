@@ -16,7 +16,7 @@ import {
   buildInboxSurfacePayload,
   type InboxItem,
 } from '../lib/viewer-adapter';
-import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { TabsRoot, TabsList, TabsTrigger } from '../components/ui';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -139,7 +139,7 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
     return (
       <button
         type="button"
-        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground hover:border-border/80 hover:bg-muted/60 transition-colors"
         onClick={() => mutate(rawText)}
       >
         ✦ Convert to task
@@ -149,13 +149,13 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
   if (isPending) {
     return (
-      <span className="text-xs text-slate-400 px-2 py-1">Converting…</span>
+      <span className="px-2 py-1 text-xs text-muted-foreground">Converting…</span>
     );
   }
 
   if (error) {
     return (
-      <span className="text-xs text-red-500 px-2 py-1">
+      <span className="px-2 py-1 text-xs text-destructive">
         Failed —{' '}
         <button
           type="button"
@@ -204,11 +204,11 @@ function FilterBar({
   onRefresh,
 }: FilterBarProps) {
   const selectCls =
-    'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:ring-offset-1 transition-colors hover:border-slate-300';
+    'rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 transition-colors hover:border-border/80';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground shrink-0">
         Sort
       </span>
       <select
@@ -222,7 +222,7 @@ function FilterBar({
         <option value="itemCount">Item count ↓</option>
       </select>
 
-      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0 ml-2">
+      <span className="ml-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
         Filter
       </span>
       <select
@@ -259,7 +259,7 @@ function FilterBar({
       <div className="ml-auto">
         <button
           type="button"
-          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60 transition-colors"
+          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 disabled:opacity-60 transition-colors"
           onClick={onRefresh}
           disabled={loading || anyInFlight}
         >
@@ -294,13 +294,13 @@ function InboxRow({
   const display = inboxItemToDisplay(item, note, run);
 
   const severityColor: Record<string, string> = {
-    critical: 'bg-red-500',
-    high: 'bg-orange-400',
-    medium: 'bg-yellow-400',
-    low: 'bg-slate-300',
+    critical: 'bg-destructive',
+    high: 'bg-warning',
+    medium: 'bg-primary',
+    low: 'bg-border',
   };
   const sevBar = item.severity
-    ? (severityColor[item.severity] ?? 'bg-slate-200')
+    ? (severityColor[item.severity] ?? 'bg-border')
     : undefined;
 
   const confidence = run?.confidence;
@@ -312,14 +312,14 @@ function InboxRow({
     low: 'Irreversible',
   };
   const reversibilityColor: Record<string, string> = {
-    high: 'text-emerald-700 bg-emerald-50 ring-emerald-200',
-    medium: 'text-yellow-700 bg-yellow-50 ring-yellow-200',
-    low: 'text-red-700 bg-red-50 ring-red-200',
+    high: 'text-success bg-success/10 ring-success/20',
+    medium: 'text-warning bg-warning/10 ring-warning/20',
+    low: 'text-destructive bg-destructive/10 ring-destructive/20',
   };
 
   return (
     <div
-      className="group relative flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-all duration-150 hover:border-slate-300 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)] cursor-pointer animate-fade-in"
+      className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:shadow-sm animate-fade-in"
       onClick={onInspect}
       role="button"
       tabIndex={0}
@@ -334,14 +334,14 @@ function InboxRow({
       )}
 
       {/* main content */}
-      <div className="flex-1 min-w-0 pl-1">
+      <div className="min-w-0 flex-1 pl-1">
         {/* row 1: title + chips */}
         <div className="flex items-start gap-2 min-w-0">
-          <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 leading-snug line-clamp-1">
+          <span className="min-w-0 flex-1 line-clamp-1 text-sm font-semibold leading-snug text-foreground">
             {display.title}
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               {display.originLabel}
             </span>
             {item.reversibility && reversibilityLabel[item.reversibility] && (
@@ -353,7 +353,7 @@ function InboxRow({
             )}
             {display.ageLabel && (
               <span
-                className="text-[11px] text-slate-400 tabular-nums"
+                className="tabular-nums text-[11px] text-muted-foreground"
                 suppressHydrationWarning
               >
                 {display.ageLabel}
@@ -364,7 +364,7 @@ function InboxRow({
 
         {/* row 2: why surfaced / summary */}
         {(item.whySurfaced || item.summary) && (
-          <p className="mt-1 text-[12px] text-slate-500 line-clamp-1 leading-relaxed">
+          <p className="mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground">
             {item.whySurfaced ?? item.summary}
           </p>
         )}
@@ -372,25 +372,25 @@ function InboxRow({
         {/* row 3: meta pills */}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {run?.runType && (
-            <span className="text-[10px] font-mono text-slate-400">
+            <span className="font-mono text-[10px] text-muted-foreground">
               {run.runType}
             </span>
           )}
           {confidence !== undefined && (
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-muted-foreground">
               conf{' '}
-              <span className="font-medium text-slate-600">
+              <span className="font-medium text-foreground">
                 {(confidence * 100).toFixed(0)}%
               </span>
             </span>
           )}
           {itemCount !== undefined && (
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-muted-foreground">
               {itemCount} item{itemCount !== 1 ? 's' : ''}
             </span>
           )}
           {run?.runId && (
-            <span className="text-[10px] font-mono text-slate-300 truncate max-w-[120px]">
+            <span className="max-w-[120px] truncate font-mono text-[10px] text-muted-foreground">
               {run.runId}
             </span>
           )}
@@ -407,7 +407,7 @@ function InboxRow({
             type="button"
             disabled={actionInFlight}
             onClick={onReject}
-            className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors"
+            className="rounded-full border border-destructive/30 bg-card px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:border-destructive/40 hover:bg-destructive/10 disabled:opacity-50"
           >
             Reject
           </button>
@@ -417,7 +417,7 @@ function InboxRow({
             type="button"
             disabled={actionInFlight}
             onClick={onPromote}
-            className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+            className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             Promote
           </button>
@@ -679,7 +679,7 @@ function InboxRoute() {
       {!loading && !error && (
         <div className="mt-2 space-y-4">
           {/* ── 3-tab bar ──────────────────────────────────────────────── */}
-          <Tabs
+          <TabsRoot
             value={activeTab}
             onValueChange={(v) =>
               setSearch({ view: v as 'queue' | 'workbench' | 'archive' })
@@ -704,7 +704,7 @@ function InboxRoute() {
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="rounded-full px-4 py-2 text-sm font-medium data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=inactive]:bg-white data-[state=inactive]:text-slate-500 data-[state=inactive]:border data-[state=inactive]:border-slate-200 hover:data-[state=inactive]:text-slate-700 hover:data-[state=inactive]:bg-slate-50 transition-colors shadow-none"
+                  className="rounded-full px-4 py-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:text-muted-foreground data-[state=inactive]:border data-[state=inactive]:border-border hover:data-[state=inactive]:text-foreground hover:data-[state=inactive]:bg-muted/60 transition-colors shadow-none"
                 >
                   {tab.label}
                   {tab.count > 0 && (
@@ -715,10 +715,10 @@ function InboxRoute() {
                 </TabsTrigger>
               ))}
             </TabsList>
-          </Tabs>
+          </TabsRoot>
 
           {/* ── Filter + sort toolbar ─────────────────────────────────── */}
-          <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2.5">
+          <div className="rounded-2xl border border-border bg-card/70 px-3 py-2.5">
             <FilterBar
               sort={currentSort}
               onSort={(v) => setSearch({ sort: v })}
@@ -749,7 +749,7 @@ function InboxRoute() {
           </div>
 
           {/* ── Summary line ──────────────────────────────────────────── */}
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {visibleItems.length} of {surface.length} item
             {surface.length !== 1 ? 's' : ''}
           </p>

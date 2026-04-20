@@ -1,8 +1,10 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -38,6 +40,10 @@ const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 import { Route as PortfolioRouteModule } from '../../app/routes/portfolio';
 const PortfolioComponent = PortfolioRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (PortfolioComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 const PORTFOLIO_DATA = {
   items: [

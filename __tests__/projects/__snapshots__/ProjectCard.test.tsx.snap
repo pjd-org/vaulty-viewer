@@ -3,54 +3,49 @@
 exports[`ProjectCard > matches snapshot 1`] = `
 <div>
   <div
-    class="rounded-lg border bg-card text-card-foreground shadow-[5px_5px_0px_0px_var(--border)] animate-fade-in transition-transform duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_var(--border)]"
+    class="genie-card animate-fade-in transition-transform duration-200 hover:-translate-y-1"
   >
     <div
-      class="flex flex-col space-y-1.5 p-6 pb-2"
+      class="flex items-center justify-between mb-2"
     >
-      <div
-        class="flex items-center justify-between"
+      <h3
+        class="text-lg font-semibold"
+        style="color: var(--text-primary);"
       >
-        <h3
-          class="text-lg font-semibold text-slate-800"
-        >
-          Website revamp
-        </h3>
-        <span
-          class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-white/80 text-slate-600 border border-white/70 shadow-[0_4px_12px_rgba(15,23,42,0.04)] "
-        >
-          Active
-        </span>
-      </div>
-      <p
-        class="mt-1 text-sm text-slate-600"
+        Website revamp
+      </h3>
+      <span
+        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-[var(--surf-glass)] text-[var(--text-secondary)] border border-[var(--border-glass)] shadow-xs "
       >
-        Finalize landing
-      </p>
+        Active
+      </span>
     </div>
     <div
-      class="p-6 pt-0 space-y-2"
+      class="text-sm mb-3"
+      style="color: var(--text-secondary);"
+    >
+      Finalize landing
+    </div>
+    <div
+      aria-label="Website revamp progress"
+      aria-valuemax="100"
+      aria-valuemin="0"
+      aria-valuenow="42"
+      class="progress h-2 rounded-full overflow-hidden"
+      role="progressbar"
     >
       <div
-        aria-label="Website revamp progress"
-        aria-valuemax="100"
-        aria-valuemin="0"
-        aria-valuenow="42"
-        class="progress h-2 rounded-full overflow-hidden"
-        role="progressbar"
-      >
-        <div
-          class="progress-fill h-2"
-          style="width: 42%;"
-        />
-      </div>
-      <div
-        class="flex items-center justify-between text-xs text-slate-500"
-      >
-        <span>
-          42%
-        </span>
-      </div>
+        class="progress-fill h-2"
+        style="width: 42%;"
+      />
+    </div>
+    <div
+      class="flex items-center justify-between text-xs mt-2"
+      style="color: var(--text-tertiary);"
+    >
+      <span>
+        42%
+      </span>
     </div>
   </div>
 </div>

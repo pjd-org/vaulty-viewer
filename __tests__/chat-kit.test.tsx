@@ -141,9 +141,7 @@ describe('chat-kit', () => {
     expect(screen.getByText('No active thread')).toBeTruthy();
     expect(screen.getByText('mint')).toBeTruthy();
     expect(screen.getByText('sky')).toBeTruthy();
-    expect(
-      screen.getByRole('textbox', { name: 'Message input' })
-    ).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Prompt input' })).toBeTruthy();
     expect(composerShell.style.getPropertyValue('--composer-accent')).toBe(
       'var(--a-lilac)'
     );

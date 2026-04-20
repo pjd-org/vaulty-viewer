@@ -38,7 +38,7 @@ export function ChatRuntimeStatus({
 
   const badgeStyle: CSSProperties = {
     borderColor: `color-mix(in srgb, ${resolvedAccent} 32%, transparent)`,
-    background: `color-mix(in srgb, ${resolvedAccent} 14%, white)`,
+    background: `color-mix(in srgb, ${resolvedAccent} 14%, var(--surf-elevated))`,
     color: stateTextColor,
   };
 
@@ -46,8 +46,8 @@ export function ChatRuntimeStatus({
     <div className={cn('flex items-center gap-2 text-xs', className)}>
       <StatusPill
         dot={resolvedAccent}
-        bg={String(badgeStyle.background ?? 'rgba(255,255,255,0.82)')}
-        border={badgeStyle.borderColor ?? 'rgba(255,255,255,0.82)'}
+        bg={String(badgeStyle.background ?? 'var(--surf-elevated)')}
+        border={badgeStyle.borderColor ?? 'var(--border-glass-soft)'}
         textColor={stateTextColor}
         label={state.toUpperCase()}
         className={chatStatusPillClass}

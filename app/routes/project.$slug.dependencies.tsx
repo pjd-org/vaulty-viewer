@@ -51,11 +51,11 @@ function ProjectDependenciesRoute() {
           {stats.map((s) => (
             <div
               key={s.label}
-              className="h-20 animate-pulse rounded-[18px] border border-slate-200 bg-black/3"
+              className="h-20 animate-pulse rounded-[18px] border border-border bg-muted/20"
             />
           ))}
         </div>
-        <div className="h-48 animate-pulse rounded-[18px] border border-slate-200 bg-black/3" />
+        <div className="h-48 animate-pulse rounded-[18px] border border-border bg-muted/20" />
       </div>
     );
   }
@@ -67,12 +67,12 @@ function ProjectDependenciesRoute() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+            className="rounded-[18px] border border-border bg-card p-4"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
               {s.label}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">
+            <p className="mt-2 text-2xl font-semibold text-foreground">
               {s.value}
             </p>
           </div>
@@ -82,7 +82,7 @@ function ProjectDependenciesRoute() {
       {/* ── Severity partition bar ── */}
       {allSignals.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Severity Breakdown
           </p>
           <PartitionBar
@@ -153,18 +153,18 @@ function ProjectDependenciesRoute() {
                     params={{ slug }}
                     search={{ ...search, selectedId: signal.id }}
                     className={[
-                      'block rounded-[18px] border p-4 transition',
+                      'block rounded-[18px] border border-border bg-card p-4 transition',
                       active
-                        ? 'border-sky-300 bg-sky-50 shadow-[0_18px_45px_rgba(56,189,248,0.10)]'
-                        : 'border-slate-200 bg-black/3 hover:border-slate-300 hover:bg-black/5',
+                        ? 'border-primary/30 bg-primary/10 shadow-sm'
+                        : 'hover:border-border/80 hover:bg-muted/30',
                     ].join(' ')}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-sm font-semibold text-slate-800">
+                        <h3 className="text-sm font-semibold text-foreground">
                           {signal.title}
                         </h3>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {signal.summary}
                         </p>
                       </div>
@@ -188,34 +188,34 @@ function ProjectDependenciesRoute() {
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-semibold text-slate-800">
+                    <h3 className="text-base font-semibold text-foreground">
                       {selectedSignal.title}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {selectedSignal.summary}
                     </p>
                   </div>
                   <SoftChip label={selectedSignal.severity} />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  <div className="rounded-[18px] border border-border bg-card p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                       Kind
                     </p>
-                    <p className="mt-2 text-sm font-medium text-slate-800">
+                    <p className="mt-2 text-sm font-medium text-foreground">
                       {selectedSignal.kind}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  <div className="rounded-[18px] border border-border bg-card p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                       Severity
                     </p>
-                    <p className="mt-2 text-sm font-medium text-slate-800">
+                    <p className="mt-2 text-sm font-medium text-foreground">
                       {selectedSignal.severity}
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs leading-relaxed text-muted-foreground">
                   {selectedSignal.whySurfaced}
                 </p>
               </div>

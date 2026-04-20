@@ -1,8 +1,10 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -38,6 +40,10 @@ const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 import { Route as AutomationRouteModule } from '../../app/routes/automation';
 const AutomationComponent = AutomationRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (AutomationComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('automation route — loading state', () => {
   beforeEach(() => {

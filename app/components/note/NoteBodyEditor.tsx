@@ -10,7 +10,7 @@ const MODE_OPTIONS = [
 ];
 
 const EDIT_SHELL =
-  'genie-surface genie-surface--overlay rounded-[24px] border shadow-[0_24px_56px_rgba(17,21,29,0.16)] backdrop-blur-2xl overflow-hidden transition-all duration-300 ease-out';
+  'genie-surface genie-surface--overlay rounded-[24px] border shadow-lg backdrop-blur-2xl overflow-hidden transition-all duration-300 ease-out';
 
 export interface NoteBodyEditorProps {
   html: string;

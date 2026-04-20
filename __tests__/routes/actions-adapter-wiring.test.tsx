@@ -9,6 +9,7 @@ import {
 } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { ActionsSurfacePayload } from '../../app/lib/viewer-adapter';
 
@@ -37,6 +38,7 @@ const mockGetActionsSurfaceQueryOptions = vi.hoisted(() =>
 );
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => mockRouteState.search,
@@ -90,20 +92,27 @@ vi.mock('../../app/components/layout', () => ({
   ),
 }));
 
-vi.mock('../../app/components/ui', () => ({
-  EmptyState: ({
-    title,
-    description,
-  }: {
-    title: string;
-    description?: string;
-  }) => (
-    <div>
-      <h3>{title}</h3>
-      {description ? <p>{description}</p> : null}
-    </div>
-  ),
-}));
+vi.mock('../../app/components/ui', async () => {
+  const actual = await vi.importActual<typeof import('../../app/components/ui')>(
+    '../../app/components/ui'
+  );
+
+  return {
+    ...actual,
+    EmptyState: ({
+      title,
+      description,
+    }: {
+      title: string;
+      description?: string;
+    }) => (
+      <div>
+        <h3>{title}</h3>
+        {description ? <p>{description}</p> : null}
+      </div>
+    ),
+  };
+});
 
 const mockUpdateTaskStatus = vi.hoisted(() =>
   vi.fn(() => Promise.resolve(true))
@@ -142,6 +151,10 @@ vi.mock('../../src/store/ui', () => ({
 import { Route } from '../../app/routes/actions';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 function renderWithClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -271,7 +284,7 @@ describe('actions adapter wiring', () => {
         }) as HTMLInputElement
       ).checked
     ).toBe(true);
-    expect(screen.getByText('Showing 1 of 2 recommendations')).toBeTruthy();
+    expect(screen.getByText('Showing 1 of 2')).toBeTruthy();
     expect(screen.queryByText('Polish project shell')).toBeNull();
 
     expect(screen.getByText('Source signals')).toBeTruthy();

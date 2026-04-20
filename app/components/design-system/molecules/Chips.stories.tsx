@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from './_genie-css';
-import { SuggestionChip } from '@vault/ui';
+import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
+import { SuggestionChip } from '@vault/ui/molecules';
 
 function ChipsSection() {
   useGenieFonts();

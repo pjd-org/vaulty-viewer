@@ -23,17 +23,17 @@ export function ActiveSessionBanner({
   const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-black/3 p-4 flex items-center justify-between">
+    <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--surf-utility)] p-4 flex items-center justify-between">
       <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">
+        <span className="text-xs font-semibold text-[var(--text-info)] uppercase tracking-wide">
           Session active
         </span>
         {session.title && (
-          <span className="text-sm font-medium text-slate-800">
+          <span className="text-sm font-medium text-[var(--text-primary)]">
             {session.title}
           </span>
         )}
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-[var(--text-tertiary)]">
           {elapsed !== null && (
             <>
               {elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}

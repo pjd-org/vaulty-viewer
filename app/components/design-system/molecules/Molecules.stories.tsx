@@ -1,7 +1,9 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from './_genie-css';
-import { Card, CardBody, Input, Label, Toast } from '@vault/ui';
+import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
+import { Card } from '@vault/ui/organisms';
+import { CardBody, Input, Toast } from '@vault/ui/molecules';
+import { Label } from '@vault/ui/atoms';
 
 /* ── Token callout helper ──────────────────────────────────────────────── */
 function TokenTag({ name }: { name: string }) {

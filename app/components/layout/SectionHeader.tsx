@@ -35,10 +35,7 @@ export function SectionHeader({
           {title}
         </h2>
         {subtitle && (
-          <p
-            className="text-xs mt-0.5"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
+          <p className="text-xs mt-0.5 text-[var(--text-tertiary)]">
             {subtitle}
           </p>
         )}

@@ -3,6 +3,24 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: (
+    importer: () => Promise<Record<string, unknown>>,
+    exportName?: string
+  ) => {
+    let Loaded: React.ComponentType<any> | null = null;
+    const pending = importer().then((mod) => {
+      Loaded = (mod[exportName ?? 'default'] ?? mod.default) as
+        | React.ComponentType<any>
+        | null;
+    });
+    const LazyRouteComponent = (props: Record<string, unknown>) => {
+      if (!Loaded) throw pending;
+      return <Loaded {...props} />;
+    };
+    (LazyRouteComponent as { preload?: () => Promise<void> }).preload = () =>
+      pending.then(() => undefined);
+    return LazyRouteComponent;
+  },
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -38,6 +56,10 @@ const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 import { Route as ArchiveRouteModule } from '../../app/routes/archive';
 const ArchiveComponent = ArchiveRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (ArchiveComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('archive route — loading state', () => {
   beforeEach(() => {

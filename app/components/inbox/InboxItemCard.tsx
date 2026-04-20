@@ -178,7 +178,7 @@ function InspectOverlay({
       <DialogContent
         className={cn(
           'w-full max-w-[520px] rounded-2xl border-0 p-0 overflow-hidden',
-          'shadow-[0_24px_64px_rgba(15,23,42,0.28),0_4px_16px_rgba(15,23,42,0.12)]',
+          'shadow-lg',
           'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.97]',
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           'duration-200'
@@ -482,8 +482,8 @@ export function InboxItemCard({
             !item.isBlocked && [
               'bg-[var(--surf-elevated)]',
               'hover:-translate-y-[2px] hover:border-[var(--border-glass)]',
-              'hover:shadow-[0_14px_28px_-20px_rgba(15,23,42,0.45)]',
-              'shadow-[0_4px_14px_-12px_rgba(15,23,42,0.3)]',
+              'hover:shadow-md',
+              'shadow-sm',
               'animate-fade-in',
             ],
             item.isBlocked &&

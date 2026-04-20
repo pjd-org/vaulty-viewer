@@ -23,14 +23,14 @@ export function HomeTaskCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3
-            className={`line-clamp-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-semibold text-slate-800 ${compact ? 'text-xs' : 'text-sm'}`}
+            className={`line-clamp-2 rounded-md border border-border bg-surface px-2 py-1.5 font-semibold text-text ${compact ? 'text-xs' : 'text-sm'}`}
           >
             {task.title}
           </h3>
-          <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span className="inline-block size-2 rounded-full bg-slate-300" />
+          <div className="mt-2 flex items-center gap-2 text-xs text-text2">
+            <span className="inline-block size-2 rounded-full bg-border" />
             <span>Task</span>
-            <span className="inline-block size-2 rounded-full bg-slate-500" />
+            <span className="inline-block size-2 rounded-full bg-text2" />
           </div>
         </div>
         <TaskSeverityBadge
@@ -46,14 +46,14 @@ export function HomeTaskCard({
           <Link
             to="/note"
             search={{ p: task.path }}
-            className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50"
+            className="rounded-full border border-border bg-[var(--surf-elevated)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-text hover:bg-surface"
           >
             Open
           </Link>
         ) : (
           <span
             aria-disabled="true"
-            className="cursor-not-allowed rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
+            className="cursor-not-allowed rounded-full border border-border bg-surface3 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-text3"
           >
             Open
           </span>
@@ -62,7 +62,7 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onStart(task.path)}
           disabled={mutating}
-          className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100 disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,#1c2230)] hover:[background:color-mix(in_srgb,var(--a-sky)_22%,white)]"
+          className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sky)_22%,var(--surf-elevated))]"
         >
           {mutating ? 'Starting…' : 'Start'}
         </button>
@@ -70,7 +70,7 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onBacklog(task.path)}
           disabled={mutating}
-          className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100 disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] hover:[background:color-mix(in_srgb,var(--a-sun)_22%,white)]"
+          className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sun)_22%,var(--surf-elevated))]"
         >
           {mutating ? 'Updating…' : 'Backlog'}
         </button>

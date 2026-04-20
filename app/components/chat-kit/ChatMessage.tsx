@@ -28,13 +28,15 @@ export function ChatMessage({
         className={cn(
           'max-w-[min(46rem,100%)] rounded-[24px] px-4 py-3.5 text-sm leading-6',
           isUser
-            ? 'bg-[var(--n-900)] text-[var(--n-0)] shadow-[0_10px_24px_rgba(17,21,29,0.16)]'
-            : 'border border-[var(--border-glass-default)] bg-[rgba(255,255,255,0.9)] text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.08)]'
+            ? 'bg-[var(--n-900)] text-[var(--n-0)] shadow-lg'
+            : 'border border-[var(--border-glass-default)] bg-[var(--surf-elevated)] text-[var(--text-primary)] shadow-md'
         )}
       >
         {content}
       </div>
-      {toolSurface && <div className="w-full max-w-[min(46rem,100%)]">{toolSurface}</div>}
+      {toolSurface && (
+        <div className="w-full max-w-[min(46rem,100%)]">{toolSurface}</div>
+      )}
     </article>
   );
 }

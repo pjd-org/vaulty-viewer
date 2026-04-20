@@ -12,18 +12,20 @@ export type ChipVariant =
 
 const variantClasses: Record<ChipVariant, string> = {
   default:
-    'bg-[var(--surf-glass)] text-[var(--text-secondary)] border border-[var(--border-glass)] shadow-[0_4px_12px_rgba(15,23,42,0.04)]',
+    'bg-[var(--surf-glass)] text-[var(--text-secondary)] border border-[var(--border-glass)] shadow-xs',
   primary:
-    'bg-[linear-gradient(135deg,#11151d,#1c2230)] text-white border border-[var(--border-glass-soft)] shadow-[var(--shadow-card)]',
+    'bg-[linear-gradient(135deg,var(--n-950),var(--n-900))] text-[var(--n-0)] border border-[var(--border-glass-soft)] shadow-[var(--shadow-card)]',
   success:
     'bg-[color-mix(in_srgb,var(--a-mint)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
   warning:
     'bg-[color-mix(in_srgb,var(--a-sun)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
   danger:
     'bg-[color-mix(in_srgb,var(--a-rose)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
-  sky: 'bg-sky-100 text-sky-700 border border-sky-200',
-  violet: 'bg-violet-100 text-violet-700 border border-violet-200',
-  indigo: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+  sky: '[background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_80%,var(--n-950))] border',
+  violet:
+    '[background:color-mix(in_srgb,var(--a-violet)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-violet)_30%,transparent)] [color:color-mix(in_srgb,var(--a-violet)_80%,var(--n-950))] border',
+  indigo:
+    '[background:color-mix(in_srgb,var(--color-primary)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--color-primary)_30%,transparent)] [color:color-mix(in_srgb,var(--color-primary)_80%,var(--n-950))] border',
 };
 
 export interface SoftChipProps {

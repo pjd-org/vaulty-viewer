@@ -47,14 +47,14 @@ function ApprovalCard({
         <Button
           type="button"
           unstyled
-          className="rounded-full bg-[var(--n-900)] px-4 py-2 text-sm text-white hover:bg-[var(--n-800)]"
+          className="rounded-full bg-[var(--n-900)] px-4 py-2 text-sm text-[var(--n-0)] hover:bg-[var(--n-800)]"
         >
           Approve
         </Button>
         <Button
           type="button"
           unstyled
-          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-white"
+          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--surf-elevated)]"
         >
           Review
         </Button>

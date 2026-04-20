@@ -41,31 +41,24 @@ export function BestMoveCard({
   const whyNow = getWhyNowLine(task);
 
   return (
-    <div
-      className="genie-surface genie-surface--hero animate-fade-in transition-transform duration-200 hover:-translate-y-1"
-      style={{ padding: '24px' }}
-    >
+    <div className="genie-surface genie-surface--hero genie-surface--sky animate-fade-in transition-transform duration-200 hover:-translate-y-1 p-6">
       <Link
         to="/note"
         search={{ p: task.path }}
-        className="text-xl font-semibold hover:opacity-80 transition-opacity block"
-        style={{ color: 'var(--text-primary)' }}
+        className="text-xl font-semibold hover:opacity-80 transition-opacity block text-[var(--text-primary)]"
       >
         {task.title}
       </Link>
 
       {task.description && (
-        <p
-          className="text-sm mt-1 line-clamp-2"
-          style={{ color: 'var(--text-secondary)' }}
-        >
+        <p className="text-sm mt-1 line-clamp-2 text-[var(--text-secondary)]">
           {task.description}
         </p>
       )}
 
       {/* Why this is the best move right now */}
       {whyNow && (
-        <p className={whyNowTextClass} style={{ color: 'var(--text-success)' }}>
+        <p className={`${whyNowTextClass} text-[var(--text-success)]`}>
           {whyNow}
         </p>
       )}
@@ -78,7 +71,7 @@ export function BestMoveCard({
       </div>
 
       {blocked && (
-        <p className={whyNowTextClass} style={{ color: 'var(--text-warning)' }}>
+        <p className={`${whyNowTextClass} text-[var(--text-warning)]`}>
           This task has dependencies
         </p>
       )}

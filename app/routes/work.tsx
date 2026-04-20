@@ -39,7 +39,7 @@ function TaskList({
       {tasks.map((task) => {
         const isExpanded = selectedId === task.id;
         return (
-          <li key={task.id} className="rounded-2xl border border-slate-200 bg-white/80 shadow-[0_6px_18px_-14px_rgba(15,23,42,0.45)]">
+          <li key={task.id} className="rounded-2xl border border-border bg-card/80 shadow-sm">
             <button
               type="button"
               onClick={() => onSelect(isExpanded ? null : task)}
@@ -47,21 +47,21 @@ function TaskList({
               className={[
                 'flex w-full items-start justify-between rounded-2xl px-4 py-3 text-sm transition-colors',
                 isExpanded
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-50',
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/60',
               ].join(' ')}
             >
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-1 size-2 shrink-0 rounded-full ${
-                    task.status === 'blocked' ? 'bg-red-400' : 'bg-emerald-400'
+                    task.status === 'blocked' ? 'bg-destructive' : 'bg-success'
                   }`}
                 />
                 <div className="min-w-0">
-                  <span className="line-clamp-2 text-left font-semibold text-slate-800">
+                  <span className="line-clamp-2 text-left font-semibold text-foreground">
                     {task.title}
                   </span>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span>{task.priority}p</span>
                     <span>·</span>
                     <span>{task.estimatedTimeMin ?? 0}m</span>
@@ -72,8 +72,8 @@ function TaskList({
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
                     task.status === 'blocked'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-destructive/10 text-destructive'
+                      : 'bg-success/10 text-success'
                   }`}
                 >
                   {task.status}
@@ -87,7 +87,7 @@ function TaskList({
               </div>
             </button>
             {isExpanded && (
-              <div className="mx-2 mb-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 animate-fade-in">
+              <div className="mx-2 mb-2 rounded-xl border border-border bg-muted/40 px-4 py-3 animate-fade-in">
                 <TaskDetail task={task} />
               </div>
             )}
@@ -114,10 +114,10 @@ function TaskSection({
   if (!data) {
     return (
       <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-neutral-600">
+        <p className="text-sm font-medium text-muted-foreground">
           Task and dependency data not yet connected.
         </p>
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           Adapter context is wired. Task and dependency workspaces will appear
           once the runtime surface connects.
         </p>
@@ -128,8 +128,8 @@ function TaskSection({
   if (data.tasks.length === 0) {
     return (
       <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-neutral-600">No tasks ready.</p>
-        <p className="text-xs text-neutral-400">
+        <p className="text-sm font-medium text-muted-foreground">No tasks ready.</p>
+        <p className="text-xs text-muted-foreground">
           All tasks may be blocked or no unblocked tasks remain.
         </p>
       </div>
@@ -138,11 +138,11 @@ function TaskSection({
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-2">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
+      <div className="flex items-center justify-between rounded-2xl border border-border bg-card/70 px-4 py-2">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Next Actions
         </h3>
-        <span className="text-xs font-medium text-slate-500">
+        <span className="text-xs font-medium text-muted-foreground">
           {data.total} tasks · {data.mode}
         </span>
       </div>
@@ -166,11 +166,11 @@ function TaskDetail({ task }: { task: NextAction }) {
   return (
     <div className="space-y-4 text-sm" data-testid="work-task-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-800">{task.title}</p>
+        <p className="font-medium leading-snug text-foreground">{task.title}</p>
         {task.description ? (
-          <p className="mt-1 text-xs text-slate-500">{task.description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{task.description}</p>
         ) : (
-          <p className="mt-1 text-xs text-slate-400 italic">
+          <p className="mt-1 text-xs text-muted-foreground italic">
             No description. Open the note to add context.
           </p>
         )}
@@ -178,27 +178,27 @@ function TaskDetail({ task }: { task: NextAction }) {
 
       <div className="flex flex-wrap gap-2">
         {task.priority > 0 && (
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-700">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
             p{task.priority}
           </span>
         )}
         {task.effortScore > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
             effort {task.effortScore}
           </span>
         )}
         {task.focusCost > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
             focus {task.focusCost}
           </span>
         )}
         {task.estimatedTimeMin > 0 && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
             {task.estimatedTimeMin}m
           </span>
         )}
         {task.dueDate && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-700">
+          <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
             due {task.dueDate}
           </span>
         )}
@@ -206,8 +206,8 @@ function TaskDetail({ task }: { task: NextAction }) {
           className={[
             'rounded-full px-2 py-0.5 text-[11px]',
             task.status === 'blocked'
-              ? 'bg-red-100 text-red-700'
-              : 'bg-emerald-100 text-emerald-700',
+              ? 'bg-destructive/10 text-destructive'
+              : 'bg-success/10 text-success',
           ].join(' ')}
         >
           {task.status}
@@ -219,7 +219,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           {task.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500"
+              className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
             >
               {tag}
             </span>
@@ -229,12 +229,12 @@ function TaskDetail({ task }: { task: NextAction }) {
 
       {blockers.length > 0 && (
         <div>
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-slate-500">
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Blockers
           </p>
           <ul className="space-y-1">
             {blockers.map((b, i) => (
-              <li key={i} className="text-xs text-red-600">
+              <li key={i} className="text-xs text-destructive">
                 {b.description ?? String(b)}
               </li>
             ))}
@@ -247,7 +247,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           <Link
             to="/note"
             search={{ p: task.path }}
-            className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
+            className="inline-block text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
           >
             Open note →
           </Link>
@@ -265,7 +265,7 @@ function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
           >
             Related knowledge →
           </Link>
@@ -278,7 +278,7 @@ function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
           >
             Ask the Primary Agent about this →
           </Link>
@@ -299,7 +299,7 @@ function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800"
+            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
           >
             Related knowledge →
           </Link>
@@ -312,7 +312,7 @@ function TaskDetail({ task }: { task: NextAction }) {
                 // sessionStorage unavailable — silently skip
               }
             }}
-            className="inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800"
+            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
           >
             Ask the Primary Agent about this →
           </Link>
@@ -407,43 +407,43 @@ function WorkRoute() {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-2xl border border-border bg-card/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Total
                 </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-slate-800">
+                <p className="mt-1 text-3xl font-semibold leading-none text-foreground">
                   {data?.total ?? 0}
                 </p>
-                <div className="mt-2 h-px w-12 bg-slate-300" />
+                <div className="mt-2 h-px w-12 bg-border" />
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-2xl border border-border bg-card/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Ready
                 </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-emerald-700">
+                <p className="mt-1 text-3xl font-semibold leading-none text-success">
                   {readyCount}
                 </p>
-                <div className="mt-2 h-px w-12 bg-emerald-300" />
+                <div className="mt-2 h-px w-12 bg-success/30" />
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-2xl border border-border bg-card/80 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Blocked
                 </p>
-                <p className="mt-1 text-3xl font-semibold leading-none text-red-700">
+                <p className="mt-1 text-3xl font-semibold leading-none text-destructive">
                   {blockedCount}
                 </p>
-                <div className="mt-2 h-px w-12 bg-red-300" />
+                <div className="mt-2 h-px w-12 bg-destructive/30" />
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/70 px-3 py-2">
+            <div className="rounded-2xl border border-border bg-card/70 px-3 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setTaskFilter('all')}
                   className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
                     taskFilter === 'all'
-                      ? 'border-slate-800 bg-slate-800 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-card text-muted-foreground'
                   }`}
                 >
                   All ({data?.total ?? 0})
@@ -453,8 +453,8 @@ function WorkRoute() {
                   onClick={() => setTaskFilter('ready')}
                   className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
                     taskFilter === 'ready'
-                      ? 'border-emerald-700 bg-emerald-700 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
+                      ? 'border-success bg-success text-primary-foreground'
+                      : 'border-border bg-card text-muted-foreground'
                   }`}
                 >
                   Ready ({readyCount})
@@ -464,8 +464,8 @@ function WorkRoute() {
                   onClick={() => setTaskFilter('blocked')}
                   className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
                     taskFilter === 'blocked'
-                      ? 'border-red-700 bg-red-700 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
+                      ? 'border-destructive bg-destructive text-destructive-foreground'
+                      : 'border-border bg-card text-muted-foreground'
                   }`}
                 >
                   Blocked ({blockedCount})

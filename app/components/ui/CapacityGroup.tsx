@@ -40,7 +40,7 @@ export function CapacityGroup({ capacity }: CapacityGroupProps) {
           />
         )}
       </div>
-      {guidance && <p className="mt-1 text-xs text-slate-500">{guidance}</p>}
+      {guidance && <p className="mt-1 text-xs text-text2">{guidance}</p>}
     </section>
   );
 }

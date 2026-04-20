@@ -45,14 +45,8 @@ describe('ProjectDetail (skeleton)', () => {
   });
 
   it('shows skeleton when loading', async () => {
-    const { default: SkeletonCard } =
-      await import('../../app/components/ui/SkeletonCard');
-    const qc = new QueryClient();
-    const { container } = render(
-      <QueryClientProvider client={qc}>
-        <SkeletonCard />
-      </QueryClientProvider>
-    );
+    const { RouteLoadingState } = await import('../../app/components/ui');
+    const { container } = render(<RouteLoadingState />);
     expect(container.querySelector('[aria-busy="true"]')).toBeTruthy();
   });
 
@@ -337,5 +331,53 @@ describe('ProjectDetail (skeleton)', () => {
     expect(screen.getByText('Runner alpha')).toBeTruthy();
     expect(screen.getByText('Primary Agent queue')).toBeTruthy();
     expect(screen.getByText('Renewal reminder')).toBeTruthy();
+  });
+
+  it('tolerates partial execution snapshots without crashing', async () => {
+    const { ProjectDetailScene } =
+      await import('../../app/components/projects/ProjectDetailScene');
+    const qc = new QueryClient();
+
+    qc.setQueryData(['project', 'rent-stability-pantin'], {
+      id: 'rent-stability-pantin',
+      title: 'Rent Stability Pantin',
+      statusVariant: 'warning',
+      statusLabel: 'Paused',
+      progressPercent: 42,
+      progressText: '42%',
+      etaLabel: 'Tomorrow',
+      bestMoveTitle: 'Finalize dossier',
+    });
+
+    qc.setQueryData(['tasks'], []);
+
+    qc.setQueryData(
+      ['viewer-adapter', 'project-surface', 'rent-stability-pantin'],
+      {
+        projectId: 'rent-stability-pantin',
+        pressureBand: [],
+        decisionQueue: [],
+        immediateActions: [],
+        verificationRail: [],
+        executionSnapshot: {
+          activeTasks: [],
+          activePipelines: [],
+          activeRunners: [],
+          scheduleItems: [],
+        },
+        contextPanel: [],
+        timelineHints: [],
+        dependencyRiskSignals: [],
+      }
+    );
+
+    render(
+      <QueryClientProvider client={qc}>
+        <ProjectDetailScene projectId="rent-stability-pantin" />
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('Execution Snapshot')).toBeTruthy();
+    expect(screen.getByText('Primary Agent Jobs')).toBeTruthy();
   });
 });

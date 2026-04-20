@@ -63,12 +63,12 @@ export function ReadinessHeader({
       <div className="flex items-start justify-between gap-4">
         <div>
           {nameIsReal && (
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
+            <h1 className="text-2xl font-semibold tracking-tight text-text">
               {profile.name}
             </h1>
           )}
           {titleIsReal && (
-            <p className="mt-1 text-sm text-slate-500">{profile.title}</p>
+            <p className="mt-1 text-sm text-text2">{profile.title}</p>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -106,9 +106,7 @@ export function ReadinessHeader({
           />
         )}
         {!stale && lastUpdatedStr && (
-          <span className="text-xs text-slate-500">
-            Updated {lastUpdatedStr}
-          </span>
+          <span className="text-xs text-text2">Updated {lastUpdatedStr}</span>
         )}
       </div>
     </header>

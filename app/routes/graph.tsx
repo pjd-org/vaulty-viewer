@@ -46,10 +46,10 @@ type ExcalidrawModule = {
 };
 
 const AUDIENCE_COLORS: Record<string, string> = {
-  human: '#0f766e',
-  agent: '#1d4ed8',
-  bubble: '#c2410c',
-  unknown: '#475569',
+  human: 'var(--color-primary)',
+  agent: 'var(--color-success)',
+  bubble: 'var(--color-warning)',
+  unknown: 'var(--text-tertiary)',
 };
 
 function graphToFlow(data: GraphJson): {
@@ -114,13 +114,15 @@ function graphToFlow(data: GraphJson): {
       },
       style: {
         borderRadius: 999,
-        border: `1.5px solid ${AUDIENCE_COLORS[audience] ?? AUDIENCE_COLORS.unknown}`,
-        background: '#ffffff',
+        border: `1.5px solid color-mix(in_srgb, ${
+          AUDIENCE_COLORS[audience] ?? AUDIENCE_COLORS.unknown
+        } 72%, var(--border))`,
+        background: 'var(--card)',
         width: size,
         height: size,
         padding: 0,
         fontSize: 0,
-        boxShadow: '0 2px 8px rgba(15,23,42,0.16)',
+        boxShadow: 'var(--shadow-sm)',
       },
     };
   });
@@ -136,7 +138,10 @@ function graphToFlow(data: GraphJson): {
         target,
         type: 'smoothstep',
         animated: false,
-        style: { stroke: 'rgba(30,41,59,0.30)', strokeWidth: 1.1 },
+        style: {
+          stroke: 'color-mix(in_srgb,var(--text-secondary)_28%,transparent)',
+          strokeWidth: 1.1,
+        },
       });
     }
   }
@@ -166,8 +171,8 @@ function graphToSketchElements(data: GraphJson) {
       y: y - 10,
       width: 20,
       height: 20,
-      strokeColor: AUDIENCE_COLORS[node.audience ?? 'unknown'] ?? '#475569',
-      backgroundColor: '#ffffff',
+      strokeColor: AUDIENCE_COLORS[node.audience ?? 'unknown'] ?? 'var(--text-tertiary)',
+      backgroundColor: 'var(--card)',
       fillStyle: 'solid',
       strokeWidth: 2,
       roughness: 1.6,
@@ -195,7 +200,7 @@ function graphToSketchElements(data: GraphJson) {
         x: sourceCenter.x,
         y: sourceCenter.y,
         points: [[0, 0], [targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y]],
-        strokeColor: '#334155',
+        strokeColor: 'color-mix(in_srgb,var(--text-secondary)_70%,var(--text-primary))',
         backgroundColor: 'transparent',
         fillStyle: 'hachure',
         strokeWidth: 1.2,
@@ -251,8 +256,8 @@ function GraphFlow({
             ...(node.style ?? {}),
             opacity: selected || connected ? 1 : 0.45,
             boxShadow: selected
-              ? '0 0 0 4px rgba(59,130,246,0.18), 0 2px 10px rgba(15,23,42,0.22)'
-              : '0 2px 8px rgba(15,23,42,0.14)',
+              ? '0 0 0 4px color-mix(in_srgb,var(--color-primary)_18%,transparent), var(--shadow-md)'
+              : 'var(--shadow-sm)',
           },
         };
       })
@@ -265,8 +270,11 @@ function GraphFlow({
           ...edge,
           animated: selected,
           style: selected
-            ? { stroke: 'rgba(29,78,216,0.95)', strokeWidth: 2.3 }
-            : { stroke: 'rgba(30,41,59,0.20)', strokeWidth: 1.0 },
+            ? { stroke: 'var(--color-primary)', strokeWidth: 2.3 }
+            : {
+                stroke: 'color-mix(in_srgb,var(--text-secondary)_20%,transparent)',
+                strokeWidth: 1.0,
+              },
         };
       })
     );
@@ -279,7 +287,7 @@ function GraphFlow({
 
   return (
     <div
-      className="h-[640px] w-full rounded-xl border border-slate-200/80 overflow-hidden bg-white/70"
+      className="h-[640px] w-full overflow-hidden rounded-xl border border-border bg-card/80"
       data-testid="graph-flow"
     >
       <ReactFlow
@@ -292,13 +300,16 @@ function GraphFlow({
         onPaneClick={() => onSelectPath('')}
         attributionPosition="bottom-left"
       >
-        <Background color="rgba(148,163,184,0.20)" gap={28} />
+        <Background
+          color="color-mix(in_srgb,var(--text-secondary)_16%,transparent)"
+          gap={28}
+        />
         <MiniMap
           pannable
           zoomable
           style={{
-            background: 'rgba(255,255,255,0.90)',
-            border: '1px solid rgba(148,163,184,0.45)',
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
             borderRadius: 12,
           }}
           nodeStrokeColor={(node) =>
@@ -306,7 +317,7 @@ function GraphFlow({
             AUDIENCE_COLORS.unknown
           }
           nodeColor={(node) =>
-            node.selected ? 'rgba(29,78,216,0.9)' : 'rgba(241,245,249,0.95)'
+            node.selected ? 'var(--color-primary)' : 'var(--surface-elevated)'
           }
         />
         <Controls showInteractive={false} />
@@ -331,9 +342,9 @@ function GraphSketch({ data }: { data: GraphJson }) {
     };
   }, []);
 
-  if (!excalidraw) {
-    return (
-      <div className="h-[640px] w-full rounded-xl border border-slate-200/80 bg-white/70 grid place-items-center text-sm text-slate-500">
+    if (!excalidraw) {
+      return (
+      <div className="grid h-[640px] w-full place-items-center rounded-xl border border-border bg-card/80 text-sm text-muted-foreground">
         Loading sketch canvas…
       </div>
     );
@@ -341,12 +352,12 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   const Excalidraw = excalidraw;
   return (
-    <div className="h-[640px] w-full rounded-xl border border-slate-200/80 overflow-hidden bg-white/70">
+    <div className="h-[640px] w-full overflow-hidden rounded-xl border border-border bg-card/80">
       <Excalidraw
         initialData={{
           elements,
           appState: {
-            viewBackgroundColor: '#f8fafc',
+            viewBackgroundColor: 'var(--background)',
             theme: 'light',
           },
         }}
@@ -395,15 +406,15 @@ function GraphRoute() {
       primaryTitle="Knowledge"
       primarySubtitle="Interactive or sketch topology map."
       actions={
-        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1">
+        <div className="inline-flex rounded-full border border-border bg-card p-1">
           <button
             type="button"
             onClick={() => setViewMode('interactive')}
             className={[
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               viewMode === 'interactive'
-                ? 'bg-slate-800 text-white'
-                : 'text-slate-600 hover:bg-slate-100',
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted/40',
             ].join(' ')}
           >
             Interactive
@@ -414,8 +425,8 @@ function GraphRoute() {
             className={[
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               viewMode === 'sketch'
-                ? 'bg-slate-800 text-white'
-                : 'text-slate-600 hover:bg-slate-100',
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted/40',
             ].join(' ')}
           >
             Sketch
@@ -427,10 +438,10 @@ function GraphRoute() {
           <RouteLoadingState label="Loading graph topology..." />
         ) : data == null ? (
           <div data-testid="graph-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-muted-foreground">
               Graph not available.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-muted-foreground">
               The knowledge graph will appear once the vault runtime connects.
             </p>
           </div>
@@ -443,12 +454,12 @@ function GraphRoute() {
               {graphStats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl border border-slate-200/80 bg-white/75 p-4"
+                  className="rounded-xl border border-border bg-card p-4"
                 >
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     {stat.label}
                   </p>
-                  <p className="mt-1 text-2xl font-semibold text-slate-800">
+                  <p className="mt-1 text-2xl font-semibold text-foreground">
                     {stat.value}
                   </p>
                 </div>
@@ -456,21 +467,21 @@ function GraphRoute() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-              <aside className="space-y-4 rounded-xl border border-slate-200/80 bg-white/75 p-4">
+              <aside className="space-y-4 rounded-xl border border-border bg-card p-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     Selected
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800 leading-snug">
+                  <p className="mt-1 text-sm font-semibold leading-snug text-foreground">
                     {selectedNode?.title || 'Untitled note'}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {selectedPath ? `${outgoingCount} out · ${incomingCount} in` : 'No node selected'}
                   </p>
                 </div>
 
                 <div data-testid="graph-node-list" className="space-y-2">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     Node list
                   </p>
                   <div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
@@ -484,14 +495,14 @@ function GraphRoute() {
                           className={[
                             'block w-full rounded-lg border px-3 py-2 text-left transition-colors',
                             active
-                              ? 'border-sky-300 bg-sky-50'
-                              : 'border-slate-200 bg-white/70 hover:border-slate-300 hover:bg-white',
+                              ? 'border-primary/30 bg-primary/10'
+                              : 'border-border bg-card hover:border-border/80 hover:bg-muted/30',
                           ].join(' ')}
                         >
-                          <span className="block truncate text-sm font-medium text-slate-800">
+                          <span className="block truncate text-sm font-medium text-foreground">
                             {node.title || 'Untitled note'}
                           </span>
-                          <span className="block truncate text-[11px] text-slate-500">
+                          <span className="block truncate text-[11px] text-muted-foreground">
                             {path}
                           </span>
                         </button>

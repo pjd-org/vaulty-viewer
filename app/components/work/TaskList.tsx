@@ -21,7 +21,7 @@ export function TaskList({
         return (
           <li
             key={task.id}
-            className="rounded-2xl border border-slate-200 bg-white/80 shadow-[0_6px_18px_-14px_rgba(15,23,42,0.45)]"
+            className="rounded-2xl border border-border bg-[var(--surf-elevated)] shadow-sm"
           >
             <button
               type="button"
@@ -30,21 +30,23 @@ export function TaskList({
               className={[
                 'flex w-full items-start justify-between rounded-2xl px-4 py-3 text-sm transition-colors',
                 isExpanded
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-50',
+                  ? 'bg-surface3 text-text'
+                  : 'text-text2 hover:bg-surface',
               ].join(' ')}
             >
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   className={`mt-1 size-2 shrink-0 rounded-full ${
-                    task.status === 'blocked' ? 'bg-red-400' : 'bg-emerald-400'
+                    task.status === 'blocked'
+                      ? 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]'
+                      : 'bg-[color-mix(in_srgb,var(--a-mint)_80%,transparent)]'
                   }`}
                 />
                 <div className="min-w-0">
-                  <span className="line-clamp-2 text-left font-semibold text-slate-800">
+                  <span className="line-clamp-2 text-left font-semibold text-text">
                     {task.title}
                   </span>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-text2">
                     <span>{task.priority}p</span>
                     <span>·</span>
                     <span>{task.estimatedTimeMin ?? 0}m</span>
@@ -55,8 +57,8 @@ export function TaskList({
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
                     task.status === 'blocked'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-[color-mix(in_srgb,var(--a-rose)_12%,transparent)] text-[var(--text-danger)]'
+                      : 'bg-[color-mix(in_srgb,var(--a-mint)_12%,transparent)] text-[var(--text-success)]'
                   }`}
                 >
                   {task.status}
@@ -70,7 +72,7 @@ export function TaskList({
               </div>
             </button>
             {isExpanded && (
-              <div className="mx-2 mb-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 animate-fade-in">
+              <div className="mx-2 mb-2 rounded-xl border border-border bg-surface px-4 py-3 animate-fade-in">
                 <TaskDetail task={task} />
               </div>
             )}

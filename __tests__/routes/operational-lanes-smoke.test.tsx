@@ -1,12 +1,14 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 // ---------------------------------------------------------------------------
 // Stubs required by all 8 route components
 // ---------------------------------------------------------------------------
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => ({}),
@@ -48,6 +50,10 @@ import { Route as AutomationRouteModule } from '../../app/routes/automation';
 const AutomationComponent = AutomationRouteModule.options
   .component as React.ComponentType;
 
+beforeEach(async () => {
+  await (AutomationComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
 describe('automation lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<AutomationComponent />);
@@ -65,6 +71,10 @@ describe('automation lane', () => {
 // ---------------------------------------------------------------------------
 import { Route as WorkRouteModule } from '../../app/routes/work';
 const WorkComponent = WorkRouteModule.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (WorkComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('work lane', () => {
   it('renders ProjectsWorkspace and empty-state when data is null', () => {
@@ -88,6 +98,10 @@ import { Route as PortfolioRouteModule } from '../../app/routes/portfolio';
 const PortfolioComponent = PortfolioRouteModule.options
   .component as React.ComponentType;
 
+beforeEach(async () => {
+  await (PortfolioComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
 describe('portfolio lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<PortfolioComponent />);
@@ -106,6 +120,10 @@ describe('portfolio lane', () => {
 import { Route as BubbleRouteModule } from '../../app/routes/bubble';
 const BubbleComponent = BubbleRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (BubbleComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('bubble lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
@@ -126,6 +144,10 @@ import { Route as HealthRouteModule } from '../../app/routes/health';
 const HealthComponent = HealthRouteModule.options
   .component as React.ComponentType;
 
+beforeEach(async () => {
+  await (HealthComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
 describe('health lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<HealthComponent />);
@@ -144,6 +166,10 @@ describe('health lane', () => {
 import { Route as TimelineRouteModule } from '../../app/routes/timeline';
 const TimelineComponent = TimelineRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (TimelineComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('timeline lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
@@ -164,6 +190,10 @@ import { Route as ArchiveRouteModule } from '../../app/routes/archive';
 const ArchiveComponent = ArchiveRouteModule.options
   .component as React.ComponentType;
 
+beforeEach(async () => {
+  await (ArchiveComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
 describe('archive lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<ArchiveComponent />);
@@ -182,6 +212,10 @@ describe('archive lane', () => {
 import { Route as GraphRouteModule } from '../../app/routes/graph';
 const GraphComponent = GraphRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (GraphComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('graph lane', () => {
   it('renders empty-state with correct testid when data is null', () => {

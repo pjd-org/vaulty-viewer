@@ -5,7 +5,7 @@ import type { KnowledgeNoteRef } from '../../lib/viewer-adapter';
 export function NoteGrid({ notes }: { notes: KnowledgeNoteRef[] }) {
   if (notes.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-slate-500">
+      <p className="py-12 text-center text-sm text-[var(--text-tertiary)]">
         No notes found.
       </p>
     );

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SkeletonCard } from '@vault/ui';
+import { SkeletonCard } from '@vault/ui/organisms';
 
 const meta = {
   title: 'UI / Organisms / SkeletonCard',

@@ -64,7 +64,7 @@ export function ProjectDetailHeader({
           <p className={statLabelClass}>Progress</p>
           <p className={statValueClass}>{project.progressText}</p>
           <div
-            className="mt-3 h-2 overflow-hidden rounded-full bg-black/10"
+            className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--surf-utility)]"
             role="progressbar"
             aria-valuenow={progressWidth}
             aria-valuemin={0}

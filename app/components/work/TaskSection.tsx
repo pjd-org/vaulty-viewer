@@ -3,8 +3,8 @@ import { TaskList } from './TaskList';
 import type { NextAction } from '../../../src/lib/focus-logic';
 import type { WorkSurfacePayload } from '../../lib/viewer-adapter';
 
-const emptyHeadingClass = 'text-sm font-medium text-neutral-600';
-const emptyBodyClass = 'text-xs text-neutral-400';
+const emptyHeadingClass = 'text-sm font-medium text-text2';
+const emptyBodyClass = 'text-xs text-text3';
 
 export function TaskSection({
   data,
@@ -42,11 +42,11 @@ export function TaskSection({
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-2">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
+      <div className="flex items-center justify-between rounded-2xl border border-border bg-surface2 px-4 py-2">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-text2">
           Next Actions
         </h3>
-        <span className="text-xs font-medium text-slate-500">
+        <span className="text-xs font-medium text-text2">
           {data.total} tasks · {data.mode}
         </span>
       </div>

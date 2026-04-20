@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from './_genie-css';
+import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
 
 /* ── Token callout helper ──────────────────────────────────────────────── */
 function TokenTag({ name }: { name: string }) {

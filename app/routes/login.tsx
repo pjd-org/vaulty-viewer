@@ -31,32 +31,32 @@ function LoginRoute() {
 
   return (
     <main
-      className="relative min-h-dvh overflow-hidden bg-[#f4f2ed] px-4 py-8 text-[#181615] antialiased"
+      className="relative min-h-dvh overflow-hidden bg-background px-4 py-8 text-foreground antialiased"
       style={{
-        fontFamily: '"Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif',
+        fontFamily: 'var(--font-sans)',
         background:
-          'radial-gradient(circle at 14% 18%, rgba(165, 207, 255, 0.28), transparent 28%), radial-gradient(circle at 84% 12%, rgba(216, 199, 255, 0.20), transparent 24%), linear-gradient(180deg, #f7f5f1 0%, #eeebe6 100%)',
+          'radial-gradient(circle at 14% 18%, color-mix(in_srgb,var(--a-sky)_28%,transparent), transparent 28%), radial-gradient(circle at 84% 12%, color-mix(in_srgb,var(--a-lilac)_20%,transparent), transparent 24%), linear-gradient(180deg, var(--color-bg) 0%, var(--color-surface) 100%)',
       }}
     >
       <div
         className="pointer-events-none absolute -left-20 top-[-12rem] h-[26rem] w-[26rem] rounded-full opacity-65 blur-3xl"
         style={{
           background:
-            'radial-gradient(circle at 35% 35%, rgba(223,84,27,0.4), rgba(223,84,27,0.02) 62%)',
+            'radial-gradient(circle at 35% 35%, color-mix(in_srgb,var(--a-peach)_36%,transparent), color-mix(in_srgb,var(--a-peach)_4%,transparent) 62%)',
         }}
       />
       <div
         className="pointer-events-none absolute -right-24 bottom-[-12rem] h-[28rem] w-[28rem] rounded-full opacity-60 blur-3xl"
         style={{
           background:
-            'radial-gradient(circle at 50% 50%, rgba(9,96,151,0.3), rgba(9,96,151,0.03) 68%)',
+            'radial-gradient(circle at 50% 50%, color-mix(in_srgb,var(--a-sky)_30%,transparent), color-mix(in_srgb,var(--a-sky)_4%,transparent) 68%)',
         }}
       />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(18,16,15,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(18,16,15,0.08) 1px, transparent 1px)',
+            'linear-gradient(color-mix(in_srgb,var(--border-default)_16%,transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in_srgb,var(--border-default)_16%,transparent) 1px, transparent 1px)',
           backgroundSize: '44px 44px',
         }}
       />
@@ -75,21 +75,21 @@ function LoginRoute() {
               className="hidden min-h-[420px] flex-col justify-between p-10 md:flex"
             >
               <div>
-                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#9c8070]">
+                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.42em] text-[var(--text-secondary)]">
                   Vault Control
                 </p>
                 <h1
-                  className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[#f0ebe3]"
-                  style={{ fontFamily: '"Iowan Old Style", "Palatino", serif' }}
+                  className="max-w-[14ch] text-[3.2rem] leading-[0.95] tracking-[-0.03em] text-[var(--text-primary)]"
+                  style={{ fontFamily: 'var(--vault-font-newsreader)' }}
                 >
                   Signal before noise.
                 </h1>
-                <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[#d1c8c0]">
+                <p className="mt-5 max-w-[30ch] text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
                   Authenticate to continue into your planning surface, execution
                   loop, and cod-level controls.
                 </p>
               </div>
-              <div className="mt-8 space-y-3 border-t border-[#ffffff]/10 pt-6">
+              <div className="mt-8 space-y-3 border-t border-border pt-6">
                 {[
                   { label: 'Surfaces', value: 'Home · Inbox · Actions' },
                   { label: 'Runtime', value: 'Paris node' },
@@ -99,10 +99,12 @@ function LoginRoute() {
                     key={label}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b6a99b]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                       {label}
                     </span>
-                    <span className="text-[10px] text-[#efe8df]">{value}</span>
+                    <span className="text-[10px] text-[var(--text-primary)]">
+                      {value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -112,14 +114,12 @@ function LoginRoute() {
               <div className="p-6 sm:p-8">
                 <div className="mb-7 flex items-start justify-between gap-4">
                   <div>
-                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.34em] text-[#7c6a5f]">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.34em] text-[var(--text-tertiary)]">
                       Vault Auth
                     </p>
                     <h2
-                      className="text-4xl tracking-[-0.02em] text-[#171411]"
-                      style={{
-                        fontFamily: '"Iowan Old Style", "Palatino", serif',
-                      }}
+                      className="text-4xl tracking-[-0.02em] text-[var(--text-primary)]"
+                      style={{ fontFamily: 'var(--vault-font-newsreader)' }}
                     >
                       Enter
                     </h2>
@@ -132,7 +132,7 @@ function LoginRoute() {
 
                 {search.error ? (
                   <p
-                    className="mb-4 rounded-xl border border-[#d13f25]/40 bg-[#fff1ec] px-3 py-2 text-sm text-[#9e2f1b]"
+                    className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
                     role="alert"
                   >
                     {search.error}
@@ -149,7 +149,7 @@ function LoginRoute() {
                       Email
                     </label>
                     <Input
-                      className="h-12 rounded-xl border-[var(--border-glass)] bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] placeholder:text-[#7d776f] focus:border-[var(--a-sky)] focus:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)]"
+                      className="h-12 rounded-xl border-border bg-card px-3.5 py-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-[color-mix(in_srgb,var(--primary)_24%,transparent)]"
                       id="email"
                       type="email"
                       name="email"
@@ -167,7 +167,7 @@ function LoginRoute() {
                       Password
                     </label>
                     <Input
-                      className="h-12 rounded-xl border-[var(--border-glass)] bg-white/88 px-3.5 py-3 text-base text-[#1e1a18] focus:border-[var(--a-sky)] focus:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)]"
+                      className="h-12 rounded-xl border-border bg-card px-3.5 py-3 text-base text-foreground focus:border-primary focus:ring-[color-mix(in_srgb,var(--primary)_24%,transparent)]"
                       id="password"
                       type="password"
                       name="password"

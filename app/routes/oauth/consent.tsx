@@ -42,7 +42,7 @@ function OAuthConsentRoute() {
 
   if (!search.client_id || !search.redirect_uri) {
     return (
-      <main className="min-h-dvh px-4 py-6 text-slate-800 antialiased">
+      <main className="min-h-dvh px-4 py-6 text-foreground antialiased">
         <section className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-2xl items-center justify-center">
           <PageFrame
             title="Invalid request"
@@ -51,14 +51,14 @@ function OAuthConsentRoute() {
             actions={<Badge variant="muted">Consent</Badge>}
           >
             <SoftPanel variant="hero" className="p-8">
-              <p className="text-sm text-[var(--text-secondary)]">
+              <p className="text-sm text-muted-foreground">
                 This authorization request cannot continue until the client
                 parameters are present.
               </p>
               <div className="mt-6 flex justify-end">
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
                 >
                   Go to sign in
                 </Link>
@@ -71,7 +71,7 @@ function OAuthConsentRoute() {
   }
 
   return (
-    <main className="min-h-dvh px-4 py-6 text-slate-800 antialiased">
+    <main className="min-h-dvh px-4 py-6 text-foreground antialiased">
       <section className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-2xl items-center justify-center">
         <PageFrame
           title="Authorize Vault Access"
@@ -80,13 +80,13 @@ function OAuthConsentRoute() {
           actions={<Badge variant="muted">Consent</Badge>}
         >
           <SoftPanel variant="hero" className="p-8">
-            <div className="mb-6 rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <div className="mb-6 rounded-[8px] border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
               {scopes.length > 0 ? (
                 <ul className="flex flex-wrap gap-2">
                   {scopes.map((scope) => (
                     <li
                       key={scope}
-                      className="rounded-[999px] border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
+                      className="rounded-[999px] border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground"
                     >
                       {scope}
                     </li>

@@ -29,7 +29,9 @@ export function ActionGuidancePanel({
   return (
     <section className="mb-5 space-y-3">
       <SectionLabel>What to do now</SectionLabel>
-      <p className="text-sm text-slate-600">{readiness.description}</p>
+      <p className="text-sm text-[var(--text-secondary)]">
+        {readiness.description}
+      </p>
       <div className="flex flex-wrap gap-2">
         <Link
           to="/"

@@ -96,7 +96,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
             <Link
               to="/"
               search={{}}
-              className="text-xs text-slate-500 transition hover:text-slate-700"
+              className="text-xs text-muted-foreground transition hover:text-foreground"
             >
               ← Focus
             </Link>
@@ -104,7 +104,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
 
           {error && (
             <div
-              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
               role="alert"
             >
               {error}
@@ -139,11 +139,11 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
           />
 
           {loading ? (
-            <p className="py-8 text-center text-sm text-slate-500">Loading…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
           ) : (
             <>
               <section className="mb-5 space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                   Vitals
                 </p>
                 <VitalsPanel vitals={vitals} />
@@ -156,7 +156,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
               <ExecutionStats vitals={vitals} />
 
               <details className="group mb-4">
-                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-slate-500 hover:text-slate-700">
+                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
                   Progression
                 </summary>
                 <div className="mt-2">
@@ -170,11 +170,11 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
               </details>
 
               {avatar.updated && (
-                <div className="border-t border-slate-200 pt-4">
+                <div className="border-t border-border pt-4">
                   <Link
                     to="/note"
                     search={{ p: 'notes/core/avatar/Avatar' }}
-                    className="text-xs text-slate-500 transition hover:text-slate-700"
+                    className="text-xs text-muted-foreground transition hover:text-foreground"
                   >
                     Open avatar note →
                   </Link>

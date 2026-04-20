@@ -157,7 +157,7 @@ function ActionsRoute() {
 
   const toolbar = (
     <div className="flex flex-wrap items-end gap-4">
-      <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+      <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
         <Badge
           variant="muted"
           className="w-fit px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
@@ -178,7 +178,7 @@ function ActionsRoute() {
               simulatableOnly,
             })
           }
-          className="rounded-full border border-slate-200 bg-black/3 px-3 py-2 text-sm text-slate-800 transition focus:border-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
+          className="rounded-full border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
         >
           <option value="urgency">Urgency</option>
           <option value="impact">Impact</option>
@@ -187,7 +187,7 @@ function ActionsRoute() {
           <option value="reversibility">Reversibility</option>
         </select>
       </div>
-      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-sm text-slate-800">
+      <label className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm text-foreground">
         <input
           id="actions-simulatable-only"
           type="checkbox"
@@ -198,20 +198,20 @@ function ActionsRoute() {
               simulatableOnly: event.target.checked ? true : undefined,
             })
           }
-          className="h-4 w-4 rounded border-slate-300 bg-transparent text-sky-600"
+          className="h-4 w-4 rounded border-border bg-transparent text-primary"
         />
-        <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-slate-600">
+        <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-muted-foreground">
           Simulatable only
         </span>
       </label>
-      <div className="rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-right text-xs text-slate-600">
+      <div className="rounded-full border border-border bg-muted/40 px-4 py-2 text-right text-xs text-muted-foreground">
         <Badge
           variant="muted"
           className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
         >
           Showing {recommendations.length} of {allRecommendations.length}
         </Badge>
-        <p className="font-medium text-slate-800">
+        <p className="font-medium text-foreground">
           Selected: {selected?.title ?? 'None'}
         </p>
       </div>
@@ -259,7 +259,7 @@ function ActionsRoute() {
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-black/3"
+                className="h-24 animate-pulse rounded-2xl border border-border bg-muted/40"
               />
             ))}
           </div>
@@ -283,8 +283,8 @@ function ActionsRoute() {
                   className={[
                     'rounded-[22px] border transition',
                     isExpanded
-                      ? 'border-sky-300 bg-sky-50 shadow-[0_18px_45px_rgba(56,189,248,0.10)]'
-                      : 'border-slate-200 bg-black/3',
+                      ? 'border-primary/30 bg-primary/5 shadow-sm'
+                      : 'border-border bg-muted/40',
                   ].join(' ')}
                 >
                   {/* ── summary row — clickable ── */}
@@ -302,10 +302,10 @@ function ActionsRoute() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-base font-semibold text-slate-800">
+                        <h3 className="text-base font-semibold text-foreground">
                           {item.title}
                         </h3>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {item.summary}
                         </p>
                       </div>
@@ -318,29 +318,29 @@ function ActionsRoute() {
                     </div>
                     <div className="mt-4 grid gap-3 md:grid-cols-3">
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                           Why now
                         </p>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {item.whyNow}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                           Expected effect
                         </p>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {item.expectedEffect}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                           Score
                         </p>
-                        <p className="mt-1 text-sm text-slate-800">
+                        <p className="mt-1 text-sm text-foreground">
                           {item.score.toFixed(1)} / 10
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           Confidence {(item.confidence * 100).toFixed(0)}% ·{' '}
                           {item.reversibility} reversibility
                         </p>
@@ -350,7 +350,7 @@ function ActionsRoute() {
 
                   {/* ── inline detail panel ── */}
                   {isExpanded && (
-                    <div className="border-t border-sky-200 px-4 pb-4 pt-3 space-y-4 text-sm text-slate-600">
+                    <div className="border-t border-border px-4 pb-4 pt-3 space-y-4 text-sm text-muted-foreground">
                       {/* Score breakdown */}
                       <SurfaceSectionCard title="Score breakdown">
                         <div className="space-y-2">
@@ -360,10 +360,10 @@ function ActionsRoute() {
                                 key={key}
                                 className="flex items-center justify-between gap-3"
                               >
-                                <span className="text-slate-500 capitalize">
+                                <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, ' $1')}
                                 </span>
-                                <span className="text-slate-800">{value}</span>
+                                <span className="text-foreground">{value}</span>
                               </div>
                             )
                           )}
@@ -372,12 +372,12 @@ function ActionsRoute() {
 
                       {/* Mutation path */}
                       <SurfaceSectionCard title="Mutation path">
-                        <p className="text-slate-800">
+                        <p className="text-foreground">
                           {item.mutationRef
                             ? `${item.mutationRef.domain} / ${item.mutationRef.operation}`
                             : 'Simulation only'}
                         </p>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           Source entities: {item.sourceEntities.length}
                         </p>
                       </SurfaceSectionCard>
@@ -389,14 +389,14 @@ function ActionsRoute() {
                             {item.sourceSignalIds.map((signalId) => (
                               <span
                                 key={signalId}
-                                className="rounded-full border border-slate-200 bg-black/3 px-3 py-1 text-xs text-slate-700"
+                                className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-foreground"
                               >
                                 {signalId}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             No source signals surfaced.
                           </p>
                         )}
@@ -405,10 +405,10 @@ function ActionsRoute() {
                       {/* Verification preview */}
                       <SurfaceSectionCard title="Verification preview">
                         {verificationPhase === 'pending' && (
-                          <p className="text-sm text-sky-700">Verifying…</p>
+                          <p className="text-sm text-primary">Verifying…</p>
                         )}
                         {verificationPhase === 'failed' && (
-                          <p className="text-sm text-red-700">
+                          <p className="text-sm text-destructive">
                             Verification failed.
                           </p>
                         )}
@@ -417,14 +417,14 @@ function ActionsRoute() {
                             {surface?.verificationRail.map((vItem) => (
                               <article
                                 key={vItem.id}
-                                className="rounded-[14px] border border-slate-200 bg-black/3 p-3"
+                                className="rounded-[14px] border border-border bg-muted/40 p-3"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
-                                    <p className="text-sm font-medium text-slate-800">
+                                    <p className="text-sm font-medium text-foreground">
                                       {vItem.summary}
                                     </p>
-                                    <p className="mt-1 text-xs text-slate-500">
+                                    <p className="mt-1 text-xs text-muted-foreground">
                                       {vItem.actionId}
                                     </p>
                                   </div>
@@ -439,7 +439,7 @@ function ActionsRoute() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             Ready for post-action verification.
                           </p>
                         )}
@@ -485,8 +485,8 @@ function ActionsRoute() {
 
                       {/* Simulation preview (item-scoped) */}
                       {simulationData && (
-                        <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-4">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">
+                        <div className="rounded-[18px] border border-warning/30 bg-warning/10 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-warning">
                             Simulation preview
                           </p>
                           <div className="mt-3 space-y-2">
@@ -528,8 +528,8 @@ function ActionsRoute() {
                                 key={label}
                                 className="flex items-center justify-between gap-3"
                               >
-                                <span className="text-slate-500">{label}</span>
-                                <span className="text-slate-800">{value}</span>
+                                <span className="text-muted-foreground">{label}</span>
+                                <span className="text-foreground">{value}</span>
                               </div>
                             ))}
                           </div>

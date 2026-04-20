@@ -21,53 +21,53 @@ export const Route = createFileRoute('/portfolio')({
 
 function PortfolioItemDetail({ item }: { item: PressureSignal }) {
   const severityColor: Record<string, string> = {
-    critical: 'bg-red-100 text-red-700',
-    high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-black/5 text-slate-600',
+    critical: 'bg-destructive/10 text-destructive',
+    high: 'bg-warning/10 text-warning',
+    medium: 'bg-primary/10 text-primary',
+    low: 'bg-muted text-muted-foreground',
   };
 
   return (
     <div className="space-y-4 text-sm" data-testid="portfolio-item-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-800">{item.title}</p>
+        <p className="font-medium leading-snug text-foreground">{item.title}</p>
         {item.projectId && (
-          <p className="mt-0.5 text-xs text-slate-500">{item.projectId}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{item.projectId}</p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-black/5 text-slate-600'}`}
+          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'bg-muted text-muted-foreground'}`}
         >
           {item.severity}
         </span>
-        <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600">
+        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
           {item.kind}
         </span>
         {item.state && (
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-600">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
             {item.state}
           </span>
         )}
       </div>
 
-      {item.summary && <p className="text-xs text-slate-500">{item.summary}</p>}
+      {item.summary && <p className="text-xs text-muted-foreground">{item.summary}</p>}
 
-      <div className="space-y-1 text-xs text-slate-600">
+      <div className="space-y-1 text-xs text-muted-foreground">
         <p>
-          <span className="font-medium text-slate-700">Why surfaced:</span>{' '}
+          <span className="font-medium text-foreground">Why surfaced:</span>{' '}
           {item.whySurfaced}
         </p>
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-slate-700">Confidence:</span>{' '}
+            <span className="font-medium text-foreground">Confidence:</span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
         {item.score !== undefined && (
           <p>
-            <span className="font-medium text-slate-700">Score:</span>{' '}
+            <span className="font-medium text-foreground">Score:</span>{' '}
             {item.score}
           </p>
         )}
@@ -75,14 +75,14 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
 
       {item.allowedActions.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Actions (display only)
           </p>
           <ul className="space-y-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="text-xs text-slate-600 bg-black/5 rounded-md px-2 py-1"
+                className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground"
               >
                 {action.label}
               </li>
@@ -103,9 +103,9 @@ function SeverityDot({ severity }: { severity: PressureSignal['severity'] }) {
     severity === 'critical'
       ? 'bg-destructive'
       : severity === 'high'
-        ? 'bg-orange-500'
+        ? 'bg-warning'
         : severity === 'medium'
-          ? 'bg-yellow-500'
+          ? 'bg-warning/70'
           : 'bg-muted-foreground';
   return <span className={`inline-block size-2 rounded-full ${color}`} />;
 }
@@ -124,13 +124,13 @@ function PortfolioItem({
   onSelect: (item: PressureSignal) => void;
 }) {
   return (
-    <li data-testid={`portfolio-item-${item.id}`}>
+          <li data-testid={`portfolio-item-${item.id}`}>
       <button
         type="button"
         onClick={() => onSelect(item)}
         className={[
-          'flex w-full items-start gap-3 rounded-md px-3 py-2 text-sm transition-colors text-left',
-          isSelected ? 'bg-slate-100' : 'hover:bg-black/5',
+          'flex w-full items-start gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors',
+          isSelected ? 'bg-primary/10' : 'hover:bg-muted/40',
         ].join(' ')}
       >
         <SeverityDot severity={item.severity} />
@@ -142,7 +142,7 @@ function PortfolioItem({
             </p>
           )}
           {item.summary && (
-            <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">
+            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground/80">
               {item.summary}
             </p>
           )}
@@ -241,10 +241,10 @@ function PortfolioRoute() {
           <RouteLoadingState label="Loading pressure signals..." />
         ) : data == null || data.total === 0 ? (
           <div data-testid="portfolio-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-foreground">
               No projects in the pressure band.
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Project-scoped signals will appear here once COD surfaces
               project-linked tasks.
             </p>

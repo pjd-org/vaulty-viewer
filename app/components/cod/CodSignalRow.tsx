@@ -67,8 +67,16 @@ function SignalCard({
   accentColor?: string;
 }) {
   const accent = accentColor ?? 'var(--a-mint)';
+  const surfaceTone =
+    signal.severity === 'critical'
+      ? 'danger'
+      : signal.severity === 'high'
+        ? 'warning'
+        : signal.severity === 'medium'
+          ? 'info'
+          : 'success';
   return (
-    <article className="genie-card space-y-2">
+    <article className={`genie-card genie-card--${surfaceTone} space-y-2`}>
       <div className="flex items-start justify-between gap-3">
         <h3
           className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"

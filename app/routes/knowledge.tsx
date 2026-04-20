@@ -103,15 +103,15 @@ function KnowledgeRoute() {
             {metricCards.map((metric) => (
               <article
                 key={metric.label}
-                className="rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3"
+                className="rounded-xl border border-border bg-card/80 px-4 py-3"
               >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-slate-800">
+                <p className="mt-1 text-2xl font-semibold text-foreground">
                   {metric.value}
                 </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {metric.hint}
                 </p>
               </article>
@@ -132,7 +132,7 @@ function KnowledgeRoute() {
                         : 'all'
                 )
               }
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700"
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
             >
               Audience: {audience}
             </button>
@@ -141,19 +141,19 @@ function KnowledgeRoute() {
             <Link
               to="/knowledge"
               search={{ q: 'search' }}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60"
             >
               Search
             </Link>
             <Link
               to="/knowledge"
               search={{ q: 'graph' }}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60"
             >
               Graph
             </Link>
 
-            <label className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700">
+            <label className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground">
               Domain
               <select
                 value={domain}
@@ -169,7 +169,7 @@ function KnowledgeRoute() {
               </select>
             </label>
 
-            <label className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700">
+            <label className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground">
               Maturity
               <select
                 value={maturity}
@@ -187,11 +187,11 @@ function KnowledgeRoute() {
           </div>
 
           {loading ? (
-            <div className="rounded-xl border border-slate-200 bg-white/70 p-6 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-card/70 p-6 text-sm text-muted-foreground">
               Loading notes…
             </div>
           ) : pageItems.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-white/70 p-6 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-card/70 p-6 text-sm text-muted-foreground">
               No notes match this filter.
             </div>
           ) : (
@@ -213,23 +213,23 @@ function KnowledgeRoute() {
             </div>
           )}
 
-          <div className="flex items-center justify-between border-t border-slate-200/70 pt-4">
+          <div className="flex items-center justify-between border-t border-border pt-4">
             <button
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 disabled:opacity-40"
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground disabled:opacity-40"
             >
               Prev
             </button>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {safePage} / {totalPages}
             </p>
             <button
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 disabled:opacity-40"
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground disabled:opacity-40"
             >
               Next
             </button>

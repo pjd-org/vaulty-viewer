@@ -27,12 +27,12 @@ function MomentumBar({ score }: { score: number }) {
   const pct = Math.min(100, Math.max(0, (score / 10) * 100));
   const color =
     score >= 7
-      ? 'bg-emerald-500'
+      ? 'bg-success'
       : score >= 4
-        ? 'bg-amber-400'
-        : 'bg-neutral-400';
+        ? 'bg-warning'
+        : 'bg-muted-foreground';
   return (
-    <div className="w-full h-2 rounded-full bg-neutral-200 overflow-hidden">
+    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
       <div
         className={`h-2 rounded-full ${color} transition-all`}
         style={{ width: `${pct}%` }}
@@ -53,11 +53,11 @@ function StatRow({
   sub?: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-2 py-1.5 border-b border-neutral-100 last:border-0">
-      <span className="text-xs text-neutral-500">{label}</span>
+    <div className="flex items-start justify-between gap-2 border-b border-border py-1.5 last:border-0">
+      <span className="text-xs text-muted-foreground">{label}</span>
       <div className="text-right">
-        <span className="text-sm font-medium text-neutral-800">{value}</span>
-        {sub && <p className="text-xs text-neutral-400">{sub}</p>}
+        <span className="text-sm font-medium text-foreground">{value}</span>
+        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </div>
     </div>
   );
@@ -70,16 +70,16 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
     <div className="space-y-5" data-testid="bubble-content">
       {/* Momentum */}
       <section data-testid="bubble-momentum">
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Momentum
         </h3>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-700">
+            <span className="text-sm font-medium text-foreground">
               {momentum.label}
             </span>
             <span
-              className="text-xs text-neutral-400"
+              className="text-xs text-muted-foreground"
               data-testid="momentum-trend"
             >
               {momentum.trend === 'up'
@@ -104,7 +104,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
 
       {/* Pressure */}
       <section data-testid="bubble-pressure">
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Pressure
         </h3>
         <div className="space-y-1">
@@ -118,23 +118,23 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
       {/* Signals */}
       {data.signals.length > 0 && (
         <section data-testid="bubble-signals">
-          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Signals
           </h3>
           <ul className="space-y-1">
             {data.signals.map((signal) => {
               const badgeClass =
                 signal.severity === 'high' || signal.severity === 'critical'
-                  ? 'bg-red-100 text-red-700'
+                  ? 'bg-destructive/10 text-destructive'
                   : signal.severity === 'medium'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-neutral-100 text-neutral-500';
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-muted text-muted-foreground';
               return (
                 <li
                   key={signal.id}
-                  className="flex items-center justify-between gap-2 py-1.5 border-b border-neutral-100 last:border-0"
+                  className="flex items-center justify-between gap-2 border-b border-border py-1.5 last:border-0"
                 >
-                  <span className="text-sm text-neutral-800">
+                  <span className="text-sm text-foreground">
                     {signal.title}
                   </span>
                   <span
@@ -159,7 +159,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
     <div className="space-y-5" data-testid="bubble-aside">
       {/* Energy */}
       <section data-testid="bubble-energy">
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Energy
         </h3>
         <div className="space-y-1">
@@ -173,7 +173,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
 
       {/* Rewards */}
       <section data-testid="bubble-rewards">
-        <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Rewards
         </h3>
         <div className="space-y-1">
@@ -243,9 +243,9 @@ function BubbleRoute() {
       primary={
         isLoading ? (
           <div className="space-y-3" data-testid="bubble-loading-state">
-            <div className="h-16 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
-            <div className="h-20 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
-            <div className="h-16 animate-pulse rounded-2xl border border-slate-200 bg-black/3" />
+            <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
+            <div className="h-20 animate-pulse rounded-2xl border border-border bg-muted/40" />
+            <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
           </div>
         ) : error && !data ? (
           <EmptyState
@@ -254,10 +254,10 @@ function BubbleRoute() {
           />
         ) : data == null ? (
           <div data-testid="bubble-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-muted-foreground">
               No bubble data yet.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-muted-foreground">
               Adapter context is wired. Pressure, momentum, and reward surfaces
               will appear once the runtime connects.
             </p>

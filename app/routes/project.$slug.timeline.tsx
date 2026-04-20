@@ -48,11 +48,11 @@ function ProjectTimelineRoute() {
           {stats.map((s) => (
             <div
               key={s.label}
-              className="h-20 animate-pulse rounded-[18px] border border-slate-200 bg-black/3"
+              className="h-20 animate-pulse rounded-[18px] border border-border bg-muted/20"
             />
           ))}
         </div>
-        <div className="h-48 animate-pulse rounded-[18px] border border-slate-200 bg-black/3" />
+        <div className="h-48 animate-pulse rounded-[18px] border border-border bg-muted/20" />
       </div>
     );
   }
@@ -64,12 +64,12 @@ function ProjectTimelineRoute() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+            className="rounded-[18px] border border-border bg-card p-4"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
               {s.label}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-slate-800">
+            <p className="mt-2 text-2xl font-semibold text-foreground">
               {s.value}
             </p>
           </div>
@@ -103,11 +103,6 @@ function ProjectTimelineRoute() {
                   <TimelineItem
                     key={hint.id}
                     variant={active ? 'default' : 'outline'}
-                    className={
-                      active
-                        ? 'border-sky-300 bg-sky-50 shadow-[0_18px_45px_rgba(56,189,248,0.10)]'
-                        : undefined
-                    }
                   >
                     <Link
                       to="/project/$slug/timeline"
@@ -147,11 +142,11 @@ function ProjectTimelineRoute() {
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-base font-semibold text-slate-800">
+                    <h3 className="text-base font-semibold text-foreground">
                       {selectedHint.title ?? selectedHint.id}
                     </h3>
                     {selectedHint.type != null && (
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {selectedHint.type}
                       </p>
                     )}
@@ -160,11 +155,11 @@ function ProjectTimelineRoute() {
                     <SoftChip label={selectedHint.status} />
                   )}
                 </div>
-                <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <div className="rounded-[18px] border border-border bg-card p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     ID
                   </p>
-                  <p className="mt-2 text-xs font-mono text-slate-700 break-all">
+                  <p className="mt-2 break-all text-xs font-mono text-foreground">
                     {selectedHint.id}
                   </p>
                 </div>
@@ -192,10 +187,10 @@ function ProjectTimelineRoute() {
                 {verificationRail.map((v) => (
                   <div
                     key={v.id}
-                    className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+                    className="rounded-[18px] border border-border bg-card p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-foreground">
                         {v.summary}
                       </p>
                       <SoftChip label={v.status} />

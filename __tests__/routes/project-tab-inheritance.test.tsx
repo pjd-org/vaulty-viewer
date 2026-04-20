@@ -1,6 +1,7 @@
 import React from 'react'
 import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { ProjectSurfacePayload } from '../../app/lib/viewer-adapter'
 
@@ -17,6 +18,7 @@ const mockRouterState = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   Link: ({
     to,
     params,

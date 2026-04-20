@@ -3,11 +3,11 @@ import { Link } from '@tanstack/react-router';
 import type { NextAction } from '../../../src/lib/focus-logic';
 
 const taskChipClass =
-  'rounded-full bg-black/5 px-2 py-0.5 text-[11px] text-slate-500';
+  'rounded-full bg-[var(--surf-utility)] px-2 py-0.5 text-[11px] text-text2';
 const taskSkyLinkClass =
-  'inline-block text-xs text-sky-600 underline underline-offset-2 transition hover:text-sky-800';
+  'inline-block text-xs text-[var(--text-info)] underline underline-offset-2 transition hover:opacity-80';
 const taskVioletLinkClass =
-  'inline-block text-xs text-violet-600 underline underline-offset-2 transition hover:text-violet-800';
+  'inline-block text-xs text-[color-mix(in_srgb,var(--a-lilac)_65%,var(--n-950))] underline underline-offset-2 transition hover:opacity-80';
 
 export function TaskDetail({ task }: { task: NextAction }) {
   const blockers =
@@ -16,11 +16,11 @@ export function TaskDetail({ task }: { task: NextAction }) {
   return (
     <div className="space-y-4 text-sm" data-testid="work-task-detail">
       <div>
-        <p className="font-medium leading-snug text-slate-800">{task.title}</p>
+        <p className="font-medium leading-snug text-text">{task.title}</p>
         {task.description ? (
-          <p className="mt-1 text-xs text-slate-500">{task.description}</p>
+          <p className="mt-1 text-xs text-text2">{task.description}</p>
         ) : (
-          <p className="mt-1 text-xs text-slate-400 italic">
+          <p className="mt-1 text-xs text-text3 italic">
             No description. Open the note to add context.
           </p>
         )}
@@ -28,7 +28,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
 
       <div className="flex flex-wrap gap-2">
         {task.priority > 0 && (
-          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sky)_12%,white)] [border-color:color-mix(in_srgb,var(--a-sky)_28%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_65%,#1c2230)] px-2 py-0.5 text-[11px]">
+          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_28%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_65%,var(--n-950))] px-2 py-0.5 text-[11px]">
             p{task.priority}
           </span>
         )}
@@ -42,7 +42,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
           <span className={taskChipClass}>{task.estimatedTimeMin}m</span>
         )}
         {task.dueDate && (
-          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sun)_14%,white)] [border-color:color-mix(in_srgb,var(--a-sun)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,#1c2230)] px-2 py-0.5 text-[11px]">
+          <span className="rounded-full border [background:color-mix(in_srgb,var(--a-sun)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))] px-2 py-0.5 text-[11px]">
             due {task.dueDate}
           </span>
         )}
@@ -50,8 +50,8 @@ export function TaskDetail({ task }: { task: NextAction }) {
           className={[
             'rounded-full border px-2 py-0.5 text-[11px]',
             task.status === 'blocked'
-              ? '[background:color-mix(in_srgb,var(--a-rose)_14%,white)] [border-color:color-mix(in_srgb,var(--a-rose)_28%,transparent)] [color:color-mix(in_srgb,var(--a-rose)_70%,#1c2230)]'
-              : '[background:color-mix(in_srgb,var(--a-mint)_14%,white)] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,#1c2230)]',
+              ? '[background:color-mix(in_srgb,var(--a-rose)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-rose)_28%,transparent)] [color:color-mix(in_srgb,var(--a-rose)_70%,var(--n-950))]'
+              : '[background:color-mix(in_srgb,var(--a-mint)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,var(--n-950))]',
           ].join(' ')}
         >
           {task.status}
@@ -70,14 +70,14 @@ export function TaskDetail({ task }: { task: NextAction }) {
 
       {blockers.length > 0 && (
         <div>
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-slate-500">
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-text2">
             Blockers
           </p>
           <ul className="space-y-1">
             {blockers.map((b, i) => (
               <li
                 key={i}
-                className="text-xs [color:color-mix(in_srgb,var(--a-rose)_75%,#1c2230)]"
+                className="text-xs [color:color-mix(in_srgb,var(--a-rose)_75%,var(--n-950))]"
               >
                 {b.description ?? String(b)}
               </li>
@@ -91,7 +91,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
           <Link
             to="/note"
             search={{ p: task.path }}
-            className="inline-block text-xs text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
+            className="inline-block text-xs text-text2 underline underline-offset-2 transition hover:text-text"
           >
             Open note →
           </Link>

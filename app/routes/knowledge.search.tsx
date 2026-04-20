@@ -74,17 +74,17 @@ function KnowledgeSearchRoute() {
         value={q}
         onChange={(e) => handleQueryChange(e.target.value)}
         placeholder="Search knowledge notes…"
-        className="min-w-[240px] flex-1 rounded-full border border-slate-200 bg-black/3 px-4 py-2 text-sm text-slate-800 placeholder-slate-400 transition focus:border-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70"
+        className="min-w-[240px] flex-1 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground transition focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
       />
-      <div className="flex overflow-hidden rounded-full border border-slate-200 bg-black/3">
+      <div className="flex overflow-hidden rounded-full border border-border bg-muted/40">
         <button
           type="button"
           onClick={() => handleModeChange('tag')}
           className={[
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
             mode === 'tag'
-              ? 'bg-sky-100 text-sky-700'
-              : 'text-slate-500 hover:text-slate-700',
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
         >
           Structural
@@ -95,8 +95,8 @@ function KnowledgeSearchRoute() {
           className={[
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
             mode === 'semantic'
-              ? 'bg-sky-100 text-sky-700'
-              : 'text-slate-500 hover:text-slate-700',
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
         >
           Semantic
@@ -104,7 +104,7 @@ function KnowledgeSearchRoute() {
       </div>
       <button
         type="submit"
-        className="rounded-full border border-sky-300 bg-sky-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 transition hover:bg-sky-200"
+        className="rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary transition hover:bg-primary/20"
       >
         Search
       </button>
@@ -142,7 +142,7 @@ function KnowledgeSearchRoute() {
 
           {searchError && (
             <div
-              className="rounded-[18px] border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+              className="rounded-[18px] border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive"
               role="alert"
             >
               Search failed: {searchError.message}
@@ -154,7 +154,7 @@ function KnowledgeSearchRoute() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 animate-pulse rounded-[18px] border border-slate-200 bg-black/3"
+                  className="h-20 animate-pulse rounded-[18px] border border-border bg-muted/40"
                 />
               ))}
             </div>
@@ -192,22 +192,22 @@ function KnowledgeSearchRoute() {
       asideTitle="Search Tips"
       asideSubtitle="How to get the best results."
       aside={
-        <div className="space-y-4 text-sm text-slate-600">
-          <div className="rounded-[18px] border border-slate-200 bg-black/3 p-4 space-y-3">
+        <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="space-y-3 rounded-[18px] border border-border bg-muted/40 p-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 Structural mode
               </p>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-muted-foreground">
                 Matches notes by tag, frontmatter type, or audience field. Exact
                 and prefix matching.
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 Semantic mode
               </p>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-muted-foreground">
                 Uses vector embeddings to find conceptually similar notes even
                 without exact keyword matches.
               </p>

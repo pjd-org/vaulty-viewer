@@ -22,6 +22,10 @@ export {
   Stack,
   SuggestionChip,
   Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  TabsRoot,
   Toast,
 } from '@vault/ui';
 

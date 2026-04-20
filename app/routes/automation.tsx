@@ -36,8 +36,8 @@ function AutomationDetail({ selection }: { selection: Selection }) {
         className="space-y-3 text-sm"
         data-testid="automation-pipeline-detail"
       >
-        <p className="font-medium text-slate-800 font-mono">{pipeline.name}</p>
-        <p className="text-xs text-slate-500">
+        <p className="font-mono font-medium text-foreground">{pipeline.name}</p>
+        <p className="text-xs text-muted-foreground">
           No execution history yet. Trigger a run via the scheduler or CLI to
           see runtime metadata here.
         </p>
@@ -60,32 +60,32 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     return (
       <div className="space-y-4 text-sm" data-testid="automation-job-detail">
         <div>
-          <p className="font-medium text-slate-800 font-mono">{job.id}</p>
-          <p className="mt-0.5 text-xs text-slate-500">{job.pipeline}</p>
+          <p className="font-mono font-medium text-foreground">{job.id}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{job.pipeline}</p>
         </div>
 
-        <div className="space-y-1 text-xs text-slate-600">
+        <div className="space-y-1 text-xs text-muted-foreground">
           {job.cron && (
             <p>
-              <span className="font-medium text-slate-700">Cron:</span>{' '}
+              <span className="font-medium text-foreground">Cron:</span>{' '}
               <span className="font-mono">{job.cron}</span>
             </p>
           )}
           {job.intervalSec != null && (
             <p>
-              <span className="font-medium text-slate-700">Interval:</span>{' '}
+              <span className="font-medium text-foreground">Interval:</span>{' '}
               {job.intervalSec}s
             </p>
           )}
           {job.mode && (
             <p>
-              <span className="font-medium text-slate-700">Mode:</span>{' '}
+              <span className="font-medium text-foreground">Mode:</span>{' '}
               {job.mode}
             </p>
           )}
           {job.source && (
             <p>
-              <span className="font-medium text-slate-700">Source:</span>{' '}
+              <span className="font-medium text-foreground">Source:</span>{' '}
               {job.source}
             </p>
           )}
@@ -93,12 +93,12 @@ function AutomationDetail({ selection }: { selection: Selection }) {
 
         {lastRunStatus && (
           <div className="space-y-1 text-xs">
-            <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+            <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
               Last run
             </p>
             <p
               className={
-                isFailed ? 'text-red-600 font-medium' : 'text-slate-600'
+                isFailed ? 'text-destructive font-medium' : 'text-muted-foreground'
               }
             >
               {lastRunStatus}
@@ -143,8 +143,8 @@ function PipelineList({
             className={[
               'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
               selectedId === p.name
-                ? 'bg-slate-100 text-slate-900'
-                : 'hover:bg-black/5 text-slate-600',
+                ? 'bg-muted text-foreground'
+                : 'hover:bg-muted/60 text-muted-foreground',
             ].join(' ')}
           >
             <span className="font-mono text-xs text-muted-foreground shrink-0">
@@ -176,11 +176,11 @@ function SchedulerSection({
       <div className="flex items-center gap-2 text-sm">
         <span className="font-medium text-muted-foreground">Scheduler</span>
         {scheduler.enabled ? (
-          <span className="text-xs font-semibold text-emerald-600 uppercase">
+          <span className="text-xs font-semibold text-success uppercase">
             enabled
           </span>
         ) : (
-          <span className="text-xs font-semibold text-neutral-400 uppercase">
+          <span className="text-xs font-semibold text-muted-foreground uppercase">
             disabled
           </span>
         )}
@@ -234,13 +234,13 @@ function SchedulerSection({
                     }
                   }}
                   className={[
-                    'border-b border-border/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400/50',
+                    'border-b border-border/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20',
                     selectedJobId === job.id
-                      ? 'bg-slate-100'
-                      : 'hover:bg-black/5',
+                      ? 'bg-muted'
+                      : 'hover:bg-muted/60',
                   ].join(' ')}
                 >
-                  <td className="py-2 pr-4 font-mono text-xs">{job.id}</td>
+                  <td className="py-2 pr-4 font-mono text-xs text-foreground">{job.id}</td>
                   <td className="py-2 pr-4">{job.pipeline}</td>
                   <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
                     {job.cron ??
@@ -317,10 +317,10 @@ function AutomationRoute() {
           <RouteLoadingState label="Loading automation controls..." />
         ) : data == null ? (
           <div data-testid="automation-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-foreground">
               No automation data yet.
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Adapter context is wired. Data will appear once the runtime
               surface connects.
             </p>

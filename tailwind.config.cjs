@@ -58,11 +58,10 @@ module.exports = {
         },
       },
       borderRadius: {
+        // shadcn-scale alias — kept for any shadcn-native components that explicitly use rounded-shadcn
         shadcn: 'var(--radius-shadcn)',
-        sm: 'calc(var(--radius-shadcn) - 4px)',
-        md: 'calc(var(--radius-shadcn) - 2px)',
-        lg: 'var(--radius-shadcn)',
-        xl: 'calc(var(--radius-shadcn) + 4px)',
+        // sm/md/lg/xl are intentionally NOT overridden here so they resolve
+        // to the @vault/ui/tailwind preset values (var(--radius-sm/md/lg/xl))
       },
       keyframes: {
         'fade-in': {

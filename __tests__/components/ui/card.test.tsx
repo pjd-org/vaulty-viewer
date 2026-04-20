@@ -52,7 +52,7 @@ describe('Card smoke tests', () => {
         <CardDescription>Desc</CardDescription>
       </Card>
     );
-    const desc = container.querySelector('.text-muted-foreground');
+    const desc = container.querySelector('.text-text-2');
     expect(desc).toBeTruthy();
   });
 });

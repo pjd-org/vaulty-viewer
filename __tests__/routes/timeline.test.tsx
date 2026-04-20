@@ -7,6 +7,7 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 // ---------------------------------------------------------------------------
 // Hoist shared mocks
@@ -38,6 +39,7 @@ const {
 // ---------------------------------------------------------------------------
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => mockUseSearch(),
@@ -130,6 +132,10 @@ const TIMELINE_DATA = {
 import { Route as TimelineRouteModule } from '../../app/routes/timeline';
 const TimelineComponent = TimelineRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (TimelineComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 afterEach(() => {
   cleanup();

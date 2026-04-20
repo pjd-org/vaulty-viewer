@@ -87,7 +87,7 @@ const ThreadScrollToBottom: FC = () => {
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
         tooltip="Scroll to bottom"
-        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[0_8px_20px_rgba(17,21,29,0.08)] disabled:invisible"
+        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] p-4 shadow-sm disabled:invisible"
       >
         <ArrowDownIcon />
       </TooltipIconButton>
@@ -164,7 +164,7 @@ const ThreadSuggestionItem: FC<{ title: string; description: string }> = ({
     <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
       <Button
         unstyled
-        className="aui-thread-welcome-suggestion genie-surface genie-surface--utility h-auto w-full flex-col items-start justify-start gap-1.5 rounded-[24px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.08)] transition-colors hover:bg-white hover:text-[var(--text-primary)]"
+        className="aui-thread-welcome-suggestion genie-surface genie-surface--utility h-auto w-full flex-col items-start justify-start gap-1.5 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-md transition-colors hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)]"
         onClick={() => {
           aui.thread().append({
             content: [{ type: 'text', text: title }],
@@ -190,12 +190,12 @@ const Composer: FC = () => {
       <ComposerPrimitive.AttachmentDropzone asChild>
         <div
           data-slot="composer-shell"
-          className="genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[30px] border-[var(--border-glass-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,251,253,0.9))] p-(--composer-padding) shadow-[0_14px_34px_rgba(17,21,29,0.10)] transition-shadow focus-within:border-[var(--border-glass-default)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] data-[dragging=true]:border-[color-mix(in_srgb,var(--a-sky)_40%,var(--border-glass-soft))] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[rgba(255,255,255,0.98)]"
+          className="genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[30px] border-[var(--border-glass-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,251,253,0.9))] p-(--composer-padding) shadow-lg transition-shadow focus-within:border-[var(--border-glass-default)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] data-[dragging=true]:border-[color-mix(in_srgb,var(--a-sky)_40%,var(--border-glass-soft))] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[rgba(255,255,255,0.98)]"
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
             placeholder="Send a message..."
-            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -218,7 +218,7 @@ const ComposerAction: FC = () => {
             tooltip="Send message"
             side="bottom"
             type="button"
-            className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-white shadow-[0_8px_20px_rgba(17,21,29,0.16)] hover:bg-[var(--n-800)]"
+            className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-[var(--n-0)] shadow-md hover:bg-[var(--n-800)]"
             aria-label="Send message"
           >
             <ArrowUpIcon className="aui-composer-send-icon size-4" />
@@ -230,7 +230,7 @@ const ComposerAction: FC = () => {
           <Button
             type="button"
             unstyled
-            className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-white"
+            className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-[var(--surf-elevated)]"
             aria-label="Stop generating"
           >
             <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
@@ -257,7 +257,7 @@ const AssistantMessage: FC = () => {
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-4 duration-150"
       data-role="assistant"
     >
-      <div className="aui-assistant-message-content wrap-break-word rounded-[24px] border border-[var(--border-glass-default)] bg-[rgba(255,255,255,0.9)] px-4 py-3.5 leading-6 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.08)]">
+      <div className="aui-assistant-message-content wrap-break-word rounded-[24px] border border-[var(--border-glass-default)] bg-[var(--surf-elevated)] px-4 py-3.5 leading-6 text-[var(--text-primary)] shadow-md">
         <MessagePrimitive.Parts>
           {({ part }) => {
             if (part.type === 'text')
@@ -308,7 +308,7 @@ const AssistantActionBar: FC = () => {
         <ActionBarMorePrimitive.Trigger asChild>
           <TooltipIconButton
             tooltip="More"
-            className="data-[state=open]:bg-white"
+            className="data-[state=open]:bg-[var(--surf-elevated)]"
           >
             <MoreHorizontalIcon />
           </TooltipIconButton>
@@ -316,7 +316,7 @@ const AssistantActionBar: FC = () => {
         <ActionBarMorePrimitive.Content
           side="bottom"
           align="start"
-          className="aui-action-bar-more-content z-50 min-w-32 overflow-hidden rounded-[16px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.94)] p-1 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(17,21,29,0.12)]"
+          className="aui-action-bar-more-content z-50 min-w-32 overflow-hidden rounded-[16px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] p-1 text-[var(--text-primary)] shadow-md"
         >
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-[12px] px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-[var(--surf-base)] focus:bg-[var(--surf-base)]">
@@ -339,7 +339,7 @@ const UserMessage: FC = () => {
       <UserMessageAttachments />
 
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
-        <div className="aui-user-message-content wrap-break-word peer rounded-[24px] bg-[var(--n-900)] px-4 py-3.5 text-[var(--n-0)] shadow-[0_10px_24px_rgba(17,21,29,0.16)] empty:hidden">
+        <div className="aui-user-message-content wrap-break-word peer rounded-[24px] bg-[var(--n-900)] px-4 py-3.5 text-[var(--n-0)] shadow-md empty:hidden">
           <MessagePrimitive.Parts />
         </div>
         <div className="aui-user-action-bar-wrapper absolute top-1/2 left-0 -translate-x-full -translate-y-1/2 pr-2 peer-empty:hidden">
@@ -371,7 +371,7 @@ const UserActionBar: FC = () => {
 const EditComposer: FC = () => {
   return (
     <MessagePrimitive.Root className="aui-edit-composer-wrapper mx-auto flex w-full max-w-(--thread-max-width) flex-col px-2 py-4">
-      <ComposerPrimitive.Root className="aui-edit-composer-root ml-auto flex w-full max-w-[85%] flex-col rounded-[24px] border border-[var(--border-glass-soft)] bg-[rgba(255,255,255,0.9)] shadow-[0_10px_24px_rgba(17,21,29,0.08)]">
+      <ComposerPrimitive.Root className="aui-edit-composer-root ml-auto flex w-full max-w-[85%] flex-col rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] shadow-md">
         <ComposerPrimitive.Input
           className="aui-edit-composer-input min-h-14 w-full resize-none bg-transparent p-4 text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           autoFocus
@@ -380,7 +380,7 @@ const EditComposer: FC = () => {
           <ComposerPrimitive.Cancel asChild>
             <Button
               unstyled
-              className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] hover:bg-white"
+              className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] hover:bg-[var(--surf-elevated)]"
             >
               Cancel
             </Button>
@@ -388,7 +388,7 @@ const EditComposer: FC = () => {
           <ComposerPrimitive.Send asChild>
             <Button
               unstyled
-              className="rounded-full bg-[var(--n-900)] text-white hover:bg-[var(--n-800)]"
+              className="rounded-full bg-[var(--n-900)] text-[var(--n-0)] hover:bg-[var(--n-800)]"
             >
               Update
             </Button>

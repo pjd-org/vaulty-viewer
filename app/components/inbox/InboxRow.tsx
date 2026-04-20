@@ -4,7 +4,7 @@ import type { InboxItem } from '../../lib/viewer-adapter';
 import type { InboxNote } from '../../../src/lib/inbox-logic';
 import { activateOnKeyboardEvent } from '../../../src/lib/keyboard';
 
-const metaChipClass = 'text-[10px] text-slate-400';
+const metaChipClass = 'text-[10px] text-text3';
 
 // ---------------------------------------------------------------------------
 // Local types (mirrored from inbox route)
@@ -93,13 +93,13 @@ export function InboxRow({
   const display = inboxItemToDisplay(item, note, run);
 
   const severityColor: Record<string, string> = {
-    critical: 'bg-red-500',
-    high: 'bg-orange-400',
-    medium: 'bg-yellow-400',
-    low: 'bg-slate-300',
+    critical: 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]',
+    high: 'bg-[color-mix(in_srgb,var(--a-sun)_80%,transparent)]',
+    medium: 'bg-[color-mix(in_srgb,var(--a-sun)_50%,transparent)]',
+    low: 'bg-[var(--border-default)]',
   };
   const sevBar = item.severity
-    ? (severityColor[item.severity] ?? 'bg-slate-200')
+    ? (severityColor[item.severity] ?? 'bg-[var(--surf-utility)]')
     : undefined;
 
   const confidence = run?.confidence;
@@ -111,14 +111,15 @@ export function InboxRow({
     low: 'Irreversible',
   };
   const reversibilityColor: Record<string, string> = {
-    high: 'text-emerald-700 bg-emerald-50 ring-emerald-200',
-    medium: 'text-yellow-700 bg-yellow-50 ring-yellow-200',
-    low: 'text-red-700 bg-red-50 ring-red-200',
+    high: 'text-[var(--text-success)] bg-[color-mix(in_srgb,var(--a-mint)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-mint)_20%,transparent)]',
+    medium:
+      'text-[var(--text-warning)] bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
+    low: 'text-[var(--text-danger)] bg-[color-mix(in_srgb,var(--a-rose)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-rose)_20%,transparent)]',
   };
 
   return (
     <div
-      className="group relative flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-[background-color,border-color,box-shadow,transform,color] duration-150 hover:border-slate-300 hover:shadow-[0_4px_14px_-8px_rgba(15,23,42,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer animate-fade-in"
+      className="group relative flex items-start gap-3 rounded-xl border border-border bg-[var(--surf-elevated)] px-4 py-3.5 transition-[background-color,border-color,box-shadow,transform,color] duration-150 hover:border-borderSoft hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer animate-fade-in"
       onClick={onInspect}
       role="button"
       tabIndex={0}
@@ -137,11 +138,11 @@ export function InboxRow({
       <div className="flex-1 min-w-0 pl-1">
         {/* row 1: title + chips */}
         <div className="flex items-start gap-2 min-w-0">
-          <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 leading-snug line-clamp-1">
+          <span className="flex-1 min-w-0 text-sm font-semibold text-text leading-snug line-clamp-1">
             {display.title}
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+            <span className="inline-flex items-center rounded-full bg-surface3 px-2 py-0.5 text-[10px] font-medium text-text2">
               {display.originLabel}
             </span>
             {item.reversibility && reversibilityLabel[item.reversibility] && (
@@ -153,7 +154,7 @@ export function InboxRow({
             )}
             {display.ageLabel && (
               <span
-                className="text-[11px] text-slate-400 tabular-nums"
+                className="text-[11px] text-text3 tabular-nums"
                 suppressHydrationWarning
               >
                 {display.ageLabel}
@@ -164,7 +165,7 @@ export function InboxRow({
 
         {/* row 2: why surfaced / summary */}
         {(item.whySurfaced || item.summary) && (
-          <p className="mt-1 text-[12px] text-slate-500 line-clamp-1 leading-relaxed">
+          <p className="mt-1 text-[12px] text-text2 line-clamp-1 leading-relaxed">
             {item.whySurfaced ?? item.summary}
           </p>
         )}
@@ -172,14 +173,14 @@ export function InboxRow({
         {/* row 3: meta pills */}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {run?.runType && (
-            <span className="text-[10px] font-mono text-slate-400">
+            <span className="text-[10px] font-mono text-text3">
               {run.runType}
             </span>
           )}
           {confidence !== undefined && (
             <span className={metaChipClass}>
               conf{' '}
-              <span className="font-medium text-slate-600">
+              <span className="font-medium text-text2">
                 {(confidence * 100).toFixed(0)}%
               </span>
             </span>
@@ -190,7 +191,7 @@ export function InboxRow({
             </span>
           )}
           {run?.runId && (
-            <span className="text-[10px] font-mono text-slate-300 truncate max-w-[120px]">
+            <span className="text-[10px] font-mono text-text3 truncate max-w-[120px]">
               {run.runId}
             </span>
           )}
@@ -207,7 +208,7 @@ export function InboxRow({
             type="button"
             disabled={actionInFlight}
             onClick={onReject}
-            className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors"
+            className="rounded-full border border-[color-mix(in_srgb,var(--a-rose)_25%,transparent)] bg-[var(--surf-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--text-danger)] hover:bg-[color-mix(in_srgb,var(--a-rose)_8%,transparent)] hover:border-[color-mix(in_srgb,var(--a-rose)_35%,transparent)] disabled:opacity-50 transition-colors"
           >
             Reject
           </button>
@@ -217,7 +218,7 @@ export function InboxRow({
             type="button"
             disabled={actionInFlight}
             onClick={onPromote}
-            className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+            className="rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--n-0)] hover:opacity-90 disabled:opacity-50 transition-colors shadow-sm"
           >
             Promote
           </button>

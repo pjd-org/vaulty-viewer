@@ -64,6 +64,10 @@ import { Route } from '../../app/routes/__root';
 
 const RootComponent = Route.options.component as React.ComponentType;
 
+beforeEach(async () => {
+  await (RootComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
 describe('root shell behavior', () => {
   beforeEach(() => {
     mockRouterState.pathname = '/';

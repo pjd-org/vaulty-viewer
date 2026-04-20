@@ -25,7 +25,7 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8">
-      <div className="genie-surface genie-surface--overlay rounded-[24px] px-4 py-3 ring-1 ring-black/5">
+      <div className="genie-surface genie-surface--overlay rounded-[24px] px-4 py-3 ring-1 ring-[var(--border-glass)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           {/* Left: sidebar toggle + title + optional scope echo */}
           <div className="flex items-center gap-3 min-w-0">
@@ -103,7 +103,7 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
             <button
               type="button"
               onClick={() => openModal('create')}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--n-0)] hover:opacity-90 transition-colors shadow-sm"
             >
               + Create
             </button>

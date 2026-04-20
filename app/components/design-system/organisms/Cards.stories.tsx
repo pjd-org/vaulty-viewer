@@ -1,12 +1,12 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from './_genie-css';
+import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
 import {
   AssistantCard,
   InsightCard,
   TaskCard,
   MediaPreviewCard,
-} from '@vault/ui';
+} from '@vault/ui/organisms';
 
 function CardsSection() {
   useGenieFonts();

@@ -71,13 +71,14 @@ describe('ThemeSelector', () => {
     mockTheme = 'dark';
     render(<ThemeSelector />);
     const darkBtn = screen.getByRole('radio', { name: 'Dark' });
-    expect(darkBtn.className).toContain('bg-primary');
+    expect(darkBtn.className).toContain('bg-gradient-to-r');
+    expect(darkBtn.className).toContain('from-primary');
   });
 
   it('inactive options do not have bg-primary class', () => {
     mockTheme = 'dark';
     render(<ThemeSelector />);
     const lightBtn = screen.getByRole('radio', { name: 'Light' });
-    expect(lightBtn.className).not.toContain('bg-primary');
+    expect(lightBtn.className).toContain('bg-transparent');
   });
 });

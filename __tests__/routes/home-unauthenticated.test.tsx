@@ -2,6 +2,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 // ---------------------------------------------------------------------------
 // Hoisted state
@@ -26,6 +27,7 @@ const mockApiFetch = vi.hoisted(() => vi.fn());
 // ---------------------------------------------------------------------------
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => ({}),
@@ -116,6 +118,10 @@ import { Route } from '../../app/routes/index';
 import { UnauthenticatedError } from '../../src/utils/api';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 afterEach(() => {
   cleanup();

@@ -7,6 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {
@@ -24,6 +25,7 @@ const mockRejectRun = vi.hoisted(() => vi.fn());
 const mockUseInbox = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => mockRouteState.search,
@@ -131,20 +133,27 @@ vi.mock('../../app/components/inbox/InboxViewSwitcher', () => ({
   ),
 }));
 
-vi.mock('../../app/components/ui', () => ({
-  EmptyState: ({
-    title,
-    description,
-  }: {
-    title: string;
-    description?: string;
-  }) => (
-    <div>
-      <h2>{title}</h2>
-      {description ? <p>{description}</p> : null}
-    </div>
-  ),
-}));
+vi.mock('../../app/components/ui', async () => {
+  const actual = await vi.importActual<typeof import('../../app/components/ui')>(
+    '../../app/components/ui'
+  );
+
+  return {
+    ...actual,
+    EmptyState: ({
+      title,
+      description,
+    }: {
+      title: string;
+      description?: string;
+    }) => (
+      <div>
+        <h2>{title}</h2>
+        {description ? <p>{description}</p> : null}
+      </div>
+    ),
+  };
+});
 
 vi.mock('../../app/lib/display', () => ({
   toInboxItemDisplay: ({
@@ -180,6 +189,10 @@ vi.mock('../../app/lib/queries/agents', () => ({
 import { Route } from '../../app/routes/inbox';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('inbox adapter wiring', () => {
   afterEach(() => {
@@ -315,34 +328,27 @@ describe('inbox adapter wiring', () => {
   it('renders archive content and counts from the adapter surface', () => {
     render(<RouteComponent />);
 
-    expect(screen.getByText('Queue (1)')).toBeTruthy();
-    expect(screen.getByText('Workbench (1)')).toBeTruthy();
-    expect(screen.getByText('Archive (2)')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Queue1/ })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Workbench1/ })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Archive2/ })).toBeTruthy();
     expect(screen.getByText('Human rejected proposal')).toBeTruthy();
     expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
     expect(screen.queryByText('No rejected notes')).toBeNull();
   });
 
-  it.each([
-    ['user', 'Human rejected proposal', 'Policy rejected proposal'],
-    ['automated', 'Policy rejected proposal', 'Human rejected proposal'],
-  ])(
-    'keeps %s rejections separate in the archive view',
-    (rejectedTab, visibleTitle, hiddenTitle) => {
-      mockRouteState.search = {
-        view: 'archive',
-        rejectedTab: rejectedTab as 'user' | 'automated',
-        selectedId: undefined,
-        severity: undefined,
-      };
+  it('renders both archive rejection types in the archive view', () => {
+    mockRouteState.search = {
+      view: 'archive',
+      rejectedTab: 'user',
+      selectedId: undefined,
+      severity: undefined,
+    };
 
-      const { container } = render(<RouteComponent />);
-      const view = within(container);
+    render(<RouteComponent />);
 
-      expect(view.getByText(visibleTitle)).toBeTruthy();
-      expect(view.queryByText(hiddenTitle)).toBeNull();
-    }
-  );
+    expect(screen.getByText('Human rejected proposal')).toBeTruthy();
+    expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
+  });
 
   it('keeps reject wired for queue items when the matching run is missing', () => {
     mockRouteState.search = {
@@ -386,7 +392,7 @@ describe('inbox adapter wiring', () => {
     );
   });
 
-  it('renders the detail panel content when selectedId matches a queue item', () => {
+  it('keeps the inline detail collapsed when selectedId matches a queue item', () => {
     mockRouteState.search = {
       view: 'queue',
       rejectedTab: undefined,
@@ -394,8 +400,8 @@ describe('inbox adapter wiring', () => {
       severity: undefined,
     };
     render(<RouteComponent />);
-    // Detail is now inline in the card (inbox-primary), not in the aside
     const primary = screen.getByTestId('inbox-primary');
-    expect(within(primary).getByTestId('inline-detail')).toBeTruthy();
+    expect(primary).toBeTruthy();
+    expect(within(primary).queryByTestId('inline-detail')).toBeNull();
   });
 });

@@ -63,16 +63,16 @@ function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
           key={s.id}
           to={'/session/$id'}
           params={{ id: s.id }}
-          className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-black/5 transition-colors"
+          className="flex items-center justify-between rounded-xl px-3 py-2 transition-colors hover:bg-muted/60"
         >
-          <span className="text-sm font-medium text-slate-800 truncate">
+          <span className="truncate text-sm font-medium text-foreground">
             {s.title ?? `Session ${s.id.slice(0, 6)}`}
           </span>
           <div className="flex items-center gap-2 shrink-0 ml-3">
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-muted-foreground">
               {formatSessionDuration(s.startedAt, s.endedAt)}
             </span>
-            <span className="text-xs text-slate-500 capitalize">
+            <span className="text-xs capitalize text-muted-foreground">
               {s.status}
             </span>
           </div>
@@ -108,11 +108,11 @@ function ActiveSessionBanner({
           Session active
         </SurfaceChip>
         {session.title && (
-          <span className="text-sm font-medium text-slate-800">
+          <span className="text-sm font-medium text-foreground">
             {session.title}
           </span>
         )}
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-muted-foreground">
           {elapsed !== null && (
             <>
               {elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}
@@ -220,14 +220,14 @@ function HomeTaskCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h3
-              className={`line-clamp-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-semibold text-slate-800 ${compact ? 'text-xs' : 'text-sm'}`}
+              className={`line-clamp-2 rounded-md border border-border bg-muted/40 px-2 py-1.5 font-semibold text-foreground ${compact ? 'text-xs' : 'text-sm'}`}
             >
               {task.title}
             </h3>
-            <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-              <span className="inline-block size-2 rounded-full bg-slate-300" />
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block size-2 rounded-full bg-border" />
               <span>Task</span>
-              <span className="inline-block size-2 rounded-full bg-slate-500" />
+              <span className="inline-block size-2 rounded-full bg-muted-foreground" />
             </div>
           </div>
           <TaskSeverityBadge
@@ -293,7 +293,7 @@ function BacklogStripCard({
       className="p-3 shadow-sm"
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="min-w-0 flex-1 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-semibold text-slate-800">
+        <p className="min-w-0 flex-1 truncate rounded-md border border-border bg-muted/40 px-2 py-1 text-sm font-semibold text-foreground">
           {task.title}
         </p>
         <div className="flex items-center gap-2">
@@ -544,15 +544,15 @@ function FocusRoute() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Link
           to="/work"
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Pressure
           </p>
-          <p className="mt-0.5 text-[1.65rem] leading-none font-semibold tabular-nums text-slate-800">
+          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
             {visiblePressureBand.length}
           </p>
-          <div className="mt-2 h-px w-16 bg-slate-300/80" />
+          <div className="mt-2 h-px w-16 bg-border" />
         </Link>
         <Link
           to="/actions"
@@ -561,28 +561,28 @@ function FocusRoute() {
             simulatableOnly: undefined,
             selectedId: undefined,
           }}
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Queue
           </p>
-          <p className="mt-0.5 text-[1.65rem] leading-none font-semibold tabular-nums text-slate-800">
+          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
             {visibleDecisionQueue.length}
           </p>
-          <div className="mt-2 h-px w-16 bg-slate-300/80" />
+          <div className="mt-2 h-px w-16 bg-border" />
         </Link>
         <Link
           to="/portfolio"
           search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Portfolio
           </p>
-          <p className="mt-0.5 text-[1.65rem] leading-none font-semibold tabular-nums text-slate-800">
+          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
             {snapshotMap.portfolio}
           </p>
-          <div className="mt-2 h-px w-16 bg-slate-300/80" />
+          <div className="mt-2 h-px w-16 bg-border" />
         </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -594,59 +594,59 @@ function FocusRoute() {
             selectedId: undefined,
             autoRefresh: undefined,
           }}
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Automation
           </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-slate-800">
+          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
             {snapshotMap.automation}
           </p>
-          <div className="mt-2 h-px w-14 bg-slate-300/80" />
+          <div className="mt-2 h-px w-14 bg-border" />
         </Link>
         <Link
           to="/bubble"
           search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Bubble
           </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-slate-800">
+          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
             {snapshotMap.bubble}
           </p>
-          <div className="mt-2 h-px w-14 bg-slate-300/80" />
+          <div className="mt-2 h-px w-14 bg-border" />
         </Link>
         <Link
           to="/knowledge"
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Knowledge
           </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-slate-800">
+          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
             {snapshotMap.knowledge}
           </p>
-          <div className="mt-2 h-px w-14 bg-slate-300/80" />
+          <div className="mt-2 h-px w-14 bg-border" />
         </Link>
         <Link
           to="/health"
           search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 hover:bg-white/85"
+          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             Health
           </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-slate-800">
+          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
             {snapshotMap.health}
           </p>
-          <div className="mt-2 h-px w-14 bg-slate-300/80" />
+          <div className="mt-2 h-px w-14 bg-border" />
         </Link>
       </div>
 
       {/* Context tail placeholder */}
-      <div className="rounded-[18px] border border-slate-200 bg-slate-50/60 px-4 py-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-2">
+      <div className="rounded-[18px] border border-border bg-muted/40 px-4 py-4">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
           Context Tail
         </p>
         {(surface?.contextTail ?? []).length > 0 ? (
@@ -654,14 +654,14 @@ function FocusRoute() {
             {(surface?.contextTail ?? []).map((item) => (
               <p
                 key={item.id}
-                className="text-xs text-slate-600 leading-relaxed"
+                className="text-xs leading-relaxed text-muted-foreground"
               >
                 {item.title}
               </p>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs leading-relaxed text-muted-foreground">
             Context candidates will surface here.
           </p>
         )}
@@ -730,10 +730,10 @@ function FocusRoute() {
           subtitle="Outcome verification for recent actions."
         />
         {verification.phase === 'pending' && (
-          <p className="text-sm text-sky-600">Verifying…</p>
+          <p className="text-sm text-primary">Verifying…</p>
         )}
         {verification.phase === 'failed' && (
-          <p className="text-sm text-red-400">Verification failed.</p>
+          <p className="text-sm text-destructive">Verification failed.</p>
         )}
       </section>
 
@@ -741,23 +741,23 @@ function FocusRoute() {
       {taskCards.length > 0 ? (
         <section className="space-y-4">
           <div className="space-y-4">
-            <article className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-white/85 p-5 pl-7 shadow-sm">
+            <article className="relative overflow-hidden rounded-[24px] border border-border bg-card/85 p-5 pl-7 shadow-sm">
               <div
                 aria-hidden="true"
                 className="absolute inset-y-0 left-0 w-2.5 bg-gradient-to-b from-fuchsia-300 via-violet-500 to-purple-600"
               />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 Immediate Interventions
               </p>
               {featuredTask ? (
                 <>
-                  <div className="mt-4 mx-auto w-full max-w-[560px] rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="line-clamp-2 text-lg font-semibold text-slate-800">
+                  <div className="mx-auto mt-4 w-full max-w-[560px] rounded-2xl border border-border bg-muted/40 p-4">
+                    <p className="line-clamp-2 text-lg font-semibold text-foreground">
                       {featuredTask.title}
                     </p>
                     <div className="mt-2 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span className="inline-block size-2 rounded-full bg-slate-400" />
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="inline-block size-2 rounded-full bg-muted-foreground" />
                         <span>Task</span>
                       </div>
                       <TaskSeverityBadge
@@ -774,14 +774,14 @@ function FocusRoute() {
                       <Link
                         to="/note"
                         search={{ p: featuredTask.path }}
-                        className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 hover:bg-slate-50"
+                        className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-foreground hover:bg-muted/60"
                       >
                         Open
                       </Link>
                     ) : (
                       <span
                         aria-disabled="true"
-                        className="cursor-not-allowed rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
+                        className="cursor-not-allowed rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"
                       >
                         Open
                       </span>
@@ -790,7 +790,7 @@ function FocusRoute() {
                       type="button"
                       onClick={() => handleExecute(featuredTask.path)}
                       disabled={pendingExecutePath === featuredTask.path}
-                      className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+                      className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:bg-primary/20 disabled:opacity-50"
                     >
                       {pendingExecutePath === featuredTask.path
                         ? 'Starting…'
@@ -800,7 +800,7 @@ function FocusRoute() {
                       type="button"
                       onClick={() => handleDefer(featuredTask.path)}
                       disabled={pendingDeferPath === featuredTask.path}
-                      className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+                      className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-warning hover:bg-warning/20 disabled:opacity-50"
                     >
                       {pendingDeferPath === featuredTask.path
                         ? 'Updating…'
@@ -858,16 +858,16 @@ function FocusRoute() {
             )}
           </section>
           {backlogTasks.length > 0 && totalTaskPages > 1 && (
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white/65 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg border border-border bg-card/65 px-3 py-2">
               <button
                 type="button"
                 onClick={() => setTaskPage((p) => Math.max(1, p - 1))}
                 disabled={taskPage === 1}
-                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 disabled:opacity-40"
+                className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-foreground disabled:opacity-40"
               >
                 Prev
               </button>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Page {taskPage} / {totalTaskPages}
               </p>
               <button
@@ -876,7 +876,7 @@ function FocusRoute() {
                   setTaskPage((p) => Math.min(totalTaskPages, p + 1))
                 }
                 disabled={taskPage === totalTaskPages}
-                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 disabled:opacity-40"
+                className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-foreground disabled:opacity-40"
               >
                 Next
               </button>
@@ -904,13 +904,13 @@ function FocusRoute() {
             onEnd={endSession}
           />
           {endSessionError && (
-            <p className="text-sm text-red-400" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {endSessionError}
             </p>
           )}
         </>
       ) : activeSession && endingSession ? (
-        <p className="text-sm text-slate-400" role="status">
+        <p className="text-sm text-muted-foreground" role="status">
           Ending session…
         </p>
       ) : null}

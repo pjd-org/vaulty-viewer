@@ -55,12 +55,12 @@ function ProjectSettingsRoute() {
         ].map((s) => (
           <div
             key={s.label}
-            className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+            className="rounded-[18px] border border-border bg-muted/40 p-4"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
               {s.label}
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-800 truncate">
+            <p className="mt-2 truncate text-sm font-semibold text-foreground">
               {s.value}
             </p>
           </div>
@@ -78,20 +78,20 @@ function ProjectSettingsRoute() {
             {sections.map((section) => (
               <div
                 key={section.label}
-                className="rounded-[18px] border border-slate-200 bg-black/3 p-4"
+                className="rounded-[18px] border border-border bg-muted/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                       {section.label}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-slate-800">
+                    <p className="mt-1 text-sm font-medium text-foreground">
                       {section.value}
                     </p>
                   </div>
                   <SoftChip label="read-only" />
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {section.hint}
                 </p>
               </div>

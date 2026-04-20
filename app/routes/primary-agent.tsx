@@ -300,17 +300,17 @@ function PrimaryAgentRouteInner({
       {/* Step extractor panel — only shown when steps are available */}
       {extractedSteps && extractedSteps.steps.length > 0 && (
         <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
-          <div className="rounded-[28px] bg-white/60 backdrop-blur-sm border border-slate-200/60 p-4 space-y-3">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 space-y-3 backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Extracted steps
             </p>
             <ol className="space-y-2">
               {extractedSteps.steps.map((step, i) => (
                 <li key={i} className="text-sm space-y-0.5">
-                  <p className="font-medium text-slate-800">{step.title}</p>
-                  <p className="text-slate-600">{step.action}</p>
+                  <p className="font-medium text-foreground">{step.title}</p>
+                  <p className="text-muted-foreground">{step.action}</p>
                   {step.expected_result && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       → {step.expected_result}
                     </p>
                   )}

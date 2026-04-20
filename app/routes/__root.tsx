@@ -186,7 +186,7 @@ function RootDocument({
     <html lang="en" style={{ colorScheme: 'light' }}>
       <head>
         <HeadContent />
-        <meta name="theme-color" content="#e9edf5" />
+        <meta name="theme-color" content="var(--background)" />
         {/* Theme script must be in <head> to block paint before body renders */}
         <script
           suppressHydrationWarning

@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useEffect, useRef, useState } from 'react';
+import { Button } from '@vault/ui/atoms';
+import { SuggestionChip, PromptInput } from '@vault/ui/molecules';
 import {
-  Button,
-  SuggestionChip,
-  PromptInput,
   AssistantCard,
   InsightCard,
   TaskCard,
   MediaPreviewCard,
-} from '@vault/ui';
+} from '@vault/ui/organisms';
 
 /* ─────────────────────────────────────────────
    CSS — exact copy of genie-design-system.html

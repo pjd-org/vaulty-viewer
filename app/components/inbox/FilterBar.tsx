@@ -30,11 +30,11 @@ export function FilterBar({
   onRefresh,
 }: FilterBarProps) {
   const selectCls =
-    'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:ring-offset-1 transition-colors hover:border-slate-300';
+    'rounded-full border border-[var(--border-default)] bg-[var(--surf-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--a-sky)_50%,transparent)] focus:ring-offset-1 transition-colors hover:border-[var(--border-default)]';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-tertiary)] shrink-0">
         Sort
       </span>
       <select
@@ -48,7 +48,7 @@ export function FilterBar({
         <option value="itemCount">Item count ↓</option>
       </select>
 
-      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 shrink-0 ml-2">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-tertiary)] shrink-0 ml-2">
         Filter
       </span>
       <select
@@ -85,7 +85,7 @@ export function FilterBar({
       <div className="ml-auto">
         <button
           type="button"
-          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60 transition-colors"
+          className="rounded-full border border-[var(--border-default)] bg-[var(--surf-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] disabled:opacity-60 transition-colors"
           onClick={onRefresh}
           disabled={loading || anyInFlight}
         >

@@ -1,15 +1,9 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from './_genie-css';
-import {
-  Button,
-  Badge,
-  Input,
-  Label,
-  SuggestionChip,
-  Avatar,
-  AvatarFallback,
-} from '@vault/ui';
+import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
+import { Button, Badge, Label } from '@vault/ui/atoms';
+import { Input, SuggestionChip } from '@vault/ui/molecules';
+import { Avatar, AvatarFallback } from '@vault/ui/primitives';
 
 /* ── Token callout helper ──────────────────────────────────────────────── */
 function TokenTag({ name }: { name: string }) {

@@ -27,12 +27,12 @@ function EventTypeBadge({ type }: { type: string }) {
   const [namespace] = type.split('.');
   const colorClass =
     namespace === 'agents'
-      ? 'bg-emerald-100 text-emerald-700'
+      ? 'bg-success/10 text-success'
       : namespace === 'llm'
-        ? 'bg-blue-100 text-blue-700'
+        ? 'bg-primary/10 text-primary'
         : namespace === 'extractions'
-          ? 'bg-amber-100 text-amber-700'
-          : 'bg-neutral-100 text-neutral-500';
+          ? 'bg-warning/10 text-warning'
+          : 'bg-muted text-muted-foreground';
   return (
     <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${colorClass}`}>
       {type}
@@ -70,18 +70,18 @@ function EventRow({
       type="button"
       data-testid="timeline-event-row"
       onClick={() => onSelect(event.id)}
-      className={`w-full text-left px-3 py-2.5 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors ${
-        selected ? 'bg-neutral-100' : ''
+      className={`w-full border-b border-border px-3 py-2.5 text-left transition-colors hover:bg-muted/60 last:border-0 ${
+        selected ? 'bg-muted' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <EventTypeBadge type={event.type} />
-        <span className="text-xs text-neutral-400 shrink-0">
+        <span className="shrink-0 text-xs text-muted-foreground">
           {dateLabel} {timeLabel}
         </span>
       </div>
       {event.meta && typeof event.meta.run_id === 'string' && (
-        <p className="text-xs text-neutral-400 mt-1 font-mono truncate">
+        <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
           {event.meta.run_id}
         </p>
       )}
@@ -97,33 +97,33 @@ function EventDetail({ event }: { event: TimelineEventEntry }) {
   return (
     <div className="space-y-3 text-sm" data-testid="timeline-event-detail">
       <div>
-        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Type
         </p>
         <EventTypeBadge type={event.type} />
       </div>
       <div>
-        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Timestamp
         </p>
-        <p className="text-xs font-mono text-neutral-700">{event.ts}</p>
+        <p className="font-mono text-xs text-foreground">{event.ts}</p>
       </div>
       {Object.keys(event.meta).length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Meta
           </p>
-          <pre className="text-xs font-mono text-neutral-600 bg-neutral-50 rounded p-2 overflow-auto max-h-32">
+          <pre className="max-h-32 overflow-auto rounded bg-muted p-2 font-mono text-xs text-muted-foreground">
             {JSON.stringify(event.meta, null, 2)}
           </pre>
         </div>
       )}
       {Object.keys(event.data).length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Data
           </p>
-          <pre className="text-xs font-mono text-neutral-600 bg-neutral-50 rounded p-2 overflow-auto max-h-40">
+          <pre className="max-h-40 overflow-auto rounded bg-muted p-2 font-mono text-xs text-muted-foreground">
             {JSON.stringify(event.data, null, 2)}
           </pre>
         </div>
@@ -150,10 +150,10 @@ function TimelineContent({
   if (data.events.length === 0) {
     return (
       <div data-testid="timeline-empty-state" className="space-y-2">
-        <p className="text-sm font-medium text-neutral-600">
+        <p className="text-sm font-medium text-muted-foreground">
           No timeline events yet.
         </p>
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           Adapter context is wired. Live and audit event streams will appear
           once the runtime surface connects.
         </p>
@@ -163,10 +163,10 @@ function TimelineContent({
 
   return (
     <div data-testid="timeline-content">
-      <p className="text-xs text-neutral-400 mb-2 px-1">
+      <p className="mb-2 px-1 text-xs text-muted-foreground">
         {data.total} events total
       </p>
-      <div className="rounded-xl border border-neutral-200 overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-border">
         {data.events.map((event) => (
           <EventRow
             key={event.id}
@@ -177,7 +177,7 @@ function TimelineContent({
         ))}
       </div>
       {selectedEvent && (
-        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <EventDetail event={selectedEvent} />
         </div>
       )}
@@ -274,10 +274,10 @@ function TimelineRoute() {
           />
         ) : (
           <div data-testid="timeline-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-muted-foreground">
               No timeline events yet.
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-muted-foreground">
               Adapter context is wired. Live and audit event streams will appear
               once the runtime surface connects.
             </p>

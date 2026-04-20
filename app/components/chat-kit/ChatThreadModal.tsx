@@ -44,8 +44,8 @@ export function ChatThreadModal({
           <div
             className={cn(
               'genie-surface genie-surface--overlay relative flex h-[min(86vh,840px)] w-full max-w-[1320px] overflow-hidden rounded-[36px]',
-              'border border-[var(--border-glass)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,253,0.9))]',
-              'shadow-[0_40px_120px_rgba(15,23,42,0.22)] backdrop-blur-xl',
+              'border border-[var(--border-glass)] bg-[var(--surf-elevated)]',
+              'shadow-lg backdrop-blur-xl',
               panelClassName
             )}
           >
@@ -56,7 +56,6 @@ export function ChatThreadModal({
                 className
               )}
             />
-
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

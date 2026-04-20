@@ -1,8 +1,10 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -38,6 +40,10 @@ const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 import { Route as GraphRouteModule } from '../../app/routes/graph';
 const GraphComponent = GraphRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (GraphComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 const GRAPH_DATA = {
   generated: '2026-04-04T00:00:00Z',

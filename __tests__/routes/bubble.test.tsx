@@ -7,6 +7,7 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 // ---------------------------------------------------------------------------
 // Hoist shared mocks so they are available inside vi.mock factories
@@ -33,6 +34,7 @@ const { MockUnauthenticatedError, mockNavigate, mockUseBubbleSurface } =
 // ---------------------------------------------------------------------------
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useSearch: () => ({}),
@@ -137,6 +139,10 @@ const BUBBLE_DATA = {
 import { Route as BubbleRouteModule } from '../../app/routes/bubble';
 const BubbleComponent = BubbleRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (BubbleComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 afterEach(() => {
   cleanup();

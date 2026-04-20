@@ -1,11 +1,13 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 import { UnauthenticatedError } from '../../src/utils/api';
 
 const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -48,6 +50,10 @@ const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 
 import { Route as WorkRouteModule } from '../../app/routes/work';
 const WorkComponent = WorkRouteModule.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (WorkComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('work route — loading state', () => {
   beforeEach(() => {

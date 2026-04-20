@@ -95,17 +95,20 @@ export function VerificationRailHost({
 
         {/* Phase indicator — only when no outcomes yet */}
         {verification.phase === 'pending' && activeOutcomes.length === 0 && (
-          <p className="text-sm text-sky-600">Verifying…</p>
+          <p className="text-sm text-[var(--text-info)]">Verifying…</p>
         )}
         {verification.phase === 'failed' && activeOutcomes.length === 0 && (
-          <p className="text-sm text-red-400">Verification failed.</p>
+          <p className="text-sm text-[var(--text-danger)]">
+            Verification failed.
+          </p>
         )}
 
         {activeOutcomes.length > 0 && (
           <div className="space-y-2">
             {activeOutcomes.map((item, idx) => {
               const isLatest = idx === 0;
-              const bar = STATUS_BAR[item.status] ?? 'bg-slate-300';
+              const bar =
+                STATUS_BAR[item.status] ?? 'bg-[var(--border-default)]';
               return (
                 <div
                   key={item.id}
@@ -139,7 +142,8 @@ export function VerificationRailHost({
                       <span
                         className={cn(
                           'text-[11px] font-semibold uppercase tracking-[0.18em]',
-                          STATUS_COLOR[item.status] ?? 'text-slate-400'
+                          STATUS_COLOR[item.status] ??
+                            'text-[var(--text-tertiary)]'
                         )}
                       >
                         {item.status}

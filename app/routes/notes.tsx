@@ -36,7 +36,7 @@ type CollectionFilter = 'human' | 'agent' | 'bubble' | '';
 function NoteGrid({ notes }: { notes: KnowledgeNoteRef[] }) {
   if (notes.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-slate-500">
+      <p className="py-12 text-center text-sm text-muted-foreground">
         No notes found.
       </p>
     );
@@ -172,11 +172,11 @@ function NotesRoute() {
           value={draftQ}
           onChange={(e) => setDraftQ(e.target.value)}
           placeholder="Search notes…"
-          className="flex-1 rounded-lg border border-slate-200 bg-black/3 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500/40 focus:outline-none"
+          className="flex-1 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         />
         <button
           type="submit"
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:bg-black/5"
+          className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition hover:bg-muted/60"
         >
           Search
         </button>
@@ -187,16 +187,16 @@ function NotesRoute() {
               setDraftQ('');
               void navigate({ search: (prev) => ({ ...prev, q: undefined }) });
             }}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500 transition hover:bg-black/5"
+            className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted/60"
           >
             ✕
           </button>
         )}
       </form>
 
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/75 p-4">
+      <div className="space-y-3 rounded-2xl border border-border bg-card/75 p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Collection
           </p>
           {COLLECTION_OPTIONS.map((opt) => (
@@ -207,8 +207,8 @@ function NotesRoute() {
               className={[
                 'rounded-lg px-3 py-2 text-left text-sm transition',
                 audienceFilter === opt.value && !searchEnabled
-                  ? 'bg-sky-100 text-sky-700'
-                  : 'text-slate-600 hover:bg-black/5 hover:text-slate-800',
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
               ].join(' ')}
             >
               {opt.label}
@@ -217,7 +217,7 @@ function NotesRoute() {
         </div>
 
         {!searchEnabled && (
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-muted-foreground">
             Use the search bar to find notes by content or tags.
           </p>
         )}
@@ -227,7 +227,7 @@ function NotesRoute() {
       {isLoading ? (
         <RouteLoadingState label="Loading notes index..." />
       ) : error ? (
-        <p className="py-8 text-center text-sm text-red-400" role="alert">
+        <p className="py-8 text-center text-sm text-destructive" role="alert">
           {error.message}
         </p>
       ) : (

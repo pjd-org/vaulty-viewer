@@ -25,7 +25,7 @@ export function ReadinessCard({
 
   return (
     <div className="p-[3px] border-[0.5px] rounded-[14px] border-[var(--border-glass)]">
-      <div className="genie-card rounded-[12px] bg-gradient-to-br from-[var(--surf-base)] to-[var(--surf-utility)] shadow-[2px_0_8px_rgba(0,0,0,0.15)] p-6">
+      <div className="genie-card rounded-[12px] bg-gradient-to-br from-[var(--surf-base)] to-[var(--surf-utility)] shadow-sm p-6">
         <div
           className="inline-flex items-center gap-2 mb-1"
           style={{ color: readiness.color }}
@@ -40,7 +40,7 @@ export function ReadinessCard({
 
         <Link
           to="/"
-          className="inline-flex text-white rounded-xl px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+          className="inline-flex text-[var(--n-0)] rounded-xl px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
           style={{ background: accent }}
         >
           Start {readiness.sessionType} session

@@ -18,10 +18,10 @@ export const Route = createFileRoute('/health')({
 });
 
 const STATUS_COLORS: Record<HealthServiceEntry['status'], string> = {
-  ok: 'text-emerald-600',
-  degraded: 'text-amber-600',
-  timeout: 'text-amber-600',
-  error: 'text-red-600',
+  ok: 'text-success',
+  degraded: 'text-warning',
+  timeout: 'text-warning',
+  error: 'text-destructive',
 };
 
 function StatusBadge({ status }: { status: HealthServiceEntry['status'] }) {
@@ -138,8 +138,7 @@ function ServiceDetail({ svc }: { svc: HealthServiceEntry }) {
 }
 
 function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
-  const color =
-    payload.overall === 'ok' ? 'text-emerald-600' : 'text-amber-600';
+  const color = payload.overall === 'ok' ? 'text-success' : 'text-warning';
   return (
     <span
       data-testid="health-overall-status"
@@ -202,10 +201,10 @@ function HealthRoute() {
           <RouteLoadingState label="Loading service checks..." />
         ) : data == null ? (
           <div data-testid="health-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-foreground">
               No health data yet.
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Adapter context is wired. Service status will appear once the
               runtime connects.
             </p>

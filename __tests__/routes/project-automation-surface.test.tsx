@@ -1,6 +1,7 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks
@@ -25,6 +26,7 @@ vi.mock('../../app/lib/viewer-adapter', () => ({
 }));
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
     useParams: () => mockRouteState.params,
@@ -59,6 +61,10 @@ vi.mock('@tanstack/react-router', () => ({
 import { Route } from '../../app/routes/project.$slug.automation';
 
 const RouteComponent = Route.options.component as React.ComponentType;
+
+beforeEach(async () => {
+  await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 // ---------------------------------------------------------------------------
 // Tests

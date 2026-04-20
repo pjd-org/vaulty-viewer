@@ -42,6 +42,12 @@ function RecommendationCard({
   accentColor?: string;
 }) {
   const accent = accentColor ?? 'var(--a-mint)';
+  const surfaceTone =
+    rec.reversibility === 'low'
+      ? 'danger'
+      : rec.reversibility === 'medium'
+        ? 'warning'
+        : 'success';
   const confidencePct = Math.max(
     1,
     Math.min(99, Math.round(rec.confidence * 100))
@@ -52,7 +58,7 @@ function RecommendationCard({
   };
 
   return (
-    <article className="genie-card space-y-2">
+    <article className={`genie-card genie-card--${surfaceTone} space-y-2`}>
       <div className="flex items-start justify-between gap-3">
         <h3
           className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"

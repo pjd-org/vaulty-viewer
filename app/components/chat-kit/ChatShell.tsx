@@ -48,7 +48,7 @@ export function ChatShell({
 
       <div
         className={cn(
-          'grid min-h-0 flex-1 bg-[linear-gradient(180deg,rgba(255,255,255,0.46),rgba(255,255,255,0.24))]',
+          'grid min-h-0 flex-1 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surf-elevated)_46%,transparent),color-mix(in_srgb,var(--surf-elevated)_24%,transparent))]',
           sidebar ? 'lg:grid-cols-[18rem_minmax(0,1fr)]' : 'grid-cols-1'
         )}
       >

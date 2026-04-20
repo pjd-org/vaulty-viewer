@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: (component: unknown) => component,
   Link: ({
     to,
     children,

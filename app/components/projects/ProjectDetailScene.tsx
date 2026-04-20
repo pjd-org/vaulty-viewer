@@ -353,14 +353,26 @@ export function ProjectDetailScene({
         >
           <div className="grid gap-3 sm:grid-cols-2">
             {[
-              { label: 'Active Tasks', items: executionSnapshot.activeTasks },
-              { label: 'Pipelines', items: executionSnapshot.activePipelines },
-              { label: 'Runners', items: executionSnapshot.activeRunners },
+              {
+                label: 'Active Tasks',
+                items: executionSnapshot.activeTasks ?? [],
+              },
+              {
+                label: 'Pipelines',
+                items: executionSnapshot.activePipelines ?? [],
+              },
+              {
+                label: 'Runners',
+                items: executionSnapshot.activeRunners ?? [],
+              },
               {
                 label: 'Primary Agent Jobs',
-                items: executionSnapshot.primaryAgentJobs,
+                items: executionSnapshot.primaryAgentJobs ?? [],
               },
-              { label: 'Schedules', items: executionSnapshot.scheduleItems },
+              {
+                label: 'Schedules',
+                items: executionSnapshot.scheduleItems ?? [],
+              },
             ].map((group) => (
               <div key={group.label} className={detailCardClass}>
                 <div className={detailCardRowClass}>

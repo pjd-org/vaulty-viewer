@@ -1,8 +1,10 @@
 import React from 'react';
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 vi.mock('@tanstack/react-router', () => ({
+  lazyRouteComponent: createLazyRouteComponentMock(),
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
@@ -34,6 +36,10 @@ afterEach(() => {
 import { Route as SettingsRouteModule } from '../../app/routes/settings';
 const SettingsComponent = SettingsRouteModule.options
   .component as React.ComponentType;
+
+beforeEach(async () => {
+  await (SettingsComponent as { preload?: () => Promise<void> }).preload?.();
+});
 
 describe('settings route — rendering', () => {
   it('renders ThemeSelector radiogroup', () => {

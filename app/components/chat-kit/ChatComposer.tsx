@@ -49,9 +49,9 @@ function ChatPaletteLegend({
           key={swatch.name}
           className={cn(
             chatStatusPillClass,
-            'bg-[rgba(255,255,255,0.82)] gap-1.5 px-2.5 text-[var(--text-tertiary)] shadow-[0_4px_14px_rgba(17,21,29,0.06)] transition-[background-color,box-shadow,color,transform]',
+            'bg-[var(--surf-elevated)] gap-1.5 px-2.5 text-[var(--text-tertiary)] shadow-sm transition-[background-color,box-shadow,color,transform]',
             swatch.name === activeAccent &&
-              'scale-[1.02] text-[var(--text-primary)] shadow-[0_6px_18px_rgba(17,21,29,0.1)]'
+              'scale-[1.02] text-[var(--text-primary)] shadow-md'
           )}
           style={{
             borderColor:
@@ -60,8 +60,8 @@ function ChatPaletteLegend({
                 : 'var(--border-glass-soft)',
             background:
               swatch.name === activeAccent
-                ? `linear-gradient(180deg, color-mix(in srgb, ${swatch.color} 14%, white) 0%, rgba(255,255,255,0.92) 100%)`
-                : 'rgba(255,255,255,0.82)',
+                ? `linear-gradient(180deg, color-mix(in srgb, ${swatch.color} 14%, var(--surf-elevated)) 0%, var(--surf-elevated) 100%)`
+                : 'var(--surf-elevated)',
           }}
         >
           <span
@@ -72,7 +72,7 @@ function ChatPaletteLegend({
               boxShadow:
                 swatch.name === activeAccent
                   ? `0 0 0 4px color-mix(in srgb, ${swatch.color} 16%, transparent)`
-                  : '0 0 0 3px rgba(255,255,255,0.65)',
+                  : '0 0 0 3px color-mix(in srgb, var(--surf-elevated) 65%, transparent)',
             }}
           />
           {swatch.name}
@@ -118,7 +118,7 @@ export function ChatComposer({
         {
           '--composer-accent': accent,
           background:
-            'linear-gradient(135deg, color-mix(in srgb, var(--composer-accent) 16%, white) 0%, rgba(255,255,255,0.98) 36%, rgba(248,249,252,0.95) 100%)',
+            'linear-gradient(135deg, color-mix(in srgb, var(--composer-accent) 16%, var(--surf-elevated)) 0%, var(--surf-elevated) 36%, var(--surf-canvas) 100%)',
           border: `1px solid color-mix(in srgb, var(--composer-accent) 22%, rgba(255,255,255,0.9))`,
           boxShadow:
             '0 18px 42px color-mix(in srgb, var(--composer-accent) 12%, rgba(17,21,29,0.12))',

@@ -22,7 +22,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-primary rounded-full px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      className={`btn-primary rounded-full px-4 py-2 text-sm font-medium text-[var(--n-0)] transition-colors hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
       {...props}
     >
       {children}
@@ -43,8 +43,7 @@ export function SecondaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-secondary rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
-      style={{ color: 'var(--text-secondary)' }}
+      className={`btn-secondary rounded-full px-4 py-2 text-sm font-medium text-text2 transition-colors hover:bg-[var(--surf-utility)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
       {...props}
     >
       {children}
@@ -67,8 +66,7 @@ export function IconButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`w-8 h-8 flex items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition-all hover:bg-[var(--surf-elevated)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_8px_rgba(15,23,42,0.08)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
-      style={{ color: 'var(--text-secondary)' }}
+      className={`w-8 h-8 flex items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] backdrop-blur-md text-text2 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--n-0)_60%,transparent)] transition-all hover:bg-[var(--surf-elevated)] hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
       {...props}
     >
       {label && <span className="sr-only">{label}</span>}

@@ -39,7 +39,7 @@ export function SoftPanel({
     tone === 'accent'
       ? 'border-[color-mix(in_srgb,var(--a-sky)_26%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_8%,transparent)]'
       : tone === 'muted'
-        ? 'border-slate-200 bg-black/3'
+        ? 'border-border bg-[var(--surf-utility)]'
         : '';
 
   return (
