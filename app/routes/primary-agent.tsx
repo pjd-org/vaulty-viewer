@@ -2,12 +2,18 @@ import React, { useCallback, useEffect, useReducer, useRef } from 'react';
 import { useStepExtractorQuery } from '../lib/queries/agents';
 import { createFileRoute } from '@tanstack/react-router';
 import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@vault/ui';
+import {
   INTENT_TEMPLATES,
   getTemplate,
   type IntentType,
   type ThreadRecord,
 } from '../../src/lib/primary-agent-intents';
 import { useHydrated } from '../../src/hooks/useHydrated';
+import { useIsMobile } from '../hooks/use-mobile';
 import {
   PrimaryAgentContextRail,
   PrimaryAgentStreamRail,
@@ -225,6 +231,7 @@ function PrimaryAgentRouteInner({
   onFirstMessage,
 }: PrimaryAgentRouteInnerProps) {
   const thread = useThread();
+  const isMobile = useIsMobile();
 
   /**
    * The composer primitives handle send internally via the runtime.
@@ -278,9 +285,9 @@ function PrimaryAgentRouteInner({
     inboxPending: homeSurface?.pressureBand?.length ?? 0,
   };
 
-  return (
-    <main className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 pb-6 flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-7rem)] lg:h-[calc(100vh-7rem)]">
-      <div className="w-full lg:w-[250px] shrink-0">
+  const leftPane = (
+    <div className="flex h-full min-h-0 flex-col gap-5 xl:flex-row">
+      <div className="w-full shrink-0 xl:w-[250px]">
         <PrimaryAgentContextRail
           threads={threads}
           activeThreadId={threadId}
@@ -291,36 +298,97 @@ function PrimaryAgentRouteInner({
           onSelectIntent={(t) => onSetIntent(activeIntent === t ? null : t)}
         />
       </div>
-      <div className="w-full flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <PrimaryAgentWorkspace
           intentTemplate={activeIntent ? getTemplate(activeIntent) : null}
           contextSummary={contextSummary}
         />
       </div>
+    </div>
+  );
 
-      <div className="w-full lg:w-[320px] shrink-0 overflow-y-auto space-y-4">
-        <PrimaryAgentStreamRail threadId={threadId} />
-        {extractedSteps && extractedSteps.steps.length > 0 && (
-          <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 space-y-3 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Extracted steps
-            </p>
-            <ol className="space-y-2">
-              {extractedSteps.steps.map((step, i) => (
-                <li key={i} className="text-sm space-y-0.5">
-                  <p className="font-medium text-foreground">{step.title}</p>
-                  <p className="text-muted-foreground">{step.action}</p>
-                  {step.expected_result && (
-                    <p className="text-xs text-muted-foreground">
-                      → {step.expected_result}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
+  const rightPane = (
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto">
+      <PrimaryAgentStreamRail threadId={threadId} />
+      {extractedSteps && extractedSteps.steps.length > 0 && (
+        <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 space-y-3 backdrop-blur-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Extracted steps
+          </p>
+          <ol className="space-y-2">
+            {extractedSteps.steps.map((step, i) => (
+              <li key={i} className="text-sm space-y-0.5">
+                <p className="font-medium text-foreground">{step.title}</p>
+                <p className="text-muted-foreground">{step.action}</p>
+                {step.expected_result && (
+                  <p className="text-xs text-muted-foreground">
+                    → {step.expected_result}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <main className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1320px] flex-col gap-5 px-4 pb-6 sm:px-6 lg:px-8">
+      <PrimaryAgentSplitSurface
+        isMobile={isMobile}
+        leftPane={leftPane}
+        rightPane={rightPane}
+      />
     </main>
+  );
+}
+
+export interface PrimaryAgentSplitSurfaceProps {
+  isMobile: boolean;
+  leftPane: React.ReactNode;
+  rightPane: React.ReactNode;
+}
+
+export function PrimaryAgentSplitSurface({
+  isMobile,
+  leftPane,
+  rightPane,
+}: PrimaryAgentSplitSurfaceProps) {
+  if (isMobile) {
+    return (
+      <div
+        data-slot="primary-agent-split-surface"
+        data-layout="mobile"
+        className="flex h-full min-h-0 flex-col gap-5"
+      >
+        {leftPane}
+        {rightPane}
+      </div>
+    );
+  }
+
+  return (
+    <ResizablePanelGroup
+      data-slot="primary-agent-split-surface"
+      data-layout="desktop"
+      className="h-full min-h-0 w-full gap-5"
+    >
+      <ResizablePanel
+        defaultSize={74}
+        minSize={56}
+        className="min-h-0"
+      >
+        {leftPane}
+      </ResizablePanel>
+      <ResizableHandle withHandle className="mx-2" />
+      <ResizablePanel
+        defaultSize={26}
+        minSize={22}
+        className="min-h-0"
+      >
+        {rightPane}
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
