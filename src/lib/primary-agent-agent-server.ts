@@ -23,6 +23,10 @@ export function buildPrimaryAgentServerRunPath(threadId: string): string {
   return `/tensura/v1/agent-server/threads/${encodeURIComponent(threadId)}/runs`;
 }
 
+export function buildPrimaryAgentServerStreamPath(threadId: string): string {
+  return `/tensura/v1/agent-server/threads/${encodeURIComponent(threadId)}/stream`;
+}
+
 export function parsePrimaryAgentServerRunResponse(
   payload: AgentServerRunPayload | null,
   fallbackThreadId: string

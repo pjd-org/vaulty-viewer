@@ -10,6 +10,7 @@ import {
 import { useHydrated } from '../../src/hooks/useHydrated';
 import {
   PrimaryAgentContextRail,
+  PrimaryAgentStreamRail,
   PrimaryAgentWorkspace,
   PrimaryAgentAssistantProvider,
 } from '../components/primary-agent';
@@ -297,9 +298,9 @@ function PrimaryAgentRouteInner({
         />
       </div>
 
-      {/* Step extractor panel — only shown when steps are available */}
-      {extractedSteps && extractedSteps.steps.length > 0 && (
-        <div className="w-full lg:w-[300px] shrink-0 overflow-y-auto">
+      <div className="w-full lg:w-[320px] shrink-0 overflow-y-auto space-y-4">
+        <PrimaryAgentStreamRail threadId={threadId} />
+        {extractedSteps && extractedSteps.steps.length > 0 && (
           <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 space-y-3 backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Extracted steps
@@ -318,8 +319,8 @@ function PrimaryAgentRouteInner({
               ))}
             </ol>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }

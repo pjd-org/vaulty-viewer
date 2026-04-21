@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildPrimaryAgentServerRunPath,
+  buildPrimaryAgentServerStreamPath,
   parsePrimaryAgentServerRunResponse,
 } from '../../src/lib/primary-agent-agent-server'
 
@@ -8,6 +9,12 @@ describe('primary-agent agent-server helpers', () => {
   it('builds an encoded run path for a thread', () => {
     expect(buildPrimaryAgentServerRunPath('primary-agent/thread 1')).toBe(
       '/tensura/v1/agent-server/threads/primary-agent%2Fthread%201/runs'
+    )
+  })
+
+  it('builds an encoded stream path for a thread', () => {
+    expect(buildPrimaryAgentServerStreamPath('primary-agent/thread 1')).toBe(
+      '/tensura/v1/agent-server/threads/primary-agent%2Fthread%201/stream'
     )
   })
 

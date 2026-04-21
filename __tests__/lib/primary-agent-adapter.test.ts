@@ -33,12 +33,18 @@ vi.mock('../../src/utils/api', () => ({ apiFetch: vi.fn() }));
 vi.mock('../../src/lib/primary-agent-agent-server', () => ({
   buildPrimaryAgentServerRunPath: (threadId: string) =>
     `/tensura/v1/agent-server/threads/${encodeURIComponent(threadId)}/runs`,
+  buildPrimaryAgentServerStreamPath: (threadId: string) =>
+    `/tensura/v1/agent-server/threads/${encodeURIComponent(threadId)}/stream`,
   parsePrimaryAgentServerRunResponse: vi.fn(),
 }));
 
 import { apiFetch } from '../../src/utils/api';
 import { parsePrimaryAgentServerRunResponse } from '../../src/lib/primary-agent-agent-server';
 import { createPrimaryAgentModelAdapter } from '../../src/lib/primary-agent-adapter';
+import {
+  getPrimaryAgentStreamSnapshot,
+  resetPrimaryAgentStreamThread,
+} from '../../src/lib/primary-agent-stream-bus';
 
 const mockApiFetch = apiFetch as unknown as MockInstance;
 const mockParse = parsePrimaryAgentServerRunResponse as unknown as MockInstance;
@@ -47,11 +53,47 @@ const mockParse = parsePrimaryAgentServerRunResponse as unknown as MockInstance;
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeResponse(ok: boolean, status: number, body: unknown): Response {
+function makeResponse(
+  ok: boolean,
+  status: number,
+  body: unknown,
+  contentType: string = 'application/json'
+): Response {
   return {
     ok,
     status,
+    headers: {
+      get: (name: string) =>
+        name.toLowerCase() === 'content-type' ? contentType : null,
+    },
     json: () => Promise.resolve(body),
+  } as unknown as Response;
+}
+
+function makeStreamResponse(chunks: string[]): Response {
+  const encoder = new TextEncoder();
+  let index = 0;
+  return {
+    ok: true,
+    status: 200,
+    headers: {
+      get: (name: string) =>
+        name.toLowerCase() === 'content-type'
+          ? 'text/event-stream; charset=utf-8'
+          : null,
+    },
+    body: {
+      getReader: () => ({
+        read: async () => {
+          if (index >= chunks.length) {
+            return { done: true, value: undefined };
+          }
+          const value = encoder.encode(chunks[index] ?? '');
+          index += 1;
+          return { done: false, value };
+        },
+      }),
+    },
   } as unknown as Response;
 }
 
@@ -95,6 +137,8 @@ function makeRunOptions(
 describe('createPrimaryAgentModelAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetPrimaryAgentStreamThread('thread-abc');
+    resetPrimaryAgentStreamThread('thread-stream');
   });
 
   it('sends POST to the correct path with thread_id and messages', async () => {
@@ -112,7 +156,7 @@ describe('createPrimaryAgentModelAdapter', () => {
 
     expect(mockApiFetch).toHaveBeenCalledOnce();
     const [path, init] = mockApiFetch.mock.calls[0];
-    expect(path).toBe('/tensura/v1/agent-server/threads/thread-abc/runs');
+    expect(path).toBe('/tensura/v1/agent-server/threads/thread-abc/stream');
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string);
     expect(body.thread_id).toBe('thread-abc');
@@ -159,6 +203,9 @@ describe('createPrimaryAgentModelAdapter', () => {
     ) as Promise<ChatModelRunResult>);
 
     expect(mockApiFetch).toHaveBeenCalledTimes(2);
+    expect(mockApiFetch.mock.calls[0][0]).toBe(
+      '/tensura/v1/agent-server/threads/thread-abc/stream'
+    );
     const fallbackBody = JSON.parse(
       mockApiFetch.mock.calls[1][1].body as string
     );
@@ -180,6 +227,9 @@ describe('createPrimaryAgentModelAdapter', () => {
     await adapter.run(makeRunOptions('server error'));
 
     expect(mockApiFetch).toHaveBeenCalledTimes(2);
+    expect(mockApiFetch.mock.calls[0][0]).toBe(
+      '/tensura/v1/agent-server/threads/thread-abc/stream'
+    );
     const fallbackBody = JSON.parse(
       mockApiFetch.mock.calls[1][1].body as string
     );
@@ -235,5 +285,27 @@ describe('createPrimaryAgentModelAdapter', () => {
     await adapter.run(makeRunOptions('same thread'));
 
     expect(onThreadIdResolved).not.toHaveBeenCalled();
+  });
+
+  it('consumes the stream endpoint and publishes normalized viewer events', async () => {
+    mockApiFetch.mockResolvedValueOnce(
+      makeStreamResponse([
+        'data: {"kind":"token","nodeId":"huey","content":"streamed ","timestamp":"2026-04-21T10:00:00.000Z","sequence":1}\n\n',
+        'data: {"kind":"summary","nodeId":"huey","status":"completed","summary":"streamed answer","timestamp":"2026-04-21T10:00:01.000Z","sequence":2}\n\n',
+      ])
+    );
+
+    const adapter = createPrimaryAgentModelAdapter({
+      getThreadId: () => 'thread-stream',
+    });
+    const result = await adapter.run(makeRunOptions('stream me'));
+
+    expect(result.content).toEqual([
+      { type: 'text', text: 'streamed answer' },
+    ]);
+    expect(mockApiFetch).toHaveBeenCalledOnce();
+    expect(getPrimaryAgentStreamSnapshot('thread-stream').messageBuffers.huey).toBe(
+      'streamed answer'
+    );
   });
 });

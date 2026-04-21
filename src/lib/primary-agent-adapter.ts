@@ -15,8 +15,14 @@ import type {
 import { apiFetch } from '../utils/api';
 import {
   buildPrimaryAgentServerRunPath,
+  buildPrimaryAgentServerStreamPath,
   parsePrimaryAgentServerRunResponse,
 } from './primary-agent-agent-server';
+import {
+  publishPrimaryAgentStreamEvent,
+  resetPrimaryAgentStreamThread,
+} from './primary-agent-stream-bus';
+import type { ViewerStreamEvent } from './primary-agent-stream';
 
 type AgentServerRunPayload = {
   ok?: boolean;
@@ -58,7 +64,7 @@ export type PrimaryAgentAdapterOptions = {
 /**
  * Build the POST body sent to the agent server.
  */
-function buildRequestBody(
+export function buildPrimaryAgentRequestBody(
   threadId: string,
   messages: ChatModelRunOptions['messages'],
   intent?: string | null,
@@ -95,6 +101,101 @@ function buildRequestBody(
   return body;
 }
 
+function isEventStreamResponse(response: Response): boolean {
+  const contentType = response.headers.get('content-type') ?? '';
+  return /text\/event-stream/i.test(contentType);
+}
+
+async function readStreamResponse(
+  response: Response,
+  threadId: string
+): Promise<{
+  assistantText: string;
+  events: ViewerStreamEvent[];
+  sawSummary: boolean;
+}> {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    return { assistantText: '', events: [], sawSummary: false };
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let assistantText = '';
+  let mainTokenBuffer = '';
+  let sawSummary = false;
+  const events: ViewerStreamEvent[] = [];
+
+  const consume = (block: string) => {
+    const lines = block
+      .split(/\r?\n/)
+      .map((line) => line.trimEnd())
+      .filter(Boolean);
+    const data = lines
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.slice(5).trimStart())
+      .join('\n');
+    if (!data || data === '[DONE]') return;
+    try {
+      const parsed = JSON.parse(data) as unknown;
+      if (!parsed || typeof parsed !== 'object' || !('kind' in parsed)) {
+        return;
+      }
+      const event = parsed as ViewerStreamEvent;
+      events.push(event);
+      publishPrimaryAgentStreamEvent(threadId, event);
+      if (event.kind === 'token' && event.nodeId === 'huey') {
+        mainTokenBuffer += event.content;
+      }
+      if (event.kind === 'summary') {
+        assistantText = event.summary;
+        sawSummary = true;
+      }
+    } catch {
+      // Ignore malformed stream frames and continue draining the response.
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+    let boundary = buffer.indexOf('\n\n');
+    while (boundary >= 0) {
+      consume(buffer.slice(0, boundary));
+      buffer = buffer.slice(boundary + 2);
+      boundary = buffer.indexOf('\n\n');
+    }
+  }
+
+  if (buffer.trim()) {
+    consume(buffer);
+  }
+
+  if (!assistantText && mainTokenBuffer.trim()) {
+    assistantText = mainTokenBuffer.trim();
+  }
+
+  return { assistantText, events, sawSummary };
+}
+
+async function postToPrimaryAgentStreamServer(
+  threadId: string,
+  body: Record<string, unknown>,
+  abortSignal: AbortSignal
+): Promise<Response> {
+  const path = buildPrimaryAgentServerStreamPath(threadId);
+  return apiFetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+    },
+    body: JSON.stringify(body),
+    signal: abortSignal,
+  });
+}
+
 /**
  * Post to the agent server. Returns [response, payload].
  * Does not throw on non-ok responses — callers decide how to handle.
@@ -128,18 +229,75 @@ export function createPrimaryAgentModelAdapter(
       const threadId = opts.getThreadId();
       const intent = opts.getIntent?.() ?? null;
       const context = opts.getContext?.() ?? null;
-      const requestBody = buildRequestBody(threadId, messages, intent, context);
 
-      let [response, payload] = await postToAgentServer(
+      resetPrimaryAgentStreamThread(threadId);
+
+      const requestBody = buildPrimaryAgentRequestBody(
+        threadId,
+        messages,
+        intent,
+        context
+      );
+
+      let response = await postToPrimaryAgentStreamServer(
         threadId,
         requestBody,
         abortSignal
       );
 
-      // 429 or 5xx → retry once with gpt-4o-mini fallback
-      if (!response.ok && (response.status === 429 || response.status >= 500)) {
+      if (response.ok && isEventStreamResponse(response)) {
+        const { assistantText, sawSummary } = await readStreamResponse(
+          response,
+          threadId
+        );
+        const finalText = assistantText.trim() || '(No response)';
+        if (!sawSummary && finalText !== '(No response)') {
+          publishPrimaryAgentStreamEvent(threadId, {
+            kind: 'summary',
+            nodeId: 'huey',
+            status: 'completed',
+            summary: finalText,
+            timestamp: new Date().toISOString(),
+            sequence: 0,
+          });
+        }
+        return {
+          content: [{ type: 'text', text: finalText }],
+        };
+      } else if (response.ok) {
+        const payload = (await response
+          .json()
+          .catch(() => null)) as AgentServerRunPayload | null;
+        const parsed = parsePrimaryAgentServerRunResponse(payload, threadId);
+
+        if (parsed.threadId !== threadId && opts.onThreadIdResolved) {
+          opts.onThreadIdResolved(parsed.threadId);
+        }
+        if (parsed.isError) {
+          throw new Error(
+            parsed.errorDetail ?? 'Primary Agent encountered an error.'
+          );
+        }
+
+        publishPrimaryAgentStreamEvent(threadId, {
+          kind: 'summary',
+          nodeId: 'huey',
+          status: 'completed',
+          summary: parsed.assistantText,
+          timestamp: new Date().toISOString(),
+          sequence: 0,
+        });
+
+        return {
+          content: [{ type: 'text', text: parsed.assistantText }],
+        };
+      }
+
+      // 429 or 5xx → retry once with gpt-4o-mini fallback on the legacy JSON
+      // path so existing callers still degrade gracefully.
+      if (response.status === 429 || response.status >= 500) {
         try {
-          const fallbackBody = buildRequestBody(
+          const fallbackBody = buildPrimaryAgentRequestBody(
             threadId,
             messages,
             intent,
@@ -152,40 +310,42 @@ export function createPrimaryAgentModelAdapter(
             abortSignal
           );
           if (fallbackResp.ok) {
-            response = fallbackResp;
-            payload = {
-              ...(fallbackPayload || {}),
-              threadId:
-                fallbackPayload?.threadId ||
-                fallbackPayload?.thread_id ||
-                fallbackPayload?.thread?.id ||
-                threadId,
+            const parsed = parsePrimaryAgentServerRunResponse(
+              fallbackPayload,
+              threadId
+            );
+            if (parsed.threadId !== threadId && opts.onThreadIdResolved) {
+              opts.onThreadIdResolved(parsed.threadId);
+            }
+            if (parsed.isError) {
+              throw new Error(
+                parsed.errorDetail ?? 'Primary Agent encountered an error.'
+              );
+            }
+            publishPrimaryAgentStreamEvent(threadId, {
+              kind: 'summary',
+              nodeId: 'huey',
+              status: 'completed',
+              summary: parsed.assistantText,
+              timestamp: new Date().toISOString(),
+              sequence: 0,
+            });
+            return {
+              content: [{ type: 'text', text: parsed.assistantText }],
             };
           }
+          response = fallbackResp;
         } catch {
           // ignore fallback errors — fall through to primary error handling
         }
       }
 
-      if (!response.ok && !payload) {
+      if (!response.ok) {
         throw new Error(`Primary Agent request failed (${response.status})`);
       }
 
-      const parsed = parsePrimaryAgentServerRunResponse(payload, threadId);
-
-      // Notify parent if server resolved to a different threadId
-      if (parsed.threadId !== threadId && opts.onThreadIdResolved) {
-        opts.onThreadIdResolved(parsed.threadId);
-      }
-
-      // Surface 200-envelope failures as thrown errors so @assistant-ui/react
-      // shows an error state rather than rendering the error as a chat message.
-      if (parsed.isError) {
-        throw new Error(parsed.errorDetail ?? 'Primary Agent encountered an error.');
-      }
-
       return {
-        content: [{ type: 'text', text: parsed.assistantText }],
+        content: [{ type: 'text', text: '(No response)' }],
       };
     },
   };
