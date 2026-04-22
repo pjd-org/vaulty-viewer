@@ -97,7 +97,7 @@ function AudienceColumn({
       hint: '',
     };
     return (
-      <div className="rounded-2xl border border-dashed border-[var(--border-glass)] bg-[color-mix(in_srgb,var(--surf-utility)_60%,transparent)] p-4 space-y-1.5">
+      <div className="rounded-2xl border border-dashed border-[var(--border-glass)] bg-[color-mix(in_srgb,var(--surf-utility)_60%,transparent)] p-4 flex flex-col gap-1.5">
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
           {audience}
         </p>
@@ -184,7 +184,7 @@ export function KnowledgeWorkspaceSurface({
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
-        <section className="space-y-4">
+        <section className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             {/* Domain filter */}
             <div className={filterPillClass}>
@@ -230,7 +230,7 @@ export function KnowledgeWorkspaceSurface({
                   setDomainFilter('');
                   setMaturityFilter('');
                 }}
-                className="btn-secondary rounded-full px-3 py-1.5 text-xs transition-colors"
+                className="btn-secondary cursor-pointer rounded-full px-3 py-1.5 text-xs transition-colors"
               >
                 Clear filters ×
               </button>
@@ -278,7 +278,7 @@ export function KnowledgeWorkspaceSurface({
         </section>
 
         {/* ── Right column: workspace pane + adapter context rail ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <KnowledgeWorkspacePane
             noteId={workspaceNoteId}
             mode={mode}
@@ -299,11 +299,11 @@ export function KnowledgeWorkspaceSurface({
               </p>
             </aside>
           ) : adapterData ? (
-            <aside className="knowledge-adapter-rail space-y-4">
+            <aside className="knowledge-adapter-rail flex flex-col gap-4">
               {adapterData.selectedContext.length > 0 && (
                 <section>
                   <h3 className={railSectionTitleClass}>Active context</h3>
-                  <ul className="space-y-1">
+                  <ul className="flex flex-col gap-1">
                     {adapterData.selectedContext.map((ctx) => (
                       <li key={ctx.id} className={railListItemClass}>
                         {ctx.title}
@@ -320,7 +320,7 @@ export function KnowledgeWorkspaceSurface({
               {adapterData.suggestedActions.length > 0 && (
                 <section>
                   <h3 className={railSectionTitleClass}>Suggested actions</h3>
-                  <ul className="space-y-1">
+                  <ul className="flex flex-col gap-1">
                     {adapterData.suggestedActions.map((action) => (
                       <li
                         key={`${action.actionType}-${action.label}`}

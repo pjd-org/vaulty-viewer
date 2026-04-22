@@ -101,7 +101,11 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon">
+      <Sidebar
+        collapsible="icon"
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {/* ---- Header: logo ---- */}
         <SidebarHeader>
           <SidebarMenu>
@@ -117,7 +121,7 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] text-xs font-black shadow-[0_10px_24px_rgba(51,95,255,0.28)]">
                     V3
                   </span>
-                  <span className="truncate text-sm font-semibold tracking-[0.14em] text-[rgba(247,250,255,0.94)]">
+                  <span className="truncate text-sm font-semibold tracking-[0.14em] text-[var(--text-primary)]">
                     Vault
                   </span>
                 </Link>
@@ -129,7 +133,7 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
         {/* ---- Content: primary + secondary nav ---- */}
         <SidebarContent className="px-2">
           {/* Primary — core execution */}
-          <SidebarGroup>
+          <SidebarGroup aria-label="Primary navigation">
             <SidebarGroupContent>
               <SidebarMenu>
                 {VIEWER_PRIMARY_NAV.map((item) => {
@@ -142,7 +146,10 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                         isActive={isActive(item.to)}
                         className="rounded-2xl px-3 py-2.5 transition-all duration-200 data-[active=true]:shadow-[0_14px_28px_rgba(12,18,31,0.26)] data-[active=true]:ring-1 data-[active=true]:ring-white/10"
                       >
-                        <Link to={item.to as never}>
+                        <Link
+                          to={item.to as never}
+                          aria-current={isActive(item.to) ? 'page' : undefined}
+                        >
                           <Icon />
                           <span>{item.label}</span>
                         </Link>
@@ -157,7 +164,7 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
 
           {/* Secondary — supporting surfaces */}
-          <SidebarGroup>
+          <SidebarGroup aria-label="Secondary navigation">
             <SidebarGroupContent>
               <SidebarMenu>
                 {VIEWER_SECONDARY_NAV.map((item) => {
@@ -170,7 +177,10 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                         isActive={isActive(item.to)}
                         className="rounded-2xl px-3 py-2.5 transition-all duration-200 data-[active=true]:shadow-[0_14px_28px_rgba(12,18,31,0.26)] data-[active=true]:ring-1 data-[active=true]:ring-white/10"
                       >
-                        <Link to={item.to as never}>
+                        <Link
+                          to={item.to as never}
+                          aria-current={isActive(item.to) ? 'page' : undefined}
+                        >
                           <Icon />
                           <span>{item.label}</span>
                         </Link>
@@ -197,7 +207,10 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                     isActive={isActive(item.to)}
                     className="rounded-2xl px-3 py-2.5 transition-all duration-200 data-[active=true]:shadow-[0_14px_28px_rgba(12,18,31,0.26)] data-[active=true]:ring-1 data-[active=true]:ring-white/10"
                   >
-                    <Link to={item.to as never}>
+                    <Link
+                      to={item.to as never}
+                      aria-current={isActive(item.to) ? 'page' : undefined}
+                    >
                       <Icon />
                       <span>{item.label}</span>
                     </Link>

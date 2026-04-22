@@ -26,6 +26,7 @@ const timelineDotVariants = cva(
         secondary: 'border-secondary',
         destructive: 'border-destructive',
         outline: '',
+        glass: 'border-white/60',
       },
       hollow: {
         true: 'border-2 bg-card',
@@ -53,6 +54,16 @@ const timelineDotVariants = cva(
         variant: 'outline',
         class: 'bg-background',
       },
+      {
+        hollow: false,
+        variant: 'glass',
+        class: 'bg-white/30 backdrop-blur-sm',
+      },
+      {
+        hollow: true,
+        variant: 'glass',
+        class: 'bg-white/10 backdrop-blur-sm',
+      },
     ],
     defaultVariants: {
       variant: 'default',
@@ -72,6 +83,12 @@ const timelineItemVariants = cva(
         destructive:
           'bg-destructive/10 border border-destructive/20 text-destructive-foreground shadow-sm',
         outline: 'bg-transparent border shadow-sm',
+        glass: [
+          'bg-white/10 backdrop-blur-xl',
+          'border border-white/20',
+          'shadow-[0_8px_32px_rgba(0,0,0,0.37)]',
+          'text-foreground',
+        ].join(' '),
       },
       noCards: {
         true: 'border-none shadow-none bg-transparent',
@@ -93,6 +110,7 @@ const timelineBranchVariants = cva('absolute z-0', {
       secondary: 'bg-secondary',
       destructive: 'bg-destructive',
       outline: 'bg-border',
+      glass: 'bg-white/30',
     },
   },
   defaultVariants: {

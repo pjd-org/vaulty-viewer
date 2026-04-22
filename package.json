@@ -63,6 +63,7 @@
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.2.0",
+    "react-easy-modals": "^1.5.0",
     "react-hook-form": "^7.72.0",
     "react-resizable-panels": "^4.8.0",
     "remark-gfm": "^4.0.1",
@@ -106,6 +107,6 @@
   "engines": {
     "node": ">=20.19.0"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.15.1",
   "pnpm": {}
 }

@@ -16,7 +16,7 @@ export interface KanbanCardProps {
   onStatusChange: (task: KanbanTask, status: string) => void;
 }
 
-export function KanbanCard({
+export const KanbanCard = React.memo(function KanbanCard({
   task,
   isDragging,
   isReadOnly,
@@ -119,7 +119,7 @@ export function KanbanCard({
                 onClick={() => onStatusChange(task, 'completed')}
                 disabled={mutatingTaskId === task.id}
                 title="Mark completed"
-                className="rounded-full border [background:color-mix(in_srgb,var(--a-mint)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,var(--n-950))] px-2 py-1 text-[11px] transition hover:[background:color-mix(in_srgb,var(--a-mint)_24%,var(--surf-elevated))] disabled:opacity-40"
+                className="cursor-pointer rounded-full border [background:color-mix(in_srgb,var(--a-mint)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,var(--n-950))] px-2 py-1 text-[11px] transition hover:[background:color-mix(in_srgb,var(--a-mint)_24%,var(--surf-elevated))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 ✓
               </button>
@@ -129,7 +129,7 @@ export function KanbanCard({
                 onClick={() => onStatusChange(task, 'todo')}
                 disabled={mutatingTaskId === task.id}
                 title="Reopen task"
-                className="rounded-full bg-[var(--surf-utility)] px-2 py-1 text-[11px] text-text2 transition hover:bg-[var(--surf-utility)] disabled:opacity-40"
+                className="cursor-pointer rounded-full bg-[var(--surf-utility)] px-2 py-1 text-[11px] text-text2 transition hover:bg-[var(--surf-utility)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 ↺
               </button>
@@ -156,4 +156,4 @@ export function KanbanCard({
       </div>
     </article>
   );
-}
+});

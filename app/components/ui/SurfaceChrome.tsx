@@ -75,7 +75,7 @@ export function SurfaceButtonChip({
     <button
       className={cn(
         chipBaseClass,
-        'transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
         chipToneClass[tone],
         className
       )}

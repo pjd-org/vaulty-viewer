@@ -26,7 +26,7 @@ function VitalBar({ value, label, inverted = false }: VitalBarProps) {
         : 'var(--a-mint)';
 
   return (
-    <div className="space-y-1">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between text-xs">
         <span style={{ color: 'var(--text-tertiary)' }}>{label}</span>
         <span
@@ -48,7 +48,7 @@ function VitalBar({ value, label, inverted = false }: VitalBarProps) {
 
 export function VitalsPanel({ vitals }: VitalsPanelProps) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <VitalBar value={vitals.energy ?? 50} label="Energy" />
       <VitalBar value={vitals.stress ?? 50} label="Stress" inverted />
       <VitalBar value={vitals.health ?? 50} label="Health" />

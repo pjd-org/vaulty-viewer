@@ -54,7 +54,7 @@ export const Route = createFileRoute('/')({
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <SoftPanel variant="utility" tone="muted" className="space-y-2 p-4">
+    <SoftPanel variant="utility" tone="muted" className="flex flex-col gap-2 p-4">
       <SurfaceChip tone="accent" className="mb-3">
         Recent sessions
       </SurfaceChip>
@@ -539,7 +539,7 @@ function FocusRoute() {
   // ---------------------------------------------------------------------------
 
   const asideContent = (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* Snapshot grid */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Link
@@ -650,7 +650,7 @@ function FocusRoute() {
           Context Tail
         </p>
         {(surface?.contextTail ?? []).length > 0 ? (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {(surface?.contextTail ?? []).map((item) => (
               <p
                 key={item.id}
@@ -674,7 +674,7 @@ function FocusRoute() {
   // ---------------------------------------------------------------------------
 
   const primaryContent = (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {surfaceError && !surface ? (
         <EmptyState
           title="Home surface unavailable."
@@ -683,7 +683,7 @@ function FocusRoute() {
       ) : null}
 
       {/* Section 1: Pressure Band */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeader
           title="Pressure Band"
           subtitle="Active signals surfaced by COD."
@@ -703,7 +703,7 @@ function FocusRoute() {
       </section>
 
       {/* Section 2: Decision Queue */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeader
           title="Decision Queue"
           subtitle="Ranked recommendations — act, simulate, or defer."
@@ -724,7 +724,7 @@ function FocusRoute() {
       </section>
 
       {/* Section 3: Verification Rail */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeader
           title="Verification Rail"
           subtitle="Outcome verification for recent actions."
@@ -739,8 +739,8 @@ function FocusRoute() {
 
       {/* Section 4: Immediate Interventions (task backlog) */}
       {taskCards.length > 0 ? (
-        <section className="space-y-4">
-          <div className="space-y-4">
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <article className="relative overflow-hidden rounded-[24px] border border-border bg-card/85 p-5 pl-7 shadow-sm">
               <div
                 aria-hidden="true"
@@ -816,7 +816,7 @@ function FocusRoute() {
               )}
             </article>
           </div>
-          <section className="space-y-3">
+          <section className="flex flex-col gap-3">
             <SectionHeader
               title="Immediate Interventions"
               subtitle="Prioritized follow-up cards."
@@ -893,7 +893,7 @@ function FocusRoute() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {activeSession && !endingSession ? (
         <>
           <ActiveSessionBanner

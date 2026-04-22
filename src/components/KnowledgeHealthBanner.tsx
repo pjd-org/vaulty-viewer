@@ -25,8 +25,13 @@ export function formatRelativeTime(isoString: string): string {
   return `${days} day${days !== 1 ? 's' : ''} ago`;
 }
 
-export function KnowledgeHealthBanner({ health, loading }: KnowledgeHealthBannerProps) {
-  const dismissKey = health ? `knowledge-banner-dismissed-${health.graph_generated}` : null;
+export function KnowledgeHealthBanner({
+  health,
+  loading,
+}: KnowledgeHealthBannerProps) {
+  const dismissKey = health
+    ? `knowledge-banner-dismissed-${health.graph_generated}`
+    : null;
   const [dismissed, setDismissed] = useState(() => {
     if (!dismissKey || typeof sessionStorage === 'undefined') return false;
     return sessionStorage.getItem(dismissKey) === '1';
@@ -60,7 +65,8 @@ export function KnowledgeHealthBanner({ health, loading }: KnowledgeHealthBanner
   if (health.is_stale) {
     return (
       <div className="knowledge-health-banner knowledge-health-banner--warning">
-        Graph index is stale (last built: {formatRelativeTime(health.graph_generated)})
+        Graph index is stale (last built:{' '}
+        {formatRelativeTime(health.graph_generated)})
       </div>
     );
   }
@@ -78,9 +84,10 @@ export function KnowledgeHealthBanner({ health, loading }: KnowledgeHealthBanner
   const total = health.node_count;
   return (
     <div className="knowledge-health-banner knowledge-health-banner--success">
-      {total} note{total !== 1 ? 's' : ''} · built {formatRelativeTime(health.graph_generated)}
+      {total} note{total !== 1 ? 's' : ''} · built{' '}
+      {formatRelativeTime(health.graph_generated)}
       <button
-        className="knowledge-health-banner__dismiss"
+        className="knowledge-health-banner__dismiss cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         onClick={handleDismiss}
         aria-label="Dismiss"
       >

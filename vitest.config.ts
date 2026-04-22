@@ -39,6 +39,7 @@ export default mergeConfig(
           extends: true,
           test: {
             environment: 'jsdom',
+            fileParallelism: false,
             setupFiles: ['./__tests__/setup.ts'],
             include: [
               '__tests__/**/*.test.js',

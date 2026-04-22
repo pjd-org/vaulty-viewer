@@ -1116,6 +1116,7 @@ export type GraphJson = {
   nodes: Record<string, GraphNode>;
   links: Record<string, string[]>;
   backlinks: Record<string, string[]>;
+  by_tag: Record<string, string[]>;
   by_audience: { human: string[]; agent: string[]; bubble: string[] };
   unresolved_links: Record<string, string[]>;
 };

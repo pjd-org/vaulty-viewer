@@ -9,6 +9,9 @@ import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
+import { GlassCard } from '../components/ui/glass-card';
+import { GlassInput } from '../components/ui/glass-input';
+import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/knowledge/search')({
   validateSearch: (search) => ({
@@ -69,42 +72,47 @@ function KnowledgeSearchRoute() {
 
   const toolbar = (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-3">
-      <input
-        type="search"
-        value={q}
-        onChange={(e) => handleQueryChange(e.target.value)}
-        placeholder="Search knowledge notes…"
-        className="min-w-[240px] flex-1 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground transition focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-      />
-      <div className="flex overflow-hidden rounded-full border border-border bg-muted/40">
+      <div className="min-w-[240px] flex-1">
+        <GlassInput
+          type="search"
+          value={q}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          placeholder="Search knowledge notes…"
+        />
+      </div>
+      <div className="flex overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
         <button
           type="button"
           onClick={() => handleModeChange('tag')}
-          className={[
-            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
+          className={cn(
+            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition cursor-pointer',
             mode === 'tag'
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:text-foreground',
-          ].join(' ')}
+              ? 'bg-white/20 text-white'
+              : 'text-white/60 hover:text-white/80'
+          )}
         >
           Structural
         </button>
         <button
           type="button"
           onClick={() => handleModeChange('semantic')}
-          className={[
-            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition',
+          className={cn(
+            'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition cursor-pointer',
             mode === 'semantic'
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:text-foreground',
-          ].join(' ')}
+              ? 'bg-white/20 text-white'
+              : 'text-white/60 hover:text-white/80'
+          )}
         >
           Semantic
         </button>
       </div>
       <button
         type="submit"
-        className="rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary transition hover:bg-primary/20"
+        className={cn(
+          'rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-200',
+          'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+          'hover:bg-white/15 hover:text-white cursor-pointer'
+        )}
       >
         Search
       </button>
@@ -137,12 +145,12 @@ function KnowledgeSearchRoute() {
           : 'Enter a query to search your knowledge base.'
       }
       primary={
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <KnowledgeHealthBanner health={health ?? null} loading={false} />
 
           {searchError && (
             <div
-              className="rounded-[18px] border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive"
+              className="rounded-[18px] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-300"
               role="alert"
             >
               Search failed: {searchError.message}
@@ -150,11 +158,11 @@ function KnowledgeSearchRoute() {
           )}
 
           {searching && (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 animate-pulse rounded-[18px] border border-border bg-muted/40"
+                  className="h-20 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
                 />
               ))}
             </div>
@@ -181,7 +189,7 @@ function KnowledgeSearchRoute() {
             )}
 
           {!searching && displayResults.length > 0 && (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {displayResults.map((note) => (
                 <KnowledgeNoteCard key={note.path} {...note} />
               ))}
@@ -192,27 +200,27 @@ function KnowledgeSearchRoute() {
       asideTitle="Search Tips"
       asideSubtitle="How to get the best results."
       aside={
-        <div className="space-y-4 text-sm text-muted-foreground">
-          <div className="space-y-3 rounded-[18px] border border-border bg-muted/40 p-4">
+        <div className="flex flex-col gap-4 text-sm text-white/60">
+          <GlassCard glowEffect={false} className="p-4 flex flex-col gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                 Structural mode
               </p>
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-white/60">
                 Matches notes by tag, frontmatter type, or audience field. Exact
                 and prefix matching.
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                 Semantic mode
               </p>
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-white/60">
                 Uses vector embeddings to find conceptually similar notes even
                 without exact keyword matches.
               </p>
             </div>
-          </div>
+          </GlassCard>
         </div>
       }
     />

@@ -11,7 +11,7 @@ interface RecentSessionsPanelProps {
 export function RecentSessionsPanel({ sessions }: RecentSessionsPanelProps) {
   if (!sessions.length) return null;
   return (
-    <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--surf-utility)] p-4 space-y-2">
+    <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--surf-utility)] p-4 flex flex-col gap-2">
       <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">
         Recent sessions
       </p>

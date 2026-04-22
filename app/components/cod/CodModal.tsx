@@ -142,7 +142,7 @@ export function CodModal() {
           <summary className="px-4 py-3 text-sm font-medium text-[var(--text-secondary)] cursor-pointer select-none">
             Why this status
           </summary>
-          <div className="px-4 pb-4 space-y-1">
+          <div className="px-4 pb-4 flex flex-col gap-1">
             {codState.why.map((w, i) => (
               <ReasonText key={i}>{w}</ReasonText>
             ))}

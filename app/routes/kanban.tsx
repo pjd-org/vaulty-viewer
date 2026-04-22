@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
@@ -98,7 +104,7 @@ interface KanbanCardProps {
   onStatusChange: (task: KanbanTask, status: string) => void;
 }
 
-function KanbanCard({
+const KanbanCard = React.memo(function KanbanCard({
   task,
   isDragging,
   isReadOnly,
@@ -206,6 +212,7 @@ function KanbanCard({
                 onClick={() => onStatusChange(task, 'completed')}
                 disabled={mutatingTaskId === task.id}
                 title="Mark completed"
+                aria-label="Mark completed"
                 className="rounded-full bg-success/10 px-2 py-1 text-[11px] text-success transition hover:bg-success/20 disabled:opacity-40"
               >
                 ✓
@@ -216,6 +223,7 @@ function KanbanCard({
                 onClick={() => onStatusChange(task, 'todo')}
                 disabled={mutatingTaskId === task.id}
                 title="Reopen task"
+                aria-label="Reopen task"
                 className="rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground transition hover:bg-muted/80 disabled:opacity-40"
               >
                 ↺
@@ -243,7 +251,7 @@ function KanbanCard({
       </div>
     </article>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // KanbanRoute
@@ -267,7 +275,7 @@ function KanbanRoute() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       const res = await apiFetch('/api/v1/tasks');
       if (res.ok) {
@@ -289,12 +297,11 @@ function KanbanRoute() {
         dispatch({ type: 'API_OFFLINE' });
       }
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     loadTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+  }, [loadTasks]);
 
   const tags = useMemo(() => {
     const set = new Set<string>();
@@ -343,69 +350,81 @@ function KanbanRoute() {
 
   const isReadOnly = apiStatus === 'offline' || apiStatus === 'unknown';
 
-  const updateStatus = async (task: KanbanTask, status: string) => {
-    if (!task.path) return;
-    if (task.status === status) return;
-    dispatch({ type: 'MUTATE_START', taskId: task.id });
-    try {
-      const res = await apiFetch(
-        `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status }),
+  const updateStatus = useCallback(
+    async (task: KanbanTask, status: string) => {
+      if (!task.path) return;
+      if (task.status === status) return;
+      dispatch({ type: 'MUTATE_START', taskId: task.id });
+      try {
+        const res = await apiFetch(
+          `/api/v1/tasks/${encodeURIComponent(task.path)}/status`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+          }
+        );
+        if (res.status === 401) {
+          dispatch({ type: 'MUTATE_FAIL' });
+          navigate({ to: '/login' });
+          return;
         }
-      );
-      if (res.status === 401) {
+        if (!res.ok) {
+          dispatch({ type: 'MUTATE_FAIL' });
+          return;
+        }
+        const body = await res.json();
+        dispatch({
+          type: 'MUTATE_DONE',
+          path: task.path,
+          id: task.id,
+          status: body?.structuredContent?.frontmatter?.status || status,
+          updatedPath: body?.structuredContent?.path || task.path,
+        });
+      } catch (err) {
+        if (err instanceof UnauthenticatedError) {
+          navigate({ to: '/login' });
+        } else {
+          console.warn('[kanban] status update failed', err);
+        }
         dispatch({ type: 'MUTATE_FAIL' });
-        navigate({ to: '/login' });
-        return;
       }
-      if (!res.ok) {
-        dispatch({ type: 'MUTATE_FAIL' });
-        return;
-      }
-      const body = await res.json();
-      dispatch({
-        type: 'MUTATE_DONE',
-        path: task.path,
-        id: task.id,
-        status: body?.structuredContent?.frontmatter?.status || status,
-        updatedPath: body?.structuredContent?.path || task.path,
-      });
-    } catch (err) {
-      if (err instanceof UnauthenticatedError) {
-        navigate({ to: '/login' });
-      } else {
-        console.warn('[kanban] status update failed', err);
-      }
-      dispatch({ type: 'MUTATE_FAIL' });
-    }
-  };
+    },
+    [navigate]
+  );
 
-  const handleDragStart = (task: KanbanTask) => {
-    if (isReadOnly) return;
-    dispatch({ type: 'DRAG_START', taskId: task.id });
-  };
+  const handleDragStart = useCallback(
+    (task: KanbanTask) => {
+      if (isReadOnly) return;
+      dispatch({ type: 'DRAG_START', taskId: task.id });
+    },
+    [isReadOnly]
+  );
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     dispatch({ type: 'DRAG_END' });
-  };
+  }, []);
 
-  const handleDrop = (status: string) => {
-    if (isReadOnly || !draggingTaskId) return;
-    const task = apiTasks.find((t) => t.id === draggingTaskId);
-    if (task) {
-      updateStatus(task, status);
-    } else {
-      dispatch({ type: 'DRAG_END' });
-    }
-  };
+  const handleDrop = useCallback(
+    (status: string) => {
+      if (isReadOnly || !draggingTaskId) return;
+      const task = apiTasks.find((t) => t.id === draggingTaskId);
+      if (task) {
+        updateStatus(task, status);
+      } else {
+        dispatch({ type: 'DRAG_END' });
+      }
+    },
+    [isReadOnly, draggingTaskId, apiTasks, updateStatus]
+  );
 
-  const allowDrop = (e: React.DragEvent) => {
-    if (isReadOnly) return;
-    e.preventDefault();
-  };
+  const allowDrop = useCallback(
+    (e: React.DragEvent) => {
+      if (isReadOnly) return;
+      e.preventDefault();
+    },
+    [isReadOnly]
+  );
 
   const summaryItems = STATUS_COLUMNS.map((col) => ({
     label: col.label,
@@ -413,11 +432,11 @@ function KanbanRoute() {
     detail: `Tasks in ${col.label.toLowerCase()}`,
   }));
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await loadTasks();
     setIsRefreshing(false);
-  };
+  }, [loadTasks]);
 
   const refreshButton = (
     <button
@@ -469,7 +488,7 @@ function KanbanRoute() {
             : 'Drag cards to move tasks between columns.'
       }
       primary={
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* Board columns — horizontally scrollable on narrow viewports */}
           <div className="overflow-x-auto -mx-1 px-1 pb-2">
             <div className="flex gap-4 min-w-[680px]">
@@ -487,8 +506,8 @@ function KanbanRoute() {
                     className={[
                       'flex-1 min-w-[160px] rounded-[18px] border p-3 transition',
                       draggingTaskId
-                      ? 'border-primary/30 bg-primary/5'
-                      : 'border-border bg-muted/40',
+                        ? 'border-primary/30 bg-primary/5'
+                        : 'border-border bg-muted/40',
                     ].join(' ')}
                     data-status={col.key}
                     onDragOver={allowDrop}
@@ -526,7 +545,7 @@ function KanbanRoute() {
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="flex flex-col gap-2">
                         {visibleItems.map((task) => (
                           <KanbanCard
                             key={task.id}
@@ -545,7 +564,7 @@ function KanbanRoute() {
                             onClick={() =>
                               setExpandCompletedColumn((prev) => !prev)
                             }
-                            className="w-full rounded-[12px] border border-border bg-muted/40 py-2 text-xs text-muted-foreground transition hover:bg-muted/60"
+                            className="w-full cursor-pointer rounded-[12px] border border-border bg-muted/40 py-2 text-xs text-muted-foreground transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                           >
                             {expandCompletedColumn
                               ? 'Show fewer'
@@ -597,10 +616,10 @@ function KanbanRoute() {
       asideTitle="Filters"
       asideSubtitle="Narrow the board view."
       aside={
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           {/* Tag filter */}
-          <div className="space-y-1.5">
-              <label
+          <div className="flex flex-col gap-1.5">
+            <label
               htmlFor="kanban-filter-tag"
               className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
             >
@@ -622,7 +641,7 @@ function KanbanRoute() {
           </div>
 
           {/* Project filter */}
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             <label
               htmlFor="kanban-filter-project"
               className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
@@ -656,7 +675,7 @@ function KanbanRoute() {
           </label>
 
           {/* Legend */}
-          <div className="rounded-[12px] border border-border bg-muted/40 px-4 py-3 space-y-2">
+          <div className="rounded-[12px] border border-border bg-muted/40 px-4 py-3 flex flex-col gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Legend
             </p>

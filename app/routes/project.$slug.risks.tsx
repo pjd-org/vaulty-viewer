@@ -42,7 +42,7 @@ function ProjectRisksRoute() {
 
   if (isLoading && !surface) {
     return (
-      <div className="space-y-5">
+      <div className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-4">
           {stats.map((s) => (
             <div
@@ -57,7 +57,7 @@ function ProjectRisksRoute() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* ── Stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
         {stats.map((s) => (
@@ -77,7 +77,7 @@ function ProjectRisksRoute() {
 
       {/* ── Severity partition bar ── */}
       {allRisks.length > 0 && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Severity Breakdown
           </p>
@@ -134,7 +134,7 @@ function ProjectRisksRoute() {
               description="When project pressure or dependency risks are detected they will appear here."
             />
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {allRisks.map((risk) => {
                 const active = selectedRisk?.id === risk.id;
                 return (
@@ -169,14 +169,14 @@ function ProjectRisksRoute() {
         </SoftPanel>
 
         {/* ── Right: detail ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SoftPanel
             variant="utility"
             title="Selected Risk"
             subtitle="Detail and triage context for the selected risk signal."
           >
             {selectedRisk ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">

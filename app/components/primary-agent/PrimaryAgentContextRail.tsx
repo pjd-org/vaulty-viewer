@@ -149,7 +149,7 @@ export function PrimaryAgentContextRail({
         {visibleGroups.length === 0 && workflowSearch.trim() && (
           <p className={railTertiaryTextClass}>No matching workflows.</p>
         )}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {visibleGroups.map((group) => (
             <div key={group.label}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)] mb-1.5">
@@ -161,7 +161,7 @@ export function PrimaryAgentContextRail({
                     key={t.id}
                     type="button"
                     onClick={() => onSelectIntent(t.id)}
-                    className="appearance-none border-0 bg-transparent p-0 rounded-full"
+                    className="appearance-none border-0 bg-transparent p-0 rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     title={t.description}
                   >
                     <SoftChip
@@ -194,14 +194,14 @@ export function PrimaryAgentContextRail({
                 onClick={() => onSelectThread(thread.id)}
                 suppressHydrationWarning
                 className={[
-                  'primary-agent-thread-item w-full text-left text-sm rounded-xl px-3 py-2.5 block transition-colors',
+                  'primary-agent-thread-item w-full text-left text-sm rounded-xl px-3 py-2.5 block transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                   thread.id === activeThreadId
                     ? 'primary-agent-thread-item--active'
                     : 'primary-agent-thread-item--idle',
                 ].join(' ')}
                 title={`${thread.title} · ${formatRelativeTime(thread.timestamp)}`}
               >
-                <div className="flex items-center gap-1 truncate">
+                <div className="flex min-w-0 items-center gap-1">
                   <span aria-hidden="true" className="shrink-0">
                     {thread.emoji}
                   </span>

@@ -94,7 +94,7 @@ function ProjectTasksRoute() {
   const selectedTaskTags = selectedTask?.tags ?? [];
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-4">
         {taskSummary.map((item) => (
           <div
@@ -118,7 +118,7 @@ function ProjectTasksRoute() {
           subtitle="Choose a project task to inspect its detail and note link."
         >
           {isLoading && !projectTasks.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
@@ -137,7 +137,7 @@ function ProjectTasksRoute() {
               description="When scoped work lands, it will appear here with the selected task detail rail."
             />
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {projectTasks.map((task) => {
                 const active = selectedTask?.id === task.id;
                 const taskStatus = normalizeTaskStatus(task.status);
@@ -181,14 +181,14 @@ function ProjectTasksRoute() {
           )}
         </SoftPanel>
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SoftPanel
             variant="utility"
             title="Selected Task"
             subtitle="Detail, status, and the canonical task note link."
           >
             {selectedTask ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">
@@ -263,7 +263,7 @@ function ProjectTasksRoute() {
             subtitle="Tasks currently holding the project up."
           >
             {blockedTasks.length ? (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {blockedTasks.map((task) => (
                   <Link
                     key={task.id}

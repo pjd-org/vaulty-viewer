@@ -735,7 +735,7 @@ function NoteRoute() {
                   key={item.label}
                   type="button"
                   aria-label={item.label}
-                  className="h-9 w-9 rounded-full border border-border bg-card text-xs font-semibold text-muted-foreground transition hover:border-border/80 hover:text-foreground"
+                  className="h-9 w-9 cursor-pointer rounded-full border border-border bg-card text-xs font-semibold text-muted-foreground transition hover:border-border/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                 >
                   {item.short}
                 </button>
@@ -984,8 +984,8 @@ function NoteRoute() {
         </div>
 
         {/* Meta rail */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="xl:sticky xl:top-4 h-fit space-y-4">
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+          <div className="xl:sticky xl:top-4 h-fit flex flex-col gap-4">
             {note && (
               <>
                 <NoteMetaRail

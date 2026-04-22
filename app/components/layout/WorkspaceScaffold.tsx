@@ -164,7 +164,7 @@ export function WorkspaceScaffold({
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {aside ? (
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
             {primaryPanel}

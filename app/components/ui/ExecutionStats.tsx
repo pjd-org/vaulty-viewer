@@ -19,7 +19,7 @@ export function ExecutionStats({ vitals }: ExecutionStatsProps) {
   if (tasksToday === 0 && sessionsWeek === 0) return null;
 
   return (
-    <section className="mb-5 space-y-2">
+    <section className="mb-5 flex flex-col gap-2">
       <SectionLabel>Today</SectionLabel>
       <div className="flex gap-6">
         <MetricLabel value={tasksToday} label="tasks done" />

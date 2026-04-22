@@ -97,7 +97,10 @@ export function ProjectRouteShell({
         </div>
 
         {/* ── Tab nav ─────────────────────────────────────────────────── */}
-        <div className="px-6 py-3 border-b border-[var(--border-glass)] bg-[var(--surf-base)]">
+        <nav
+          aria-label="Project sections"
+          className="px-6 py-3 border-b border-[var(--border-glass)] bg-[var(--surf-base)]"
+        >
           <div className="flex flex-wrap gap-2">
             {PROJECT_ROUTE_TABS.map((tab) => {
               const to = getProjectTabPath(slug, tab.to);
@@ -111,6 +114,7 @@ export function ProjectRouteShell({
                   to={tab.to}
                   params={{ slug }}
                   search={projectSearch}
+                  aria-current={active ? 'page' : undefined}
                   className={[
                     'tab rounded-full px-4 py-2 text-sm font-medium transition-colors',
                     active
@@ -123,7 +127,7 @@ export function ProjectRouteShell({
               );
             })}
           </div>
-        </div>
+        </nav>
 
         {/* ── Content ─────────────────────────────────────────────────── */}
         <div className="p-6">

@@ -40,7 +40,7 @@ function SettingsRoute() {
       primaryTitle="Settings Workspace"
       primarySubtitle="Preference groups and control forms."
       primary={
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           <section>
             <h3 className="text-sm font-medium text-foreground mb-3">Theme</h3>
             <ThemeSelector />

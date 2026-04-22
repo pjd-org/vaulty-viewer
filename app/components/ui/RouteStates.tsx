@@ -17,7 +17,7 @@ export function RouteLoadingState({
       role="status"
       aria-live="polite"
       aria-busy="true"
-      className={`space-y-3 ${className}`}
+      className={`flex flex-col gap-3 ${className}`}
     >
       <p
         className="text-xs font-medium uppercase tracking-[0.14em]"
@@ -52,7 +52,7 @@ export function RouteAsideEmptyState({
   testId,
 }: RouteAsideEmptyStateProps) {
   return (
-    <div data-testid={testId} className="space-y-2">
+    <div data-testid={testId} className="flex flex-col gap-2">
       <p
         className="text-sm font-medium"
         style={{ color: 'var(--text-primary)' }}

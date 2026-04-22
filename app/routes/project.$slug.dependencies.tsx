@@ -46,7 +46,7 @@ function ProjectDependenciesRoute() {
 
   if (isLoading && !surface) {
     return (
-      <div className="space-y-5">
+      <div className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-4">
           {stats.map((s) => (
             <div
@@ -61,7 +61,7 @@ function ProjectDependenciesRoute() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* ── Stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
         {stats.map((s) => (
@@ -81,7 +81,7 @@ function ProjectDependenciesRoute() {
 
       {/* ── Severity partition bar ── */}
       {allSignals.length > 0 && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Severity Breakdown
           </p>
@@ -143,7 +143,7 @@ function ProjectDependenciesRoute() {
               description="When upstream blockers or dependency risks are detected they will appear here."
             />
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {allSignals.map((signal) => {
                 const active = selectedSignal?.id === signal.id;
                 return (
@@ -178,14 +178,14 @@ function ProjectDependenciesRoute() {
         </SoftPanel>
 
         {/* ── Right: detail ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SoftPanel
             variant="utility"
             title="Selected Signal"
             subtitle="Detail for the selected dependency risk signal."
           >
             {selectedSignal ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">

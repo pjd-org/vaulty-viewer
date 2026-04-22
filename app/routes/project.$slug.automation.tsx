@@ -38,7 +38,7 @@ function ProjectAutomationRoute() {
 
   if (isLoading && !surface) {
     return (
-      <div className="space-y-5">
+      <div className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-4">
           {stats.map((s) => (
             <div
@@ -53,7 +53,7 @@ function ProjectAutomationRoute() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* ── Stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
         {stats.map((s) => (
@@ -84,7 +84,7 @@ function ProjectAutomationRoute() {
               description="When pipelines, runners, or schedules are linked to this project they will appear here."
             />
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {allItems.map((item) => {
                 const active = selectedItem?.id === item.id;
                 return (
@@ -119,14 +119,14 @@ function ProjectAutomationRoute() {
         </SoftPanel>
 
         {/* ── Right: detail ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SoftPanel
             variant="utility"
             title="Selected Item"
             subtitle="Detail for the selected automation entity."
           >
             {selectedItem ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">

@@ -98,7 +98,7 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
         >
           ✕
         </button>
-        <div className="route-modal-scroll route-modal-body space-y-4">
+        <div className="route-modal-scroll route-modal-body flex flex-col gap-4">
           <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
             <div className="genie-content">
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">
@@ -110,12 +110,12 @@ export function CODStatusRoute({ onRequestClose }: CODStatusRouteProps = {}) {
             </div>
           </header>
           {summaryData?.summary && summaryData.summary.length > 0 && (
-            <div className="genie-surface genie-surface--hero rounded-xl px-4 py-3 space-y-1.5">
+            <div className="genie-surface genie-surface--hero rounded-xl px-4 py-3 flex flex-col gap-1.5">
               <div className="genie-content">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   System State
                 </p>
-                <ul className="space-y-1">
+                <ul className="flex flex-col gap-1">
                   {summaryData.summary.map((bullet, i) => (
                     <li
                       key={i}

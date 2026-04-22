@@ -91,7 +91,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
         >
           ✕
         </button>
-        <main className="route-modal-scroll route-modal-body space-y-2">
+        <main className="route-modal-scroll route-modal-body flex flex-col gap-2">
           <nav className="mb-4">
             <Link
               to="/"
@@ -111,7 +111,7 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
               <button
                 type="button"
                 onClick={refresh}
-                className="ml-2 underline underline-offset-2 hover:no-underline"
+                className="ml-2 cursor-pointer underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
               >
                 Retry
               </button>
@@ -139,10 +139,12 @@ export function AvatarRoute({ onRequestClose }: AvatarRouteProps = {}) {
           />
 
           {loading ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Loading…
+            </p>
           ) : (
             <>
-              <section className="mb-5 space-y-2">
+              <section className="mb-5 flex flex-col gap-2">
                 <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                   Vitals
                 </p>

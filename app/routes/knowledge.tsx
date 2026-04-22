@@ -9,6 +9,8 @@ import {
 } from '../lib/viewer-adapter';
 import { knowledgeSearchParams } from '../../src/lib/routes/search-params';
 import { KnowledgeWorkspaceSurface } from '../components/knowledge/KnowledgeWorkspaceSurface';
+import { GlassCard } from '../components/ui/glass-card';
+import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/knowledge')({
   validateSearch: knowledgeSearchParams,
@@ -98,23 +100,24 @@ function KnowledgeRoute() {
       primaryTitle="Workspace"
       primarySubtitle="Note library"
       primary={
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {metricCards.map((metric) => (
-              <article
+              <GlassCard
                 key={metric.label}
-                className="rounded-xl border border-border bg-card/80 px-4 py-3"
+                glowEffect={false}
+                className="px-4 py-3"
               >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-foreground">
+                <p className="mt-1 text-2xl font-semibold text-white">
                   {metric.value}
                 </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                <p className="mt-0.5 text-[11px] text-white/60">
                   {metric.hint}
                 </p>
-              </article>
+              </GlassCard>
             ))}
           </div>
 
@@ -132,7 +135,11 @@ function KnowledgeRoute() {
                         : 'all'
                 )
               }
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200',
+                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80',
+                'hover:bg-white/15 hover:text-white cursor-pointer'
+              )}
             >
               Audience: {audience}
             </button>
@@ -141,24 +148,29 @@ function KnowledgeRoute() {
             <Link
               to="/knowledge"
               search={{ q: 'search' }}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60"
+              className="rounded-full bg-white/8 backdrop-blur-sm border border-white/15 px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/15 hover:text-white transition-all duration-200"
             >
               Search
             </Link>
             <Link
               to="/knowledge"
               search={{ q: 'graph' }}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60"
+              className="rounded-full bg-white/8 backdrop-blur-sm border border-white/15 px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/15 hover:text-white transition-all duration-200"
             >
               Graph
             </Link>
 
-            <label className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground">
+            <label
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs',
+                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80'
+              )}
+            >
               Domain
               <select
                 value={domain}
                 onChange={(event) => setDomain(event.target.value)}
-                className="ml-2 bg-transparent outline-none"
+                className="ml-2 bg-transparent outline-none text-white/80 [&>option]:bg-zinc-900 [&>option]:text-white"
               >
                 <option value="">All</option>
                 {domains.map((value) => (
@@ -169,14 +181,19 @@ function KnowledgeRoute() {
               </select>
             </label>
 
-            <label className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground">
+            <label
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs',
+                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80'
+              )}
+            >
               Maturity
               <select
                 value={maturity}
                 onChange={(event) =>
                   setMaturity(event.target.value as MaturityFilter)
                 }
-                className="ml-2 bg-transparent outline-none"
+                className="ml-2 bg-transparent outline-none text-white/80 [&>option]:bg-zinc-900 [&>option]:text-white"
               >
                 <option value="">All</option>
                 <option value="draft">Draft</option>
@@ -187,13 +204,13 @@ function KnowledgeRoute() {
           </div>
 
           {loading ? (
-            <div className="rounded-xl border border-border bg-card/70 p-6 text-sm text-muted-foreground">
+            <GlassCard glowEffect={false} className="p-6 text-sm text-white/60">
               Loading notes…
-            </div>
+            </GlassCard>
           ) : pageItems.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card/70 p-6 text-sm text-muted-foreground">
+            <GlassCard glowEffect={false} className="p-6 text-sm text-white/60">
               No notes match this filter.
-            </div>
+            </GlassCard>
           ) : (
             <div className="grid auto-rows-[150px] grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {pageItems.map((note, index) => (
@@ -213,23 +230,33 @@ function KnowledgeRoute() {
             </div>
           )}
 
-          <div className="flex items-center justify-between border-t border-border pt-4">
+          <div className="flex items-center justify-between border-t border-white/10 pt-4">
             <button
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
-              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground disabled:opacity-40"
+              aria-label="Previous page"
+              className={cn(
+                'rounded-lg px-3 py-1.5 text-xs transition-all duration-200',
+                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+                'hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+              )}
             >
               Prev
             </button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/60">
               {safePage} / {totalPages}
             </p>
             <button
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
-              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground disabled:opacity-40"
+              aria-label="Next page"
+              className={cn(
+                'rounded-lg px-3 py-1.5 text-xs transition-all duration-200',
+                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+                'hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+              )}
             >
               Next
             </button>

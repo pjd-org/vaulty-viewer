@@ -42,7 +42,7 @@ export function ProjectDetailHeader({
   };
 
   return (
-    <div className="genie-surface genie-surface--hero rounded-[28px] p-6 space-y-6">
+    <div className="genie-surface genie-surface--hero rounded-[28px] p-6 flex flex-col gap-6">
       {/* ── Row 1: title + status ────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -104,7 +104,7 @@ export function ProjectDetailHeader({
         </div>
 
         {/* Jump to Lane — spans both columns */}
-        <div className={`col-span-2 ${statCardClass} space-y-2`}>
+        <div className={`col-span-2 ${statCardClass} flex flex-col gap-2`}>
           <p className={statLabelClass}>Jump to lane</p>
           {[
             {

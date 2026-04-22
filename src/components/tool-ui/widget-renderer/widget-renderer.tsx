@@ -456,7 +456,7 @@ const NodeRenderer = React.memo(({ node }: { node: WidgetNode }) => {
         ? ((formData[node.name] as boolean | undefined) ?? node.defaultChecked)
         : node.defaultChecked;
       return (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Checkbox
             id={checkboxId}
             checked={isChecked}
@@ -492,7 +492,7 @@ const NodeRenderer = React.memo(({ node }: { node: WidgetNode }) => {
           {(node.options ?? []).map((opt) => {
             const radioId = `radio-${node.name}-${opt.value}`;
             return (
-              <div key={opt.value} className="flex items-center space-x-2">
+              <div key={opt.value} className="flex items-center gap-2">
                 <input
                   type="radio"
                   id={radioId}
@@ -756,7 +756,7 @@ export const WidgetRenderer = React.memo(
     const content = (
       <div
         className={cn(
-          'space-y-3',
+          'flex flex-col gap-3',
           isContainerLoading && 'opacity-70 pointer-events-none'
         )}
       >

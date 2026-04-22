@@ -59,7 +59,7 @@ export function ReadinessHeader({
     : null;
 
   return (
-    <header className="mb-6 space-y-4">
+    <header className="mb-6 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           {nameIsReal && (

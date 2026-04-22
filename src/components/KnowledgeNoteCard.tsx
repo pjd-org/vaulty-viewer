@@ -55,7 +55,7 @@ const maturityColor: Record<string, string> = {
     'bg-[color-mix(in_srgb,var(--a-rose)_20%,transparent)] text-[var(--a-rose)]',
 };
 
-export function KnowledgeNoteCard({
+export const KnowledgeNoteCard = React.memo(function KnowledgeNoteCard({
   path,
   title,
   audience,
@@ -143,6 +143,6 @@ export function KnowledgeNoteCard({
       </div>
     </Link>
   );
-}
+});
 
 export default KnowledgeNoteCard;

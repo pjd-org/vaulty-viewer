@@ -100,9 +100,10 @@ function GoalsRoute() {
 
       {/* Sort select */}
       <select
+        aria-label="Sort goals"
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value)}
-        className="rounded-full border border-border bg-muted/40 px-3 py-2 text-xs text-foreground transition focus:border-primary focus-visible:outline-none"
+        className="rounded-full border border-border bg-muted/40 px-3 py-2 text-xs text-foreground transition cursor-pointer focus:border-primary focus-visible:outline-none"
       >
         <option value="priority">Sort: Priority</option>
         <option value="progress">Sort: Progress</option>
@@ -114,7 +115,7 @@ function GoalsRoute() {
         type="button"
         onClick={refresh}
         disabled={loading}
-        className="rounded-full border border-border bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition hover:bg-muted/60 disabled:opacity-50"
+        className="rounded-full border border-border bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition hover:bg-muted/60 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Refreshing…' : 'Refresh'}
       </button>
@@ -142,7 +143,7 @@ function GoalsRoute() {
       primaryTitle="Goal List"
       primarySubtitle={`Showing ${sortedGoals.length} of ${goals.length} goals.`}
       primary={
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {error && (
             <div
               className="flex items-center justify-between rounded-[18px] border border-warning/30 bg-warning/10 p-4 text-sm text-warning"
@@ -152,7 +153,7 @@ function GoalsRoute() {
               <button
                 type="button"
                 onClick={refresh}
-                className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-warning transition hover:bg-warning/20"
+                className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-warning transition hover:bg-warning/20 cursor-pointer"
               >
                 Retry
               </button>
@@ -160,7 +161,7 @@ function GoalsRoute() {
           )}
 
           {loading && (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
@@ -184,7 +185,7 @@ function GoalsRoute() {
           )}
 
           {!loading && sortedGoals.length > 0 && (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               {sortedGoals.map((goal) => (
                 <GoalCard
                   key={goal.id}
@@ -198,8 +199,8 @@ function GoalsRoute() {
       asideTitle="Quick Actions"
       asideSubtitle="Navigate and manage goals."
       aside={
-        <div className="space-y-4">
-          <div className="space-y-3 rounded-[22px] border border-border bg-muted/40 p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 rounded-[22px] border border-border bg-muted/40 p-4">
             <Link
               to="/"
               search={{ q: undefined, collection: undefined }}
@@ -210,14 +211,14 @@ function GoalsRoute() {
             <button
               type="button"
               onClick={() => dispatchNavOverlay('avatar')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60 cursor-pointer"
             >
               Avatar Dashboard
             </button>
             <button
               type="button"
               onClick={() => setFilter('active')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60 cursor-pointer"
             >
               Show Active Goals
             </button>

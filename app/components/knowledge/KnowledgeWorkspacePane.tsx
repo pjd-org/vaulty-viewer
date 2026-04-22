@@ -251,7 +251,7 @@ export function KnowledgeWorkspacePane({
   const selectedLabel = note ? note.title : 'Select a note';
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <SoftPanel
         variant="utility"
         title="Active note"
@@ -278,7 +278,7 @@ export function KnowledgeWorkspacePane({
         )}
 
         {!loading && !error && note && (
-          <div className="space-y-4 animate-fade-in">
+          <div className="flex flex-col gap-4 animate-fade-in">
             <NoteHeader
               display={toNoteHeaderDisplay({
                 title: note.title,

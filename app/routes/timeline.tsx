@@ -3,6 +3,9 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
+import { GlassCard } from '../components/ui/glass-card';
+import { GlassInput } from '../components/ui/glass-input';
+import { GlassBadge } from '../components/ui/glass-badge';
 import { timelineSearchParams } from '../../src/lib/routes/search-params';
 import {
   getTimelineSurfaceQueryOptions,
@@ -10,6 +13,7 @@ import {
   type TimelineEventEntry,
 } from '../lib/viewer-adapter';
 import { UnauthenticatedError } from '../../src/utils/api';
+import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/timeline')({
   validateSearch: timelineSearchParams,
@@ -20,28 +24,87 @@ export const Route = createFileRoute('/timeline')({
 });
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const PAGE_SIZE = 20;
+
+const NAMESPACE_FILTERS = [
+  { label: 'All', value: '' },
+  { label: 'Agents', value: 'agents' },
+  { label: 'LLM', value: 'llm' },
+  { label: 'Extractions', value: 'extractions' },
+] as const;
+
+// ---------------------------------------------------------------------------
 // Event type badge
 // ---------------------------------------------------------------------------
 
 function EventTypeBadge({ type }: { type: string }) {
   const [namespace] = type.split('.');
-  const colorClass =
+  const variant =
     namespace === 'agents'
-      ? 'bg-success/10 text-success'
+      ? 'success'
       : namespace === 'llm'
-        ? 'bg-primary/10 text-primary'
+        ? 'primary'
         : namespace === 'extractions'
-          ? 'bg-warning/10 text-warning'
-          : 'bg-muted text-muted-foreground';
+          ? 'warning'
+          : 'default';
   return (
-    <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${colorClass}`}>
+    <GlassBadge variant={variant} size="sm">
       {type}
-    </span>
+    </GlassBadge>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Event row
+// Filter bar
+// ---------------------------------------------------------------------------
+
+function FilterBar({
+  q,
+  onQ,
+  activeNamespace,
+  onNamespace,
+}: {
+  q: string;
+  onQ: (v: string) => void;
+  activeNamespace: string;
+  onNamespace: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 mb-4">
+      <GlassInput
+        type="search"
+        placeholder="Search events…"
+        value={q}
+        onChange={(e) => onQ(e.target.value)}
+        aria-label="Search events"
+      />
+      <div className="flex items-center gap-2 flex-wrap">
+        {NAMESPACE_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => onNamespace(f.value)}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium transition-all duration-200',
+              'border backdrop-blur-sm cursor-pointer',
+              activeNamespace === f.value
+                ? 'bg-white/20 border-white/40 text-white'
+                : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white/80'
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Event row (glass)
 // ---------------------------------------------------------------------------
 
 function EventRow({
@@ -70,18 +133,22 @@ function EventRow({
       type="button"
       data-testid="timeline-event-row"
       onClick={() => onSelect(event.id)}
-      className={`w-full border-b border-border px-3 py-2.5 text-left transition-colors hover:bg-muted/60 last:border-0 ${
-        selected ? 'bg-muted' : ''
-      }`}
+      className={cn(
+        'w-full px-3 py-2.5 text-left transition-all duration-200',
+        'border-b border-white/10 last:border-0',
+        selected
+          ? 'bg-white/15 backdrop-blur-sm'
+          : 'hover:bg-white/8 bg-transparent'
+      )}
     >
       <div className="flex items-start justify-between gap-2">
         <EventTypeBadge type={event.type} />
-        <span className="shrink-0 text-xs text-muted-foreground">
+        <span className="shrink-0 text-xs text-white/60">
           {dateLabel} {timeLabel}
         </span>
       </div>
       {event.meta && typeof event.meta.run_id === 'string' && (
-        <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
+        <p className="mt-1 truncate font-mono text-xs text-white/60">
           {event.meta.run_id}
         </p>
       )}
@@ -90,40 +157,102 @@ function EventRow({
 }
 
 // ---------------------------------------------------------------------------
-// Event detail panel
+// Pagination
+// ---------------------------------------------------------------------------
+
+function Pagination({
+  page,
+  total,
+  pageSize,
+  onPage,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  onPage: (p: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between pt-3">
+      <span className="text-xs text-white/60">
+        Page {page + 1} of {totalPages}
+      </span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={page === 0}
+          onClick={() => onPage(page - 1)}
+          aria-label="Previous page"
+          className={cn(
+            'px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+            'border backdrop-blur-sm',
+            page === 0
+              ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
+              : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15 hover:text-white cursor-pointer'
+          )}
+        >
+          ← Prev
+        </button>
+        <button
+          type="button"
+          disabled={page >= totalPages - 1}
+          onClick={() => onPage(page + 1)}
+          aria-label="Next page"
+          className={cn(
+            'px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
+            'border backdrop-blur-sm',
+            page >= totalPages - 1
+              ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
+              : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15 hover:text-white cursor-pointer'
+          )}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Event detail panel (glass)
 // ---------------------------------------------------------------------------
 
 function EventDetail({ event }: { event: TimelineEventEntry }) {
   return (
-    <div className="space-y-3 text-sm" data-testid="timeline-event-detail">
+    <div
+      className="flex flex-col gap-3 text-sm"
+      data-testid="timeline-event-detail"
+    >
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
           Type
         </p>
         <EventTypeBadge type={event.type} />
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
           Timestamp
         </p>
-        <p className="font-mono text-xs text-foreground">{event.ts}</p>
+        <p className="font-mono text-xs text-white/80">{event.ts}</p>
       </div>
       {Object.keys(event.meta).length > 0 && (
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
             Meta
           </p>
-          <pre className="max-h-32 overflow-auto rounded bg-muted p-2 font-mono text-xs text-muted-foreground">
+          <pre className="max-h-32 overflow-auto rounded-xl bg-white/5 border border-white/10 p-2 font-mono text-xs text-white/60">
             {JSON.stringify(event.meta, null, 2)}
           </pre>
         </div>
       )}
       {Object.keys(event.data).length > 0 && (
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
             Data
           </p>
-          <pre className="max-h-40 overflow-auto rounded bg-muted p-2 font-mono text-xs text-muted-foreground">
+          <pre className="max-h-40 overflow-auto rounded-xl bg-white/5 border border-white/10 p-2 font-mono text-xs text-white/60">
             {JSON.stringify(event.data, null, 2)}
           </pre>
         </div>
@@ -141,19 +270,51 @@ function TimelineContent({
   selectedId,
   selectedEvent,
   onSelect,
+  eventTypeFilter,
+  onEventTypeFilter,
 }: {
   data: { events: TimelineEventEntry[]; total: number };
   selectedId: string | undefined;
   selectedEvent: TimelineEventEntry | null;
   onSelect: (id: string) => void;
+  eventTypeFilter: string;
+  onEventTypeFilter: (v: string) => void;
 }) {
+  const [q, setQ] = React.useState('');
+  const [page, setPage] = React.useState(0);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(0);
+  }, [q, eventTypeFilter]);
+
+  const filtered = React.useMemo(() => {
+    let evts = data.events;
+    if (eventTypeFilter) {
+      evts = evts.filter((e) => e.type.startsWith(eventTypeFilter));
+    }
+    if (q.trim()) {
+      const lower = q.toLowerCase();
+      evts = evts.filter(
+        (e) =>
+          e.type.toLowerCase().includes(lower) ||
+          e.id.toLowerCase().includes(lower) ||
+          (typeof e.meta?.run_id === 'string' &&
+            e.meta.run_id.toLowerCase().includes(lower))
+      );
+    }
+    return evts;
+  }, [data.events, q, eventTypeFilter]);
+
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   if (data.events.length === 0) {
     return (
-      <div data-testid="timeline-empty-state" className="space-y-2">
-        <p className="text-sm font-medium text-muted-foreground">
+      <div data-testid="timeline-empty-state" className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-white/70">
           No timeline events yet.
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-white/60">
           Adapter context is wired. Live and audit event streams will appear
           once the runtime surface connects.
         </p>
@@ -162,24 +323,49 @@ function TimelineContent({
   }
 
   return (
-    <div data-testid="timeline-content">
-      <p className="mb-2 px-1 text-xs text-muted-foreground">
-        {data.total} events total
+    <div data-testid="timeline-content" className="flex flex-col gap-4">
+      <FilterBar
+        q={q}
+        onQ={setQ}
+        activeNamespace={eventTypeFilter}
+        onNamespace={onEventTypeFilter}
+      />
+
+      <p className="px-1 text-xs text-white/60">
+        {filtered.length} of {data.total} events
+        {q || eventTypeFilter ? ' (filtered)' : ''}
       </p>
-      <div className="overflow-hidden rounded-xl border border-border">
-        {data.events.map((event) => (
-          <EventRow
-            key={event.id}
-            event={event}
-            selected={event.id === selectedId}
-            onSelect={onSelect}
-          />
-        ))}
-      </div>
-      {selectedEvent && (
-        <div className="rounded-xl border border-border bg-muted/40 p-4">
-          <EventDetail event={selectedEvent} />
+
+      <GlassCard glowEffect={false} className="overflow-hidden p-0">
+        <div>
+          {paginated.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-white/60 text-center">
+              No events match the current filter.
+            </p>
+          ) : (
+            paginated.map((event) => (
+              <EventRow
+                key={event.id}
+                event={event}
+                selected={event.id === selectedId}
+                onSelect={onSelect}
+              />
+            ))
+          )}
         </div>
+      </GlassCard>
+
+      <Pagination
+        page={page}
+        total={filtered.length}
+        pageSize={PAGE_SIZE}
+        onPage={setPage}
+      />
+
+      {selectedEvent && (
+        <GlassCard glowEffect={false} className="p-4">
+          <EventDetail event={selectedEvent} />
+        </GlassCard>
       )}
     </div>
   );
@@ -196,6 +382,8 @@ function TimelineRoute() {
 
   const selectedId = search.selectedId ?? undefined;
   const selectedEvent = data?.events.find((e) => e.id === selectedId) ?? null;
+
+  const eventTypeFilter = search.eventType ?? '';
 
   React.useEffect(() => {
     if (error instanceof UnauthenticatedError) {
@@ -262,6 +450,18 @@ function TimelineRoute() {
             data={data}
             selectedId={selectedId}
             selectedEvent={selectedEvent}
+            eventTypeFilter={eventTypeFilter}
+            onEventTypeFilter={(v) =>
+              void navigate({
+                to: '/timeline',
+                search: (prev) =>
+                  ({
+                    ...prev,
+                    eventType: v || undefined,
+                    selectedId: undefined,
+                  }) as ReturnType<typeof timelineSearchParams>,
+              })
+            }
             onSelect={(id) =>
               void navigate({
                 to: '/timeline',
@@ -273,11 +473,14 @@ function TimelineRoute() {
             }
           />
         ) : (
-          <div data-testid="timeline-empty-state" className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">
+          <div
+            data-testid="timeline-empty-state"
+            className="flex flex-col gap-2"
+          >
+            <p className="text-sm font-medium text-white/70">
               No timeline events yet.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/60">
               Adapter context is wired. Live and audit event streams will appear
               once the runtime surface connects.
             </p>

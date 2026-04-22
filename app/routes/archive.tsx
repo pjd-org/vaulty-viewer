@@ -34,7 +34,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
   };
 
   return (
-    <div className="space-y-4 text-sm" data-testid="archive-item-detail">
+    <div className="flex flex-col gap-4 text-sm" data-testid="archive-item-detail">
       <div>
         <p className="font-medium leading-snug text-foreground">{item.title}</p>
         {item.summary && (
@@ -55,7 +55,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
         </span>
       </div>
 
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
         <p>
           <span className="font-medium text-foreground">Why archived:</span>{' '}
           {item.whySurfaced}
@@ -75,11 +75,11 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
       </div>
 
       {item.allowedActions.length > 0 && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Available actions
           </p>
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
@@ -113,7 +113,7 @@ function ArchiveSection({
   onSelect: (item: InboxItem) => void;
 }) {
   return (
-    <div data-testid={testId} className="space-y-2">
+    <div data-testid={testId} className="flex flex-col gap-2">
       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
         {label}
         <span className="ml-2 text-xs font-normal text-muted-foreground/60">
@@ -123,14 +123,14 @@ function ArchiveSection({
       {items.length === 0 ? (
         <p className="text-xs text-muted-foreground italic">None.</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="flex flex-col gap-1">
           {items.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
                 onClick={() => onSelect(item)}
                 className={[
-                  'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
+                  'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                   selectedId === item.id
                     ? 'bg-muted text-foreground'
                     : 'hover:bg-muted/60 text-muted-foreground',
@@ -163,7 +163,7 @@ function ArchiveList({
   onSelect: (item: InboxItem) => void;
 }) {
   return (
-    <div data-testid="archive-list" className="space-y-6">
+    <div data-testid="archive-list" className="flex flex-col gap-6">
       <ArchiveSection
         testId="archive-user-rejected-section"
         label="Rejected by user"
@@ -241,7 +241,7 @@ function ArchiveRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading archive queues..." />
         ) : data == null || data.total === 0 ? (
-          <div data-testid="archive-empty-state" className="space-y-2">
+          <div data-testid="archive-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">
               Archive is empty.
             </p>

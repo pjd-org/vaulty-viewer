@@ -112,7 +112,7 @@ export function SessionPlannerCard({
   return (
     <div className="genie-card relative rounded-md">
       <CornerBrackets />
-      <div className="p-4 space-y-4">
+      <div className="p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[var(--text-primary)]">
             Plan a session
@@ -142,14 +142,14 @@ export function SessionPlannerCard({
 
         {/* AI plan result */}
         {aiPlan && !aiLoading && (
-          <div className="genie-surface genie-surface--utility rounded-xl p-3 space-y-2">
+          <div className="genie-surface genie-surface--utility rounded-xl p-3 flex flex-col gap-2">
             <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
               AI Session Plan
             </p>
             <p className="text-xs text-[var(--text-secondary)] italic">
               {aiPlan.expected_outcome}
             </p>
-            <div className="space-y-1">
+            <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
                 <span
                   aria-hidden="true"
@@ -188,7 +188,7 @@ export function SessionPlannerCard({
         {!aiPlan && (
           <div>
             <p className={sectionLabelClass}>Tasks</p>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {tasks.map((t) => (
                 <label
                   key={t.id}

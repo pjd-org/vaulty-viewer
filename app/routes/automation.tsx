@@ -33,7 +33,7 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     const { pipeline } = selection;
     return (
       <div
-        className="space-y-3 text-sm"
+        className="flex flex-col gap-3 text-sm"
         data-testid="automation-pipeline-detail"
       >
         <p className="font-mono font-medium text-foreground">{pipeline.name}</p>
@@ -58,13 +58,13 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     const isFailed = lastRunStatus?.startsWith('failed');
 
     return (
-      <div className="space-y-4 text-sm" data-testid="automation-job-detail">
+      <div className="flex flex-col gap-4 text-sm" data-testid="automation-job-detail">
         <div>
           <p className="font-mono font-medium text-foreground">{job.id}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">{job.pipeline}</p>
         </div>
 
-        <div className="space-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
           {job.cron && (
             <p>
               <span className="font-medium text-foreground">Cron:</span>{' '}
@@ -92,13 +92,15 @@ function AutomationDetail({ selection }: { selection: Selection }) {
         </div>
 
         {lastRunStatus && (
-          <div className="space-y-1 text-xs">
+          <div className="flex flex-col gap-1 text-xs">
             <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
               Last run
             </p>
             <p
               className={
-                isFailed ? 'text-destructive font-medium' : 'text-muted-foreground'
+                isFailed
+                  ? 'text-destructive font-medium'
+                  : 'text-muted-foreground'
               }
             >
               {lastRunStatus}
@@ -134,14 +136,14 @@ function PipelineList({
     );
   }
   return (
-    <ul data-testid="automation-pipeline-list" className="space-y-1">
+    <ul data-testid="automation-pipeline-list" className="flex flex-col gap-1">
       {pipelines.map((p) => (
         <li key={p.name}>
           <button
             type="button"
             onClick={() => onSelect(p)}
             className={[
-              'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left',
+              'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               selectedId === p.name
                 ? 'bg-muted text-foreground'
                 : 'hover:bg-muted/60 text-muted-foreground',
@@ -172,7 +174,7 @@ function SchedulerSection({
   onSelectJob: (job: SchedulerJobEntry) => void;
 }) {
   return (
-    <div data-testid="automation-scheduler-section" className="space-y-3">
+    <div data-testid="automation-scheduler-section" className="flex flex-col gap-3">
       <div className="flex items-center gap-2 text-sm">
         <span className="font-medium text-muted-foreground">Scheduler</span>
         {scheduler.enabled ? (
@@ -235,12 +237,12 @@ function SchedulerSection({
                   }}
                   className={[
                     'border-b border-border/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20',
-                    selectedJobId === job.id
-                      ? 'bg-muted'
-                      : 'hover:bg-muted/60',
+                    selectedJobId === job.id ? 'bg-muted' : 'hover:bg-muted/60',
                   ].join(' ')}
                 >
-                  <td className="py-2 pr-4 font-mono text-xs text-foreground">{job.id}</td>
+                  <td className="py-2 pr-4 font-mono text-xs text-foreground">
+                    {job.id}
+                  </td>
                   <td className="py-2 pr-4">{job.pipeline}</td>
                   <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
                     {job.cron ??
@@ -316,7 +318,7 @@ function AutomationRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading automation controls..." />
         ) : data == null ? (
-          <div data-testid="automation-empty-state" className="space-y-2">
+          <div data-testid="automation-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">
               No automation data yet.
             </p>
@@ -326,8 +328,8 @@ function AutomationRoute() {
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="space-y-2">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
               <h3 className="text-sm font-medium">Pipelines</h3>
               <PipelineList
                 pipelines={data.pipelines}

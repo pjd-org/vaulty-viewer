@@ -27,7 +27,7 @@ export function ActionGuidancePanel({
       : '/';
 
   return (
-    <section className="mb-5 space-y-3">
+    <section className="mb-5 flex flex-col gap-3">
       <SectionLabel>What to do now</SectionLabel>
       <p className="text-sm text-[var(--text-secondary)]">
         {readiness.description}

@@ -28,11 +28,13 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
   };
 
   return (
-    <div className="space-y-4 text-sm" data-testid="portfolio-item-detail">
+    <div className="flex flex-col gap-4 text-sm" data-testid="portfolio-item-detail">
       <div>
         <p className="font-medium leading-snug text-foreground">{item.title}</p>
         {item.projectId && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{item.projectId}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {item.projectId}
+          </p>
         )}
       </div>
 
@@ -52,9 +54,11 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
         )}
       </div>
 
-      {item.summary && <p className="text-xs text-muted-foreground">{item.summary}</p>}
+      {item.summary && (
+        <p className="text-xs text-muted-foreground">{item.summary}</p>
+      )}
 
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
         <p>
           <span className="font-medium text-foreground">Why surfaced:</span>{' '}
           {item.whySurfaced}
@@ -74,11 +78,11 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
       </div>
 
       {item.allowedActions.length > 0 && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Actions (display only)
           </p>
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
@@ -124,12 +128,12 @@ function PortfolioItem({
   onSelect: (item: PressureSignal) => void;
 }) {
   return (
-          <li data-testid={`portfolio-item-${item.id}`}>
+    <li data-testid={`portfolio-item-${item.id}`}>
       <button
         type="button"
         onClick={() => onSelect(item)}
         className={[
-          'flex w-full items-start gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors',
+          'flex w-full items-start gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
           isSelected ? 'bg-primary/10' : 'hover:bg-muted/40',
         ].join(' ')}
       >
@@ -166,7 +170,7 @@ function PortfolioList({
   onSelect: (item: PressureSignal) => void;
 }) {
   return (
-    <div data-testid="portfolio-list" className="space-y-1">
+    <div data-testid="portfolio-list" className="flex flex-col gap-1">
       <p
         data-testid="portfolio-cap-notice"
         className="text-xs text-muted-foreground mb-2"
@@ -174,7 +178,7 @@ function PortfolioList({
         Showing top {data.total} project signal{data.total !== 1 ? 's' : ''}{' '}
         from the pressure band.
       </p>
-      <ul className="space-y-1">
+      <ul className="flex flex-col gap-1">
         {data.items.map((item) => (
           <PortfolioItem
             key={item.id}
@@ -240,7 +244,7 @@ function PortfolioRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading pressure signals..." />
         ) : data == null || data.total === 0 ? (
-          <div data-testid="portfolio-empty-state" className="space-y-2">
+          <div data-testid="portfolio-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">
               No projects in the pressure band.
             </p>

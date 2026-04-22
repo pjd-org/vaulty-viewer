@@ -95,7 +95,7 @@ function ServiceTable({
 
 function ServiceDetail({ svc }: { svc: HealthServiceEntry }) {
   return (
-    <div className="space-y-4 text-sm">
+    <div className="flex flex-col gap-4 text-sm">
       <div>
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
           Name
@@ -200,7 +200,7 @@ function HealthRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading service checks..." />
         ) : data == null ? (
-          <div data-testid="health-empty-state" className="space-y-2">
+          <div data-testid="health-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">
               No health data yet.
             </p>
@@ -210,7 +210,7 @@ function HealthRoute() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               Overall: <OverallBadge payload={data} />
             </div>

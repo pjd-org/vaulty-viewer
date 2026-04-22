@@ -92,10 +92,10 @@ export function NoteMetaRail({
     : null;
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Metadata */}
       <SoftPanel title="Metadata">
-        <dl className="space-y-3">
+        <dl className="flex flex-col gap-3">
           {rawStatus && (
             <div>
               <dt className={metaDtClass}>Status</dt>
@@ -233,7 +233,7 @@ export function NoteMetaRail({
             ▸
           </span>
         </summary>
-        <div className="px-6 pb-5 space-y-3">
+        <div className="px-6 pb-5 flex flex-col gap-3">
           {lifecycle.source !== 'canonical' && (
             <div>
               <p className={sysDtClass}>Source</p>

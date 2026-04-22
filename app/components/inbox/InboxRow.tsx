@@ -7,6 +7,30 @@ import { activateOnKeyboardEvent } from '../../../src/lib/keyboard';
 const metaChipClass = 'text-[10px] text-text3';
 
 // ---------------------------------------------------------------------------
+// Module-level constants — never recreated on render
+// ---------------------------------------------------------------------------
+
+const SEVERITY_COLOR: Record<string, string> = {
+  critical: 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]',
+  high: 'bg-[color-mix(in_srgb,var(--a-sun)_80%,transparent)]',
+  medium: 'bg-[color-mix(in_srgb,var(--a-sun)_50%,transparent)]',
+  low: 'bg-[var(--border-default)]',
+};
+
+const REVERSIBILITY_LABEL: Record<string, string> = {
+  high: 'Reversible',
+  medium: 'Partial',
+  low: 'Irreversible',
+};
+
+const REVERSIBILITY_COLOR: Record<string, string> = {
+  high: 'text-[var(--text-success)] bg-[color-mix(in_srgb,var(--a-mint)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-mint)_20%,transparent)]',
+  medium:
+    'text-[var(--text-warning)] bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
+  low: 'text-[var(--text-danger)] bg-[color-mix(in_srgb,var(--a-rose)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-rose)_20%,transparent)]',
+};
+
+// ---------------------------------------------------------------------------
 // Local types (mirrored from inbox route)
 // ---------------------------------------------------------------------------
 
@@ -81,7 +105,7 @@ export interface InboxRowProps {
   actionInFlight?: boolean;
 }
 
-export function InboxRow({
+export const InboxRow = React.memo(function InboxRow({
   item,
   note,
   run,
@@ -90,32 +114,20 @@ export function InboxRow({
   onReject,
   actionInFlight,
 }: InboxRowProps) {
-  const display = inboxItemToDisplay(item, note, run);
+  const display = React.useMemo(
+    () => inboxItemToDisplay(item, note, run),
+    [item, note, run]
+  );
 
-  const severityColor: Record<string, string> = {
-    critical: 'bg-[color-mix(in_srgb,var(--a-rose)_80%,transparent)]',
-    high: 'bg-[color-mix(in_srgb,var(--a-sun)_80%,transparent)]',
-    medium: 'bg-[color-mix(in_srgb,var(--a-sun)_50%,transparent)]',
-    low: 'bg-[var(--border-default)]',
-  };
   const sevBar = item.severity
-    ? (severityColor[item.severity] ?? 'bg-[var(--surf-utility)]')
+    ? (SEVERITY_COLOR[item.severity] ?? 'bg-[var(--surf-utility)]')
     : undefined;
 
   const confidence = run?.confidence;
   const itemCount = run?.itemCount;
 
-  const reversibilityLabel: Record<string, string> = {
-    high: 'Reversible',
-    medium: 'Partial',
-    low: 'Irreversible',
-  };
-  const reversibilityColor: Record<string, string> = {
-    high: 'text-[var(--text-success)] bg-[color-mix(in_srgb,var(--a-mint)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-mint)_20%,transparent)]',
-    medium:
-      'text-[var(--text-warning)] bg-[color-mix(in_srgb,var(--a-sun)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-sun)_20%,transparent)]',
-    low: 'text-[var(--text-danger)] bg-[color-mix(in_srgb,var(--a-rose)_10%,transparent)] ring-[color-mix(in_srgb,var(--a-rose)_20%,transparent)]',
-  };
+  const reversibilityLabel = REVERSIBILITY_LABEL;
+  const reversibilityColor = REVERSIBILITY_COLOR;
 
   return (
     <div
@@ -226,4 +238,4 @@ export function InboxRow({
       </div>
     </div>
   );
-}
+});

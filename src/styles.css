@@ -29,14 +29,14 @@
     --ring: var(--color-primary);
     --radius: var(--vault-radius);
     --radius-shadcn: 0.5rem;
-    --sidebar-background: 226 28% 10%;
-    --sidebar-foreground: 220 35% 93%;
-    --sidebar-primary: 221 83% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 226 22% 16%;
-    --sidebar-accent-foreground: 219 34% 95%;
-    --sidebar-border: 224 21% 20%;
-    --sidebar-ring: 213 94% 68%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
     --sidebar-background: 240 5.9% 10%;
@@ -186,7 +186,11 @@
 .genie-surface {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 255, 0.88)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(248, 250, 255, 0.88)
+    ),
     rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(18px) saturate(1.08);
   -webkit-backdrop-filter: blur(18px) saturate(1.08);
@@ -200,7 +204,11 @@
 
 .genie-surface--elevated {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 255, 0.92)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(247, 249, 255, 0.92)
+    ),
     rgba(255, 255, 255, 0.88);
   box-shadow:
     0 24px 52px rgba(17, 21, 29, 0.12),
@@ -223,7 +231,11 @@
 
 .genie-surface--utility {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 248, 252, 0.82)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.9),
+      rgba(245, 248, 252, 0.82)
+    ),
     rgba(255, 255, 255, 0.8);
   box-shadow:
     0 12px 28px rgba(17, 21, 29, 0.09),
@@ -232,7 +244,11 @@
 
 .genie-surface--overlay {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 255, 0.86)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(248, 250, 255, 0.86)
+    ),
     rgba(255, 255, 255, 0.9);
   box-shadow:
     0 26px 68px rgba(17, 21, 29, 0.18),
@@ -247,8 +263,16 @@
   inset: -2px;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 16% 18%, rgba(184, 255, 216, 0.42), transparent 34%),
-    radial-gradient(circle at 86% 8%, rgba(188, 212, 255, 0.32), transparent 28%),
+    radial-gradient(
+      circle at 16% 18%,
+      rgba(184, 255, 216, 0.42),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 86% 8%,
+      rgba(188, 212, 255, 0.32),
+      transparent 28%
+    ),
     linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.2) 0%,
@@ -512,9 +536,21 @@ body {
   font-family: 'Urbanist', 'Inter', 'SF Pro Text', 'Segoe UI', sans-serif;
   color: #1c2230;
   background:
-    radial-gradient(980px at 16% 10%, rgba(111, 179, 255, 0.28), transparent 58%),
-    radial-gradient(760px at 84% 12%, rgba(192, 140, 255, 0.18), transparent 52%),
-    radial-gradient(760px at 82% 92%, rgba(104, 211, 145, 0.16), transparent 64%),
+    radial-gradient(
+      980px at 16% 10%,
+      rgba(111, 179, 255, 0.28),
+      transparent 58%
+    ),
+    radial-gradient(
+      760px at 84% 12%,
+      rgba(192, 140, 255, 0.18),
+      transparent 52%
+    ),
+    radial-gradient(
+      760px at 82% 92%,
+      rgba(104, 211, 145, 0.16),
+      transparent 64%
+    ),
     linear-gradient(180deg, #eff3f9 0%, #dbe3ef 52%, #cdd7e6 100%);
   min-height: 100vh;
   position: relative;
@@ -542,8 +578,18 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.28), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 14%, transparent 86%, rgba(17, 21, 29, 0.02));
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.28),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08),
+      transparent 14%,
+      transparent 86%,
+      rgba(17, 21, 29, 0.02)
+    );
   pointer-events: none;
   z-index: 0;
 }
@@ -2748,6 +2794,12 @@ img {
   cursor: not-allowed;
 }
 
+.cod-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--cod-glow-cyan) 40%, transparent);
+}
+
 /* Error state */
 .cod-error {
   padding: 12px 24px;
@@ -3683,6 +3735,12 @@ img {
   border-color: var(--cod-glow-cyan);
   color: var(--cod-text);
   box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+}
+
+.cod-form__toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--cod-glow-cyan) 40%, transparent);
 }
 
 .cod-form__actions {
@@ -8992,5 +9050,21 @@ img {
 @media (max-width: 640px) {
   .project-board__columns {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ─── P7: Respect prefers-reduced-motion ───────────────────────────────────
+   Disables all animations and transitions for users who request reduced
+   motion at the OS level. Covers all custom keyframes and Tailwind utilities
+   in a single rule — no need to annotate individual components.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -76,7 +76,7 @@ function SignalCard({
           ? 'info'
           : 'success';
   return (
-    <article className={`genie-card genie-card--${surfaceTone} space-y-2`}>
+    <article className={`genie-card genie-card--${surfaceTone} flex flex-col gap-2`}>
       <div className="flex items-start justify-between gap-3">
         <h3
           className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"
@@ -185,7 +185,7 @@ export function CodSignalRow({
   return (
     <div className="flex flex-col gap-3">
       {signals && signals.length > 0 && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {signals.map((signal) => (
             <SignalCard
               key={signal.id}

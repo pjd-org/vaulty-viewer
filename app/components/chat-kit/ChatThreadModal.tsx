@@ -1,5 +1,9 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+} from '@/app/components/ui/dialog';
 import { cn } from '@/src/lib/utils';
 import { ChatShell } from './ChatShell';
 import type { ChatShellProps } from './ChatShell';
@@ -25,16 +29,16 @@ export function ChatThreadModal({
       : 'Primary Agent thread';
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay
           className={cn(
             'fixed inset-0 z-50 bg-[rgba(15,23,42,0.28)] backdrop-blur-[12px]',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
           )}
         />
-        <DialogPrimitive.Content
+        <DialogContent
           aria-label={ariaLabel}
           className={cn(
             'fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
@@ -57,8 +61,8 @@ export function ChatThreadModal({
               )}
             />
           </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   );
 }

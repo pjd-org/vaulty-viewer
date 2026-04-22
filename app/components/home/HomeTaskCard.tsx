@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { type NextAction } from '../../../src/lib/focus-logic';
 import { TaskSeverityBadge } from './TaskSeverityBadge';
@@ -10,7 +11,7 @@ interface HomeTaskCardProps {
   compact?: boolean;
 }
 
-export function HomeTaskCard({
+export const HomeTaskCard = React.memo(function HomeTaskCard({
   task,
   onStart,
   onBacklog,
@@ -62,7 +63,7 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onStart(task.path)}
           disabled={mutating}
-          className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sky)_22%,var(--surf-elevated))]"
+          className="cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sky)_22%,var(--surf-elevated))]"
         >
           {mutating ? 'Starting…' : 'Start'}
         </button>
@@ -70,11 +71,11 @@ export function HomeTaskCard({
           type="button"
           onClick={() => onBacklog(task.path)}
           disabled={mutating}
-          className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sun)_22%,var(--surf-elevated))]"
+          className="cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 [background:color-mix(in_srgb,var(--a-sun)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))] hover:[background:color-mix(in_srgb,var(--a-sun)_22%,var(--surf-elevated))]"
         >
           {mutating ? 'Updating…' : 'Backlog'}
         </button>
       </div>
     </article>
   );
-}
+});

@@ -8,6 +8,8 @@ import {
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
+import { GlassCard } from '@vault/ui';
+import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/knowledge/graph')({
   component: KnowledgeGraphRoute,
@@ -216,7 +218,7 @@ function KnowledgeGraphRoute() {
       primaryTitle="Graph"
       primarySubtitle="Click a node to inspect it. Node size reflects backlink count."
       primary={
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <KnowledgeHealthBanner
             health={health ?? null}
             loading={graphLoading}
@@ -224,12 +226,18 @@ function KnowledgeGraphRoute() {
 
           {graphError && (
             <div
-              className="rounded-[18px] border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+              className="rounded-[18px] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-300"
               role="alert"
             >
               <p className="font-medium">Failed to load the knowledge graph.</p>
-              <p className="mt-1 text-xs text-destructive/80">{graphError.message}</p>
+              <p className="mt-1 text-xs text-red-300/70">
+                {graphError.message}
+              </p>
             </div>
+          )}
+
+          {graphLoading && !graph && (
+            <div className="h-[600px] animate-pulse rounded-[22px] border border-white/10 bg-white/5" />
           )}
 
           {graphLoading && !graph && (
@@ -244,7 +252,7 @@ function KnowledgeGraphRoute() {
           )}
 
           {graph && graph.node_count > 0 && (
-            <div className="overflow-x-auto rounded-[22px] border border-cod-border bg-cod-bg">
+            <div className="overflow-x-auto rounded-[22px] border border-white/15 bg-white/5 backdrop-blur-sm">
               <svg
                 ref={svgRef}
                 width={WIDTH}
@@ -321,11 +329,11 @@ function KnowledgeGraphRoute() {
                 )}
               </svg>
 
-              <div className="flex flex-wrap items-center gap-4 border-t border-cod-border px-5 py-3">
+              <div className="flex flex-wrap items-center gap-4 border-t border-white/10 px-5 py-3">
                 {Object.entries(AUDIENCE_COLOR).map(([a, c]) => (
                   <span
                     key={a}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    className="flex items-center gap-1.5 text-xs text-white/60"
                   >
                     <svg width={10} height={10}>
                       <circle cx={5} cy={5} r={4} fill={c} />
@@ -333,11 +341,11 @@ function KnowledgeGraphRoute() {
                     {a}
                   </span>
                 ))}
-	                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-	                  <svg width={10} height={10}>
-	                    <circle cx={5} cy={5} r={4} fill={DEFAULT_COLOR} />
-	                  </svg>
-	                  other
+                <span className="flex items-center gap-1.5 text-xs text-white/60">
+                  <svg width={10} height={10}>
+                    <circle cx={5} cy={5} r={4} fill={DEFAULT_COLOR} />
+                  </svg>
+                  other
                 </span>
               </div>
             </div>
@@ -348,15 +356,15 @@ function KnowledgeGraphRoute() {
       asideSubtitle="Click a node to inspect it here."
       aside={
         selectedNode ? (
-          <div className="space-y-4">
-            <div className="rounded-[22px] border border-border bg-card p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+          <div className="flex flex-col gap-4">
+            <GlassCard className="p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                 Selected note
               </p>
-              <h3 className="mt-3 text-lg font-semibold text-foreground">
+              <h3 className="mt-3 text-lg font-semibold text-white">
                 {selectedNode.title}
               </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-white/60">
                 {selectedNode.audience ?? 'no audience'}
               </p>
               <button
@@ -364,11 +372,15 @@ function KnowledgeGraphRoute() {
                 onClick={() =>
                   navigate({ to: '/note', search: { p: selectedNode.id } })
                 }
-                className="mt-4 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary transition hover:bg-primary/15"
+                className={cn(
+                  'mt-4 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-200',
+                  'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+                  'hover:bg-white/15 hover:text-white'
+                )}
               >
                 Open note
               </button>
-            </div>
+            </GlassCard>
           </div>
         ) : (
           <EmptyState

@@ -67,13 +67,13 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
   const { momentum, pressure, energy, rewards } = data;
 
   return (
-    <div className="space-y-5" data-testid="bubble-content">
+    <div className="flex flex-col gap-5" data-testid="bubble-content">
       {/* Momentum */}
       <section data-testid="bubble-momentum">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Momentum
         </h3>
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">
               {momentum.label}
@@ -107,7 +107,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Pressure
         </h3>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <StatRow label="Level" value={pressure.label} />
           <StatRow label="Blocked tasks" value={pressure.blockedCount} />
           <StatRow label="Overdue" value={pressure.overdueCount} />
@@ -121,7 +121,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Signals
           </h3>
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {data.signals.map((signal) => {
               const badgeClass =
                 signal.severity === 'high' || signal.severity === 'critical'
@@ -156,13 +156,13 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
   const { energy, rewards } = data;
 
   return (
-    <div className="space-y-5" data-testid="bubble-aside">
+    <div className="flex flex-col gap-5" data-testid="bubble-aside">
       {/* Energy */}
       <section data-testid="bubble-energy">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Energy
         </h3>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <StatRow label="Level" value={`${energy.level}%`} />
           <StatRow label="Stress" value={`${energy.stress}%`} />
           <StatRow label="Focus band" value={energy.focusBand} />
@@ -176,7 +176,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Rewards
         </h3>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <StatRow label="Rank" value={rewards.rank} />
           <StatRow label="Level" value={rewards.level} />
           <StatRow label="XP" value={rewards.xp} />
@@ -242,7 +242,7 @@ function BubbleRoute() {
       primarySubtitle="Interpretation on the left, intervention on the right."
       primary={
         isLoading ? (
-          <div className="space-y-3" data-testid="bubble-loading-state">
+          <div className="flex flex-col gap-3" data-testid="bubble-loading-state">
             <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
             <div className="h-20 animate-pulse rounded-2xl border border-border bg-muted/40" />
             <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
@@ -253,7 +253,7 @@ function BubbleRoute() {
             description="The shell is intact. Retry once the runtime responds again."
           />
         ) : data == null ? (
-          <div data-testid="bubble-empty-state" className="space-y-2">
+          <div data-testid="bubble-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-muted-foreground">
               No bubble data yet.
             </p>

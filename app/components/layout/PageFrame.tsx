@@ -20,7 +20,7 @@ export function PageFrame({
   children,
 }: PageFrameProps) {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
         <div className="genie-content flex items-start justify-between gap-4">
           <div>

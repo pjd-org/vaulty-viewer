@@ -110,7 +110,7 @@ function buildExtension(editable: boolean) {
 // Rendered inside <ProseKit editor={editor}> so useEditor() resolves with types.
 
 const BTN =
-  'inline-flex items-center justify-center h-7 w-7 rounded-md text-[color-mix(in_srgb,var(--accent-tint,var(--text-secondary))_60%,var(--text-secondary))] hover:bg-[var(--surf-elevated)] hover:text-[color-mix(in_srgb,var(--accent-tint,var(--text-primary))_80%,var(--text-primary))] transition-colors disabled:opacity-40 disabled:cursor-not-allowed select-none';
+  'inline-flex items-center justify-center h-7 w-7 rounded-md text-[color-mix(in_srgb,var(--accent-tint,var(--text-secondary))_60%,var(--text-secondary))] hover:bg-[var(--surf-elevated)] hover:text-[color-mix(in_srgb,var(--accent-tint,var(--text-primary))_80%,var(--text-primary))] transition-colors disabled:opacity-40 disabled:cursor-not-allowed select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
 /** Animated toolbar button — wraps a lucide-animated icon with ref-based trigger */
 function AnimatedBtn<

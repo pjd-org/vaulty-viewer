@@ -44,7 +44,7 @@ function ProjectSettingsRoute() {
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* ── Summary stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
         {[
@@ -74,7 +74,7 @@ function ProjectSettingsRoute() {
           title="Project Configuration"
           subtitle="Read-only view of project-scoped scoring, source, and preference controls."
         >
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {sections.map((section) => (
               <div
                 key={section.label}
@@ -100,7 +100,7 @@ function ProjectSettingsRoute() {
         </SoftPanel>
 
         {/* ── Right: info panel ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SoftPanel
             variant="utility"
             title="Settings Info"

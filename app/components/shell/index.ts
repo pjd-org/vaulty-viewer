@@ -1,2 +1,1 @@
-export { CommandHost } from './CommandHost'
-export { ModalHost } from './ModalHost'
+export { CommandHost } from './CommandHost';

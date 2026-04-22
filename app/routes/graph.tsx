@@ -12,10 +12,7 @@ import {
 } from '@xyflow/react';
 
 import { graphSearchParams } from '../../src/lib/routes/search-params';
-import {
-  useKnowledgeGraph,
-  type GraphJson,
-} from '../lib/viewer-adapter';
+import { useKnowledgeGraph, type GraphJson } from '../lib/viewer-adapter';
 import { RouteLoadingState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
 
@@ -171,7 +168,8 @@ function graphToSketchElements(data: GraphJson) {
       y: y - 10,
       width: 20,
       height: 20,
-      strokeColor: AUDIENCE_COLORS[node.audience ?? 'unknown'] ?? 'var(--text-tertiary)',
+      strokeColor:
+        AUDIENCE_COLORS[node.audience ?? 'unknown'] ?? 'var(--text-tertiary)',
       backgroundColor: 'var(--card)',
       fillStyle: 'solid',
       strokeWidth: 2,
@@ -199,8 +197,12 @@ function graphToSketchElements(data: GraphJson) {
         type: 'line',
         x: sourceCenter.x,
         y: sourceCenter.y,
-        points: [[0, 0], [targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y]],
-        strokeColor: 'color-mix(in_srgb,var(--text-secondary)_70%,var(--text-primary))',
+        points: [
+          [0, 0],
+          [targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y],
+        ],
+        strokeColor:
+          'color-mix(in_srgb,var(--text-secondary)_70%,var(--text-primary))',
         backgroundColor: 'transparent',
         fillStyle: 'hachure',
         strokeWidth: 1.2,
@@ -272,7 +274,8 @@ function GraphFlow({
           style: selected
             ? { stroke: 'var(--color-primary)', strokeWidth: 2.3 }
             : {
-                stroke: 'color-mix(in_srgb,var(--text-secondary)_20%,transparent)',
+                stroke:
+                  'color-mix(in_srgb,var(--text-secondary)_20%,transparent)',
                 strokeWidth: 1.0,
               },
         };
@@ -327,8 +330,9 @@ function GraphFlow({
 }
 
 function GraphSketch({ data }: { data: GraphJson }) {
-  const [excalidraw, setExcalidraw] =
-    React.useState<ExcalidrawModule['Excalidraw'] | null>(null);
+  const [excalidraw, setExcalidraw] = React.useState<
+    ExcalidrawModule['Excalidraw'] | null
+  >(null);
   const elements = React.useMemo(() => graphToSketchElements(data), [data]);
 
   React.useEffect(() => {
@@ -342,8 +346,8 @@ function GraphSketch({ data }: { data: GraphJson }) {
     };
   }, []);
 
-    if (!excalidraw) {
-      return (
+  if (!excalidraw) {
+    return (
       <div className="grid h-[640px] w-full place-items-center rounded-xl border border-border bg-card/80 text-sm text-muted-foreground">
         Loading sketch canvas…
       </div>
@@ -411,7 +415,7 @@ function GraphRoute() {
             type="button"
             onClick={() => setViewMode('interactive')}
             className={[
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              'cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'interactive'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted/40',
@@ -423,7 +427,7 @@ function GraphRoute() {
             type="button"
             onClick={() => setViewMode('sketch')}
             className={[
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              'cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'sketch'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted/40',
@@ -437,7 +441,7 @@ function GraphRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading graph topology..." />
         ) : data == null ? (
-          <div data-testid="graph-empty-state" className="space-y-2">
+          <div data-testid="graph-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-muted-foreground">
               Graph not available.
             </p>
@@ -446,7 +450,7 @@ function GraphRoute() {
             </p>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="flex flex-col gap-5">
             <div
               data-testid="graph-stats"
               className="grid gap-4 sm:grid-cols-4"
@@ -467,7 +471,7 @@ function GraphRoute() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-              <aside className="space-y-4 rounded-xl border border-border bg-card p-4">
+              <aside className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     Selected
@@ -476,15 +480,17 @@ function GraphRoute() {
                     {selectedNode?.title || 'Untitled note'}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {selectedPath ? `${outgoingCount} out · ${incomingCount} in` : 'No node selected'}
+                    {selectedPath
+                      ? `${outgoingCount} out · ${incomingCount} in`
+                      : 'No node selected'}
                   </p>
                 </div>
 
-                <div data-testid="graph-node-list" className="space-y-2">
+                <div data-testid="graph-node-list" className="flex flex-col gap-2">
                   <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     Node list
                   </p>
-                  <div className="max-h-[420px] space-y-1 overflow-y-auto pr-1">
+                  <div className="max-h-[420px] flex flex-col gap-1 overflow-y-auto pr-1">
                     {nodeEntries.map(([path, node]) => {
                       const active = path === selectedPath;
                       return (
@@ -493,7 +499,7 @@ function GraphRoute() {
                           type="button"
                           onClick={() => setSelectedPath(path)}
                           className={[
-                            'block w-full rounded-lg border px-3 py-2 text-left transition-colors',
+                            'block w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                             active
                               ? 'border-primary/30 bg-primary/10'
                               : 'border-border bg-card hover:border-border/80 hover:bg-muted/30',

@@ -14,7 +14,7 @@ export function BlockersRail({ blockedTasks, accentColor }: BlockersRailProps) {
 
   return (
     <SoftPanel title="Blockers" variant="utility">
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         {blockedTasks.map((task) => (
           <div
             key={task.id}

@@ -89,7 +89,7 @@ function LoginRoute() {
                   loop, and cod-level controls.
                 </p>
               </div>
-              <div className="mt-8 space-y-3 border-t border-border pt-6">
+              <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6">
                 {[
                   { label: 'Surfaces', value: 'Home · Inbox · Actions' },
                   { label: 'Runtime', value: 'Paris node' },
@@ -139,7 +139,7 @@ function LoginRoute() {
                   </p>
                 ) : null}
 
-                <form className="space-y-4" method="post" action="/auth/login">
+                <form className="flex flex-col gap-4" method="post" action="/auth/login">
                   <input type="hidden" name="return_to" value={returnTo} />
                   <div className="flex flex-col gap-1.5">
                     <label

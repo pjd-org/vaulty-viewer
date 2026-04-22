@@ -17,7 +17,7 @@ export function TaskSection({
 }) {
   if (!data) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
+      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
         <p className={emptyHeadingClass}>
           Task and dependency data not yet connected.
         </p>
@@ -31,7 +31,7 @@ export function TaskSection({
 
   if (data.tasks.length === 0) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
+      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
         <p className={emptyHeadingClass}>No tasks ready.</p>
         <p className={emptyBodyClass}>
           All tasks may be blocked or no unblocked tasks remain.
@@ -41,7 +41,7 @@ export function TaskSection({
   }
 
   return (
-    <div className="mt-6 space-y-3">
+    <div className="mt-6 flex flex-col gap-3">
       <div className="flex items-center justify-between rounded-2xl border border-border bg-surface2 px-4 py-2">
         <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-text2">
           Next Actions

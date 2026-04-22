@@ -74,7 +74,7 @@ export function VerificationRailHost({
 
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-20 hidden max-w-xs xl:block">
-      <div className="genie-surface genie-surface--overlay rounded-[22px] p-3 pointer-events-auto space-y-3">
+      <div className="genie-surface genie-surface--overlay rounded-[22px] p-3 pointer-events-auto flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
@@ -104,7 +104,7 @@ export function VerificationRailHost({
         )}
 
         {activeOutcomes.length > 0 && (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {activeOutcomes.map((item, idx) => {
               const isLatest = idx === 0;
               const bar =
@@ -113,7 +113,7 @@ export function VerificationRailHost({
                 <div
                   key={item.id}
                   className={cn(
-                    'relative overflow-hidden rounded-[14px] border bg-[var(--surf-utility)] p-3 space-y-1.5',
+                    'relative overflow-hidden rounded-[14px] border bg-[var(--surf-utility)] p-3 flex flex-col gap-1.5',
                     isLatest
                       ? 'border-[var(--border-glass)] shadow-sm'
                       : 'border-[var(--border-glass-soft)]'

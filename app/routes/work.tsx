@@ -39,7 +39,10 @@ function TaskList({
       {tasks.map((task) => {
         const isExpanded = selectedId === task.id;
         return (
-          <li key={task.id} className="rounded-2xl border border-border bg-card/80 shadow-sm">
+          <li
+            key={task.id}
+            className="rounded-2xl border border-border bg-card/80 shadow-sm"
+          >
             <button
               type="button"
               onClick={() => onSelect(isExpanded ? null : task)}
@@ -113,7 +116,7 @@ function TaskSection({
 }) {
   if (!data) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
+      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
         <p className="text-sm font-medium text-muted-foreground">
           Task and dependency data not yet connected.
         </p>
@@ -127,8 +130,10 @@ function TaskSection({
 
   if (data.tasks.length === 0) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-muted-foreground">No tasks ready.</p>
+      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
+        <p className="text-sm font-medium text-muted-foreground">
+          No tasks ready.
+        </p>
         <p className="text-xs text-muted-foreground">
           All tasks may be blocked or no unblocked tasks remain.
         </p>
@@ -137,7 +142,7 @@ function TaskSection({
   }
 
   return (
-    <div className="mt-6 space-y-3">
+    <div className="mt-6 flex flex-col gap-3">
       <div className="flex items-center justify-between rounded-2xl border border-border bg-card/70 px-4 py-2">
         <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Next Actions
@@ -164,11 +169,13 @@ function TaskDetail({ task }: { task: NextAction }) {
     (task.blockers as { description?: string }[] | undefined) ?? [];
 
   return (
-    <div className="space-y-4 text-sm" data-testid="work-task-detail">
+    <div className="flex flex-col gap-4 text-sm" data-testid="work-task-detail">
       <div>
         <p className="font-medium leading-snug text-foreground">{task.title}</p>
         {task.description ? (
-          <p className="mt-1 text-xs text-muted-foreground">{task.description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {task.description}
+          </p>
         ) : (
           <p className="mt-1 text-xs text-muted-foreground italic">
             No description. Open the note to add context.
@@ -232,7 +239,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Blockers
           </p>
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {blockers.map((b, i) => (
               <li key={i} className="text-xs text-destructive">
                 {b.description ?? String(b)}
@@ -344,10 +351,16 @@ function WorkRoute() {
   const filteredData = useMemo(() => {
     if (!data) return data;
     if (taskFilter === 'ready') {
-      return { ...data, tasks: data.tasks.filter((t) => t.status !== 'blocked') };
+      return {
+        ...data,
+        tasks: data.tasks.filter((t) => t.status !== 'blocked'),
+      };
     }
     if (taskFilter === 'blocked') {
-      return { ...data, tasks: data.tasks.filter((t) => t.status === 'blocked') };
+      return {
+        ...data,
+        tasks: data.tasks.filter((t) => t.status === 'blocked'),
+      };
     }
     return data;
   }, [data, taskFilter]);
@@ -355,7 +368,9 @@ function WorkRoute() {
   // Clear selection if the selected task is no longer in the refreshed data
   useEffect(() => {
     if (!selectedTask || !filteredData) return;
-    const stillExists = filteredData.tasks.some((t) => t.id === selectedTask.id);
+    const stillExists = filteredData.tasks.some(
+      (t) => t.id === selectedTask.id
+    );
     if (!stillExists) setSelectedTask(null);
   }, [filteredData, selectedTask]);
 
@@ -440,7 +455,7 @@ function WorkRoute() {
                 <button
                   type="button"
                   onClick={() => setTaskFilter('all')}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                     taskFilter === 'all'
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-card text-muted-foreground'
@@ -451,7 +466,7 @@ function WorkRoute() {
                 <button
                   type="button"
                   onClick={() => setTaskFilter('ready')}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                     taskFilter === 'ready'
                       ? 'border-success bg-success text-primary-foreground'
                       : 'border-border bg-card text-muted-foreground'
@@ -462,7 +477,7 @@ function WorkRoute() {
                 <button
                   type="button"
                   onClick={() => setTaskFilter('blocked')}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] ${
+                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                     taskFilter === 'blocked'
                       ? 'border-destructive bg-destructive text-destructive-foreground'
                       : 'border-border bg-card text-muted-foreground'

@@ -17,6 +17,8 @@ import {
   type InboxItem,
 } from '../lib/viewer-adapter';
 import { TabsRoot, TabsList, TabsTrigger } from '../components/ui';
+import { GlassCard } from '../components/ui/glass-card';
+import { cn } from '@/src/lib/utils';
 
 /* ─── types ───────────────────────────────────────────────────────────────── */
 
@@ -139,7 +141,11 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
     return (
       <button
         type="button"
-        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground hover:border-border/80 hover:bg-muted/60 transition-colors"
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium',
+          'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+          'hover:bg-white/15 hover:text-white transition-colors cursor-pointer'
+        )}
         onClick={() => mutate(rawText)}
       >
         ✦ Convert to task
@@ -149,7 +155,9 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
   if (isPending) {
     return (
-      <span className="px-2 py-1 text-xs text-muted-foreground">Converting…</span>
+      <span className="px-2 py-1 text-xs text-muted-foreground">
+        Converting…
+      </span>
     );
   }
 
@@ -203,15 +211,20 @@ function FilterBar({
   anyInFlight,
   onRefresh,
 }: FilterBarProps) {
-  const selectCls =
-    'rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 transition-colors hover:border-border/80';
+  const selectCls = cn(
+    'rounded-full px-3 py-1.5 text-xs font-medium cursor-pointer',
+    'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80',
+    'focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200',
+    '[&>option]:bg-zinc-900 [&>option]:text-white'
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground shrink-0">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/60 shrink-0">
         Sort
       </span>
       <select
+        aria-label="Sort inbox items"
         value={sort}
         onChange={(e) => onSort(e.target.value as SortKey)}
         className={selectCls}
@@ -222,10 +235,11 @@ function FilterBar({
         <option value="itemCount">Item count ↓</option>
       </select>
 
-      <span className="ml-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+      <span className="ml-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/60">
         Filter
       </span>
       <select
+        aria-label="Filter by run type"
         value={runType}
         onChange={(e) => onRunType(e.target.value)}
         className={selectCls}
@@ -236,6 +250,7 @@ function FilterBar({
         <option value="manual">Manual</option>
       </select>
       <select
+        aria-label="Filter by reversibility"
         value={reversibility}
         onChange={(e) => onReversibility(e.target.value)}
         className={selectCls}
@@ -246,6 +261,7 @@ function FilterBar({
         <option value="low">Irreversible</option>
       </select>
       <select
+        aria-label="Filter by severity"
         value={severity}
         onChange={(e) => onSeverity(e.target.value)}
         className={selectCls}
@@ -259,169 +275,16 @@ function FilterBar({
       <div className="ml-auto">
         <button
           type="button"
-          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 disabled:opacity-60 transition-colors"
+          className={cn(
+            'rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200',
+            'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
+            'hover:bg-white/15 hover:text-white disabled:opacity-40 cursor-pointer'
+          )}
           onClick={onRefresh}
           disabled={loading || anyInFlight}
         >
           {loading ? 'Loading…' : 'Refresh'}
         </button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── InboxRow — single-column list row with hover actions ───────────────── */
-
-interface InboxRowProps {
-  item: InboxItem;
-  note?: InboxNote;
-  run?: Run;
-  onInspect: () => void;
-  onPromote?: () => void;
-  onReject?: () => void;
-  actionInFlight?: boolean;
-}
-
-function InboxRow({
-  item,
-  note,
-  run,
-  onInspect,
-  onPromote,
-  onReject,
-  actionInFlight,
-}: InboxRowProps) {
-  const display = inboxItemToDisplay(item, note, run);
-
-  const severityColor: Record<string, string> = {
-    critical: 'bg-destructive',
-    high: 'bg-warning',
-    medium: 'bg-primary',
-    low: 'bg-border',
-  };
-  const sevBar = item.severity
-    ? (severityColor[item.severity] ?? 'bg-border')
-    : undefined;
-
-  const confidence = run?.confidence;
-  const itemCount = run?.itemCount;
-
-  const reversibilityLabel: Record<string, string> = {
-    high: 'Reversible',
-    medium: 'Partial',
-    low: 'Irreversible',
-  };
-  const reversibilityColor: Record<string, string> = {
-    high: 'text-success bg-success/10 ring-success/20',
-    medium: 'text-warning bg-warning/10 ring-warning/20',
-    low: 'text-destructive bg-destructive/10 ring-destructive/20',
-  };
-
-  return (
-    <div
-      className="group relative flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:shadow-sm animate-fade-in"
-      onClick={onInspect}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onInspect()}
-    >
-      {/* severity bar */}
-      {sevBar && (
-        <div
-          className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${sevBar}`}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* main content */}
-      <div className="min-w-0 flex-1 pl-1">
-        {/* row 1: title + chips */}
-        <div className="flex items-start gap-2 min-w-0">
-          <span className="min-w-0 flex-1 line-clamp-1 text-sm font-semibold leading-snug text-foreground">
-            {display.title}
-          </span>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              {display.originLabel}
-            </span>
-            {item.reversibility && reversibilityLabel[item.reversibility] && (
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${reversibilityColor[item.reversibility]}`}
-              >
-                {reversibilityLabel[item.reversibility]}
-              </span>
-            )}
-            {display.ageLabel && (
-              <span
-                className="tabular-nums text-[11px] text-muted-foreground"
-                suppressHydrationWarning
-              >
-                {display.ageLabel}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* row 2: why surfaced / summary */}
-        {(item.whySurfaced || item.summary) && (
-          <p className="mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground">
-            {item.whySurfaced ?? item.summary}
-          </p>
-        )}
-
-        {/* row 3: meta pills */}
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          {run?.runType && (
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {run.runType}
-            </span>
-          )}
-          {confidence !== undefined && (
-            <span className="text-[10px] text-muted-foreground">
-              conf{' '}
-              <span className="font-medium text-foreground">
-                {(confidence * 100).toFixed(0)}%
-              </span>
-            </span>
-          )}
-          {itemCount !== undefined && (
-            <span className="text-[10px] text-muted-foreground">
-              {itemCount} item{itemCount !== 1 ? 's' : ''}
-            </span>
-          )}
-          {run?.runId && (
-            <span className="max-w-[120px] truncate font-mono text-[10px] text-muted-foreground">
-              {run.runId}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* hover actions — stop propagation so they don't open the modal */}
-      <div
-        className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {onReject && (
-          <button
-            type="button"
-            disabled={actionInFlight}
-            onClick={onReject}
-            className="rounded-full border border-destructive/30 bg-card px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:border-destructive/40 hover:bg-destructive/10 disabled:opacity-50"
-          >
-            Reject
-          </button>
-        )}
-        {onPromote && (
-          <button
-            type="button"
-            disabled={actionInFlight}
-            onClick={onPromote}
-            className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            Promote
-          </button>
-        )}
       </div>
     </div>
   );
@@ -677,7 +540,7 @@ function InboxRoute() {
       )}
 
       {!loading && !error && (
-        <div className="mt-2 space-y-4">
+        <div className="mt-2 flex flex-col gap-4">
           {/* ── 3-tab bar ──────────────────────────────────────────────── */}
           <TabsRoot
             value={activeTab}
@@ -704,7 +567,7 @@ function InboxRoute() {
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="rounded-full px-4 py-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:text-muted-foreground data-[state=inactive]:border data-[state=inactive]:border-border hover:data-[state=inactive]:text-foreground hover:data-[state=inactive]:bg-muted/60 transition-colors shadow-none"
+                  className="rounded-full px-4 py-2 text-sm font-medium data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white/30 data-[state=active]:backdrop-blur-sm data-[state=inactive]:bg-white/5 data-[state=inactive]:text-white/60 data-[state=inactive]:border data-[state=inactive]:border-white/10 hover:data-[state=inactive]:text-white/80 hover:data-[state=inactive]:bg-white/10 transition-colors shadow-none"
                 >
                   {tab.label}
                   {tab.count > 0 && (
@@ -718,7 +581,7 @@ function InboxRoute() {
           </TabsRoot>
 
           {/* ── Filter + sort toolbar ─────────────────────────────────── */}
-          <div className="rounded-2xl border border-border bg-card/70 px-3 py-2.5">
+          <GlassCard glowEffect={false} className="px-3 py-2.5">
             <FilterBar
               sort={currentSort}
               onSort={(v) => setSearch({ sort: v })}
@@ -746,10 +609,10 @@ function InboxRoute() {
               anyInFlight={anyActionInFlight}
               onRefresh={refresh}
             />
-          </div>
+          </GlassCard>
 
           {/* ── Summary line ──────────────────────────────────────────── */}
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-white/60">
             {visibleItems.length} of {surface.length} item
             {surface.length !== 1 ? 's' : ''}
           </p>
@@ -762,7 +625,7 @@ function InboxRoute() {
           )}
 
           {/* ── Single-column list ────────────────────────────────────── */}
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {visibleItems.map((item) => {
               const run = runById.get(item.sourceId);
               const note = noteByPath.get(item.sourceId);

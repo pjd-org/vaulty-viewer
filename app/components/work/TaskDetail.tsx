@@ -14,7 +14,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
     (task.blockers as { description?: string }[] | undefined) ?? [];
 
   return (
-    <div className="space-y-4 text-sm" data-testid="work-task-detail">
+    <div className="flex flex-col gap-4 text-sm" data-testid="work-task-detail">
       <div>
         <p className="font-medium leading-snug text-text">{task.title}</p>
         {task.description ? (
@@ -73,7 +73,7 @@ export function TaskDetail({ task }: { task: NextAction }) {
           <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-text2">
             Blockers
           </p>
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {blockers.map((b, i) => (
               <li
                 key={i}

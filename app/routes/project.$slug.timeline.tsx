@@ -4,6 +4,8 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { SoftPanel } from '../components/layout';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SoftChip } from '../components/ui/Chips';
+import { GlassCard } from '../components/ui/glass-card';
+import { GlassBadge } from '../components/ui/glass-badge';
 import Timeline, {
   TimelineItem,
   TimelineItemDate,
@@ -17,6 +19,66 @@ export const Route = createFileRoute('/project/$slug/timeline')({
   validateSearch: projectSearchParams,
   component: ProjectTimelineRoute,
 });
+
+// ---------------------------------------------------------------------------
+// Status badge → glass variant
+// ---------------------------------------------------------------------------
+
+function StatusBadge({ status }: { status: string }) {
+  const lower = status.toLowerCase();
+  const variant =
+    lower === 'success' || lower === 'complete' || lower === 'done'
+      ? 'success'
+      : lower === 'warning' || lower === 'pending'
+        ? 'warning'
+        : lower === 'error' || lower === 'failed' || lower === 'rejected'
+          ? 'destructive'
+          : 'default';
+  return (
+    <GlassBadge variant={variant} size="sm">
+      {status}
+    </GlassBadge>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Stat card (glass)
+// ---------------------------------------------------------------------------
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <GlassCard glowEffect={false} className="p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+        ID
+      </p>
+      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+    </GlassCard>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Loading skeleton (glass)
+// ---------------------------------------------------------------------------
+
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="grid gap-4 sm:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-20 animate-pulse rounded-2xl border border-white/10 bg-white/5"
+          />
+        ))}
+      </div>
+      <div className="h-48 animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Route component
+// ---------------------------------------------------------------------------
 
 function ProjectTimelineRoute() {
   const { slug } = Route.useParams();
@@ -42,37 +104,15 @@ function ProjectTimelineRoute() {
   ];
 
   if (isLoading && !surface) {
-    return (
-      <div className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-4">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="h-20 animate-pulse rounded-[18px] border border-border bg-muted/20"
-            />
-          ))}
-        </div>
-        <div className="h-48 animate-pulse rounded-[18px] border border-border bg-muted/20" />
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* ── Stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
         {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-[18px] border border-border bg-card p-4"
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-              {s.label}
-            </p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {s.value}
-            </p>
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} />
         ))}
       </div>
 
@@ -102,7 +142,8 @@ function ProjectTimelineRoute() {
                 return (
                   <TimelineItem
                     key={hint.id}
-                    variant={active ? 'default' : 'outline'}
+                    variant={active ? 'glass' : 'outline'}
+                    hollow={!active}
                   >
                     <Link
                       to="/project/$slug/timeline"
@@ -121,7 +162,7 @@ function ProjectTimelineRoute() {
                             </TimelineItemDescription>
                           )}
                         </div>
-                        {hint.status && <SoftChip label={hint.status} />}
+                        {hint.status && <StatusBadge status={hint.status} />}
                       </div>
                     </Link>
                   </TimelineItem>
@@ -132,14 +173,15 @@ function ProjectTimelineRoute() {
         </SoftPanel>
 
         {/* ── Right: verification rail + detail ── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
+          {/* Selected event detail */}
           <SoftPanel
             variant="utility"
             title="Selected Event"
             subtitle="Detail for the selected timeline event."
           >
             {selectedHint ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">
@@ -152,17 +194,17 @@ function ProjectTimelineRoute() {
                     )}
                   </div>
                   {selectedHint.status && (
-                    <SoftChip label={selectedHint.status} />
+                    <StatusBadge status={selectedHint.status} />
                   )}
                 </div>
-                <div className="rounded-[18px] border border-border bg-card p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                <GlassCard glowEffect={false} className="p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                     ID
                   </p>
-                  <p className="mt-2 break-all text-xs font-mono text-foreground">
+                  <p className="mt-2 break-all text-xs font-mono text-white/80">
                     {selectedHint.id}
                   </p>
-                </div>
+                </GlassCard>
               </div>
             ) : (
               <EmptyState
@@ -172,6 +214,7 @@ function ProjectTimelineRoute() {
             )}
           </SoftPanel>
 
+          {/* Verification rail */}
           <SoftPanel
             variant="utility"
             title="Verification Rail"
@@ -183,19 +226,16 @@ function ProjectTimelineRoute() {
                 description="When project actions resolve, their verification history will appear here."
               />
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {verificationRail.map((v) => (
-                  <div
-                    key={v.id}
-                    className="rounded-[18px] border border-border bg-card p-4"
-                  >
+                  <GlassCard key={v.id} glowEffect={false} className="p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-semibold text-white/90">
                         {v.summary}
                       </p>
-                      <SoftChip label={v.status} />
+                      <StatusBadge status={v.status} />
                     </div>
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             )}

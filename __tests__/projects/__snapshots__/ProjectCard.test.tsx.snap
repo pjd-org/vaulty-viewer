@@ -20,12 +20,12 @@ exports[`ProjectCard > matches snapshot 1`] = `
         Active
       </span>
     </div>
-    <div
+    <p
       class="text-sm mb-3"
       style="color: var(--text-secondary);"
     >
       Finalize landing
-    </div>
+    </p>
     <div
       aria-label="Website revamp progress"
       aria-valuemax="100"

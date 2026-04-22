@@ -270,7 +270,8 @@ const ProgressBar = memo(function ProgressBar({
         <div
           className="pointer-events-none absolute inset-0 rounded-full motion-safe:animate-pulse"
           style={{
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.6)',
+            boxShadow:
+              '0 0 20px color-mix(in srgb, var(--vault-success) 60%, transparent)',
           }}
         />
       )}
@@ -344,7 +345,7 @@ function PlanRoot({
   }, [progress]);
 
   const todoList = (
-    <ul className={cn('min-w-0 space-y-1', compact ? 'mt-0' : 'mt-4')}>
+    <ul className={cn('min-w-0 flex flex-col gap-1', compact ? 'mt-0' : 'mt-4')}>
       <TodoList todos={visibleTodos} newTodoIds={newTodoIds} />
 
       {hiddenTodos.length > 0 && (
@@ -356,7 +357,7 @@ function PlanRoot({
                 <span>{hiddenTodos.length} more</span>
               </AccordionTrigger>
               <AccordionContent className="pt-2 pb-0">
-                <ul className="-mx-2 space-y-2 px-2">
+                <ul className="-mx-2 flex flex-col gap-2 px-2">
                   <TodoList todos={hiddenTodos} newTodoIds={newTodoIds} />
                 </ul>
               </AccordionContent>
@@ -375,7 +376,7 @@ function PlanRoot({
     >
       {!compact && (
         <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             <CardTitle className="leading-5 font-medium text-pretty">
               {title}
             </CardTitle>

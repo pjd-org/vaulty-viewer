@@ -63,7 +63,7 @@ function SessionTaskCard({
       <div className="flex gap-2">
         <button
           type="button"
-          className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-medium text-success transition hover:bg-success/20 disabled:opacity-40"
+          className="cursor-pointer rounded-lg bg-success/10 px-3 py-1.5 text-xs font-medium text-success transition hover:bg-success/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
           onClick={onDone}
           disabled={mutating}
         >
@@ -71,7 +71,7 @@ function SessionTaskCard({
         </button>
         <button
           type="button"
-          className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted/60 disabled:opacity-40"
+          className="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
           onClick={onSkip}
           disabled={mutating}
         >
@@ -190,7 +190,7 @@ function SessionRoute() {
   // --- Layout ---
 
   const primaryContent = (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {mutationError && (
         <div
           className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
@@ -207,7 +207,7 @@ function SessionRoute() {
       )}
 
       {inProgress.length > 0 && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             In progress
           </p>
@@ -228,7 +228,7 @@ function SessionRoute() {
       )}
 
       {pending.length > 0 && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Queued
           </p>
@@ -252,7 +252,7 @@ function SessionRoute() {
   const asideContent = (
     <div className="flex h-full flex-col gap-6">
       {/* Session controls */}
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         {confirmAction ? (
           <>
             <p className="mb-3 text-sm text-muted-foreground">
@@ -262,7 +262,7 @@ function SessionRoute() {
             </p>
             <button
               type="button"
-              className="w-full rounded-lg bg-success/10 py-2 text-sm font-medium text-success transition hover:bg-success/20 disabled:opacity-40"
+              className="w-full cursor-pointer rounded-lg bg-success/10 py-2 text-sm font-medium text-success transition hover:bg-success/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => {
                 endSessionMutation.mutate(confirmAction);
                 setConfirmAction(null);
@@ -273,7 +273,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="w-full rounded-lg border border-border py-2 text-sm text-muted-foreground transition hover:bg-muted/60"
+              className="w-full cursor-pointer rounded-lg border border-border py-2 text-sm text-muted-foreground transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
               onClick={() => setConfirmAction(null)}
             >
               Cancel
@@ -283,7 +283,7 @@ function SessionRoute() {
           <>
             <button
               type="button"
-              className="w-full rounded-lg bg-success/10 py-2 text-sm font-medium text-success transition hover:bg-success/20 disabled:opacity-40"
+              className="w-full cursor-pointer rounded-lg bg-success/10 py-2 text-sm font-medium text-success transition hover:bg-success/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => setConfirmAction('completed')}
               disabled={endSessionMutation.isPending}
             >
@@ -291,7 +291,7 @@ function SessionRoute() {
             </button>
             <button
               type="button"
-              className="w-full rounded-lg border border-destructive/20 py-2 text-sm text-destructive transition hover:bg-destructive/10 disabled:opacity-40"
+              className="w-full cursor-pointer rounded-lg border border-destructive/20 py-2 text-sm text-destructive transition hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => setConfirmAction('aborted')}
               disabled={endSessionMutation.isPending}
             >
@@ -303,11 +303,11 @@ function SessionRoute() {
 
       {/* Done / skipped log */}
       {(done.length > 0 || skipped.length > 0) && (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Done ({done.length}) · Skipped ({skipped.length})
           </p>
-          <div className="space-y-1">
+          <div className="flex flex-col gap-1">
             {[...done, ...skipped].map((t) => (
               <div
                 key={t.id}

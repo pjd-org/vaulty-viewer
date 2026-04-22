@@ -56,7 +56,7 @@ export function SoftChip({
           type="button"
           onClick={onRemove}
           aria-label={`Remove ${label}`}
-          className="ml-0.5 rounded-full hover:opacity-70 transition-opacity"
+          className="ml-0.5 cursor-pointer rounded-full hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         >
           <svg
             className="w-3 h-3"

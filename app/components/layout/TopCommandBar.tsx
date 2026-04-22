@@ -5,7 +5,6 @@ import { useUIStore } from '../../../src/store/ui';
 
 interface UIState {
   toggleCommandPalette: () => void;
-  openModal: (id: string) => void;
 }
 
 interface TopCommandBarProps {
@@ -21,7 +20,6 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   const toggleCommandPalette = useUIStore(
     (s: UIState) => s.toggleCommandPalette
   );
-  const openModal = useUIStore((s: UIState) => s.openModal);
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8">
@@ -77,7 +75,7 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
             <button
               type="button"
               onClick={() => toggleCommandPalette()}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surf-utility)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] ring-1 ring-inset ring-[var(--border-glass)] hover:bg-[var(--surf-elevated)] transition-colors"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[var(--surf-utility)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] ring-1 ring-inset ring-[var(--border-glass)] hover:bg-[var(--surf-elevated)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
               title="Open command palette (⌘K)"
             >
               <span>⌘</span>
@@ -86,7 +84,7 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
             <button
               type="button"
               onClick={() => router.navigate({ to: '/inbox' })}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--text-info)] transition-colors"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--text-info)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
               style={{
                 background: `color-mix(in srgb, ${accent} 15%, transparent)`,
                 boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 30%, transparent)`,
@@ -102,8 +100,8 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
             </button>
             <button
               type="button"
-              onClick={() => openModal('create')}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--n-0)] hover:opacity-90 transition-colors shadow-sm"
+              disabled
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--n-0)] opacity-50 cursor-not-allowed shadow-sm"
             >
               + Create
             </button>

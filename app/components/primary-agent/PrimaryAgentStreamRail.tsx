@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useThread } from '@assistant-ui/react';
 import {
   Badge,
@@ -41,7 +47,10 @@ import {
 type ViewMode = 'all' | 'async' | 'cabinet' | 'specialist';
 
 function splitNodeId(nodeId: string): string[] {
-  return nodeId.split('/').map((segment) => segment.trim()).filter(Boolean);
+  return nodeId
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter(Boolean);
 }
 
 function isAsyncRunNode(nodeId: string): boolean {
@@ -58,7 +67,9 @@ function nodeLevelLabel(level: ViewerStreamNode['level']): string {
   return 'Specialist';
 }
 
-function statusTone(status: ViewerAgentStatus): 'default' | 'success' | 'warning' | 'danger' | 'loading' {
+function statusTone(
+  status: ViewerAgentStatus
+): 'default' | 'success' | 'warning' | 'danger' | 'loading' {
   switch (status) {
     case 'completed':
       return 'success';
@@ -109,15 +120,12 @@ function matchesViewMode(node: ViewerStreamNode, mode: ViewMode): boolean {
 function buildRunSummary(node: ViewerStreamNode): string {
   const parts = [node.label, node.id, node.status];
   if (node.progress !== undefined) parts.push(`${Math.round(node.progress)}%`);
-  if (node.artifactRefs?.length) parts.push(`${node.artifactRefs.length} artifact refs`);
+  if (node.artifactRefs?.length)
+    parts.push(`${node.artifactRefs.length} artifact refs`);
   return parts.join(' · ');
 }
 
-export function PrimaryAgentStreamRail({
-  threadId,
-}: {
-  threadId: string;
-}) {
+export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
   const thread = useThread();
   const [state, setState] = useState<ViewerStreamState>(() =>
     createPrimaryAgentStreamState()
@@ -167,7 +175,10 @@ export function PrimaryAgentStreamRail({
       return;
     }
 
-    if (!selectedNodeId || !filteredNodes.some((node) => node.id === selectedNodeId)) {
+    if (
+      !selectedNodeId ||
+      !filteredNodes.some((node) => node.id === selectedNodeId)
+    ) {
       setSelectedNodeId(filteredNodes[0]?.id ?? null);
     }
   }, [filteredNodes, selectedNodeId]);
@@ -177,8 +188,12 @@ export function PrimaryAgentStreamRail({
     filteredNodes[0] ??
     null;
 
-  const activeNodes = nodes.filter((node) => node.status === 'queued' || node.status === 'running');
-  const asyncActiveNodes = activeNodes.filter((node) => isAsyncRunNode(node.id));
+  const activeNodes = nodes.filter(
+    (node) => node.status === 'queued' || node.status === 'running'
+  );
+  const asyncActiveNodes = activeNodes.filter((node) =>
+    isAsyncRunNode(node.id)
+  );
   const completedNodes = nodes.filter((node) => node.status === 'completed');
   const failedNodes = nodes.filter((node) => node.status === 'failed');
   const doneNodes = nodes.filter((node) =>
@@ -191,18 +206,21 @@ export function PrimaryAgentStreamRail({
         ? {
             tone: 'loading' as const,
             title: 'Quiet connection',
-            description: 'The thread is active, but no stream nodes have appeared yet.',
+            description:
+              'The thread is active, but no stream nodes have appeared yet.',
           }
         : {
             tone: 'default' as const,
             title: 'No current stream yet',
-            description: 'Start a Primary Agent run to populate the live hierarchy.',
+            description:
+              'Start a Primary Agent run to populate the live hierarchy.',
           }
       : thread.isRunning || activeNodes.length > 0
         ? {
             tone: 'loading' as const,
             title: 'Live orchestration',
-            description: 'Hierarchy, specialist progress, and scoped logs are updating now.',
+            description:
+              'Hierarchy, specialist progress, and scoped logs are updating now.',
           }
         : {
             tone: 'success' as const,
@@ -223,8 +241,7 @@ export function PrimaryAgentStreamRail({
   }, []);
 
   const visibleNodes = useMemo(
-    () =>
-      filteredNodes.filter((node) => matchesViewMode(node, viewMode)),
+    () => filteredNodes.filter((node) => matchesViewMode(node, viewMode)),
     [filteredNodes, viewMode]
   );
 
@@ -251,7 +268,16 @@ export function PrimaryAgentStreamRail({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Badge variant={streamState.tone === 'success' ? 'success' : streamState.tone === 'loading' ? 'loading' : 'muted'} dot>
+            <Badge
+              variant={
+                streamState.tone === 'success'
+                  ? 'success'
+                  : streamState.tone === 'loading'
+                    ? 'loading'
+                    : 'muted'
+              }
+              dot
+            >
               {streamState.title}
             </Badge>
             <Button
@@ -302,13 +328,25 @@ export function PrimaryAgentStreamRail({
                   {streamState.description}
                 </p>
               </div>
-              <Badge variant={streamState.tone === 'success' ? 'success' : streamState.tone === 'loading' ? 'loading' : 'default'} dot>
+              <Badge
+                variant={
+                  streamState.tone === 'success'
+                    ? 'success'
+                    : streamState.tone === 'loading'
+                      ? 'loading'
+                      : 'default'
+                }
+                dot
+              >
                 {thread.isRunning ? 'Running' : 'Idle'}
               </Badge>
             </div>
             <div className="grid gap-3 px-4 py-4 sm:grid-cols-2 lg:grid-cols-4">
               <Stat label="Active nodes" value={String(activeNodes.length)} />
-              <Stat label="Async runs" value={String(asyncActiveNodes.length)} />
+              <Stat
+                label="Async runs"
+                value={String(asyncActiveNodes.length)}
+              />
               <Stat label="Completed" value={String(completedNodes.length)} />
               <Stat label="Failed" value={String(failedNodes.length)} />
             </div>
@@ -350,7 +388,7 @@ export function PrimaryAgentStreamRail({
                       }
                     }}
                     className={cn(
-                      'rounded-2xl border px-4 py-3 text-left transition-colors',
+                      'rounded-2xl border px-4 py-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                       selectedNodeId === node.id
                         ? 'border-primary/40 bg-primary/5'
                         : 'border-border/60 bg-card/70 hover:bg-card'
@@ -362,7 +400,9 @@ export function PrimaryAgentStreamRail({
                           <p className="font-medium text-sm text-foreground">
                             {node.label}
                           </p>
-                          <Badge variant="muted">{nodeLevelLabel(node.level)}</Badge>
+                          <Badge variant="muted">
+                            {nodeLevelLabel(node.level)}
+                          </Badge>
                           {selectedNodeId === node.id && (
                             <Badge variant="accent">Focused</Badge>
                           )}
@@ -457,10 +497,13 @@ export function PrimaryAgentStreamRail({
                     </div>
                     <div className="px-4 py-4">
                       {typeof node.progress === 'number' ? (
-                        <div className="space-y-2">
+                        <div className="flex flex-col gap-2">
                           <ProgressBar value={node.progress} height={6} />
                           <p className="text-xs text-muted-foreground">
-                            {Math.max(0, Math.min(100, node.progress)).toFixed(0)}%
+                            {Math.max(0, Math.min(100, node.progress)).toFixed(
+                              0
+                            )}
+                            %
                           </p>
                         </div>
                       ) : (
@@ -521,7 +564,7 @@ export function PrimaryAgentStreamRail({
                   </div>
 
                   <div className="grid gap-4">
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                         Token log
                       </p>
@@ -540,7 +583,7 @@ export function PrimaryAgentStreamRail({
                       </ScrollArea>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                         Tool activity
                       </p>
@@ -548,22 +591,26 @@ export function PrimaryAgentStreamRail({
                         <div className="p-3">
                           {state.toolActivity[selectedNode.id]?.length ? (
                             <ul className="flex flex-col gap-2 text-sm">
-                              {state.toolActivity[selectedNode.id].map((entry, index) => (
-                                <li
-                                  key={`${entry.toolName}-${index}`}
-                                  className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/80 px-3 py-2"
-                                >
-                                  <Badge variant="muted">{entry.status}</Badge>
-                                  <span className="font-medium text-foreground">
-                                    {entry.toolName}
-                                  </span>
-                                  {entry.preview && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {entry.preview}
+                              {state.toolActivity[selectedNode.id].map(
+                                (entry, index) => (
+                                  <li
+                                    key={`${entry.toolName}-${index}`}
+                                    className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/80 px-3 py-2"
+                                  >
+                                    <Badge variant="muted">
+                                      {entry.status}
+                                    </Badge>
+                                    <span className="font-medium text-foreground">
+                                      {entry.toolName}
                                     </span>
-                                  )}
-                                </li>
-                              ))}
+                                    {entry.preview && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {entry.preview}
+                                      </span>
+                                    )}
+                                  </li>
+                                )
+                              )}
                             </ul>
                           ) : (
                             <p className="text-sm text-muted-foreground">
@@ -584,7 +631,10 @@ export function PrimaryAgentStreamRail({
           </Card>
 
           <Collapsible defaultOpen={false}>
-            <Card padding={false} className="overflow-hidden border border-border/60 bg-background/70 shadow-none">
+            <Card
+              padding={false}
+              className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
+            >
               <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
@@ -640,7 +690,9 @@ export function PrimaryAgentStreamRail({
                                 : '—'}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {['completed', 'failed', 'cancelled'].includes(node.status)
+                              {['completed', 'failed', 'cancelled'].includes(
+                                node.status
+                              )
                                 ? statusLabel(node.status)
                                 : '—'}
                             </TableCell>
@@ -650,7 +702,9 @@ export function PrimaryAgentStreamRail({
                                 : '—'}
                             </TableCell>
                             <TableCell className="max-w-[22rem] text-sm text-muted-foreground">
-                              {node.lastMessage ?? state.messageBuffers[node.id] ?? '—'}
+                              {node.lastMessage ??
+                                state.messageBuffers[node.id] ??
+                                '—'}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -669,7 +723,9 @@ export function PrimaryAgentStreamRail({
       </ScrollArea>
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-        <DialogTitle className="sr-only">Primary Agent stream commands</DialogTitle>
+        <DialogTitle className="sr-only">
+          Primary Agent stream commands
+        </DialogTitle>
         <DialogDescription className="sr-only">
           Search, filter, jump to, and copy references for stream nodes.
         </DialogDescription>
@@ -736,20 +792,20 @@ export function PrimaryAgentStreamRail({
           <CommandSeparator />
 
           <CommandGroup heading="Copy refs">
-            {nodes.filter((node) => node.artifactRefs?.length).map((node) => (
-              <CommandItem
-                key={`copy-${node.id}`}
-                value={`${node.label} refs ${node.artifactRefs?.join(' ') ?? ''}`}
-                onSelect={() => {
-                  copyArtifactRefs(node);
-                  setCommandOpen(false);
-                }}
-              >
-                <span className="truncate">
-                  Copy refs for {node.label}
-                </span>
-              </CommandItem>
-            ))}
+            {nodes
+              .filter((node) => node.artifactRefs?.length)
+              .map((node) => (
+                <CommandItem
+                  key={`copy-${node.id}`}
+                  value={`${node.label} refs ${node.artifactRefs?.join(' ') ?? ''}`}
+                  onSelect={() => {
+                    copyArtifactRefs(node);
+                    setCommandOpen(false);
+                  }}
+                >
+                  <span className="truncate">Copy refs for {node.label}</span>
+                </CommandItem>
+              ))}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

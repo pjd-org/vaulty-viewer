@@ -311,13 +311,13 @@ function PrimaryAgentRouteInner({
     <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto">
       <PrimaryAgentStreamRail threadId={threadId} />
       {extractedSteps && extractedSteps.steps.length > 0 && (
-        <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 space-y-3 backdrop-blur-sm">
+        <div className="rounded-[28px] border border-border/60 bg-card/60 p-4 flex flex-col gap-3 backdrop-blur-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Extracted steps
           </p>
-          <ol className="space-y-2">
+          <ol className="flex flex-col gap-2">
             {extractedSteps.steps.map((step, i) => (
-              <li key={i} className="text-sm space-y-0.5">
+              <li key={i} className="text-sm flex flex-col gap-0.5">
                 <p className="font-medium text-foreground">{step.title}</p>
                 <p className="text-muted-foreground">{step.action}</p>
                 {step.expected_result && (

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { type NextAction } from '../../../src/lib/focus-logic';
 
@@ -8,7 +9,7 @@ interface BacklogStripCardProps {
   mutating: boolean;
 }
 
-export function BacklogStripCard({
+export const BacklogStripCard = React.memo(function BacklogStripCard({
   task,
   onStart,
   onBacklog,
@@ -34,7 +35,7 @@ export function BacklogStripCard({
             type="button"
             onClick={() => onStart(task.path)}
             disabled={mutating}
-            className="rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,var(--n-950))]"
+            className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_70%,var(--n-950))]"
           >
             Start
           </button>
@@ -42,7 +43,7 @@ export function BacklogStripCard({
             type="button"
             onClick={() => onBacklog(task.path)}
             disabled={mutating}
-            className="rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))]"
+            className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50 [background:color-mix(in_srgb,var(--a-sun)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sun)_35%,transparent)] [color:color-mix(in_srgb,var(--a-sun)_80%,var(--n-950))]"
           >
             Backlog
           </button>
@@ -50,4 +51,4 @@ export function BacklogStripCard({
       </div>
     </article>
   );
-}
+});

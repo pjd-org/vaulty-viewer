@@ -161,11 +161,11 @@ export function ProjectDetailScene({
   if (anyLoading && !project && !displaySurface) {
     return (
       <div className={detailGridClass}>
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           <SkeletonCard />
           <SkeletonCard />
         </div>
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <SkeletonCard />
           <SoftPanel variant="utility">
             <EmptyState title="Related notes coming soon" />
@@ -181,7 +181,7 @@ export function ProjectDetailScene({
 
   return (
     <div className={detailGridClass}>
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {projectHeader ? (
           <ProjectDetailHeader
             projectId={projectId}
@@ -201,7 +201,7 @@ export function ProjectDetailScene({
           />
         )}
       </div>
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         {!tasksLoading && (
           <BlockersRail blockedTasks={blockedTasks} accentColor={accentColor} />
         )}
@@ -211,7 +211,7 @@ export function ProjectDetailScene({
           subtitle="Scoped project pressure from the adapter layer."
         >
           {pressureSignals.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {pressureSignals.slice(0, 3).map((signal) => (
                 <div key={signal.id} className={detailCardClass}>
                   <div className={detailCardRowClass}>
@@ -240,7 +240,7 @@ export function ProjectDetailScene({
           subtitle="Top project-scoped actions from the adapter layer."
         >
           {decisionQueue.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {decisionQueue.slice(0, 3).map((item) => (
                 <div key={item.id} className={detailCardClass}>
                   <div className={detailCardRowClass}>
@@ -274,7 +274,7 @@ export function ProjectDetailScene({
           subtitle="Low-friction next moves from the adapter layer."
         >
           {immediateActions.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {immediateActions.slice(0, 3).map((item) => (
                 <article key={item.id} className={detailCardClass}>
                   <div className={detailCardRowClass}>
@@ -324,7 +324,7 @@ export function ProjectDetailScene({
           subtitle="Project verification outcomes from the adapter layer."
         >
           {verificationRail.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {verificationRail.slice(0, 3).map((item) => (
                 <div key={item.id} className={detailCardClass}>
                   <div className={detailCardRowClass}>
@@ -399,7 +399,7 @@ export function ProjectDetailScene({
           subtitle="COD-selected project context."
         >
           {contextPanel.length ? (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {contextPanel.map((item) => (
                 <div key={item.id} className={detailCardClass}>
                   <p className={detailCardTitleClass}>{item.title}</p>

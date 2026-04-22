@@ -4,7 +4,7 @@ import { PrimaryButton, SecondaryButton } from '../ui';
 import type { Recommendation } from '../../lib/viewer-adapter';
 
 export const codActionBtnClass =
-  'rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80';
+  'cursor-pointer rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
 export const codBadgeBaseClass =
   'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold';
@@ -58,7 +58,7 @@ function RecommendationCard({
   };
 
   return (
-    <article className={`genie-card genie-card--${surfaceTone} space-y-2`}>
+    <article className={`genie-card genie-card--${surfaceTone} flex flex-col gap-2`}>
       <div className="flex items-start justify-between gap-3">
         <h3
           className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"
@@ -187,10 +187,10 @@ export function CodActionRow({
   accentColor,
 }: CodActionRowProps) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       {/* V3: recommendation cards */}
       {recommendations && recommendations.length > 0 && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {recommendations.map((rec) => (
             <RecommendationCard
               key={rec.id}

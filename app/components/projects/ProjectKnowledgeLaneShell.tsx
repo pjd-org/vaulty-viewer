@@ -67,7 +67,7 @@ export function ProjectKnowledgeLaneShell({
   const laneParams = { slug };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div className="genie-surface genie-surface--utility rounded-[24px] p-2">
         <div className="flex flex-wrap gap-2">
           {(['notes', 'views', 'memories'] as const).map((lane) => {

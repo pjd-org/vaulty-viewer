@@ -5,7 +5,19 @@ import {
 } from '@/app/components/assistant-ui/attachment';
 import { ToolFallback } from '@/app/components/assistant-ui/tool-fallback';
 import { ChatToolSurface } from '@/app/components/chat-kit/ChatToolSurface';
-import { lazy, Suspense } from 'react';
+import {
+  ChatRuntimeStatus,
+  chatStatusPillClass,
+} from '@/app/components/chat-kit/ChatRuntimeStatus';
+import {
+  CHAT_ACCENTS,
+  CHAT_ACCENT_TOKENS,
+  CHAT_RUNTIME_STATE_ACCENTS,
+  type ChatAccentColor,
+  type ChatRuntimeState,
+} from '@/app/components/chat-kit/accent';
+import { GlassCard } from '@/app/components/ui/glass-card';
+import { lazy, Suspense, type CSSProperties } from 'react';
 
 // Lazy-load MarkdownText so unified/remark (ESM-only) are excluded from the SSR bundle
 const MarkdownText = lazy(() =>
@@ -14,8 +26,9 @@ const MarkdownText = lazy(() =>
   }))
 );
 import { TooltipIconButton } from '@/app/components/assistant-ui/tooltip-icon-button';
-import { Button } from '@vault/ui';
+import { Button, Dock, DockIcon, DockLink } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
+import { createContext, useContext } from 'react';
 import {
   ActionBarMorePrimitive,
   ActionBarPrimitive,
@@ -42,6 +55,24 @@ import {
   SquareIcon,
 } from 'lucide-react';
 import type { FC } from 'react';
+
+export interface ThreadConfig {
+  welcomeTitle?: string;
+  welcomeSubtitle?: string;
+  welcomeDetail?: string;
+  suggestions?: Array<{ title: string; description: string }>;
+}
+
+const ThreadConfigContext = createContext<ThreadConfig>({});
+
+export const ThreadConfigProvider: FC<{
+  config: ThreadConfig;
+  children: React.ReactNode;
+}> = ({ config, children }) => (
+  <ThreadConfigContext.Provider value={config}>
+    {children}
+  </ThreadConfigContext.Provider>
+);
 
 export const Thread: FC = () => {
   return (
@@ -96,6 +127,11 @@ const ThreadScrollToBottom: FC = () => {
 };
 
 const ThreadWelcome: FC = () => {
+  const {
+    welcomeTitle = 'Execution interface for the vault system.',
+    welcomeSubtitle = 'Ask about tasks, context, decisions, or anything else tracked here.',
+    welcomeDetail = 'Select a workflow in the sidebar to pre-load context, or just type below.',
+  } = useContext(ThreadConfigContext);
   return (
     <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) flex-col gap-3">
       <div className="aui-thread-welcome-center flex w-full flex-col items-stretch py-2">
@@ -104,14 +140,13 @@ const ThreadWelcome: FC = () => {
             Primary Agent
           </p>
           <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both mt-2 text-[30px] font-semibold tracking-tight duration-200">
-            Execution interface for the vault system.
+            {welcomeTitle}
           </h1>
           <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both mt-3 text-base leading-7 text-[var(--text-secondary)] delay-75 duration-200">
-            Ask about tasks, context, decisions, or anything else tracked here.
+            {welcomeSubtitle}
           </p>
           <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both mt-1 text-sm leading-6 text-[var(--text-tertiary)] delay-100 duration-200">
-            Select a workflow in the sidebar to pre-load context, or just type
-            below.
+            {welcomeDetail}
           </p>
         </div>
       </div>
@@ -142,9 +177,10 @@ const VAULT_SUGGESTIONS = [
 ];
 
 const ThreadSuggestions: FC = () => {
+  const { suggestions = VAULT_SUGGESTIONS } = useContext(ThreadConfigContext);
   return (
     <div className="aui-thread-welcome-suggestions grid w-full gap-3 px-4 pb-4 @md:grid-cols-2">
-      {VAULT_SUGGESTIONS.map((s) => (
+      {suggestions.map((s) => (
         <ThreadSuggestionItem
           key={s.title}
           title={s.title}
@@ -184,18 +220,98 @@ const ThreadSuggestionItem: FC<{ title: string; description: string }> = ({
   );
 };
 
+type ComposerStyle = CSSProperties & { '--composer-accent'?: string };
+
+const PALETTE_SWATCHES = CHAT_ACCENTS.map((name) => ({
+  name,
+  color: CHAT_ACCENT_TOKENS[name],
+}));
+
+const ComposerPaletteLegend: FC<{ activeAccent: ChatAccentColor }> = ({
+  activeAccent,
+}) => {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {PALETTE_SWATCHES.map((swatch) => (
+        <span
+          key={swatch.name}
+          className={[
+            chatStatusPillClass,
+            'bg-[var(--surf-elevated)] gap-1.5 px-2.5 text-[var(--text-tertiary)] shadow-sm transition-[background-color,box-shadow,color,transform]',
+            swatch.name === activeAccent
+              ? 'scale-[1.02] text-[var(--text-primary)] shadow-md'
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={{
+            borderColor:
+              swatch.name === activeAccent
+                ? `color-mix(in srgb, ${swatch.color} 42%, var(--border-glass-soft))`
+                : 'var(--border-glass-soft)',
+            background:
+              swatch.name === activeAccent
+                ? `linear-gradient(180deg, color-mix(in srgb, ${swatch.color} 14%, var(--surf-elevated)) 0%, var(--surf-elevated) 100%)`
+                : 'var(--surf-elevated)',
+          }}
+        >
+          <span
+            aria-hidden="true"
+            className="size-2.5 rounded-full"
+            style={{
+              background: swatch.color,
+              boxShadow:
+                swatch.name === activeAccent
+                  ? `0 0 0 4px color-mix(in srgb, ${swatch.color} 16%, transparent)`
+                  : '0 0 0 3px color-mix(in srgb, var(--surf-elevated) 65%, transparent)',
+            }}
+          />
+          {swatch.name}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 const Composer: FC = () => {
+  const isRunning = useAuiState((s) => s.thread.isRunning);
+  const statusState: ChatRuntimeState = isRunning ? 'running' : 'idle';
+  const resolvedAccent: ChatAccentColor = isRunning
+    ? CHAT_RUNTIME_STATE_ACCENTS['running']
+    : 'sky';
+  const accent = CHAT_ACCENT_TOKENS[resolvedAccent];
+  const statusDetail = isRunning ? 'Generating response' : 'No active thread';
+
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
       <ComposerPrimitive.AttachmentDropzone asChild>
         <div
           data-slot="composer-shell"
-          className="genie-surface genie-surface--overlay flex w-full flex-col gap-3 rounded-[30px] border-[var(--border-glass-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,251,253,0.9))] p-(--composer-padding) shadow-lg transition-shadow focus-within:border-[var(--border-glass-default)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] data-[dragging=true]:border-[color-mix(in_srgb,var(--a-sky)_40%,var(--border-glass-soft))] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[rgba(255,255,255,0.98)]"
+          style={
+            {
+              '--composer-accent': accent,
+              background:
+                'linear-gradient(135deg, color-mix(in srgb, var(--composer-accent) 16%, var(--surf-elevated)) 0%, var(--surf-elevated) 36%, var(--surf-canvas) 100%)',
+              border:
+                '1px solid color-mix(in srgb, var(--composer-accent) 22%, rgba(255,255,255,0.9))',
+              boxShadow:
+                '0 18px 42px color-mix(in srgb, var(--composer-accent) 12%, rgba(17,21,29,0.12))',
+            } as ComposerStyle
+          }
+          className="genie-surface genie-surface--overlay flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3 transition-shadow data-[dragging=true]:border-dashed"
         >
           <ComposerAttachments />
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <ChatRuntimeStatus
+              state={statusState}
+              detail={statusDetail}
+              accentColor={resolvedAccent}
+            />
+            <ComposerPaletteLegend activeAccent={resolvedAccent} />
+          </div>
           <ComposerPrimitive.Input
             placeholder="Send a message..."
-            className="aui-composer-input min-h-14 max-h-14 w-full resize-none rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-sm leading-6 text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="aui-composer-input min-h-14 max-h-14 w-full resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -208,35 +324,32 @@ const Composer: FC = () => {
 };
 
 const ComposerAction: FC = () => {
-  const aui = useAui();
   return (
-    <div className="aui-composer-action-wrapper relative flex items-center justify-between gap-3">
+    <div className="aui-composer-action-wrapper flex items-center justify-between gap-3">
       <ComposerAddAttachment />
-      <AuiIf condition={(s) => !s.thread.isRunning}>
-        <ComposerPrimitive.Send asChild>
-          <TooltipIconButton
-            tooltip="Send message"
-            side="bottom"
-            type="button"
-            className="aui-composer-send size-8 rounded-full bg-[var(--n-900)] text-[var(--n-0)] shadow-md hover:bg-[var(--n-800)]"
-            aria-label="Send message"
-          >
-            <ArrowUpIcon className="aui-composer-send-icon size-4" />
-          </TooltipIconButton>
-        </ComposerPrimitive.Send>
-      </AuiIf>
-      <AuiIf condition={(s) => s.thread.isRunning}>
-        <ComposerPrimitive.Cancel asChild>
-          <Button
-            type="button"
-            unstyled
-            className="aui-composer-cancel size-8 rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] shadow-none hover:bg-[var(--surf-elevated)]"
-            aria-label="Stop generating"
-          >
-            <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
-          </Button>
-        </ComposerPrimitive.Cancel>
-      </AuiIf>
+      <Dock
+        position="inline"
+        className="border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-[3px] shadow-sm backdrop-blur-none"
+      >
+        <AuiIf condition={(s) => !s.thread.isRunning}>
+          <ComposerPrimitive.Send asChild>
+            <DockIcon
+              icon={<ArrowUpIcon className="size-4" />}
+              tone="sky"
+              ariaLabel="Send message"
+            />
+          </ComposerPrimitive.Send>
+        </AuiIf>
+        <AuiIf condition={(s) => s.thread.isRunning}>
+          <ComposerPrimitive.Cancel asChild>
+            <DockLink
+              label="Stop"
+              icon={<SquareIcon className="size-3 fill-current" />}
+              tone="sun"
+            />
+          </ComposerPrimitive.Cancel>
+        </AuiIf>
+      </Dock>
     </div>
   );
 };
@@ -257,7 +370,10 @@ const AssistantMessage: FC = () => {
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-4 duration-150"
       data-role="assistant"
     >
-      <div className="aui-assistant-message-content wrap-break-word rounded-[24px] border border-[var(--border-glass-default)] bg-[var(--surf-elevated)] px-4 py-3.5 leading-6 text-[var(--text-primary)] shadow-md">
+      <GlassCard
+        glowEffect={false}
+        className="aui-assistant-message-content wrap-break-word rounded-[24px] border border-[var(--border-glass-default)] bg-[var(--surf-elevated)] px-4 py-3.5 leading-6 text-[var(--text-primary)] shadow-md"
+      >
         <MessagePrimitive.Parts>
           {({ part }) => {
             if (part.type === 'text')
@@ -272,7 +388,7 @@ const AssistantMessage: FC = () => {
           }}
         </MessagePrimitive.Parts>
         <MessageError />
-      </div>
+      </GlassCard>
 
       <div className="aui-assistant-message-footer mt-1 ml-2 flex min-h-6 items-center text-[var(--text-tertiary)]">
         <BranchPicker />

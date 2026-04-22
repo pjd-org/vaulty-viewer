@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { MotionConfig } from 'motion/react';
+import { ModalProvider } from 'react-easy-modals';
 import {
   HeadContent,
   Outlet,
@@ -18,7 +20,7 @@ import {
   VerificationRailHost,
   ViewerSidebar,
 } from '../components/layout';
-import { CommandHost, ModalHost } from '../components/shell';
+import { CommandHost } from '../components/shell';
 import { Toaster } from '../components/ui/sonner';
 import { serializeDehydratedQueryState } from '../../src/query-client';
 import {
@@ -142,32 +144,41 @@ function RootComponent() {
     typeof window === 'undefined' ? dehydrate(queryClient) : undefined;
 
   return (
-    <RootDocument dehydratedState={dehydratedState}>
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen">
-          {hideShell ? (
-            <Outlet />
-          ) : (
-            <ViewerSidebar>
-              <div className="min-h-screen pb-10">
-                <TopCommandBar />
+    <MotionConfig reducedMotion="user">
+      <RootDocument dehydratedState={dehydratedState}>
+        <QueryClientProvider client={queryClient}>
+          <ModalProvider>
+            <div className="min-h-screen">
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-[var(--surf-elevated)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-primary)] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent)]"
+              >
+                Skip to content
+              </a>
+              {hideShell ? (
                 <Outlet />
-              </div>
-            </ViewerSidebar>
-          )}
-          {!hideShell && <VerificationRailHost />}
-          {!routeHasOwnOverlay && navOverlay === 'avatar' && (
-            <AvatarRoute onRequestClose={closeNavOverlay} />
-          )}
-          {!routeHasOwnOverlay && navOverlay === 'cod' && (
-            <CODStatusRoute onRequestClose={closeNavOverlay} />
-          )}
-          {SHELL_V3 && <CommandHost />}
-          {SHELL_V3 && <ModalHost />}
-        </div>
-      </QueryClientProvider>
-      <Toaster />
-    </RootDocument>
+              ) : (
+                <ViewerSidebar>
+                  <div id="main-content" className="min-h-screen pb-10">
+                    <TopCommandBar />
+                    <Outlet />
+                  </div>
+                </ViewerSidebar>
+              )}
+              {!hideShell && <VerificationRailHost />}
+              {!routeHasOwnOverlay && navOverlay === 'avatar' && (
+                <AvatarRoute onRequestClose={closeNavOverlay} />
+              )}
+              {!routeHasOwnOverlay && navOverlay === 'cod' && (
+                <CODStatusRoute onRequestClose={closeNavOverlay} />
+              )}
+              {SHELL_V3 && <CommandHost />}
+            </div>
+          </ModalProvider>
+        </QueryClientProvider>
+        <Toaster />
+      </RootDocument>
+    </MotionConfig>
   );
 }
 

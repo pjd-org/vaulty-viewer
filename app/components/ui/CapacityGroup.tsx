@@ -23,7 +23,7 @@ export function CapacityGroup({ capacity }: CapacityGroupProps) {
   if (!hasAny && !guidance) return null;
 
   return (
-    <section className="mb-5 space-y-2">
+    <section className="mb-5 flex flex-col gap-2">
       <SectionLabel>Capacity</SectionLabel>
       <div className="flex flex-wrap gap-2">
         {time && <SoftChip variant="sky" label={`${time} available`} />}
