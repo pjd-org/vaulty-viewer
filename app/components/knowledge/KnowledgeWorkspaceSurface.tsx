@@ -6,7 +6,6 @@ import KnowledgeHealthBanner, {
   type GraphHealthReport,
 } from '../../../src/components/KnowledgeHealthBanner';
 import { SkeletonCardGrid } from '../../../src/components/Skeletons';
-import { KnowledgeWorkspacePane } from './KnowledgeWorkspacePane';
 import {
   useKnowledgeSurface,
   useKnowledgeHealth,
@@ -36,6 +35,12 @@ const filterSelectClass =
 const railSectionTitleClass =
   'text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)] mb-2';
 const railListItemClass = 'text-sm text-[var(--text-secondary)]';
+
+const KnowledgeWorkspacePane = React.lazy(() =>
+  import('./KnowledgeWorkspacePane').then((module) => ({
+    default: module.KnowledgeWorkspacePane,
+  }))
+);
 
 function getAllDomains(notes: KnowledgeNoteRef[]): string[] {
   const domains = new Set<string>();
@@ -72,6 +77,14 @@ const AUDIENCE_META: Record<string, { description: string; hint: string }> = {
     hint: 'Add a note with audience: bubble to bridge both layers.',
   },
 };
+
+function WorkspacePaneFallback() {
+  return (
+    <div className="flex flex-col gap-4">
+      <SkeletonCardGrid count={3} />
+    </div>
+  );
+}
 
 function AudienceColumn({
   audience,
@@ -279,14 +292,16 @@ export function KnowledgeWorkspaceSurface({
 
         {/* ── Right column: workspace pane + adapter context rail ── */}
         <div className="flex flex-col gap-4">
-          <KnowledgeWorkspacePane
-            noteId={workspaceNoteId}
-            mode={mode}
-            projectId={projectId}
-            templateId={templateId}
-            memoryTab={memoryTab}
-            workspaceSearch={workspaceSearch}
-          />
+          <React.Suspense fallback={<WorkspacePaneFallback />}>
+            <KnowledgeWorkspacePane
+              noteId={workspaceNoteId}
+              mode={mode}
+              projectId={projectId}
+              templateId={templateId}
+              memoryTab={memoryTab}
+              workspaceSearch={workspaceSearch}
+            />
+          </React.Suspense>
 
           {/* ── Adapter context rail ────────────────────────────── */}
           {adapterLoading ? (

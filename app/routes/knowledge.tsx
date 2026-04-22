@@ -9,7 +9,6 @@ import {
 } from '../lib/viewer-adapter';
 import { knowledgeSearchParams } from '../../src/lib/routes/search-params';
 import { KnowledgeWorkspaceSurface } from '../components/knowledge/KnowledgeWorkspaceSurface';
-import { GlassCard } from '../components/ui/glass-card';
 import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/knowledge')({
@@ -103,21 +102,20 @@ function KnowledgeRoute() {
         <div className="flex flex-col gap-5">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {metricCards.map((metric) => (
-              <GlassCard
+              <div
                 key={metric.label}
-                glowEffect={false}
-                className="px-4 py-3"
+                className="px-4 py-3 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)]"
               >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-white">
+                <p className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
                   {metric.value}
                 </p>
-                <p className="mt-0.5 text-[11px] text-white/60">
+                <p className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">
                   {metric.hint}
                 </p>
-              </GlassCard>
+              </div>
             ))}
           </div>
 
@@ -204,13 +202,13 @@ function KnowledgeRoute() {
           </div>
 
           {loading ? (
-            <GlassCard glowEffect={false} className="p-6 text-sm text-white/60">
+            <div className="p-6 text-sm text-[var(--text-secondary)]">
               Loading notes…
-            </GlassCard>
+            </div>
           ) : pageItems.length === 0 ? (
-            <GlassCard glowEffect={false} className="p-6 text-sm text-white/60">
+            <div className="p-6 text-sm text-[var(--text-secondary)]">
               No notes match this filter.
-            </GlassCard>
+            </div>
           ) : (
             <div className="grid auto-rows-[150px] grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {pageItems.map((note, index) => (

@@ -43,6 +43,7 @@ export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
 export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Knowledge', shortLabel: '◈', to: '/knowledge', group: 'knowledge' },
   { label: 'Notes', shortLabel: '◻', to: '/notes', group: 'knowledge' },
+  { label: 'New Note', shortLabel: '✦', to: '/note-new', group: 'knowledge' },
   { label: 'Graph', shortLabel: '⬡', to: '/graph', group: 'knowledge' },
   { label: 'Actions', shortLabel: '⚡', to: '/actions', group: 'system' },
   { label: 'Automation', shortLabel: '⚙', to: '/automation', group: 'system' },

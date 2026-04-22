@@ -4,7 +4,7 @@ import {
   toNoteSearchPath,
   formatNoteLabel,
   stripMarkdownExtension,
-} from '../lib/note-logic';
+} from '../lib/note-path';
 
 /** Returns true if the title is a YAML artifact or otherwise non-displayable. */
 function isBadTitle(value: string): boolean {

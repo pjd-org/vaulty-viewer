@@ -7,7 +7,7 @@ import {
   RouterProvider,
 } from '@tanstack/react-router';
 import { NoteMetaRail } from './NoteMetaRail';
-import type { NoteLifecycle } from '../../../src/lib/note-logic';
+import type { NoteLifecycle } from '../../../src/lib/note-path';
 
 function makeStubRouter(Story: () => React.ReactNode) {
   const rootRoute = createRootRoute({ component: () => <Story /> });

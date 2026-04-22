@@ -1,11 +1,9 @@
 import React from 'react';
-import { useRouter } from '@tanstack/react-router';
-import { SidebarTrigger } from '@/app/components/ui/sidebar';
+import { Link } from '@tanstack/react-router';
+import { PanelLeft, Search } from 'lucide-react';
+import { Button, GlassBadge, GlassSurface } from '@vault/ui';
+import { useIsMobile } from '../../hooks/use-mobile';
 import { useUIStore } from '../../../src/store/ui';
-
-interface UIState {
-  toggleCommandPalette: () => void;
-}
 
 interface TopCommandBarProps {
   /** Optional scope label — e.g. project or context name — shown as a chip */
@@ -16,18 +14,51 @@ interface TopCommandBarProps {
 
 export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   const accent = accentColor ?? 'var(--a-sky)';
-  const router = useRouter();
-  const toggleCommandPalette = useUIStore(
-    (s: UIState) => s.toggleCommandPalette
+  const isMobile = useIsMobile();
+  const leftSidebarCollapsed = useUIStore(
+    (state) => state.layout.leftSidebarCollapsed
   );
+  const mobileNavOpen = useUIStore((state) => state.layout.mobileNavOpen);
+  const toggleLeftSidebar = useUIStore((state) => state.toggleLeftSidebar);
+  const toggleMobileNav = useUIStore((state) => state.toggleMobileNav);
+  const toggleCommandPalette = useUIStore(
+    (state) => state.toggleCommandPalette
+  );
+
+  const handleMenuToggle = React.useCallback(() => {
+    if (isMobile) {
+      toggleMobileNav();
+      return;
+    }
+
+    toggleLeftSidebar();
+  }, [isMobile, toggleLeftSidebar, toggleMobileNav]);
+
+  const menuPressed = isMobile ? mobileNavOpen : !leftSidebarCollapsed;
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8">
-      <div className="genie-surface genie-surface--overlay rounded-[24px] px-4 py-3 ring-1 ring-[var(--border-glass)]">
+      <GlassSurface
+        as="header"
+        variant="overlay"
+        radius="2xl"
+        shadow="md"
+        border="default"
+        className="px-4 py-3"
+      >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          {/* Left: sidebar toggle + title + optional scope echo */}
-          <div className="flex items-center gap-3 min-w-0">
-            <SidebarTrigger className="md:hidden shrink-0" />
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="!h-10 !w-10 !shrink-0 !rounded-2xl"
+              onClick={handleMenuToggle}
+              aria-pressed={menuPressed}
+              aria-label={isMobile ? 'Toggle navigation' : 'Toggle sidebar'}
+            >
+              <PanelLeft className="h-4 w-4" aria-hidden="true" />
+            </Button>
+
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                 Viewer V3
@@ -37,77 +68,60 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
                   COD command center
                 </p>
                 {scopeEcho && (
-                  <span
-                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold text-[var(--text-info)]"
+                  <GlassBadge
+                    tone="sky"
+                    dot
+                    size="sm"
+                    className="shrink-0"
                     style={{
-                      background: `color-mix(in srgb, ${accent} 25%, transparent)`,
+                      background: `color-mix(in srgb, ${accent} 20%, transparent)`,
                       boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 35%, transparent)`,
                     }}
                   >
                     {scopeEcho}
-                  </span>
+                  </GlassBadge>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Center: search */}
-          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] lg:max-w-xl">
+          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-pill border border-[var(--border-glass)] bg-[var(--surf-utility)] px-4 py-2.5 lg:max-w-xl">
+            <Search
+              className="h-4 w-4 shrink-0 text-[var(--text-tertiary)]"
+              aria-hidden="true"
+            />
             <span className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
               Search
             </span>
             <input
               aria-label="Search viewer"
-              className="w-full bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none"
+              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus-visible:outline-none"
               placeholder="Find notes, projects, signals, and runs…"
               type="search"
-              onFocus={(e) => {
-                e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, ${accent} 70%, transparent)`;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.boxShadow = '';
-              }}
             />
           </label>
 
-          {/* Right: primary CTA cluster */}
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="!rounded-full"
               onClick={() => toggleCommandPalette()}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[var(--surf-utility)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] ring-1 ring-inset ring-[var(--border-glass)] hover:bg-[var(--surf-elevated)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-              title="Open command palette (⌘K)"
             >
-              <span>⌘</span>
+              <span className="text-xs font-semibold">⌘</span>
               <span>Quick Command</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => router.navigate({ to: '/inbox' })}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--text-info)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-              style={{
-                background: `color-mix(in srgb, ${accent} 15%, transparent)`,
-                boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${accent} 30%, transparent)`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = `color-mix(in srgb, ${accent} 25%, transparent)`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = `color-mix(in srgb, ${accent} 15%, transparent)`;
-              }}
-            >
-              Review Inbox
-            </button>
-            <button
-              type="button"
-              disabled
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--n-0)] opacity-50 cursor-not-allowed shadow-sm"
-            >
+            </Button>
+
+            <Button asChild variant="secondary" size="sm" className="!rounded-full">
+              <Link to="/inbox">Review Inbox</Link>
+            </Button>
+
+            <Button variant="primary" size="sm" disabled>
               + Create
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </GlassSurface>
     </div>
   );
 }

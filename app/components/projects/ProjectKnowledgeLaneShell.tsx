@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
 
-import { KnowledgeWorkspaceSurface } from '../knowledge/KnowledgeWorkspaceSurface';
 import { ProjectTabPlaceholder } from './ProjectTabPlaceholder';
 
 type ProjectKnowledgeLane = 'notes' | 'views' | 'memories';
@@ -45,6 +44,12 @@ function buildLaneSearch({
     memoryTab,
   };
 }
+
+const KnowledgeWorkspaceSurface = React.lazy(() =>
+  import('../knowledge/KnowledgeWorkspaceSurface').then((module) => ({
+    default: module.KnowledgeWorkspaceSurface,
+  }))
+);
 
 export function ProjectKnowledgeLaneShell({
   slug,
@@ -100,16 +105,25 @@ export function ProjectKnowledgeLaneShell({
       </div>
 
       {activeLane === 'notes' ? (
-        <KnowledgeWorkspaceSurface
-          noteId={noteId}
-          mode={mode}
-          projectId={slug}
-          templateId={templateId}
-          memoryTab={memoryTab}
-          workspaceSearch={workspaceSearch}
-          workspaceTo="/project/$slug/knowledge"
-          workspaceParams={laneParams}
-        />
+        <React.Suspense
+          fallback={
+            <ProjectTabPlaceholder
+              title="Project Knowledge Notes"
+              description="Loading the project knowledge workspace..."
+            />
+          }
+        >
+          <KnowledgeWorkspaceSurface
+            noteId={noteId}
+            mode={mode}
+            projectId={slug}
+            templateId={templateId}
+            memoryTab={memoryTab}
+            workspaceSearch={workspaceSearch}
+            workspaceTo="/project/$slug/knowledge"
+            workspaceParams={laneParams}
+          />
+        </React.Suspense>
       ) : activeLane === 'views' ? (
         <ProjectTabPlaceholder
           title="Project Knowledge Views"

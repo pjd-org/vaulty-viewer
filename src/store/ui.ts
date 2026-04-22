@@ -137,6 +137,10 @@ interface UIState {
   setTheme: (theme: ThemePreference) => void;
   setDensity: (density: LayoutDensity) => void;
   toggleLeftSidebar: () => void;
+  setMobileNavOpen: (open: boolean) => void;
+  openMobileNav: () => void;
+  closeMobileNav: () => void;
+  toggleMobileNav: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -249,6 +253,19 @@ export const useUIStore = create<UIState>((set) => ({
       layout: {
         ...state.layout,
         leftSidebarCollapsed: !state.layout.leftSidebarCollapsed,
+      },
+    })),
+  setMobileNavOpen: (open) =>
+    set((state) => ({ layout: { ...state.layout, mobileNavOpen: open } })),
+  openMobileNav: () =>
+    set((state) => ({ layout: { ...state.layout, mobileNavOpen: true } })),
+  closeMobileNav: () =>
+    set((state) => ({ layout: { ...state.layout, mobileNavOpen: false } })),
+  toggleMobileNav: () =>
+    set((state) => ({
+      layout: {
+        ...state.layout,
+        mobileNavOpen: !state.layout.mobileNavOpen,
       },
     })),
 }));

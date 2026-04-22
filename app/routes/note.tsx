@@ -1,18 +1,17 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import sanitizeHtml from 'sanitize-html';
 import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
 import {
   formatNoteLabel,
   getLifecycleContext,
   getNoteCollection,
-  renderNoteMarkdown,
   stripMarkdownExtension,
   toApiNotePath,
   toNoteHref,
   toNoteSearchPath,
   type NoteLifecycle,
-} from '../../src/lib/note-logic';
+} from '../../src/lib/note-path';
+import { renderNoteMarkdown } from '../../src/lib/note-markdown';
 import { toNoteHeaderDisplay } from '../lib/display';
 import { PageContainer, SoftPanel } from '../components/layout';
 import { PrimaryButton, SecondaryButton } from '../components/ui';
@@ -705,20 +704,16 @@ function NoteRoute() {
       }
       // Optimistically update local state
       const nextFrontmatter = { ...note.frontmatter, ...result.frontmatter };
-      dispatchNote({
-        type: 'NOTE_UPDATED',
-        note: {
-          ...note,
-          content: result.bodyChanged ? result.body : note.content,
-          html: result.bodyChanged
-            ? (await import('../../src/lib/note-logic')).renderNoteMarkdown(
-                result.body
-              )
-            : note.html,
-          frontmatter: nextFrontmatter,
-          title:
-            typeof result.frontmatter.title === 'string'
-              ? result.frontmatter.title
+        dispatchNote({
+          type: 'NOTE_UPDATED',
+          note: {
+            ...note,
+            content: result.bodyChanged ? result.body : note.content,
+            html: result.bodyChanged ? renderNoteMarkdown(result.body) : note.html,
+            frontmatter: nextFrontmatter,
+            title:
+              typeof result.frontmatter.title === 'string'
+                ? result.frontmatter.title
               : note.title,
           tags: Array.isArray(result.frontmatter.tags)
             ? result.frontmatter.tags
@@ -747,31 +742,6 @@ function NoteRoute() {
   const isDelegatable = note
     ? getBooleanValue(note.frontmatter.delegatable)
     : false;
-
-  // Sanitize options preserved from original
-  const sanitizeOptions = {
-    allowedTags: [
-      ...sanitizeHtml.defaults.allowedTags,
-      'code',
-      'pre',
-      'kbd',
-      'mark',
-      'details',
-      'summary',
-      'table',
-      'thead',
-      'tbody',
-      'tr',
-      'th',
-      'td',
-    ],
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      code: ['class'],
-      pre: ['class'],
-      '*': ['class', 'id'],
-    },
-  } as const;
 
   return (
     <PageContainer className="max-w-[1500px] pb-12">
@@ -1071,9 +1041,7 @@ function NoteRoute() {
                     error={editError}
                   />
                 ) : (
-                  <NoteBodyRenderer
-                    html={sanitizeHtml(note.html, sanitizeOptions)}
-                  />
+                  <NoteBodyRenderer html={note.html} />
                 )}
               </>
             )}

@@ -1,17 +1,16 @@
 import React, { useEffect, useMemo, useReducer } from 'react';
 import { Link } from '@tanstack/react-router';
-import sanitizeHtml from 'sanitize-html';
 
 import { apiFetch } from '../../../src/utils/api';
 import {
   formatNoteLabel,
   getLifecycleContext,
-  renderNoteMarkdown,
   stripMarkdownExtension,
   toApiNotePath,
   toNoteSearchPath,
   type NoteLifecycle,
-} from '../../../src/lib/note-logic';
+} from '../../../src/lib/note-path';
+import { renderNoteMarkdown } from '../../../src/lib/note-markdown';
 import { toNoteHeaderDisplay } from '../../lib/display';
 import { NoteBodyRenderer, NoteHeader, NoteMetaRail } from '../note';
 import { SoftPanel } from '../layout';
@@ -59,30 +58,6 @@ interface KnowledgeWorkspacePaneProps {
 
 const workspaceLinkClass =
   'btn-secondary rounded-xl px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-utility)]';
-
-const sanitizeOptions = {
-  allowedTags: [
-    ...sanitizeHtml.defaults.allowedTags,
-    'code',
-    'pre',
-    'kbd',
-    'mark',
-    'details',
-    'summary',
-    'table',
-    'thead',
-    'tbody',
-    'tr',
-    'th',
-    'td',
-  ],
-  allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
-    code: ['class'],
-    pre: ['class'],
-    '*': ['class', 'id'],
-  },
-} as const;
 
 function workspaceReducer(
   state: WorkspaceState,
@@ -321,9 +296,7 @@ export function KnowledgeWorkspacePane({
                 title="Preview"
                 subtitle={selectedLabel}
               >
-                <NoteBodyRenderer
-                  html={sanitizeHtml(note.html, sanitizeOptions)}
-                />
+                <NoteBodyRenderer html={note.html} />
               </SoftPanel>
 
               <NoteMetaRail

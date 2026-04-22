@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getLifecycleContext,
-  renderNoteMarkdown,
   toApiNotePath,
   toNoteHref,
-} from '../src/lib/note-logic.ts';
+} from '../src/lib/note-path.ts';
+import { renderNoteMarkdown } from '../src/lib/note-markdown.ts';
 
-describe('note-logic', () => {
+describe('note-path and note-markdown', () => {
   it('renders wikilinks and vault note links as internal note hrefs', () => {
     const html = renderNoteMarkdown(
       [

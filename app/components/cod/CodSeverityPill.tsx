@@ -1,46 +1,29 @@
 import React from 'react';
+import { GlassBadge } from '@vault/ui';
 
-const VARIANT_STYLES = {
-  clear: {
-    container: 'bg-success/10 text-success border-success/20',
-    dot: 'bg-success',
-  },
-  warn: {
-    container: 'bg-warning/10 text-warning border-warning/20',
-    dot: 'bg-warning',
-  },
-  rest: {
-    container:
-      'bg-[var(--surf-glass)] text-[var(--text-secondary)] border-[var(--border-glass)]',
-    dot: 'bg-[var(--text-tertiary)]',
-  },
-  stop: {
-    container: 'bg-danger/10 text-danger border-danger/20',
-    dot: 'bg-danger',
-  },
-  unknown: {
-    container:
-      'bg-[var(--surf-utility)] text-[var(--text-tertiary)] border-[var(--border-glass-soft)]',
-    dot: 'bg-[var(--text-tertiary)]',
-  },
+const VARIANT_TONES = {
+  clear: 'mint',
+  warn: 'sun',
+  rest: 'neutral',
+  stop: 'rose',
+  unknown: 'neutral',
 } as const;
 
 interface CodSeverityPillProps {
-  variant: keyof typeof VARIANT_STYLES;
+  variant: keyof typeof VARIANT_TONES;
   label: string;
 }
 
 export function CodSeverityPill({ variant, label }: CodSeverityPillProps) {
-  const styles = VARIANT_STYLES[variant];
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold ${styles.container}`}
+    <GlassBadge
+      tone={VARIANT_TONES[variant]}
+      dot
+      size="md"
+      glow={variant === 'clear' || variant === 'warn' || variant === 'stop'}
+      className="px-3 py-1.5 text-sm font-semibold"
     >
-      <span
-        className={`w-2 h-2 rounded-full ${styles.dot}`}
-        aria-hidden="true"
-      />
       {label}
-    </span>
+    </GlassBadge>
   );
 }

@@ -2,11 +2,11 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { SoftPanel } from '../layout';
 import { StatusPill, SoftChip } from '../ui';
-import type { NoteLifecycle } from '../../../src/lib/note-logic';
+import type { NoteLifecycle } from '../../../src/lib/note-path';
 import {
   stripMarkdownExtension,
   formatNoteLabel,
-} from '../../../src/lib/note-logic';
+} from '../../../src/lib/note-path';
 import type { TaskStatus } from '../ui';
 
 const KNOWN_STATUSES: TaskStatus[] = [

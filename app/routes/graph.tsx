@@ -1,6 +1,7 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import '@xyflow/react/dist/style.css';
 import {
   Background,
   Controls,
@@ -150,7 +151,16 @@ function graphToSketchElements(data: GraphJson) {
   const entries = Object.entries(data.nodes);
   const centers = new Map<string, { x: number; y: number }>();
   const elements: Record<string, unknown>[] = [];
-  const mkId = () => Math.random().toString(36).slice(2, 12);
+  const hashString = (value: string) => {
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i += 1) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  };
+  const mkId = (kind: string, value: string) =>
+    `${kind}-${hashString(`${kind}:${value}`).toString(36)}`;
 
   entries.forEach(([path, node], index) => {
     const angle = (index / Math.max(entries.length, 1)) * Math.PI * 2;
@@ -162,7 +172,7 @@ function graphToSketchElements(data: GraphJson) {
     centers.set(path, { x, y });
 
     elements.push({
-      id: mkId(),
+      id: mkId('node', path),
       type: 'ellipse',
       x: x - 10,
       y: y - 10,
@@ -175,9 +185,9 @@ function graphToSketchElements(data: GraphJson) {
       strokeWidth: 2,
       roughness: 1.6,
       opacity: 100,
-      seed: Math.floor(Math.random() * 100000),
+      seed: hashString(`seed:${path}`) % 100000,
       version: 1,
-      versionNonce: Math.floor(Math.random() * 100000),
+      versionNonce: hashString(`nonce:${path}`) % 100000,
       isDeleted: false,
       groupIds: [],
       boundElements: null,
@@ -193,7 +203,7 @@ function graphToSketchElements(data: GraphJson) {
       const targetCenter = centers.get(target);
       if (!targetCenter) continue;
       elements.push({
-        id: mkId(),
+        id: mkId('edge', `${source}->${target}`),
         type: 'line',
         x: sourceCenter.x,
         y: sourceCenter.y,
@@ -208,9 +218,10 @@ function graphToSketchElements(data: GraphJson) {
         strokeWidth: 1.2,
         roughness: 1.4,
         opacity: 85,
-        seed: Math.floor(Math.random() * 100000),
+        seed: hashString(`seed:${source}->${target}`) % 100000,
         version: 1,
-        versionNonce: Math.floor(Math.random() * 100000),
+        versionNonce:
+          hashString(`nonce:${source}->${target}`) % 100000,
         isDeleted: false,
         groupIds: [],
         boundElements: null,

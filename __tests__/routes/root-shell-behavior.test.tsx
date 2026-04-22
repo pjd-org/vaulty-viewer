@@ -20,25 +20,30 @@ vi.mock('@tanstack/react-query', async () => {
   };
 });
 
-vi.mock('../../app/components/layout', () => ({
+vi.mock('../../app/components/layout/ViewerSidebar', () => ({
   ViewerSidebar: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="viewer-sidebar">{children}</div>
   ),
+}));
+
+vi.mock('../../app/components/layout', () => ({
   TopCommandBar: () => <div data-testid="top-command-bar" />,
+}));
+
+vi.mock('../../app/components/layout/VerificationRailHost', () => ({
   VerificationRailHost: () => <aside data-testid="verification-rail" />,
 }));
 
-vi.mock('../../app/components/shell', () => ({
+vi.mock('../../app/components/shell/CommandHost', () => ({
   CommandHost: () => <div data-testid="command-host" />,
-  ModalHost: () => <div data-testid="modal-host" />,
 }));
 
-vi.mock('../../app/routes/avatar', () => ({
-  AvatarRoute: () => <div data-testid="avatar-route" />,
+vi.mock('../../app/components/overlays/AvatarOverlay', () => ({
+  AvatarOverlay: () => <div data-testid="avatar-route" />,
 }));
 
-vi.mock('../../app/routes/cod-status', () => ({
-  CODStatusRoute: () => <div data-testid="cod-status-route" />,
+vi.mock('../../app/components/overlays/CODStatusOverlay', () => ({
+  CODStatusOverlay: () => <div data-testid="cod-status-route" />,
 }));
 
 vi.mock('@tanstack/react-router', async () => {

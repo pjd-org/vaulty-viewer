@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
+import { GlassSurface } from '@vault/ui';
 import useCODStatus from '../../../src/hooks/useCODStatus';
 import HumanStateForm from '../../../src/components/HumanStateForm';
 import {
   normalizeCodSignals,
   deriveCodConstraints,
   getMaxSprintMin,
+  type CodSignalStatus,
 } from '../../../src/lib/cod-status-logic';
 import { toCodDisplayState } from '../../lib/display';
-import { SoftPanel, SectionHeader } from '../layout';
+import { SectionHeader } from '../layout';
 import { IconButton, ReasonText } from '../ui';
 import { CodSeverityPill } from './CodSeverityPill';
 import { CodActionRow } from './CodActionRow';
 import { CodConstraintTable } from './CodConstraintTable';
 import { CodSignalRow } from './CodSignalRow';
-import type { CodSignalStatus } from '../../../src/lib/cod-status-logic';
 
 function signalVariant(s: CodSignalStatus): 'ok' | 'warn' | 'bad' | undefined {
   if (s === 'good') return 'ok';
@@ -57,7 +58,6 @@ export function CodModal() {
   const maxSprintMin = getMaxSprintMin(validation.status);
   const canStartSession = validation.status !== 'FAIL';
 
-  // Detect "no data entered" state: all numeric signals are 0 and focusCapacity unknown
   const hasNoData =
     (humanState.energy == null || humanState.energy === 0) &&
     (humanState.stress == null || humanState.stress === 0) &&
@@ -91,9 +91,14 @@ export function CodModal() {
   };
 
   return (
-    <SoftPanel variant="utility">
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-4 mb-6">
+    <GlassSurface
+      as="section"
+      variant="elevated"
+      radius="2xl"
+      shadow="sm"
+      className="flex flex-col gap-6 p-5 md:p-6"
+    >
+      <div className="flex items-start justify-between gap-4">
         <div>
           <CodSeverityPill
             variant={display.severityVariant}
@@ -116,7 +121,6 @@ export function CodModal() {
         />
       </div>
 
-      {/* Action row */}
       <CodActionRow
         actions={display.actionLabels}
         canWork={codState.canStartSession}
@@ -124,58 +128,62 @@ export function CodModal() {
         onCheckIn={() => setShowForm(true)}
       />
 
-      {/* Two-col: constraints + signals */}
-      <div className="grid grid-cols-2 gap-6 mt-6">
-        <div className="genie-surface genie-surface--utility p-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <GlassSurface as="div" variant="base" radius="xl" shadow="xs" className="p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={display.constraintItems} />
-        </div>
-        <div className="genie-surface genie-surface--utility p-4">
+        </GlassSurface>
+        <GlassSurface as="div" variant="base" radius="xl" shadow="xs" className="p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow items={display.signalItems} />
-        </div>
+        </GlassSurface>
       </div>
 
-      {/* Why this status */}
       {codState.why.length > 0 && (
-        <details className="mt-6 rounded-xl genie-surface genie-surface--utility">
-          <summary className="px-4 py-3 text-sm font-medium text-[var(--text-secondary)] cursor-pointer select-none">
-            Why this status
-          </summary>
-          <div className="px-4 pb-4 flex flex-col gap-1">
-            {codState.why.map((w, i) => (
-              <ReasonText key={i}>{w}</ReasonText>
-            ))}
-          </div>
-        </details>
+        <GlassSurface as="div" variant="base" radius="xl" shadow="xs" className="overflow-hidden">
+          <details className="group">
+            <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--text-secondary)]">
+              Why this status
+            </summary>
+            <div className="flex flex-col gap-1 px-4 pb-4">
+              {codState.why.map((w, i) => (
+                <ReasonText key={i}>{w}</ReasonText>
+              ))}
+            </div>
+          </details>
+        </GlassSurface>
       )}
 
-      {/* Human state form + debug — fully collapsed */}
-      <details
-        className="mt-3 rounded-xl genie-surface genie-surface--utility"
-        open={showForm}
+      <GlassSurface
+        as="div"
+        variant="base"
+        radius="xl"
+        shadow="xs"
+        className="overflow-hidden"
       >
-        <summary className="px-4 py-3 text-xs text-[var(--text-tertiary)] cursor-pointer select-none">
-          Update state / debug
-        </summary>
-        <div className="px-4 pb-4">
-          <HumanStateForm
-            currentState={{
-              ...humanState,
-              focusCapacity:
-                humanState.focusCapacity === 'unknown'
-                  ? undefined
-                  : humanState.focusCapacity,
-            }}
-            onSubmit={(data) => {
-              void updateHumanState(data);
-              setShowForm(false);
-            }}
-            onCancel={() => setShowForm(false)}
-            loading={updating}
-          />
-        </div>
-      </details>
-    </SoftPanel>
+        <details className="group" open={showForm}>
+          <summary className="cursor-pointer select-none px-4 py-3 text-xs text-[var(--text-tertiary)]">
+            Update state / debug
+          </summary>
+          <div className="px-4 pb-4">
+            <HumanStateForm
+              currentState={{
+                ...humanState,
+                focusCapacity:
+                  humanState.focusCapacity === 'unknown'
+                    ? undefined
+                    : humanState.focusCapacity,
+              }}
+              onSubmit={(data) => {
+                void updateHumanState(data);
+                setShowForm(false);
+              }}
+              onCancel={() => setShowForm(false)}
+              loading={updating}
+            />
+          </div>
+        </details>
+      </GlassSurface>
+    </GlassSurface>
   );
 }

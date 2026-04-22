@@ -6,6 +6,7 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  lazyRouteComponent,
   useRouter,
   useRouterState,
 } from '@tanstack/react-router';
@@ -17,10 +18,7 @@ import {
 } from '@tanstack/react-query';
 import {
   TopCommandBar,
-  VerificationRailHost,
-  ViewerSidebar,
 } from '../components/layout';
-import { CommandHost } from '../components/shell';
 import { Toaster } from '../components/ui/sonner';
 import { serializeDehydratedQueryState } from '../../src/query-client';
 import {
@@ -30,11 +28,49 @@ import {
 } from '../../src/lib/nav-overlays';
 import { isShellHiddenPath } from '../../src/lib/routes/v3-routing';
 import { useUIStore, THEME_STORAGE_KEY } from '../../src/store/ui';
-import { AvatarRoute } from './avatar';
-import { CODStatusRoute } from './cod-status';
 import appCss from '../../src/styles.css?url';
 
 const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true';
+
+type PreloadableComponent = React.ComponentType & {
+  preload?: () => Promise<void>;
+};
+
+const loadVerificationRailHost = () =>
+  import('../components/layout/VerificationRailHost');
+
+const loadViewerSidebar = () =>
+  import('../components/layout/ViewerSidebar').then((module) => ({
+    default: module.ViewerSidebar,
+  }));
+
+const loadCommandHost = () => import('../components/shell/CommandHost');
+
+const LazyVerificationRailHost = lazyRouteComponent(
+  loadVerificationRailHost,
+  'VerificationRailHost'
+) as PreloadableComponent;
+
+const LazyViewerSidebar = React.lazy(loadViewerSidebar);
+
+const LazyCommandHost = SHELL_V3
+  ? (lazyRouteComponent(
+      loadCommandHost,
+      'CommandHost'
+    ) as PreloadableComponent)
+  : null;
+
+const AvatarOverlay = React.lazy(() =>
+  import('../components/overlays/AvatarOverlay').then((module) => ({
+    default: module.AvatarOverlay,
+  }))
+);
+
+const CODStatusOverlay = React.lazy(() =>
+  import('../components/overlays/CODStatusOverlay').then((module) => ({
+    default: module.CODStatusOverlay,
+  }))
+);
 
 // Module-level constant: runs before first paint to prevent dark-mode flash.
 // Built from THEME_STORAGE_KEY so the localStorage key can't silently diverge.
@@ -158,21 +194,44 @@ function RootComponent() {
               {hideShell ? (
                 <Outlet />
               ) : (
-                <ViewerSidebar>
-                  <div id="main-content" className="min-h-screen pb-10">
-                    <TopCommandBar />
-                    <Outlet />
-                  </div>
-                </ViewerSidebar>
+                <React.Suspense
+                  fallback={
+                    <ViewerSidebarFallback>
+                      <div id="main-content" className="min-h-screen pb-10">
+                        <TopCommandBar />
+                        <Outlet />
+                      </div>
+                    </ViewerSidebarFallback>
+                  }
+                >
+                  <LazyViewerSidebar>
+                    <div id="main-content" className="min-h-screen pb-10">
+                      <TopCommandBar />
+                      <Outlet />
+                    </div>
+                  </LazyViewerSidebar>
+                </React.Suspense>
               )}
-              {!hideShell && <VerificationRailHost />}
+              {!hideShell && (
+                <React.Suspense fallback={null}>
+                  <LazyVerificationRailHost />
+                </React.Suspense>
+              )}
               {!routeHasOwnOverlay && navOverlay === 'avatar' && (
-                <AvatarRoute onRequestClose={closeNavOverlay} />
+                <React.Suspense fallback={null}>
+                  <AvatarOverlay onRequestClose={closeNavOverlay} />
+                </React.Suspense>
               )}
               {!routeHasOwnOverlay && navOverlay === 'cod' && (
-                <CODStatusRoute onRequestClose={closeNavOverlay} />
+                <React.Suspense fallback={null}>
+                  <CODStatusOverlay onRequestClose={closeNavOverlay} />
+                </React.Suspense>
               )}
-              {SHELL_V3 && <CommandHost />}
+              {LazyCommandHost && (
+                <React.Suspense fallback={null}>
+                  <LazyCommandHost />
+                </React.Suspense>
+              )}
             </div>
           </ModalProvider>
         </QueryClientProvider>
@@ -238,5 +297,35 @@ function RootNotFound() {
         <p className="lede">This route does not exist.</p>
       </header>
     </main>
+  );
+}
+
+type RootComponentWithPreload = typeof RootComponent & {
+  preload?: () => Promise<void>;
+};
+
+(RootComponent as RootComponentWithPreload).preload = async () => {
+  const preloaders: Promise<unknown>[] = [];
+
+  if (LazyVerificationRailHost.preload) {
+    preloaders.push(LazyVerificationRailHost.preload());
+  }
+  preloaders.push(loadViewerSidebar());
+  if (LazyCommandHost?.preload) {
+    preloaders.push(LazyCommandHost.preload());
+  }
+
+  await Promise.all(preloaders);
+};
+
+function ViewerSidebarFallback({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen">
+      <aside
+        aria-hidden="true"
+        className="hidden w-[280px] shrink-0 border-r border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] md:block"
+      />
+      <div className="min-h-screen flex-1">{children}</div>
+    </div>
   );
 }

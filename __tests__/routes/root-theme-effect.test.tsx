@@ -51,21 +51,30 @@ vi.mock('@tanstack/react-query', async () => {
   };
 });
 
-vi.mock('../../app/components/layout', () => ({
+vi.mock('../../app/components/layout/ViewerSidebar', () => ({
   ViewerSidebar: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
   ),
+}));
+
+vi.mock('../../app/components/layout', () => ({
   TopCommandBar: () => null,
+}));
+
+vi.mock('../../app/components/layout/VerificationRailHost', () => ({
   VerificationRailHost: () => null,
 }));
 
-vi.mock('../../app/components/shell', () => ({
+vi.mock('../../app/components/shell/CommandHost', () => ({
   CommandHost: () => null,
-  ModalHost: () => null,
 }));
 
-vi.mock('../../app/routes/avatar', () => ({ AvatarRoute: () => null }));
-vi.mock('../../app/routes/cod-status', () => ({ CODStatusRoute: () => null }));
+vi.mock('../../app/components/overlays/AvatarOverlay', () => ({
+  AvatarOverlay: () => null,
+}));
+vi.mock('../../app/components/overlays/CODStatusOverlay', () => ({
+  CODStatusOverlay: () => null,
+}));
 vi.mock('../../app/components/ui/sonner', () => ({ Toaster: () => null }));
 
 import { Route } from '../../app/routes/__root';

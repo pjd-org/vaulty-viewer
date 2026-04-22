@@ -135,7 +135,7 @@ export const Editable: Story = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const canvas = _canvas as any;
     // The ProseMirror div should be contentEditable when editable=true
-    const editorEl = canvas.getByRole('textbox');
+    const editorEl = await canvas.findByRole('textbox');
     await expect(editorEl).toBeInTheDocument();
     await expect(args.onChange).not.toHaveBeenCalled();
   },
