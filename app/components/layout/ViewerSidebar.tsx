@@ -19,6 +19,7 @@ import {
   Settings,
   User,
   Activity,
+  Terminal,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -61,6 +62,7 @@ const ROUTE_ICONS: Record<string, React.ElementType> = {
   '/timeline': Clock,
   '/archive': Archive,
   '/primary-agent': Bot,
+  '/agent-shell': Terminal,
   '/settings': Settings,
 };
 

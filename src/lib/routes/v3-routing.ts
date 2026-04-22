@@ -36,6 +36,7 @@ export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Home', shortLabel: '⌂', to: '/', group: 'core' },
   { label: 'Inbox', shortLabel: '✉', to: '/inbox', group: 'core' },
   { label: 'Work', shortLabel: '◎', to: '/work', group: 'core' },
+  { label: 'Agent Shell', shortLabel: '⬡', to: '/agent-shell', group: 'core' },
 ] as const;
 
 /** Secondary destinations — supporting surfaces, shown below a divider. */
