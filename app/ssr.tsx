@@ -5,7 +5,16 @@ import {
 import {
   agentRunResponse,
   parseRunRequest,
+  registerModeAdapter,
 } from '../app/server/agent-shell/run-dispatcher';
+import { deepAgentAdapter } from '../app/server/agent-shell/run-deepagent';
+import { agentRunnerAdapter } from '../app/server/agent-shell/run-agent-runner';
+import { promptRunnerAdapter } from '../app/server/agent-shell/run-prompt-runner';
+
+// Register real adapters — replaces Phase 2 stubs
+registerModeAdapter('deepagent', deepAgentAdapter);
+registerModeAdapter('agent_runner', agentRunnerAdapter);
+registerModeAdapter('prompt_runner', promptRunnerAdapter);
 
 const AGENT_SHELL_PREFIX = '/api/agent-shell/run';
 
