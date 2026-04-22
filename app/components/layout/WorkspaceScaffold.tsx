@@ -158,29 +158,23 @@ export function WorkspaceScaffold({
           </div>
         )}
         {primary}
+        {aside && (
+          <div className="mt-8 pt-4 border-t border-[var(--border-glass-soft)]">
+            {asideTitle && (
+              <h3 className="text-xs font-semibold text-[var(--text-tertiary)] mb-2">
+                {asideTitle}
+              </h3>
+            )}
+            {aside}
+          </div>
+        )}
       </div>
     </SoftPanel>
   );
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        {aside ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
-            {primaryPanel}
-            <SoftPanel
-              title={asideTitle ?? ''}
-              subtitle={asideSubtitle}
-              variant="utility"
-              className="min-h-[420px]"
-            >
-              {aside}
-            </SoftPanel>
-          </div>
-        ) : (
-          primaryPanel
-        )}
-      </div>
+      <div className="flex flex-col gap-6">{primaryPanel}</div>
     </PageContainer>
   );
 }
