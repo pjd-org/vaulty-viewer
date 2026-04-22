@@ -1,4 +1,5 @@
 import React from 'react';
+import { VaultyLogo } from '@/app/components/ui/vaulty-logo';
 import { Link, useRouterState } from '@tanstack/react-router';
 import {
   Home,
@@ -118,8 +119,8 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
                 className="rounded-[20px] border border-white/10 bg-white/5 font-bold uppercase tracking-[0.18em] shadow-[0_12px_24px_rgba(0,0,0,0.14)]"
               >
                 <Link to={'/' as never} aria-label="Vault home">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] text-xs font-black shadow-[0_10px_24px_rgba(51,95,255,0.28)]">
-                    V3
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] shadow-[0_10px_24px_rgba(51,95,255,0.28)]">
+                    <VaultyLogo className="h-5 w-5" />
                   </span>
                   <span className="truncate text-sm font-semibold tracking-[0.14em] text-[var(--text-primary)]">
                     Vault
