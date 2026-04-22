@@ -16,7 +16,14 @@ import {
 import { toNoteHeaderDisplay } from '../lib/display';
 import { PageContainer, SoftPanel } from '../components/layout';
 import { PrimaryButton, SecondaryButton } from '../components/ui';
-import { NoteHeader, NoteMetaRail, NoteBodyRenderer } from '../components/note';
+import {
+  NoteHeader,
+  NoteMetaRail,
+  NoteBodyRenderer,
+  NoteEditor,
+  type NoteEditorSaveResult,
+} from '../components/note';
+import { updateNote, patchNote } from '../lib/api/notes';
 
 const formatDate = (dateStr: string | undefined | null) => {
   if (!dateStr) return null;
@@ -256,6 +263,9 @@ function NoteRoute() {
   });
   const [copied, setCopied] = useState(false);
   const [confirmReject, setConfirmReject] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!lc.pendingPromotionExpiry) return undefined;
@@ -656,6 +666,74 @@ function NoteRoute() {
     }
   };
 
+  const handleEdit = () => {
+    setEditError(null);
+    setEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setEditError(null);
+  };
+
+  const handleSaveEdit = async (result: NoteEditorSaveResult) => {
+    if (!note) return;
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      if (Object.keys(result.frontmatter).length > 0) {
+        const res = await updateNote(
+          { path: note.path },
+          { frontmatter: result.frontmatter }
+        );
+        if (res.errorCode) {
+          throw new Error(res.errorCode);
+        }
+      }
+      if (result.bodyChanged) {
+        const res = await patchNote({ path: note.path }, [
+          {
+            type: 'replace',
+            search: note.content,
+            replacement: result.body,
+            matchCount: 1,
+          },
+        ]);
+        if (res.errorCode) {
+          throw new Error(res.errorCode);
+        }
+      }
+      // Optimistically update local state
+      const nextFrontmatter = { ...note.frontmatter, ...result.frontmatter };
+      dispatchNote({
+        type: 'NOTE_UPDATED',
+        note: {
+          ...note,
+          content: result.bodyChanged ? result.body : note.content,
+          html: result.bodyChanged
+            ? (await import('../../src/lib/note-logic')).renderNoteMarkdown(
+                result.body
+              )
+            : note.html,
+          frontmatter: nextFrontmatter,
+          title:
+            typeof result.frontmatter.title === 'string'
+              ? result.frontmatter.title
+              : note.title,
+          tags: Array.isArray(result.frontmatter.tags)
+            ? result.frontmatter.tags
+            : note.tags,
+          lifecycle: getLifecycleContext(note.path, nextFrontmatter),
+        },
+      });
+      setEditMode(false);
+    } catch (err) {
+      setEditError((err as Error).message);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   // Derived values (safe to compute before render; guarded where needed)
   const noteSpecPath = note ? getStringValue(note.frontmatter.spec_path) : null;
   const noteStatus = note ? getStringValue(note.frontmatter.status) : null;
@@ -813,6 +891,9 @@ function NoteRoute() {
                 </SecondaryButton>
                 <SecondaryButton onClick={handleOpenInObsidian}>
                   Open in Obsidian
+                </SecondaryButton>
+                <SecondaryButton onClick={handleEdit} disabled={editMode}>
+                  Edit
                 </SecondaryButton>
                 {noteSpecPath && (
                   <SecondaryButton
@@ -975,9 +1056,25 @@ function NoteRoute() {
                   </div>
                 )}
 
-                <NoteBodyRenderer
-                  html={sanitizeHtml(note.html, sanitizeOptions)}
-                />
+                {editMode ? (
+                  <NoteEditor
+                    initial={{
+                      title: note.title,
+                      type: getStringValue(note.frontmatter.type) ?? '',
+                      status: noteStatus ?? '',
+                      tags: note.tags.join(', '),
+                      body: note.content,
+                    }}
+                    onSave={(result) => void handleSaveEdit(result)}
+                    onCancel={handleCancelEdit}
+                    saving={editSaving}
+                    error={editError}
+                  />
+                ) : (
+                  <NoteBodyRenderer
+                    html={sanitizeHtml(note.html, sanitizeOptions)}
+                  />
+                )}
               </>
             )}
           </SoftPanel>
