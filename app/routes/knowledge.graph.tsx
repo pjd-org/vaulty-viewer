@@ -373,9 +373,9 @@ function KnowledgeGraphRoute() {
                   navigate({ to: '/note', search: { p: selectedNode.id } })
                 }
                 className={cn(
-                  'mt-4 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-200',
-                  'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
-                  'hover:bg-white/15 hover:text-white'
+                  'mt-4 rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-200',
+                  'bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] text-[var(--text-primary)]',
+                  'hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]'
                 )}
               >
                 Open note

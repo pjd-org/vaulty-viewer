@@ -25,107 +25,15 @@ import type {
   RunAgentRequest,
 } from '../../lib/agent-shell/types';
 
-// ── NDJSON encoding helper ────────────────────────────────────────────────────
+// ── Real adapters ────────────────────────────────────────────────────────────
+import { agentRunnerAdapter } from './run-agent-runner';
+import { deepAgentAdapter } from './run-deepagent';
+import { promptRunnerAdapter } from './run-prompt-runner';
 
-const encoder = new TextEncoder();
-
-export function encodeEvent(event: AgentShellEvent): Uint8Array {
-  return encoder.encode(JSON.stringify(event) + '\n');
-}
-
-/**
- * Build a ReadableStream that emits a single run.error event.
- * Used for fail-fast paths (unknown mode, adapter unavailable, etc.).
- */
-export function errorStream(message: string): ReadableStream<Uint8Array> {
-  const event: AgentShellEvent = { type: 'run.error', message };
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(encodeEvent(event));
-      controller.close();
-    },
-  });
-}
-
-/**
- * Wrap an async generator of AgentShellEvents into a ReadableStream<Uint8Array>.
- * The stream closes when the generator finishes or the abort signal fires.
- */
-export function eventsToStream(
-  source: AsyncIterable<AgentShellEvent>,
-  signal?: AbortSignal
-): ReadableStream<Uint8Array> {
-  return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        for await (const event of source) {
-          if (signal?.aborted) break;
-          controller.enqueue(encodeEvent(event));
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        controller.enqueue(encodeEvent({ type: 'run.error', message }));
-      } finally {
-        controller.close();
-      }
-    },
-    cancel() {
-      // ReadableStream cancelled by the client — nothing to clean up here;
-      // the async generator will be GC'd naturally.
-    },
-  });
-}
-
-// ── Mode adapter interface ────────────────────────────────────────────────────
-
-export type ModeAdapter = {
-  run(
-    request: RunAgentRequest,
-    signal?: AbortSignal
-  ): AsyncGenerator<AgentShellEvent>;
-};
-
-// ── Adapter registry ──────────────────────────────────────────────────────────
-// Adapters are registered lazily via registerModeAdapter().
-// Phase 5 fills these in; Phase 2 ships with stubs.
-
-const adapterRegistry = new Map<AgentExecutionMode, ModeAdapter>();
-
-export function registerModeAdapter(
-  mode: AgentExecutionMode,
-  adapter: ModeAdapter
-): void {
-  adapterRegistry.set(mode, adapter);
-}
-
-export function getModeAdapter(mode: AgentExecutionMode): ModeAdapter | null {
-  return adapterRegistry.get(mode) ?? null;
-}
-
-// ── Stub adapters (Phase 2 placeholder — replaced in Phase 5) ─────────────────
-
-async function* stubAdapter(
-  request: RunAgentRequest
-): AsyncGenerator<AgentShellEvent> {
-  yield { type: 'run.status', status: 'running' };
-  yield {
-    type: 'message.delta',
-    nodeId: 'huey',
-    delta: `[${request.mode} adapter not yet implemented]`,
-  };
-  yield {
-    type: 'message.done',
-    nodeId: 'huey',
-    messageId: `stub-${Date.now()}`,
-    content: `[${request.mode} adapter not yet implemented]`,
-  };
-  yield { type: 'run.status', status: 'done' };
-}
-
-// Register stubs at module load time — Phase 5 will override.
-registerModeAdapter('deepagent', { run: stubAdapter });
-registerModeAdapter('agent_runner', { run: stubAdapter });
-registerModeAdapter('prompt_runner', { run: stubAdapter });
+// Register real adapters at module load time
+registerModeAdapter('deepagent', deepAgentAdapter);
+registerModeAdapter('agent_runner', agentRunnerAdapter);
+registerModeAdapter('prompt_runner', promptRunnerAdapter);
 
 // ── Main dispatcher ────────────────────────────────────────────────────────────
 

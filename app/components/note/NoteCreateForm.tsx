@@ -16,7 +16,7 @@ const NOTE_TYPES = [
   { value: 'report', label: 'Report', path: 'notes/reports/' },
 ] as const;
 
-type NoteTypeValue = (typeof NOTE_TYPES)[number]['value'];
+export type NoteTypeValue = (typeof NOTE_TYPES)[number]['value'];
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -805,10 +805,25 @@ function NoteRoute() {
             })}
             extraActions={
               <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  to="/graph"
+                  search={{
+                    tab: undefined,
+                    nodeId: undefined,
+                    pathMode: undefined,
+                    entityType: undefined,
+                    focus: undefined,
+                    selectedId: undefined,
+                  }}
+                  className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
+                >
+                  Open graph
+                </Link>
                 {note.lifecycle.canPromote && (
                   <PrimaryButton
                     onClick={handlePromote}
                     disabled={lc.busy !== null}
+                    className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
                   >
                     {lc.pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
                   </PrimaryButton>
@@ -825,13 +840,14 @@ function NoteRoute() {
                           setConfirmReject(false);
                         }}
                         disabled={lc.busy !== null}
-                        className="text-destructive hover:bg-destructive/10"
+                        className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-destructive hover:bg-destructive/10"
                       >
                         Confirm
                       </SecondaryButton>
                       <SecondaryButton
                         onClick={() => setConfirmReject(false)}
                         disabled={lc.busy !== null}
+                        className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
                       >
                         Cancel
                       </SecondaryButton>
@@ -840,7 +856,7 @@ function NoteRoute() {
                     <SecondaryButton
                       onClick={() => setConfirmReject(true)}
                       disabled={lc.busy !== null}
-                      className="text-destructive hover:bg-destructive/10"
+                      className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-destructive hover:bg-destructive/10"
                     >
                       Reject
                     </SecondaryButton>
@@ -849,20 +865,34 @@ function NoteRoute() {
                   <SecondaryButton
                     onClick={handleCompleteTask}
                     disabled={lc.busy !== null}
+                    className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
                   >
                     Complete &amp; Archive
                   </SecondaryButton>
                 )}
-                <SecondaryButton onClick={handleCopyPath}>
+                <SecondaryButton
+                  onClick={handleCopyPath}
+                  className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
+                >
                   {copied ? 'Copied!' : 'Copy Path'}
                 </SecondaryButton>
-                <SecondaryButton onClick={() => void handleShare()}>
+                <SecondaryButton
+                  onClick={() => void handleShare()}
+                  className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
+                >
                   Share
                 </SecondaryButton>
-                <SecondaryButton onClick={handleOpenInObsidian}>
+                <SecondaryButton
+                  onClick={handleOpenInObsidian}
+                  className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
+                >
                   Open in Obsidian
                 </SecondaryButton>
-                <SecondaryButton onClick={handleEdit} disabled={editMode}>
+                <SecondaryButton
+                  onClick={handleEdit}
+                  disabled={editMode}
+                  className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
+                >
                   Edit
                 </SecondaryButton>
                 {noteSpecPath && (
@@ -873,6 +903,7 @@ function NoteRoute() {
                         search: { p: stripMarkdownExtension(noteSpecPath) },
                       })
                     }
+                    className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
                   >
                     Open Spec
                   </SecondaryButton>

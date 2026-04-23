@@ -142,20 +142,20 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
       <button
         type="button"
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium',
-          'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
-          'hover:bg-white/15 hover:text-white transition-colors cursor-pointer'
+          'inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)]',
+          'bg-[color-mix(in_srgb,var(--a-sky)_12%,transparent)] px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/80',
+          'hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,transparent)] hover:text-white transition-colors cursor-pointer'
         )}
         onClick={() => mutate(rawText)}
       >
-        ✦ Convert to task
+        Convert to task
       </button>
     );
   }
 
   if (isPending) {
     return (
-      <span className="px-2 py-1 text-xs text-muted-foreground">
+      <span className="rounded-full border border-white/15 px-2 py-1 text-xs text-white/70">
         Converting…
       </span>
     );
@@ -163,11 +163,11 @@ function ConvertPanel({ runId, rawText }: { runId: string; rawText: string }) {
 
   if (error) {
     return (
-      <span className="px-2 py-1 text-xs text-destructive">
+      <span className="rounded-full border border-red-400/20 px-2 py-1 text-xs text-red-200">
         Failed —{' '}
         <button
           type="button"
-          className="underline"
+          className="underline underline-offset-2"
           onClick={() => {
             reset();
             mutate(rawText);
@@ -533,9 +533,13 @@ function InboxRoute() {
         <div className="inbox-state inbox-state--error" role="alert">
           <strong>Could not reach the API.</strong>
           <span>{error}</span>
-          <button type="button" className="btn btn--refresh" onClick={refresh}>
-            Retry
-          </button>
+      <button
+        type="button"
+        className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-primary)] transition-colors hover:bg-[var(--surf-elevated)]"
+        onClick={refresh}
+      >
+        Retry
+      </button>
         </div>
       )}
 

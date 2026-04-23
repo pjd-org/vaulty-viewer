@@ -9,7 +9,7 @@ export type {
   NoteEditorSaveResult,
 } from './NoteEditor';
 export { NoteCreateForm } from './NoteCreateForm';
-export type { NoteCreateFormProps } from './NoteCreateForm';
+export type { NoteCreateFormProps, NoteTypeValue } from './NoteCreateForm';
 export { NoteGraphDendrogram } from './NoteGraphDendrogram';
 export type {
   NoteGraphDendrogramProps,

@@ -104,7 +104,14 @@ function PortfolioItemDetail({ item }: { item: PressureSignal }) {
           <Link
             to="/project/$slug/tasks"
             params={{ slug: item.projectId }}
-            search={{ selectedId: item.id }}
+            search={{
+              tab: undefined,
+              selectedId: item.id,
+              noteId: undefined,
+              mode: undefined,
+              templateId: undefined,
+              memoryTab: undefined,
+            }}
             className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
           >
             Open project

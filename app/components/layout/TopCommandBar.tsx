@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { PanelLeft, Search } from 'lucide-react';
 import { Button, GlassBadge, GlassSurface } from '@vault/ui';
 import { useIsMobile } from '../../hooks/use-mobile';
+import { CreateArtifactDialog } from './CreateArtifactDialog';
 import { useUIStore } from '../../../src/store/ui';
 
 interface TopCommandBarProps {
@@ -15,6 +16,7 @@ interface TopCommandBarProps {
 export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   const accent = accentColor ?? 'var(--a-sky)';
   const isMobile = useIsMobile();
+  const [createOpen, setCreateOpen] = React.useState(false);
   const leftSidebarCollapsed = useUIStore(
     (state) => state.layout.leftSidebarCollapsed
   );
@@ -116,12 +118,20 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
               <Link to="/inbox">Review Inbox</Link>
             </Button>
 
-            <Button variant="primary" size="sm" disabled>
+            <Button
+              variant="primary"
+              size="sm"
+              className="!rounded-full"
+              onClick={() => setCreateOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={createOpen}
+            >
               + Create
             </Button>
           </div>
         </div>
       </GlassSurface>
+      <CreateArtifactDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }
