@@ -30,10 +30,61 @@ import { agentRunnerAdapter } from './run-agent-runner';
 import { deepAgentAdapter } from './run-deepagent';
 import { promptRunnerAdapter } from './run-prompt-runner';
 
-// Register real adapters at module load time
-registerModeAdapter('deepagent', deepAgentAdapter);
-registerModeAdapter('agent_runner', agentRunnerAdapter);
-registerModeAdapter('prompt_runner', promptRunnerAdapter);
+// ── Mode adapter registry ─────────────────────────────────────────────────────────────
+
+export function registerModeAdapter(
+  mode: AgentExecutionMode,
+  adapter: ModeAdapter
+): void {
+  adapterRegistry.set(mode, adapter);
+}
+
+export function getModeAdapter(mode: AgentExecutionMode): ModeAdapter | null {
+  return adapterRegistry.get(mode) ?? null;
+}
+
+const adapterRegistry = new Map<AgentExecutionMode, ModeAdapter>();
+
+// ── NDJSON encoding helper ────────────────────────────────────────────────────
+
+const encoder = new TextEncoder();
+
+export function encodeEvent(event: AgentShellEvent): Uint8Array {
+  return encoder.encode(JSON.stringify(event) + '\n');
+}
+
+// ── Stream helpers ─────────────────────────────────────────────────────────────
+
+export function errorStream(message: string): ReadableStream<Uint8Array> {
+  const event: AgentShellEvent = { type: 'run.error', message };
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encodeEvent(event));
+      controller.close();
+    },
+  });
+}
+
+export function eventsToStream(
+  source: AsyncIterable<AgentShellEvent>,
+  signal?: AbortSignal
+): ReadableStream<Uint8Array> {
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        for await (const event of source) {
+          if (signal?.aborted) break;
+          controller.enqueue(encodeEvent(event));
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        controller.enqueue(encodeEvent({ type: 'run.error', message }));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+}
 
 // ── Main dispatcher ────────────────────────────────────────────────────────────
 
