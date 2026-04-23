@@ -53,12 +53,23 @@ export function createQueryClient() {
 }
 
 let browserQueryClient: QueryClient | null = null;
+let browserDehydratedStateForRender: DehydratedState | undefined;
 
 export function getBrowserQueryClient() {
   if (!browserQueryClient) {
     browserQueryClient = createQueryClient();
   }
   return browserQueryClient;
+}
+
+export function setBrowserDehydratedStateForRender(
+  state: DehydratedState | undefined
+) {
+  browserDehydratedStateForRender = state;
+}
+
+export function getBrowserDehydratedStateForRender() {
+  return browserDehydratedStateForRender;
 }
 
 export function serializeDehydratedQueryState(state: DehydratedState) {

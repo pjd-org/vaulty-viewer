@@ -50,4 +50,18 @@ describe('query client helpers', () => {
     })
     expect(window.__VIEWER_DEHYDRATED_STATE__).toBeUndefined()
   })
+
+  it('seeds browser dehydrated state for the first client render', async () => {
+    globalThis.window = {} as Window & typeof globalThis
+
+    const {
+      getBrowserDehydratedStateForRender,
+      setBrowserDehydratedStateForRender,
+    } = await import('../src/query-client')
+
+    const state = { queries: [{ queryKey: ['x'] }], mutations: [] }
+    setBrowserDehydratedStateForRender(state)
+
+    expect(getBrowserDehydratedStateForRender()).toBe(state)
+  })
 })
