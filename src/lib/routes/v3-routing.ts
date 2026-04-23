@@ -33,7 +33,6 @@ export const VIEWER_TOP_LEVEL_PATHS = [
 /** Primary destinations — shown at the top of the rail, grouped by intent. */
 export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
   // Core execution group
-  { label: 'Home', shortLabel: '⌂', to: '/', group: 'core' },
   { label: 'Inbox', shortLabel: '✉', to: '/inbox', group: 'core' },
   { label: 'Work', shortLabel: '◎', to: '/work', group: 'core' },
   { label: 'Agent Shell', shortLabel: '⬡', to: '/agent-shell', group: 'core' },
@@ -43,19 +42,14 @@ export const VIEWER_PRIMARY_NAV: readonly ViewerRouteNavItem[] = [
 export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Knowledge', shortLabel: '◈', to: '/knowledge', group: 'knowledge' },
   { label: 'Notes', shortLabel: '◻', to: '/notes', group: 'knowledge' },
-  { label: 'New Note', shortLabel: '✦', to: '/note-new', group: 'knowledge' },
   { label: 'Graph', shortLabel: '⬡', to: '/graph', group: 'knowledge' },
   { label: 'Actions', shortLabel: '⚡', to: '/actions', group: 'system' },
-  { label: 'Automation', shortLabel: '⚙', to: '/automation', group: 'system' },
   { label: 'Portfolio', shortLabel: '▣', to: '/portfolio', group: 'system' },
   { label: 'Bubble', shortLabel: '◉', to: '/bubble', group: 'system' },
   { label: 'Health', shortLabel: '♡', to: '/health', group: 'system' },
-  { label: 'Timeline', shortLabel: '↦', to: '/timeline', group: 'system' },
-  { label: 'Archive', shortLabel: '⊞', to: '/archive', group: 'system' },
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [
-  { label: 'Primary Agent', shortLabel: '✦', to: '/huey' },
   { label: 'Settings', shortLabel: '⚒', to: '/settings' },
 ] as const;
 

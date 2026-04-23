@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import getApiBase, { apiFetch } from '../utils/api';
+import getApiBase, {
+  ForbiddenError,
+  UnauthenticatedError,
+  apiFetch,
+} from '../utils/api';
 import { splitInboxNotes, computeInboxCounts } from '../lib/inbox-logic';
 import { useHydrated } from './useHydrated';
 
@@ -58,6 +62,12 @@ export function useInbox() {
         const res = await apiFetch('/api/v1/inbox', {
           signal: controller.signal,
         });
+        if (res.status === 401) {
+          throw new UnauthenticatedError('Failed to fetch inbox: 401');
+        }
+        if (res.status === 403) {
+          throw new ForbiddenError('Failed to fetch inbox: 403');
+        }
         if (!res.ok) {
           throw new Error(`API returned ${res.status}`);
         }

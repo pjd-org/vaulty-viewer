@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import getApiBase, { apiFetch } from '../utils/api';
+import getApiBase, {
+  ForbiddenError,
+  UnauthenticatedError,
+  apiFetch,
+} from '../utils/api';
 import { useHydrated } from './useHydrated';
 
 /**
@@ -156,6 +160,12 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     refetchInterval: hydrated ? 60_000 : false,
     queryFn: async () => {
       const response = await apiFetch('/api/v1/cod/status');
+      if (response.status === 401) {
+        throw new UnauthenticatedError('Failed to fetch COD status: 401');
+      }
+      if (response.status === 403) {
+        throw new ForbiddenError('Failed to fetch COD status: 403');
+      }
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
@@ -170,6 +180,12 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       let avatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
         const avatarRes = await apiFetch('/api/v1/cod/avatar');
+        if (avatarRes.status === 401) {
+          throw new UnauthenticatedError('Failed to fetch avatar: 401');
+        }
+        if (avatarRes.status === 403) {
+          throw new ForbiddenError('Failed to fetch avatar: 403');
+        }
         if (avatarRes.ok) {
           const avatarJson = await avatarRes.json();
           const avatarState =

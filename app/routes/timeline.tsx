@@ -13,6 +13,7 @@ import {
   type TimelineEventEntry,
 } from '../lib/viewer-adapter';
 import { UnauthenticatedError } from '../../src/utils/api';
+import { getAuthFailureKind } from '../hooks/use-login-redirect';
 import { cn } from '@/src/lib/utils';
 
 export const Route = createFileRoute('/timeline')({
@@ -388,6 +389,7 @@ function TimelineRoute() {
   const selectedEvent = data?.events.find((e) => e.id === selectedId) ?? null;
 
   const eventTypeFilter = search.eventType ?? '';
+  const authFailureKind = getAuthFailureKind(error);
 
   React.useEffect(() => {
     if (error instanceof UnauthenticatedError) {
@@ -444,6 +446,11 @@ function TimelineRoute() {
       primary={
         isLoading ? (
           <RouteLoadingState label="Loading event stream..." />
+        ) : authFailureKind === 'forbidden' ? (
+          <EmptyState
+            title="Timeline access forbidden"
+            description="You are signed in, but this account cannot read the timeline surface."
+          />
         ) : error && !data ? (
           <EmptyState
             title="Timeline data temporarily unavailable."

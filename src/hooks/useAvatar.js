@@ -1,6 +1,10 @@
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import getApiBase, { apiFetch } from '../utils/api';
+import getApiBase, {
+  ForbiddenError,
+  UnauthenticatedError,
+  apiFetch,
+} from '../utils/api';
 import { useHydrated } from './useHydrated';
 
 /**
@@ -83,6 +87,12 @@ export function useAvatar() {
         apiFetch('/api/v1/tasks?status=all&limit=1000').catch(() => null),
       ]);
 
+      if (avatarRes.status === 401) {
+        throw new UnauthenticatedError('Failed to fetch avatar: 401');
+      }
+      if (avatarRes.status === 403) {
+        throw new ForbiddenError('Failed to fetch avatar: 403');
+      }
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
       const avatarResult = await avatarRes.json();
       const avatarPayload = avatarResult?.structuredContent ?? avatarResult ?? {};
