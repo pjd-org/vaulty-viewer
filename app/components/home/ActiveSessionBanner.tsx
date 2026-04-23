@@ -23,17 +23,17 @@ export function ActiveSessionBanner({
   const [confirmingEnd, setConfirmingEnd] = React.useState(false);
 
   return (
-    <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--surf-utility)] p-4 flex items-center justify-between">
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-semibold text-[var(--text-info)] uppercase tracking-wide">
+    <div className="flex items-center justify-between gap-4 rounded-[28px] border border-[var(--border-default)] bg-[var(--surf-utility)] p-4">
+      <div className="min-w-0 flex-1 space-y-1">
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-info)]">
           Session active
         </span>
         {session.title && (
-          <span className="text-sm font-medium text-[var(--text-primary)]">
+          <span className="block truncate text-sm font-medium text-[var(--text-primary)]">
             {session.title}
           </span>
         )}
-        <span className="text-xs text-[var(--text-tertiary)]">
+        <span className="text-xs text-[var(--text-tertiary)] tabular-nums">
           {elapsed !== null && (
             <>
               {elapsed}m elapsed{tasksTotal > 0 ? ' · ' : ''}
@@ -46,7 +46,7 @@ export function ActiveSessionBanner({
           )}
         </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
         <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
         {confirmingEnd ? (
           <>

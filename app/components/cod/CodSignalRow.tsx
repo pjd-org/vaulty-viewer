@@ -75,53 +75,37 @@ function SignalCard({
         : signal.severity === 'medium'
           ? 'info'
           : 'success';
+
   return (
-    <article className={`genie-card genie-card--${surfaceTone} flex flex-col gap-2`}>
+    <article className={`genie-card genie-card--${surfaceTone} flex flex-col gap-3`}>
       <div className="flex items-start justify-between gap-3">
         <h3
-          className="min-w-0 flex-1 text-sm font-semibold line-clamp-2"
-          style={{ color: 'var(--text-primary)' }}
+          className="min-w-0 flex-1 text-sm font-semibold leading-snug text-[var(--text-primary)]"
         >
           {signal.title}
         </h3>
         <SeverityBadge severity={signal.severity} />
       </div>
       {signal.whySurfaced && (
-        <p
-          className="text-xs line-clamp-2 leading-relaxed"
-          style={{ color: 'var(--text-secondary)' }}
-        >
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {signal.whySurfaced}
         </p>
       )}
-      {/* Signal metadata */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         {signal.sourceType && (
-          <span
-            className="text-[11px] flex items-center gap-1"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            <span
-              className="font-medium"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+          <span className="text-[11px] text-[var(--text-tertiary)]">
+            <span className="font-medium text-[var(--text-secondary)]">
               Source type
-            </span>
-            <span>{signal.sourceType}</span>
+            </span>{' '}
+            {signal.sourceType}
           </span>
         )}
         {signal.confidence != null && (
-          <span
-            className="text-[11px] flex items-center gap-1"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            <span
-              className="font-medium"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+          <span className="text-[11px] text-[var(--text-tertiary)]">
+            <span className="font-medium text-[var(--text-secondary)]">
               Confidence
-            </span>
-            <span>{Math.round(signal.confidence * 100)}%</span>
+            </span>{' '}
+            <span className="tabular-nums">{Math.round(signal.confidence * 100)}%</span>
           </span>
         )}
       </div>
@@ -164,14 +148,10 @@ function SignalCard({
 // ---------------------------------------------------------------------------
 
 interface CodSignalRowProps {
-  /** V3: PressureSignal array */
   signals?: PressureSignal[];
-  /** V3: per-signal callbacks — called with the signal object */
   onOpen?: (signal: PressureSignal) => void;
   onAct?: (signal: PressureSignal) => void;
-  /** V1 legacy: metadata pairs rendered below signals */
   items?: CodSignalItem[];
-  /** Override the Act button's primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
   accentColor?: string;
 }
 
@@ -198,18 +178,14 @@ export function CodSignalRow({
         </div>
       )}
 
-      {/* V1 legacy items rendered below signals */}
       {items && items.length > 0 && (
         <div className="flex flex-col gap-2">
           {items.map(({ label, value, variant }) => (
             <div
               key={label}
-              className="flex items-center justify-between gap-2"
+              className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-2"
             >
-              <span
-                className="text-sm"
-                style={{ color: 'var(--text-secondary)' }}
-              >
+              <span className="text-sm text-[var(--text-secondary)]">
                 {label}
               </span>
               <span

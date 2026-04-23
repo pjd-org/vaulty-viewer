@@ -42,7 +42,7 @@ export function SurfaceEntryGrid({
         <Link
           key={tile.label}
           to={tile.to as never}
-          className="group rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4 transition hover:bg-[var(--surf-elevated)] focus-visible:outline-none"
+          className="group rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4 transition hover:-translate-y-0.5 hover:bg-[var(--surf-elevated)] focus-visible:outline-none"
           onFocus={(e) => {
             (e.currentTarget as HTMLAnchorElement).style.boxShadow =
               `0 0 0 2px color-mix(in srgb,${accent} 70%,transparent)`;
@@ -58,12 +58,12 @@ export function SurfaceEntryGrid({
           </p>
 
           {/* Live count */}
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
+          <p className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)] tabular-nums">
             {loading ? '…' : tile.count > 0 ? tile.count : '—'}
           </p>
 
           {/* Role description */}
-          <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+          <p className="mt-1 text-xs leading-relaxed text-[var(--text-tertiary)]">
             {tile.role}
           </p>
 

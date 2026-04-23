@@ -42,11 +42,16 @@ export function TaskSection({
 
   return (
     <div className="mt-6 flex flex-col gap-3">
-      <div className="flex items-center justify-between rounded-2xl border border-border bg-surface2 px-4 py-2">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-text2">
+      <div className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-4 py-2">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-primary)]">
           Next Actions
-        </h3>
-        <span className="text-xs font-medium text-text2">
+          </h3>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            Expand a task to inspect blockers and next steps.
+          </p>
+        </div>
+        <span className="shrink-0 text-xs font-medium text-[var(--text-tertiary)]">
           {data.total} tasks · {data.mode}
         </span>
       </div>

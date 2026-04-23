@@ -56,15 +56,15 @@ function ProjectAutomationRoute() {
     <div className="flex flex-col gap-5">
       {/* ── Stat bar ── */}
       <div className="grid gap-4 sm:grid-cols-4">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-[18px] border border-border bg-card p-4"
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-4"
+            >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
               {s.label}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)] tabular-nums">
               {s.value}
             </p>
           </div>
@@ -94,18 +94,18 @@ function ProjectAutomationRoute() {
                     params={{ slug }}
                     search={{ ...search, selectedId: item.id }}
                     className={[
-                      'block rounded-[18px] border border-border bg-card p-4 transition',
+                      'block rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4 transition',
                       active
-                        ? 'border-primary/30 bg-primary/10 shadow-sm'
-                        : 'hover:border-border/80 hover:bg-muted/30',
+                        ? 'border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-base))] shadow-sm'
+                        : 'hover:border-[var(--border-default)] hover:bg-[var(--surf-elevated)]',
                     ].join(' ')}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-foreground">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold leading-snug text-[var(--text-primary)]">
                           {item.title ?? item.id}
                         </h3>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                           {item.type}
                         </p>
                       </div>
@@ -124,15 +124,25 @@ function ProjectAutomationRoute() {
             variant="utility"
             title="Selected Item"
             subtitle="Detail for the selected automation entity."
+            actions={
+              <Link
+                to="/project/$slug/tasks"
+                params={{ slug }}
+                search={{ ...search, selectedId: undefined }}
+                className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                Open tasks
+              </Link>
+            }
           >
             {selectedItem ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold leading-snug text-[var(--text-primary)]">
                       {selectedItem.title ?? selectedItem.id}
                     </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       {selectedItem.type}
                     </p>
                   </div>
@@ -141,22 +151,40 @@ function ProjectAutomationRoute() {
                   )}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[18px] border border-border bg-card p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                       ID
                     </p>
-                    <p className="mt-2 break-all text-xs font-mono text-foreground">
+                    <p className="mt-2 break-all text-xs font-mono text-[var(--text-primary)]">
                       {selectedItem.id}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border bg-card p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                       Project
                     </p>
-                    <p className="mt-2 text-sm font-medium text-foreground">
+                    <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">
                       {slug}
                     </p>
                   </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    to="/project/$slug/dependencies"
+                    params={{ slug }}
+                    search={{ ...search, selectedId: undefined }}
+                    className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
+                  >
+                    Inspect dependencies
+                  </Link>
+                  <Link
+                    to="/project/$slug/risks"
+                    params={{ slug }}
+                    search={{ ...search, selectedId: undefined }}
+                    className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+                  >
+                    View risks
+                  </Link>
                 </div>
               </div>
             ) : (

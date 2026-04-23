@@ -99,12 +99,12 @@ function ProjectTasksRoute() {
         {taskSummary.map((item) => (
           <div
             key={item.label}
-            className="rounded-[18px] border border-border bg-card p-4"
+            className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-4"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
               {item.label}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)] tabular-nums">
               {item.value}
             </p>
           </div>
@@ -122,7 +122,7 @@ function ProjectTasksRoute() {
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-24 animate-pulse rounded-[18px] border border-border bg-muted/20"
+                  className="h-24 animate-pulse rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)]"
                 />
               ))}
             </div>
@@ -149,18 +149,18 @@ function ProjectTasksRoute() {
                     params={{ slug }}
                     search={buildTaskSearch(search, task.id)}
                     className={[
-                      'block rounded-[18px] border border-border bg-card p-4 transition',
+                      'block rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4 transition',
                       active
-                        ? 'border-primary/30 bg-primary/10 shadow-sm'
-                        : 'hover:border-border/80 hover:bg-muted/30',
+                        ? 'border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-base))] shadow-sm'
+                        : 'hover:border-[var(--border-default)] hover:bg-[var(--surf-elevated)]',
                     ].join(' ')}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-foreground">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold leading-snug text-[var(--text-primary)]">
                           {task.title}
                         </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">
                           {task.estimatedTimeMin != null &&
                           task.estimatedTimeMin > 0
                             ? `${task.estimatedTimeMin}m estimated`
@@ -190,11 +190,11 @@ function ProjectTasksRoute() {
             {selectedTask ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold leading-snug text-[var(--text-primary)]">
                       {selectedTask.title}
                     </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       {selectedTask.estimatedTimeMin != null &&
                       selectedTask.estimatedTimeMin > 0
                         ? `${selectedTask.estimatedTimeMin}m estimate`
@@ -207,19 +207,19 @@ function ProjectTasksRoute() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[18px] border border-border bg-card p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                       Priority
                     </p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
+                    <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)] tabular-nums">
                       {selectedTask.priority}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border bg-card p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <div className="rounded-[18px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                       Project
                     </p>
-                    <p className="mt-2 text-sm font-medium text-foreground">
+                    <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">
                       {slug}
                     </p>
                   </div>
@@ -238,12 +238,20 @@ function ProjectTasksRoute() {
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href={selectedTask.link}
-                    className="text-sm font-semibold text-primary underline decoration-primary/60 underline-offset-4"
+                    className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
                   >
                     Open task note
                   </a>
+                  <Link
+                    to="/project/$slug/tasks"
+                    params={{ slug }}
+                    search={buildTaskSearch(search, selectedTask.id)}
+                    className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+                  >
+                    Keep selected
+                  </Link>
                   {selectedTask.path ? (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-[var(--text-tertiary)]">
                       {selectedTask.path}
                     </span>
                   ) : null}
@@ -261,6 +269,16 @@ function ProjectTasksRoute() {
             variant="utility"
             title="Blockers"
             subtitle="Tasks currently holding the project up."
+            actions={
+              <Link
+                to="/project/$slug/risks"
+                params={{ slug }}
+                search={{ ...search, selectedId: undefined }}
+                className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                View risks
+              </Link>
+            }
           >
             {blockedTasks.length ? (
               <div className="flex flex-col gap-3">

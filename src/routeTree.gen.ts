@@ -46,6 +46,9 @@ import { Route as ProjectSlugRisksRouteImport } from './../app/routes/project.$s
 import { Route as ProjectSlugKnowledgeRouteImport } from './../app/routes/project.$slug.knowledge'
 import { Route as ProjectSlugDependenciesRouteImport } from './../app/routes/project.$slug.dependencies'
 import { Route as ProjectSlugAutomationRouteImport } from './../app/routes/project.$slug.automation'
+import { Route as ApiAgentShellRunPromptRunnerRouteImport } from './../app/routes/api/agent-shell.run.prompt-runner'
+import { Route as ApiAgentShellRunDeepagentRouteImport } from './../app/routes/api/agent-shell.run.deepagent'
+import { Route as ApiAgentShellRunAgentRunnerRouteImport } from './../app/routes/api/agent-shell.run.agent-runner'
 
 const WorkRoute = WorkRouteImport.update({
   id: '/work',
@@ -232,6 +235,24 @@ const ProjectSlugAutomationRoute = ProjectSlugAutomationRouteImport.update({
   path: '/automation',
   getParentRoute: () => ProjectSlugRoute,
 } as any)
+const ApiAgentShellRunPromptRunnerRoute =
+  ApiAgentShellRunPromptRunnerRouteImport.update({
+    id: '/api/agent-shell/run/prompt-runner',
+    path: '/api/agent-shell/run/prompt-runner',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgentShellRunDeepagentRoute =
+  ApiAgentShellRunDeepagentRouteImport.update({
+    id: '/api/agent-shell/run/deepagent',
+    path: '/api/agent-shell/run/deepagent',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgentShellRunAgentRunnerRoute =
+  ApiAgentShellRunAgentRunnerRouteImport.update({
+    id: '/api/agent-shell/run/agent-runner',
+    path: '/api/agent-shell/run/agent-runner',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -271,6 +292,9 @@ export interface FileRoutesByFullPath {
   '/project/$slug/settings': typeof ProjectSlugSettingsRoute
   '/project/$slug/tasks': typeof ProjectSlugTasksRoute
   '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
+  '/api/agent-shell/run/agent-runner': typeof ApiAgentShellRunAgentRunnerRoute
+  '/api/agent-shell/run/deepagent': typeof ApiAgentShellRunDeepagentRoute
+  '/api/agent-shell/run/prompt-runner': typeof ApiAgentShellRunPromptRunnerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -310,6 +334,9 @@ export interface FileRoutesByTo {
   '/project/$slug/settings': typeof ProjectSlugSettingsRoute
   '/project/$slug/tasks': typeof ProjectSlugTasksRoute
   '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
+  '/api/agent-shell/run/agent-runner': typeof ApiAgentShellRunAgentRunnerRoute
+  '/api/agent-shell/run/deepagent': typeof ApiAgentShellRunDeepagentRoute
+  '/api/agent-shell/run/prompt-runner': typeof ApiAgentShellRunPromptRunnerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -350,6 +377,9 @@ export interface FileRoutesById {
   '/project/$slug/settings': typeof ProjectSlugSettingsRoute
   '/project/$slug/tasks': typeof ProjectSlugTasksRoute
   '/project/$slug/timeline': typeof ProjectSlugTimelineRoute
+  '/api/agent-shell/run/agent-runner': typeof ApiAgentShellRunAgentRunnerRoute
+  '/api/agent-shell/run/deepagent': typeof ApiAgentShellRunDeepagentRoute
+  '/api/agent-shell/run/prompt-runner': typeof ApiAgentShellRunPromptRunnerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -391,6 +421,9 @@ export interface FileRouteTypes {
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
     | '/project/$slug/timeline'
+    | '/api/agent-shell/run/agent-runner'
+    | '/api/agent-shell/run/deepagent'
+    | '/api/agent-shell/run/prompt-runner'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -430,6 +463,9 @@ export interface FileRouteTypes {
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
     | '/project/$slug/timeline'
+    | '/api/agent-shell/run/agent-runner'
+    | '/api/agent-shell/run/deepagent'
+    | '/api/agent-shell/run/prompt-runner'
   id:
     | '__root__'
     | '/'
@@ -469,6 +505,9 @@ export interface FileRouteTypes {
     | '/project/$slug/settings'
     | '/project/$slug/tasks'
     | '/project/$slug/timeline'
+    | '/api/agent-shell/run/agent-runner'
+    | '/api/agent-shell/run/deepagent'
+    | '/api/agent-shell/run/prompt-runner'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -499,6 +538,9 @@ export interface RootRouteChildren {
   OauthConsentRoute: typeof OauthConsentRoute
   ProjectSlugRoute: typeof ProjectSlugRouteWithChildren
   SessionIdRoute: typeof SessionIdRoute
+  ApiAgentShellRunAgentRunnerRoute: typeof ApiAgentShellRunAgentRunnerRoute
+  ApiAgentShellRunDeepagentRoute: typeof ApiAgentShellRunDeepagentRoute
+  ApiAgentShellRunPromptRunnerRoute: typeof ApiAgentShellRunPromptRunnerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -762,6 +804,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectSlugAutomationRouteImport
       parentRoute: typeof ProjectSlugRoute
     }
+    '/api/agent-shell/run/prompt-runner': {
+      id: '/api/agent-shell/run/prompt-runner'
+      path: '/api/agent-shell/run/prompt-runner'
+      fullPath: '/api/agent-shell/run/prompt-runner'
+      preLoaderRoute: typeof ApiAgentShellRunPromptRunnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-shell/run/deepagent': {
+      id: '/api/agent-shell/run/deepagent'
+      path: '/api/agent-shell/run/deepagent'
+      fullPath: '/api/agent-shell/run/deepagent'
+      preLoaderRoute: typeof ApiAgentShellRunDeepagentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-shell/run/agent-runner': {
+      id: '/api/agent-shell/run/agent-runner'
+      path: '/api/agent-shell/run/agent-runner'
+      fullPath: '/api/agent-shell/run/agent-runner'
+      preLoaderRoute: typeof ApiAgentShellRunAgentRunnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -843,6 +906,9 @@ const rootRouteChildren: RootRouteChildren = {
   OauthConsentRoute: OauthConsentRoute,
   ProjectSlugRoute: ProjectSlugRouteWithChildren,
   SessionIdRoute: SessionIdRoute,
+  ApiAgentShellRunAgentRunnerRoute: ApiAgentShellRunAgentRunnerRoute,
+  ApiAgentShellRunDeepagentRoute: ApiAgentShellRunDeepagentRoute,
+  ApiAgentShellRunPromptRunnerRoute: ApiAgentShellRunPromptRunnerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

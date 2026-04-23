@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
 import {
@@ -260,7 +260,7 @@ function ActionsRoute() {
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-24 animate-pulse rounded-2xl border border-border bg-muted/40"
+                className="h-24 animate-pulse rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-base)]"
               />
             ))}
           </div>
@@ -284,8 +284,8 @@ function ActionsRoute() {
                   className={[
                     'rounded-[22px] border transition',
                     isExpanded
-                      ? 'border-primary/30 bg-primary/5 shadow-sm'
-                      : 'border-border bg-muted/40',
+                      ? 'border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_8%,var(--surf-base))] shadow-sm'
+                      : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)]',
                   ].join(' ')}
                 >
                   {/* ── summary row — clickable ── */}
@@ -299,49 +299,49 @@ function ActionsRoute() {
                         selectedId: isExpanded ? undefined : item.id,
                       })
                     }
-                    className="w-full cursor-pointer p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-[22px]"
+                    className="w-full cursor-pointer rounded-[22px] p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-base font-semibold text-foreground">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold leading-snug text-[var(--text-primary)]">
                           {item.title}
                         </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">
                           {item.summary}
                         </p>
                       </div>
                       <Badge
                         variant="muted"
-                        className="px-3 py-1 text-xs uppercase tracking-[0.2em]"
+                        className="px-3 py-1 text-xs uppercase tracking-[0.2em] bg-[var(--surf-utility)] text-[var(--text-secondary)]"
                       >
                         {item.actionType.replace('_', ' ')}
                       </Badge>
                     </div>
                     <div className="mt-4 grid gap-3 md:grid-cols-3">
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                           Why now
                         </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">
                           {item.whyNow}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                           Expected effect
                         </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">
                           {item.expectedEffect}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                           Score
                         </p>
-                        <p className="mt-1 text-sm text-foreground">
+                        <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
                           {item.score.toFixed(1)} / 10
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Confidence {(item.confidence * 100).toFixed(0)}% ·{' '}
                           {item.reversibility} reversibility
                         </p>
@@ -351,9 +351,52 @@ function ActionsRoute() {
 
                   {/* ── inline detail panel ── */}
                   {isExpanded && (
-                    <div className="border-t border-border px-4 pb-4 pt-3 flex flex-col gap-4 text-sm text-muted-foreground">
+                    <div className="border-t border-[var(--border-glass-soft)] px-4 pb-4 pt-3 flex flex-col gap-4 text-sm text-[var(--text-secondary)]">
+                      <div className="flex flex-wrap gap-2">
+                        <PrimaryButton
+                          type="button"
+                          onClick={handleExecute}
+                          disabled={!item.taskPath || executeMutation.isPending}
+                          className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
+                        >
+                          {executeMutation.isPending ? 'Starting…' : 'Execute'}
+                        </PrimaryButton>
+                        <SecondaryButton
+                          type="button"
+                          disabled={
+                            !item.taskPath ||
+                            item.reversibility !== 'high' ||
+                            simulationLoading
+                          }
+                          onClick={handleSimulate}
+                          className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
+                        >
+                          {simulationLoading ? 'Loading…' : 'Simulate'}
+                        </SecondaryButton>
+                        <SecondaryButton
+                          type="button"
+                          disabled={!item.taskPath || deferMutation.isPending}
+                          onClick={handleDefer}
+                          className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
+                        >
+                          {deferMutation.isPending ? 'Deferring…' : 'Defer'}
+                        </SecondaryButton>
+                        {item.taskPath && (
+                          <Link
+                            to="/note"
+                            search={{ p: item.taskPath }}
+                            className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+                          >
+                            Open source note
+                          </Link>
+                        )}
+                      </div>
+
                       {/* Score breakdown */}
-                      <SurfaceSectionCard title="Score breakdown">
+                      <SurfaceSectionCard
+                        title="Score breakdown"
+                        tone="neutral"
+                      >
                         <div className="flex flex-col gap-2">
                           {Object.entries(item.scoreBreakdown).map(
                             ([key, value]) => (
@@ -361,10 +404,12 @@ function ActionsRoute() {
                                 key={key}
                                 className="flex items-center justify-between gap-3"
                               >
-                                <span className="text-muted-foreground capitalize">
+                                <span className="capitalize text-[var(--text-tertiary)]">
                                   {key.replace(/([A-Z])/g, ' $1')}
                                 </span>
-                                <span className="text-foreground">{value}</span>
+                                <span className="text-[var(--text-primary)]">
+                                  {value}
+                                </span>
                               </div>
                             )
                           )}
@@ -372,44 +417,49 @@ function ActionsRoute() {
                       </SurfaceSectionCard>
 
                       {/* Mutation path */}
-                      <SurfaceSectionCard title="Mutation path">
-                        <p className="text-foreground">
+                      <SurfaceSectionCard title="Mutation path" tone="neutral">
+                        <p className="text-[var(--text-primary)]">
                           {item.mutationRef
                             ? `${item.mutationRef.domain} / ${item.mutationRef.operation}`
                             : 'Simulation only'}
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                           Source entities: {item.sourceEntities.length}
                         </p>
                       </SurfaceSectionCard>
 
                       {/* Source signals */}
-                      <SurfaceSectionCard title="Source signals">
+                      <SurfaceSectionCard title="Source signals" tone="neutral">
                         {item.sourceSignalIds.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {item.sourceSignalIds.map((signalId) => (
                               <span
                                 key={signalId}
-                                className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-foreground"
+                                className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-3 py-1 text-xs text-[var(--text-secondary)]"
                               >
                                 {signalId}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-[var(--text-tertiary)]">
                             No source signals surfaced.
                           </p>
                         )}
                       </SurfaceSectionCard>
 
                       {/* Verification preview */}
-                      <SurfaceSectionCard title="Verification preview">
+                      <SurfaceSectionCard
+                        title="Verification preview"
+                        tone="neutral"
+                      >
                         {verificationPhase === 'pending' && (
-                          <p className="text-sm text-primary">Verifying…</p>
+                          <p className="text-sm text-[var(--text-info)]">
+                            Verifying…
+                          </p>
                         )}
                         {verificationPhase === 'failed' && (
-                          <p className="text-sm text-destructive">
+                          <p className="text-sm text-[var(--text-danger)]">
                             Verification failed.
                           </p>
                         )}
@@ -418,14 +468,14 @@ function ActionsRoute() {
                             {surface?.verificationRail.map((vItem) => (
                               <article
                                 key={vItem.id}
-                                className="rounded-[14px] border border-border bg-muted/40 p-3"
+                                className="rounded-[14px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-3"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
-                                    <p className="text-sm font-medium text-foreground">
+                                    <p className="text-sm font-medium text-[var(--text-primary)]">
                                       {vItem.summary}
                                     </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
+                                    <p className="mt-1 text-xs text-[var(--text-tertiary)]">
                                       {vItem.actionId}
                                     </p>
                                   </div>
@@ -444,44 +494,6 @@ function ActionsRoute() {
                             Ready for post-action verification.
                           </p>
                         )}
-                      </SurfaceSectionCard>
-
-                      {/* Action controls */}
-                      <SurfaceSectionCard title="Action controls">
-                        <div className="flex flex-wrap gap-2">
-                          <PrimaryButton
-                            type="button"
-                            disabled={
-                              !item.taskPath || executeMutation.isPending
-                            }
-                            onClick={handleExecute}
-                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
-                          >
-                            {executeMutation.isPending
-                              ? 'Starting…'
-                              : 'Execute'}
-                          </PrimaryButton>
-                          <SecondaryButton
-                            type="button"
-                            disabled={
-                              !item.taskPath ||
-                              item.reversibility !== 'high' ||
-                              simulationLoading
-                            }
-                            onClick={handleSimulate}
-                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
-                          >
-                            {simulationLoading ? 'Loading…' : 'Simulate'}
-                          </SecondaryButton>
-                          <SecondaryButton
-                            type="button"
-                            disabled={!item.taskPath || deferMutation.isPending}
-                            onClick={handleDefer}
-                            className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
-                          >
-                            {deferMutation.isPending ? 'Deferring…' : 'Defer'}
-                          </SecondaryButton>
-                        </div>
                       </SurfaceSectionCard>
 
                       {/* Simulation preview (item-scoped) */}

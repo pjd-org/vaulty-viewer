@@ -14,21 +14,23 @@ export function TaskMiniCard({ task, onStart, onComplete }: TaskMiniCardProps) {
   const meta = toTaskDisplayMeta(task);
 
   return (
-    <div className="genie-card transition-transform duration-200 hover:-translate-y-0.5 flex items-center gap-4 py-3 px-4">
-      <div className="flex-1 min-w-0">
+    <div className="genie-card flex items-center gap-4 py-3 px-4">
+      <div className="min-w-0 flex-1 space-y-2">
         <Link
           to="/note"
           search={{ p: task.path }}
-          className="text-sm font-medium truncate block transition-opacity hover:opacity-70"
-          style={{ color: 'var(--text-primary)' }}
+          className="block truncate text-sm font-semibold text-[var(--text-primary)] transition-opacity hover:opacity-75"
         >
           {task.title}
         </Link>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2">
           <SoftChip label={meta.durationLabel} />
+          <span className="text-[11px] text-[var(--text-tertiary)]">
+            Quick action
+          </span>
         </div>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex shrink-0 items-center gap-1">
         <IconButton
           icon={<span>▶</span>}
           label="Start task"

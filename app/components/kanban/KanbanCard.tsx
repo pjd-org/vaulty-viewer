@@ -3,8 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { STATUS_COLUMNS, type KanbanTask } from '../../../src/lib/kanban-logic';
 
 const kanbanChipClass =
-  'rounded-full bg-[var(--surf-utility)] px-2 py-0.5 text-[10px] text-text2';
-const kanbanChipRowClass = 'flex flex-wrap gap-1 mb-2';
+  'rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)]';
+const kanbanChipRowClass = 'mb-2 flex flex-wrap gap-1';
 
 export interface KanbanCardProps {
   task: KanbanTask;
@@ -38,8 +38,8 @@ export const KanbanCard = React.memo(function KanbanCard({
       ].join(' ')}
     >
       {/* Title + priority */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <span className="text-sm font-medium text-text leading-snug">
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <span className="text-sm font-semibold leading-snug text-[var(--text-primary)]">
           {task.title}
         </span>
         {task.priority > 0 && (
@@ -63,7 +63,7 @@ export const KanbanCard = React.memo(function KanbanCard({
       <div className={kanbanChipRowClass}>
         {task.estimatedTimeMin ? (
           <span className={kanbanChipClass}>
-            ⏱{' '}
+            Time{' '}
             {task.estimatedTimeMin >= 60
               ? `${Math.round(task.estimatedTimeMin / 60)}h`
               : `${task.estimatedTimeMin}m`}
@@ -71,11 +71,11 @@ export const KanbanCard = React.memo(function KanbanCard({
         ) : null}
         {task.goalId && (
           <span className={kanbanChipClass}>
-            🎯 {task.goalId.replace(/-/g, ' ')}
+            Goal {task.goalId.replace(/-/g, ' ')}
           </span>
         )}
         {task.projectId && (
-          <span className={kanbanChipClass}>🚀 {task.projectId}</span>
+          <span className={kanbanChipClass}>Project {task.projectId}</span>
         )}
       </div>
 
@@ -88,7 +88,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             .map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border [background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_28%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_65%,var(--n-950))] px-2 py-0.5 text-[10px]"
+                className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-2 py-0.5 text-[10px] text-[color-mix(in_srgb,var(--a-sky)_65%,var(--n-950))]"
               >
                 #{tag}
               </span>
@@ -98,8 +98,8 @@ export const KanbanCard = React.memo(function KanbanCard({
 
       {/* Blocked badge */}
       {task.status === 'blocked' && (
-        <div className="mb-2 rounded-[8px] border [background:color-mix(in_srgb,var(--a-rose)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-rose)_28%,transparent)] [color:color-mix(in_srgb,var(--a-rose)_70%,var(--n-950))] px-2 py-1 text-[11px]">
-          🚫 Blocked
+        <div className="mb-2 rounded-[8px] border border-[color-mix(in_srgb,var(--a-rose)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_14%,var(--surf-elevated))] px-2 py-1 text-[11px] text-[color-mix(in_srgb,var(--a-rose)_70%,var(--n-950))]">
+          Blocked
         </div>
       )}
 
@@ -107,7 +107,7 @@ export const KanbanCard = React.memo(function KanbanCard({
       <div className="flex items-center justify-between gap-2 mt-1">
         <Link
           to={task.link}
-          className="rounded-full bg-[var(--surf-utility)] px-3 py-1 text-[11px] text-text2 transition hover:bg-[var(--surf-utility)]"
+          className="rounded-full bg-[var(--surf-utility)] px-3 py-1 text-[11px] text-[var(--text-secondary)] transition hover:bg-[var(--surf-elevated)]"
         >
           Open →
         </Link>
@@ -119,9 +119,9 @@ export const KanbanCard = React.memo(function KanbanCard({
                 onClick={() => onStatusChange(task, 'completed')}
                 disabled={mutatingTaskId === task.id}
                 title="Mark completed"
-                className="cursor-pointer rounded-full border [background:color-mix(in_srgb,var(--a-mint)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,var(--n-950))] px-2 py-1 text-[11px] transition hover:[background:color-mix(in_srgb,var(--a-mint)_24%,var(--surf-elevated))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
+                className="cursor-pointer rounded-full border px-2 py-1 text-[11px] transition hover:[background:color-mix(in_srgb,var(--a-mint)_24%,var(--surf-elevated))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40 [background:color-mix(in_srgb,var(--a-mint)_14%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-mint)_28%,transparent)] [color:color-mix(in_srgb,var(--a-mint)_70%,var(--n-950))]"
               >
-                ✓
+                Done
               </button>
             ) : (
               <button
@@ -129,9 +129,9 @@ export const KanbanCard = React.memo(function KanbanCard({
                 onClick={() => onStatusChange(task, 'todo')}
                 disabled={mutatingTaskId === task.id}
                 title="Reopen task"
-                className="cursor-pointer rounded-full bg-[var(--surf-utility)] px-2 py-1 text-[11px] text-text2 transition hover:bg-[var(--surf-utility)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
+                className="cursor-pointer rounded-full bg-[var(--surf-utility)] px-2 py-1 text-[11px] text-[var(--text-secondary)] transition hover:bg-[var(--surf-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                ↺
+                Reopen
               </button>
             )}
             <select
@@ -139,7 +139,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               value={task.status}
               onChange={(e) => onStatusChange(task, e.target.value)}
               disabled={mutatingTaskId === task.id}
-              className="rounded-full border border-border bg-[var(--surf-utility)] px-2 py-0.5 text-[10px] text-text2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:opacity-40"
+              className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:opacity-40"
             >
               {STATUS_COLUMNS.map((col) => (
                 <option key={col.key} value={col.key}>
@@ -149,7 +149,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             </select>
           </div>
         ) : (
-          <span className="rounded-full bg-[var(--surf-utility)] px-2 py-0.5 text-[10px] text-text3">
+          <span className="rounded-full bg-[var(--surf-utility)] px-2 py-0.5 text-[10px] text-[var(--text-tertiary)]">
             read-only
           </span>
         )}

@@ -44,7 +44,7 @@ function TaskList({
         return (
           <li
             key={task.id}
-            className="rounded-2xl border border-border bg-card/80 shadow-sm"
+            className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] shadow-sm"
           >
             <button
               type="button"
@@ -53,8 +53,8 @@ function TaskList({
               className={[
                 'flex w-full items-start justify-between rounded-2xl px-4 py-3 text-sm transition-colors',
                 isExpanded
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/60',
+                  ? 'bg-[color-mix(in_srgb,var(--a-sky)_8%,var(--surf-base))] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surf-elevated)]',
               ].join(' ')}
             >
               <div className="flex min-w-0 items-start gap-2">
@@ -64,17 +64,19 @@ function TaskList({
                   }`}
                 />
                 <div className="min-w-0">
-                  <span className="line-clamp-2 text-left font-semibold text-foreground">
+                  <span className="line-clamp-2 text-left font-semibold leading-snug text-[var(--text-primary)]">
                     {task.title}
                   </span>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span>{task.priority}p</span>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--text-tertiary)]">
+                    <span className="tabular-nums">{task.priority}p</span>
                     <span>·</span>
-                    <span>{task.estimatedTimeMin ?? 0}m</span>
+                    <span className="tabular-nums">
+                      {task.estimatedTimeMin ?? 0}m
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-2 text-xs text-[var(--text-tertiary)]">
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
                     task.status === 'blocked'
@@ -93,7 +95,7 @@ function TaskList({
               </div>
             </button>
             {isExpanded && (
-              <div className="mx-2 mb-2 rounded-xl border border-border bg-muted/40 px-4 py-3 animate-fade-in">
+              <div className="mx-2 mb-2 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 animate-fade-in">
                 <TaskDetail task={task} />
               </div>
             )}
@@ -174,13 +176,15 @@ function TaskDetail({ task }: { task: NextAction }) {
   return (
     <div className="flex flex-col gap-4 text-sm" data-testid="work-task-detail">
       <div>
-        <p className="font-medium leading-snug text-foreground">{task.title}</p>
+        <p className="font-medium leading-snug text-[var(--text-primary)]">
+          {task.title}
+        </p>
         {task.description ? (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
             {task.description}
           </p>
         ) : (
-          <p className="mt-1 text-xs text-muted-foreground italic">
+          <p className="mt-1 text-xs italic text-[var(--text-tertiary)]">
             No description. Open the note to add context.
           </p>
         )}
@@ -188,27 +192,27 @@ function TaskDetail({ task }: { task: NextAction }) {
 
       <div className="flex flex-wrap gap-2">
         {task.priority > 0 && (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+          <span className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-elevated))] px-2 py-0.5 text-[11px] text-[var(--text-info)]">
             p{task.priority}
           </span>
         )}
         {task.effortScore > 0 && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
             effort {task.effortScore}
           </span>
         )}
         {task.focusCost > 0 && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
             focus {task.focusCost}
           </span>
         )}
         {task.estimatedTimeMin > 0 && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
             {task.estimatedTimeMin}m
           </span>
         )}
         {task.dueDate && (
-          <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
+          <span className="rounded-full border border-[color-mix(in_srgb,var(--a-sun)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-sun)_10%,var(--surf-elevated))] px-2 py-0.5 text-[11px] text-[var(--text-warning)]">
             due {task.dueDate}
           </span>
         )}
@@ -216,8 +220,8 @@ function TaskDetail({ task }: { task: NextAction }) {
           className={[
             'rounded-full px-2 py-0.5 text-[11px]',
             task.status === 'blocked'
-              ? 'bg-destructive/10 text-destructive'
-              : 'bg-success/10 text-success',
+              ? 'border border-[color-mix(in_srgb,var(--a-rose)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_10%,var(--surf-elevated))] text-[var(--text-danger)]'
+              : 'border border-[color-mix(in_srgb,var(--a-mint)_28%,transparent)] bg-[color-mix(in_srgb,var(--a-mint)_10%,var(--surf-elevated))] text-[var(--text-success)]',
           ].join(' ')}
         >
           {task.status}
@@ -244,7 +248,7 @@ function TaskDetail({ task }: { task: NextAction }) {
           </p>
           <ul className="flex flex-col gap-1">
             {blockers.map((b, i) => (
-              <li key={i} className="text-xs text-destructive">
+              <li key={i} className="text-xs text-[var(--text-danger)]">
                 {b.description ?? String(b)}
               </li>
             ))}
@@ -252,82 +256,48 @@ function TaskDetail({ task }: { task: NextAction }) {
         </div>
       )}
 
-      {task.path && (
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        {task.path && (
           <Link
             to="/note"
             search={{ p: task.path }}
-            className="inline-block text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+            className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
           >
-            Open note →
+            Open note
           </Link>
-          <Link
-            to="/knowledge"
-            search={{ tab: 'notes' }}
-            onClick={() => {
-              try {
-                const hint =
-                  task.tags.length > 0
-                    ? task.tags[0]
-                    : task.title.split(' ').slice(0, 3).join(' ');
-                sessionStorage.setItem('knowledge-search-hint', hint);
-              } catch {
-                // sessionStorage unavailable — silently skip
-              }
-            }}
-            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
-          >
-            Related knowledge →
-          </Link>
-          <Link
-            to="/primary-agent"
-            onClick={() => {
-              try {
-                sessionStorage.setItem('primary-agent-task-hint', task.title);
-              } catch {
-                // sessionStorage unavailable — silently skip
-              }
-            }}
-            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
-          >
-            Ask the Primary Agent about this →
-          </Link>
-        </div>
-      )}
-      {!task.path && (
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            to="/knowledge"
-            search={{ tab: 'notes' }}
-            onClick={() => {
-              try {
-                sessionStorage.setItem(
-                  'knowledge-search-hint',
-                  task.title.split(' ').slice(0, 3).join(' ')
-                );
-              } catch {
-                // sessionStorage unavailable — silently skip
-              }
-            }}
-            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
-          >
-            Related knowledge →
-          </Link>
-          <Link
-            to="/primary-agent"
-            onClick={() => {
-              try {
-                sessionStorage.setItem('primary-agent-task-hint', task.title);
-              } catch {
-                // sessionStorage unavailable — silently skip
-              }
-            }}
-            className="inline-block text-xs text-primary underline underline-offset-2 transition hover:text-primary/80"
-          >
-            Ask the Primary Agent about this →
-          </Link>
-        </div>
-      )}
+        )}
+        <Link
+          to="/knowledge"
+          search={{ tab: 'notes' }}
+          onClick={() => {
+            try {
+              const hint =
+                task.tags.length > 0
+                  ? task.tags[0]
+                  : task.title.split(' ').slice(0, 3).join(' ');
+              sessionStorage.setItem('knowledge-search-hint', hint);
+            } catch {
+              // sessionStorage unavailable — silently skip
+            }
+          }}
+          className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
+        >
+          Related knowledge
+        </Link>
+        <Link
+          to="/primary-agent"
+          onClick={() => {
+            try {
+              sessionStorage.setItem('primary-agent-task-hint', task.title);
+            } catch {
+              // sessionStorage unavailable — silently skip
+            }
+          }}
+          className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+        >
+          Ask Primary Agent
+        </Link>
+      </div>
     </div>
   );
 }

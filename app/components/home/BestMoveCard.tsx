@@ -41,29 +41,29 @@ export function BestMoveCard({
   const whyNow = getWhyNowLine(task);
 
   return (
-    <div className="genie-surface genie-surface--hero genie-surface--sky animate-fade-in transition-transform duration-200 hover:-translate-y-1 p-6">
-      <Link
-        to="/note"
-        search={{ p: task.path }}
-        className="text-xl font-semibold hover:opacity-80 transition-opacity block text-[var(--text-primary)]"
-      >
-        {task.title}
-      </Link>
+    <div className="genie-surface genie-surface--hero genie-surface--sky flex flex-col gap-4 animate-fade-in p-6">
+      <div className="space-y-2">
+        <Link
+          to="/note"
+          search={{ p: task.path }}
+          className="block text-xl font-semibold leading-tight text-[var(--text-primary)] transition-opacity hover:opacity-80"
+        >
+          {task.title}
+        </Link>
+        {task.description && (
+          <p className="line-clamp-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+            {task.description}
+          </p>
+        )}
+      </div>
 
-      {task.description && (
-        <p className="text-sm mt-1 line-clamp-2 text-[var(--text-secondary)]">
-          {task.description}
-        </p>
-      )}
-
-      {/* Why this is the best move right now */}
       {whyNow && (
         <p className={`${whyNowTextClass} text-[var(--text-success)]`}>
           {whyNow}
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 mt-3">
+      <div className="flex flex-wrap items-center gap-2">
         <SoftChip label={meta.durationLabel} />
         <SoftChip label={meta.focusLabel} />
         <SoftChip label={meta.effortLabel} />
@@ -76,7 +76,7 @@ export function BestMoveCard({
         </p>
       )}
 
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex flex-wrap items-center gap-3">
         <PrimaryButton onClick={() => onStart(task)} disabled={mutating}>
           Start
         </PrimaryButton>
