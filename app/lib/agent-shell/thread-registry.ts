@@ -25,6 +25,7 @@
 
 import { Store } from '@tanstack/store';
 import { useStore } from '@tanstack/react-store';
+import { useEffect } from 'react';
 import type { AgentExecutionMode } from './types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -48,6 +49,8 @@ const STORAGE_KEY = 'agent-shell:threads';
 const MAX_THREADS = 50;
 const TITLE_MAX = 80;
 const PREVIEW_MAX = 120;
+const IS_BROWSER = typeof window !== 'undefined';
+let hasHydratedFromStorage = !IS_BROWSER;
 
 // ── Persistence helpers ───────────────────────────────────────────────────────
 
@@ -76,22 +79,41 @@ function saveToStorage(threads: ThreadEntry[]): void {
 // ── Store ─────────────────────────────────────────────────────────────────────
 
 const threadRegistryStore = new Store<ThreadRegistryState>({
-  threads: loadFromStorage(),
+  // Start empty for SSR + client first render determinism.
+  threads: [],
 });
 
 // Persist to localStorage on every state change
 threadRegistryStore.subscribe(() => {
+  if (!hasHydratedFromStorage) return;
   saveToStorage(threadRegistryStore.state.threads);
 });
+
+function hydrateFromStorageIfNeeded(): void {
+  if (!IS_BROWSER || hasHydratedFromStorage) return;
+  hasHydratedFromStorage = true;
+
+  const persisted = loadFromStorage();
+  if (persisted.length === 0) return;
+
+  threadRegistryStore.setState((s) => ({
+    threads: mergeThreads(s.threads, persisted),
+  }));
+}
 
 // ── Registry API ──────────────────────────────────────────────────────────────
 
 export const ThreadRegistry = {
+  hydrateFromStorage(): void {
+    hydrateFromStorageIfNeeded();
+  },
+
   /**
    * Create or update a thread entry.
    * On update, only non-empty fields overwrite existing values.
    */
   upsert(entry: Partial<ThreadEntry> & { id: string }): void {
+    hydrateFromStorageIfNeeded();
     threadRegistryStore.setState((s) => {
       const idx = s.threads.findIndex((t) => t.id === entry.id);
       const now = new Date().toISOString();
@@ -132,6 +154,7 @@ export const ThreadRegistry = {
   },
 
   remove(id: string): void {
+    hydrateFromStorageIfNeeded();
     threadRegistryStore.setState((s) => ({
       threads: s.threads.filter((t) => t.id !== id),
     }));
@@ -146,6 +169,7 @@ export const ThreadRegistry = {
   },
 
   clear(): void {
+    hydrateFromStorageIfNeeded();
     threadRegistryStore.setState(() => ({ threads: [] }));
   },
 } as const;
@@ -154,10 +178,46 @@ export const ThreadRegistry = {
 
 export function useThreadRegistry(): ThreadEntry[] {
   const state = useStore(threadRegistryStore);
+
+  useEffect(() => {
+    ThreadRegistry.hydrateFromStorage();
+  }, []);
+
   return state.threads;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function mergeThreads(
+  current: ThreadEntry[],
+  persisted: ThreadEntry[]
+): ThreadEntry[] {
+  const toEpoch = (iso: string) => {
+    const parsed = Date.parse(iso);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const byId = new Map<string, ThreadEntry>();
+  const combined = [...persisted, ...current];
+
+  for (const entry of combined) {
+    const existing = byId.get(entry.id);
+    if (!existing) {
+      byId.set(entry.id, entry);
+      continue;
+    }
+
+    const existingTs = toEpoch(existing.updatedAt);
+    const candidateTs = toEpoch(entry.updatedAt);
+    if (candidateTs >= existingTs) {
+      byId.set(entry.id, entry);
+    }
+  }
+
+  return [...byId.values()]
+    .sort((a, b) => toEpoch(b.updatedAt) - toEpoch(a.updatedAt))
+    .slice(0, MAX_THREADS);
+}
 
 function truncate(str: string, max: number): string {
   const trimmed = str.trim();

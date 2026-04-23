@@ -43,10 +43,32 @@ function AgentShellRoute() {
   const { sandboxAvailable } = Route.useLoaderData();
   const navigate = useNavigate();
 
-  const activeThreadId = React.useMemo(
-    () => threadId ?? `da-${Date.now()}`,
-    [threadId]
-  );
+  React.useEffect(() => {
+    if (threadId) return;
+    navigate({
+      to: '/agent-shell',
+      search: { threadId: `da-${Date.now()}` },
+      replace: true,
+    });
+  }, [threadId, navigate]);
+
+  if (!threadId) {
+    return (
+      <div className="h-[calc(100vh-3.5rem)] min-h-0 px-4 pb-4">
+        <ChatShell
+          title="Agent Shell"
+          subtitle="Run codex workflows with thread history, live tools, and execution state."
+          className="h-full rounded-[30px]"
+        >
+          <div className="flex h-full items-center justify-center text-sm text-[--text-muted,theme(colors.zinc.400)]">
+            Preparing chat thread...
+          </div>
+        </ChatShell>
+      </div>
+    );
+  }
+
+  const activeThreadId = threadId;
 
   const store = React.useMemo(
     () => createAgentRunStore('deepagent'),
