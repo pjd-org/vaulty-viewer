@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import getApiBase, { apiFetch } from '../utils/api';
+import getApiBase, {
+  apiFetch,
+  ForbiddenError,
+  UnauthenticatedError,
+} from '../utils/api';
 import { useHydrated } from './useHydrated';
 
 /**
@@ -49,7 +53,15 @@ export function useGoals() {
     retry: 1,
     queryFn: async () => {
       const tasksRes = await apiFetch('/api/v1/tasks?status=all&limit=1000');
-      if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
+      if (tasksRes.status === 401) {
+        throw new UnauthenticatedError('Failed to fetch tasks: 401');
+      }
+      if (tasksRes.status === 403) {
+        throw new ForbiddenError('Failed to fetch tasks: 403');
+      }
+      if (!tasksRes.ok) {
+        throw new Error(`Failed to fetch tasks: ${tasksRes.status}`);
+      }
       const tasksData = await tasksRes.json();
       return tasksData.structuredContent?.tasks || tasksData.tasks || [];
     },

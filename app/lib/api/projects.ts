@@ -1,4 +1,8 @@
-import { apiFetch, UnauthenticatedError } from '../../../src/utils/api';
+import {
+  apiFetch,
+  ForbiddenError,
+  UnauthenticatedError,
+} from '../../../src/utils/api';
 import type { ProjectSummaryDisplay } from '../../types/display';
 
 const statusVariantMap: Record<string, ProjectSummaryDisplay['statusVariant']> = {
@@ -43,8 +47,11 @@ export async function fetchProjects(): Promise<ProjectSummaryDisplay[]> {
   if (res.status === 401) {
     throw new UnauthenticatedError('Failed to fetch projects: 401');
   }
+  if (res.status === 403) {
+    throw new ForbiddenError('Failed to fetch projects: 403');
+  }
   if (!res.ok) {
-    throw new Error('Failed to fetch projects');
+    throw new Error(`Failed to fetch projects: ${res.status}`);
   }
   const body = await res.json();
   const raw: Record<string, any>[] = body.structuredContent?.projects ?? body.projects ?? [];

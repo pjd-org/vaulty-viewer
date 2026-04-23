@@ -10,6 +10,7 @@ import {
   type BubbleSurfacePayload,
 } from '../lib/viewer-adapter';
 import { UnauthenticatedError } from '../../src/utils/api';
+import { getAuthFailureKind } from '../hooks/use-login-redirect';
 
 export const Route = createFileRoute('/bubble')({
   validateSearch: bubbleSearchParams,
@@ -194,6 +195,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
 function BubbleRoute() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useBubbleSurface();
+  const authFailureKind = getAuthFailureKind(error);
 
   React.useEffect(() => {
     if (error instanceof UnauthenticatedError) {
@@ -247,6 +249,11 @@ function BubbleRoute() {
             <div className="h-20 animate-pulse rounded-2xl border border-border bg-muted/40" />
             <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
           </div>
+        ) : authFailureKind === 'forbidden' ? (
+          <EmptyState
+            title="Bubble access forbidden"
+            description="You are signed in, but this account cannot read the bubble surface."
+          />
         ) : error && !data ? (
           <EmptyState
             title="Bubble data temporarily unavailable."

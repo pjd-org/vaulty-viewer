@@ -22,6 +22,7 @@ import {
   SurfaceChip,
   SurfaceLinkChip,
   SurfaceButtonChip,
+  VaultyLogo,
 } from '../components/ui';
 import {
   getHomeSurfaceQueryOptions,
@@ -54,7 +55,11 @@ export const Route = createFileRoute('/')({
 function RecentSessionsPanel({ sessions }: { sessions: SessionSummary[] }) {
   if (!sessions.length) return null;
   return (
-    <SoftPanel variant="utility" tone="muted" className="flex flex-col gap-2 p-4">
+    <SoftPanel
+      variant="utility"
+      tone="muted"
+      className="flex flex-col gap-2 p-4"
+    >
       <SurfaceChip tone="accent" className="mb-3">
         Recent sessions
       </SurfaceChip>
@@ -484,6 +489,8 @@ function FocusRoute() {
   ] as const;
 
   const snapshotMap = {
+    pressure: visiblePressureBand.length,
+    queue: visibleDecisionQueue.length,
     automation: snapshots.automation.length,
     knowledge: snapshots.knowledge.length,
     portfolio: snapshots.portfolio.length,
@@ -746,9 +753,48 @@ function FocusRoute() {
                 aria-hidden="true"
                 className="absolute inset-y-0 left-0 w-2.5 bg-gradient-to-b from-fuchsia-300 via-violet-500 to-purple-600"
               />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                Immediate Interventions
-              </p>
+              {/* Logo link + Snapshot grid */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] shadow-[0_10px_24px_rgba(51,95,255,0.28)] hover:opacity-90"
+                  >
+                    <VaultyLogo className="h-5 w-5" />
+                  </Link>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Immediate Interventions
+                  </p>
+                </div>
+                {/* Snapshot pill */}
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/work"
+                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
+                  >
+                    <span className="text-primary">{snapshotMap.pressure}</span>{' '}
+                    pressure
+                  </Link>
+                  <span className="text-border">·</span>
+                  <Link
+                    to="/actions"
+                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
+                  >
+                    <span className="text-primary">{snapshotMap.queue}</span>{' '}
+                    queue
+                  </Link>
+                  <span className="text-border">·</span>
+                  <Link
+                    to="/portfolio"
+                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
+                  >
+                    <span className="text-primary">
+                      {snapshotMap.portfolio}
+                    </span>{' '}
+                    portfolio
+                  </Link>
+                </div>
+              </div>
               {featuredTask ? (
                 <>
                   <div className="mx-auto mt-4 w-full max-w-[560px] rounded-2xl border border-border bg-muted/40 p-4">

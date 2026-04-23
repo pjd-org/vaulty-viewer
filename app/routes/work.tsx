@@ -3,8 +3,11 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { ProjectsWorkspace } from '../components/projects';
 import { WorkspaceScaffold } from '../components/layout';
-import { RouteLoadingState } from '../components/ui';
-import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect';
+import { EmptyState, RouteLoadingState } from '../components/ui';
+import {
+  getAuthFailureKind,
+  useLoginRedirectOnUnauthenticated,
+} from '../hooks/use-login-redirect';
 import { workSearchParams } from '../../src/lib/routes/search-params';
 import { useWorkSurface, type WorkSurfacePayload } from '../lib/viewer-adapter';
 import type { NextAction } from '../../src/lib/focus-logic';
@@ -340,6 +343,7 @@ function WorkRoute() {
     'all'
   );
   const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
+  const authFailureKind = getAuthFailureKind(error);
   const blockedCount = useMemo(
     () => data?.tasks.filter((t) => t.status === 'blocked').length ?? 0,
     [data]
@@ -419,6 +423,11 @@ function WorkRoute() {
       primary={
         isLoading ? (
           <RouteLoadingState label="Loading project lanes..." />
+        ) : authFailureKind === 'forbidden' ? (
+          <EmptyState
+            title="Work access forbidden"
+            description="You are signed in, but this account cannot read the work surface."
+          />
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-3">

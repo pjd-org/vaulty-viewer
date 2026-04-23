@@ -38,6 +38,7 @@ export type {
 
 // ─── Local atoms ──────────────────────────────────────────────────────────────
 export { PrimaryButton, SecondaryButton, IconButton } from './Buttons';
+export { VaultyLogo } from './vaulty-logo';
 export type { ButtonBaseProps, IconButtonProps } from './Buttons';
 
 export { MetricLabel, MetaRow, ReasonText } from './Labels';

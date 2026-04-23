@@ -30,6 +30,14 @@ export class UnauthenticatedError extends Error {
   }
 }
 
+export class ForbiddenError extends Error {
+  readonly status = 403;
+  constructor(message?: string) {
+    super(message ?? 'Forbidden');
+    this.name = 'ForbiddenError';
+  }
+}
+
 declare global {
   interface Window {
     VAULT_API_URL?: string;
@@ -346,6 +354,19 @@ export async function apiFetch(
     delayMs *= retryMultiplier;
     attempt += 1;
   }
+}
+
+export function toApiAuthError(
+  status: number,
+  context: string
+): Error | null {
+  if (status === 401) {
+    return new UnauthenticatedError(`Unauthorized: ${context}`);
+  }
+  if (status === 403) {
+    return new ForbiddenError(`Forbidden: ${context}`);
+  }
+  return null;
 }
 
 export default getApiBase;

@@ -1,4 +1,8 @@
-import { apiFetch, UnauthenticatedError } from '../../../src/utils/api';
+import {
+  apiFetch,
+  ForbiddenError,
+  UnauthenticatedError,
+} from '../../../src/utils/api';
 import { normalizeTask, type KanbanTask } from '../../../src/lib/kanban-logic';
 
 export async function fetchAllTasks(): Promise<KanbanTask[]> {
@@ -6,7 +10,10 @@ export async function fetchAllTasks(): Promise<KanbanTask[]> {
   if (res.status === 401) {
     throw new UnauthenticatedError('Failed to fetch tasks: 401');
   }
-  if (!res.ok) throw new Error('Failed to fetch tasks');
+  if (res.status === 403) {
+    throw new ForbiddenError('Failed to fetch tasks: 403');
+  }
+  if (!res.ok) throw new Error(`Failed to fetch tasks: ${res.status}`);
   const body = await res.json();
   const raw = body.structuredContent?.tasks ?? body.tasks ?? [];
   return raw.map((r: any) => normalizeTask(r));
@@ -19,7 +26,10 @@ export async function fetchNextActions(): Promise<
   if (res.status === 401) {
     throw new UnauthenticatedError('Failed to fetch next actions: 401');
   }
-  if (!res.ok) throw new Error('Failed to fetch next actions');
+  if (res.status === 403) {
+    throw new ForbiddenError('Failed to fetch next actions: 403');
+  }
+  if (!res.ok) throw new Error(`Failed to fetch next actions: ${res.status}`);
   const body = await res.json();
   const raw = body.structuredContent?.tasks ?? body.tasks ?? [];
   return raw.map((r: any) => ({
@@ -37,7 +47,7 @@ export async function updateTaskStatus(path: string, status: string) {
     body: JSON.stringify({ status }),
   });
   if (!res.ok) {
-    throw new Error('Failed to update task status');
+    throw new Error(`Failed to update task status: ${res.status}`);
   }
   return res.ok;
 }
@@ -62,7 +72,10 @@ export async function fetchTaskMetrics(path: string): Promise<TaskMetrics> {
   if (res.status === 401) {
     throw new UnauthenticatedError('Failed to fetch task metrics: 401');
   }
-  if (!res.ok) throw new Error('Failed to fetch task metrics');
+  if (res.status === 403) {
+    throw new ForbiddenError('Failed to fetch task metrics: 403');
+  }
+  if (!res.ok) throw new Error(`Failed to fetch task metrics: ${res.status}`);
   const body = await res.json();
   const task = body.structuredContent?.task ?? body.task ?? body;
   return {

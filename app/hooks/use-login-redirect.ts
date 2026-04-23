@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
-import { UnauthenticatedError } from '../../src/utils/api';
+import { ForbiddenError, UnauthenticatedError } from '../../src/utils/api';
 
 export function useLoginRedirectOnUnauthenticated(error: unknown) {
   const navigate = useNavigate();
@@ -13,4 +13,10 @@ export function useLoginRedirectOnUnauthenticated(error: unknown) {
   }, [error, navigate]);
 
   return error instanceof UnauthenticatedError;
+}
+
+export function getAuthFailureKind(error: unknown) {
+  if (error instanceof UnauthenticatedError) return 'unauthenticated' as const;
+  if (error instanceof ForbiddenError) return 'forbidden' as const;
+  return null;
 }

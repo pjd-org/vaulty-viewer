@@ -3,8 +3,11 @@ import { createFileRoute } from '@tanstack/react-router';
 import { cn } from '@/src/lib/utils';
 
 import { WorkspaceScaffold } from '../components/layout';
-import { RouteLoadingState } from '../components/ui';
-import { useLoginRedirectOnUnauthenticated } from '../hooks/use-login-redirect';
+import { EmptyState, RouteLoadingState } from '../components/ui';
+import {
+  getAuthFailureKind,
+  useLoginRedirectOnUnauthenticated,
+} from '../hooks/use-login-redirect';
 import { healthSearchParams } from '../../src/lib/routes/search-params';
 import {
   useHealthSurface,
@@ -153,6 +156,7 @@ function HealthRoute() {
   const { data, isLoading, error } = useHealthSurface();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
+  const authFailureKind = getAuthFailureKind(error);
 
   if (isUnauthenticated) return null;
 
@@ -199,6 +203,11 @@ function HealthRoute() {
       primary={
         isLoading ? (
           <RouteLoadingState label="Loading service checks..." />
+        ) : authFailureKind === 'forbidden' ? (
+          <EmptyState
+            title="Health access forbidden"
+            description="You are signed in, but this account cannot read the health surface."
+          />
         ) : data == null ? (
           <div data-testid="health-empty-state" className="flex flex-col gap-2">
             <p className="text-sm font-medium text-foreground">
