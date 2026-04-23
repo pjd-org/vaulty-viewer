@@ -39,6 +39,7 @@ import {
   VIEWER_OVERLAY_NAV,
   VIEWER_PRIMARY_NAV,
   VIEWER_SECONDARY_NAV,
+  VIEWER_STATUS_NAV,
   VIEWER_UTILITY_NAV,
 } from '../../../src/lib/routes/v3-routing';
 import { cn } from '../../../src/lib/utils';
@@ -54,6 +55,7 @@ const ROUTE_ICONS: Record<string, React.ElementType> = {
   '/portfolio': FolderKanban,
   '/bubble': MessageCircle,
   '/health': Heart,
+  '/cod-status': Activity,
   '/graph': Share2,
   '/timeline': Clock,
   '/archive': Archive,
@@ -237,6 +239,25 @@ function ShellRailContent({
         <ShellSection title="Secondary navigation" collapsed={collapsed}>
           {VIEWER_SECONDARY_NAV.map((item) => {
             const Icon = ROUTE_ICONS[item.to] ?? BookOpen;
+            return (
+              <ShellNavButton
+                key={item.to}
+                to={item.to}
+                label={item.label}
+                Icon={Icon}
+                active={isActive(item.to)}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+              />
+            );
+          })}
+        </ShellSection>
+
+        <Separator />
+
+        <ShellSection title="Status" collapsed={collapsed}>
+          {VIEWER_STATUS_NAV.map((item) => {
+            const Icon = ROUTE_ICONS[item.to] ?? Heart;
             return (
               <ShellNavButton
                 key={item.to}

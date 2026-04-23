@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Button, GlassSurface } from '@vault/ui';
+import { Button, GlassBadge, GlassSurface } from '@vault/ui';
 import useAvatar from '../../../src/hooks/useAvatar';
 import VitalsPanel from '../../../src/components/VitalsPanel';
 import {
@@ -22,6 +22,13 @@ import {
   type FlagsData,
   type ProgressionData,
 } from '../ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 
 export interface AvatarOverlayProps {
   onRequestClose?: () => void;
@@ -54,6 +61,23 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
       return;
     }
 
+    if (
+      typeof window !== 'undefined' &&
+      typeof document !== 'undefined' &&
+      document.referrer &&
+      window.history.length > 1
+    ) {
+      try {
+        const referrer = new URL(document.referrer);
+        if (referrer.origin === window.location.origin) {
+          window.history.back();
+          return;
+        }
+      } catch {
+        // Fall through to the home fallback.
+      }
+    }
+
     void navigate({ to: '/', search: {} });
   }, [navigate, onRequestClose]);
 
@@ -67,141 +91,150 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
   }, [closeOverlay]);
 
   return (
-    <div
-      className="fixed inset-0 z-[8500] flex items-start justify-center overflow-y-auto bg-[color-mix(in_srgb,var(--vault-ink)_24%,transparent)] px-4 py-4 backdrop-blur-md sm:px-6 sm:py-6"
-      onClick={closeOverlay}
-    >
-      <GlassSurface
-        as="section"
-        variant="overlay"
-        radius="2xl"
-        shadow="lg"
-        className="relative w-full max-w-[760px] overflow-hidden"
-        style={{ maxHeight: 'calc(100dvh - 2rem)' }}
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => event.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
+    <Dialog open onOpenChange={(open) => !open && closeOverlay()}>
+      <DialogContent
         aria-label="Avatar"
+        className="!max-w-[min(980px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="absolute right-4 top-4 z-10 h-10 w-10 rounded-full border-transparent text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:text-[var(--text-primary)]"
-          onClick={closeOverlay}
-          aria-label="Close avatar"
-        >
-          ✕
-        </Button>
-        <main className="max-h-[calc(100dvh-2rem)] overflow-y-auto px-5 pb-5 pt-16 sm:px-6 sm:pb-6">
-          <nav className="mb-4">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="rounded-full px-3 text-xs text-[var(--text-secondary)]"
-            >
-              <Link to="/" search={{}}>
-                ← Focus
-              </Link>
-            </Button>
-          </nav>
+        <div className="max-h-[min(90vh,920px)] overflow-y-auto">
+          <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-2xl">Avatar</DialogTitle>
+              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+                Readiness, vitals, and the working envelope for the current
+                avatar state.
+              </DialogDescription>
+            </DialogHeader>
 
-          {error && (
-            <GlassSurface
-              as="div"
-              variant="base"
-              radius="lg"
-              shadow="xs"
-              border="default"
-              className="mb-4 flex items-start gap-3 border-[color-mix(in_srgb,var(--a-rose)_24%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_12%,transparent)] px-4 py-3 text-sm text-[var(--text-danger)]"
-              role="alert"
-            >
-              <p className="min-w-0 flex-1">{error}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+              <GlassBadge tone="sky" size="md" className="justify-between px-3">
+                <span className="uppercase tracking-[0.2em]">Readiness</span>
+                <strong>{readiness.label}</strong>
+              </GlassBadge>
+              <GlassBadge tone="mint" size="md" className="justify-between px-3">
+                <span className="uppercase tracking-[0.2em]">Energy</span>
+                <strong>{Math.round(vitals.energy ?? 0)}%</strong>
+              </GlassBadge>
+              <GlassBadge tone="sun" size="md" className="justify-between px-3">
+                <span className="uppercase tracking-[0.2em]">Stress</span>
+                <strong>{Math.round(vitals.stress ?? 0)}%</strong>
+              </GlassBadge>
+              <GlassBadge tone="lilac" size="md" className="justify-between px-3">
+                <span className="uppercase tracking-[0.2em]">Time</span>
+                <strong>{formatTimeBudget(capacity.timeBudgetMin) || '—'}</strong>
+              </GlassBadge>
+            </div>
+          </div>
+
+          <main className="px-6 py-5">
+            <nav className="mb-4">
               <Button
-                type="button"
+                asChild
                 variant="ghost"
                 size="sm"
-                onClick={refresh}
-                className="h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-danger)]"
+                className="rounded-full px-3 text-xs text-[var(--text-secondary)]"
               >
-                Retry
+                <Link to="/" search={{}}>
+                  ← Focus
+                </Link>
               </Button>
-            </GlassSurface>
-          )}
+            </nav>
 
-          <ReadinessHeader
-            profile={profile}
-            readiness={readiness}
-            flags={flags}
-            stale={stale}
-            updated={avatar.updated}
-            loading={loading}
-            apiStatus={apiStatus as ApiStatus}
-            onRefresh={refresh}
-            capacityLabel={(() => {
-              const parts: string[] = [];
-              if (isMetricReal(capacity.focusCostMax))
-                parts.push(`Focus ≤ ${capacity.focusCostMax}`);
-              if (isMetricReal(capacity.effortScoreMax))
-                parts.push(`Effort ≤ ${capacity.effortScoreMax}`);
-              return parts.join(' · ') || 'No capacity set';
-            })()}
-            timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
-          />
+            {error && (
+              <GlassSurface
+                as="div"
+                variant="base"
+                radius="lg"
+                shadow="xs"
+                border="default"
+                className="mb-4 flex items-start gap-3 border-[color-mix(in_srgb,var(--a-rose)_24%,transparent)] bg-[color-mix(in_srgb,var(--a-rose)_12%,transparent)] px-4 py-3 text-sm text-[var(--text-danger)]"
+                role="alert"
+              >
+                <p className="min-w-0 flex-1">{error}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={refresh}
+                  className="h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-danger)]"
+                >
+                  Retry
+                </Button>
+              </GlassSurface>
+            )}
 
-          {loading ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Loading…
-            </p>
-          ) : (
-            <>
-              <section className="mb-5 flex flex-col gap-2">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Vitals
-                </p>
-                <VitalsPanel vitals={vitals} />
-              </section>
+            <ReadinessHeader
+              profile={profile}
+              readiness={readiness}
+              flags={flags}
+              stale={stale}
+              updated={avatar.updated}
+              loading={loading}
+              apiStatus={apiStatus as ApiStatus}
+              onRefresh={refresh}
+              capacityLabel={(() => {
+                const parts: string[] = [];
+                if (isMetricReal(capacity.focusCostMax))
+                  parts.push(`Focus ≤ ${capacity.focusCostMax}`);
+                if (isMetricReal(capacity.effortScoreMax))
+                  parts.push(`Effort ≤ ${capacity.effortScoreMax}`);
+                return parts.join(' · ') || 'No capacity set';
+              })()}
+              timeBudgetLabel={formatTimeBudget(capacity.timeBudgetMin)}
+            />
 
-              <CapacityGroup capacity={capacity} />
+            {loading ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Loading…
+              </p>
+            ) : (
+              <>
+                <section className="mb-5 flex flex-col gap-2">
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Vitals
+                  </p>
+                  <VitalsPanel vitals={vitals} />
+                </section>
 
-              <ActionGuidancePanel readiness={readiness} capacity={capacity} />
+                <CapacityGroup capacity={capacity} />
 
-              <ExecutionStats vitals={vitals} />
+                <ActionGuidancePanel readiness={readiness} capacity={capacity} />
 
-              <details className="group mb-4">
-                <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
-                  Progression
-                </summary>
-                <div className="mt-2">
-                  <ProgressionSummary
-                    level={level}
-                    currentXp={currentXp}
-                    xpToNext={xpToNext}
-                    progression={progression}
-                  />
-                </div>
-              </details>
+                <ExecutionStats vitals={vitals} />
 
-              {avatar.updated && (
-                <div className="border-t border-border pt-4">
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full px-0 text-xs text-[var(--text-secondary)]"
-                  >
-                    <Link to="/note" search={{ p: 'notes/core/avatar/Avatar' }}>
-                      Open avatar note →
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </main>
-      </GlassSurface>
-    </div>
+                <details className="group mb-4">
+                  <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
+                    Progression
+                  </summary>
+                  <div className="mt-2">
+                    <ProgressionSummary
+                      level={level}
+                      currentXp={currentXp}
+                      xpToNext={xpToNext}
+                      progression={progression}
+                    />
+                  </div>
+                </details>
+
+                {avatar.updated && (
+                  <div className="border-t border-border pt-4">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full px-0 text-xs text-[var(--text-secondary)]"
+                    >
+                      <Link to="/note" search={{ p: 'notes/core/avatar/Avatar' }}>
+                        Open avatar note →
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

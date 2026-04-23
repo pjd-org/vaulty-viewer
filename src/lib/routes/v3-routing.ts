@@ -24,6 +24,7 @@ export const VIEWER_TOP_LEVEL_PATHS = [
   '/portfolio',
   '/bubble',
   '/health',
+  '/cod-status',
   '/graph',
   '/timeline',
   '/settings',
@@ -46,7 +47,11 @@ export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Actions', shortLabel: '⚡', to: '/actions', group: 'system' },
   { label: 'Portfolio', shortLabel: '▣', to: '/portfolio', group: 'system' },
   { label: 'Bubble', shortLabel: '◉', to: '/bubble', group: 'system' },
+] as const;
+
+export const VIEWER_STATUS_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Health', shortLabel: '♡', to: '/health', group: 'system' },
+  { label: 'COD Status', shortLabel: '⬡', to: '/cod-status', group: 'system' },
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [

@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { GlassBadge, GlassSurface } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 
-import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 import {
   getAuthFailureKind,
   useLoginRedirectOnUnauthenticated,
@@ -154,6 +161,7 @@ function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
 
 function HealthRoute() {
   const { data, isLoading, error } = useHealthSurface();
+  const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isUnauthenticated = useLoginRedirectOnUnauthenticated(error);
   const authFailureKind = getAuthFailureKind(error);
@@ -164,73 +172,119 @@ function HealthRoute() {
     ? (data?.services.find((s) => s.id === selectedId) ?? null)
     : null;
 
+  React.useEffect(() => {
+    if (!selectedId && data?.services.length) {
+      setSelectedId(data.services[0].id);
+    }
+  }, [data, selectedId]);
+
   const handleSelect = (svc: HealthServiceEntry) => {
     setSelectedId((prev) => (prev === svc.id ? null : svc.id));
   };
 
   return (
-    <WorkspaceScaffold
-      title="Health"
-      subtitle="Platform-integrity lane for freshness, incidents, sync, and degraded services."
-      summaryItems={[
-        {
-          label: 'Overall',
-          value: data ? (data.overall === 'ok' ? 'OK' : 'Degraded') : '—',
-          detail: data
-            ? `As of ${new Date(data.timestamp).toLocaleTimeString()}`
-            : 'Awaiting data',
-        },
-        {
-          label: 'Services',
-          value: data ? String(data.services.length) : '—',
-          detail: 'Monitored endpoints',
-        },
-        {
-          label: 'Degraded',
-          value: data
-            ? String(data.services.filter((s) => s.status !== 'ok').length)
-            : '0',
-          detail: 'Services with issues',
-        },
-        {
-          label: 'MCP',
-          value: data?.services.find((s) => s.id === 'mcp')?.status ?? '—',
-          detail: 'MCP server status',
-        },
-      ]}
-      primaryTitle="Service Status"
-      primarySubtitle="Live health of platform services and dependencies."
-      primary={
-        isLoading ? (
-          <RouteLoadingState label="Loading service checks..." />
-        ) : authFailureKind === 'forbidden' ? (
-          <EmptyState
-            title="Health access forbidden"
-            description="You are signed in, but this account cannot read the health surface."
-          />
-        ) : data == null ? (
-          <div data-testid="health-empty-state" className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground">
-              No health data yet.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Adapter context is wired. Service status will appear once the
-              runtime connects.
-            </p>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) void navigate({ to: '/' });
+      }}
+    >
+      <DialogContent
+        aria-label="Health details"
+        className="!top-[50%] !max-w-[min(1100px,calc(100vw-2rem))] !rounded-[24px] !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
+      >
+        <div className="max-h-[min(90vh,920px)] overflow-y-auto">
+          <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-2xl">Health</DialogTitle>
+              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+                Platform-integrity lane for freshness, incidents, sync, and
+                degraded services.
+              </DialogDescription>
+            </DialogHeader>
+
+            {data && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                <GlassBadge tone="sky" size="md" className="justify-between px-3">
+                  <span className="uppercase tracking-[0.2em]">Overall</span>
+                  <strong>{data.overall === 'ok' ? 'OK' : 'Degraded'}</strong>
+                </GlassBadge>
+                <GlassBadge tone="mint" size="md" className="justify-between px-3">
+                  <span className="uppercase tracking-[0.2em]">Services</span>
+                  <strong>{data.services.length}</strong>
+                </GlassBadge>
+                <GlassBadge tone="sun" size="md" className="justify-between px-3">
+                  <span className="uppercase tracking-[0.2em]">Degraded</span>
+                  <strong>{data.services.filter((s) => s.status !== 'ok').length}</strong>
+                </GlassBadge>
+                <GlassBadge tone="lilac" size="md" className="justify-between px-3">
+                  <span className="uppercase tracking-[0.2em]">MCP</span>
+                  <strong>{data.services.find((s) => s.id === 'mcp')?.status ?? '—'}</strong>
+                </GlassBadge>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              Overall: <OverallBadge payload={data} />
-            </div>
-            <ServiceTable
-              services={data.services}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-            />
+
+          <div className="px-6 py-5">
+            {isLoading ? (
+              <RouteLoadingState label="Loading service checks..." />
+            ) : authFailureKind === 'forbidden' ? (
+              <EmptyState
+                title="Health access forbidden"
+                description="You are signed in, but this account cannot read the health surface."
+              />
+            ) : data == null ? (
+              <div data-testid="health-empty-state" className="flex flex-col gap-2">
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  No health data yet.
+                </p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Adapter context is wired. Service status will appear once the
+                  runtime connects.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.95fr]">
+                <GlassSurface
+                  as="section"
+                  variant="base"
+                  radius="xl"
+                  shadow="xs"
+                  className="overflow-hidden p-4"
+                >
+                  <div className="mb-3 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                    Overall: <OverallBadge payload={data} />
+                  </div>
+                  <ServiceTable
+                    services={data.services}
+                    selectedId={selectedId}
+                    onSelect={handleSelect}
+                  />
+                </GlassSurface>
+
+                <GlassSurface
+                  as="section"
+                  variant="base"
+                  radius="xl"
+                  shadow="xs"
+                  className="overflow-hidden p-4"
+                >
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
+                    Selected service
+                  </p>
+                  {selectedSvc ? (
+                    <ServiceDetail svc={selectedSvc} />
+                  ) : (
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      Select a service to inspect its details.
+                    </p>
+                  )}
+                </GlassSurface>
+              </div>
+            )}
           </div>
-        )
-      }
-    />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
