@@ -3,35 +3,37 @@
 exports[`ProjectCard > matches snapshot 1`] = `
 <div>
   <div
-    class="genie-card animate-fade-in transition-transform duration-200 hover:-translate-y-1"
+    class="genie-card flex flex-col gap-4 animate-fade-in"
   >
     <div
-      class="flex items-center justify-between mb-2"
+      class="flex items-start justify-between gap-3"
     >
-      <h3
-        class="text-lg font-semibold"
-        style="color: var(--text-primary);"
+      <div
+        class="min-w-0 space-y-2"
       >
-        Website revamp
-      </h3>
+        <h3
+          class="text-lg font-semibold leading-snug text-[var(--text-primary)]"
+        >
+          Website revamp
+        </h3>
+        <p
+          class="text-sm leading-relaxed text-[var(--text-secondary)]"
+        >
+          Finalize landing
+        </p>
+      </div>
       <span
         class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-[var(--surf-glass)] text-[var(--text-secondary)] border border-[var(--border-glass)] shadow-xs "
       >
         Active
       </span>
     </div>
-    <p
-      class="text-sm mb-3"
-      style="color: var(--text-secondary);"
-    >
-      Finalize landing
-    </p>
     <div
       aria-label="Website revamp progress"
       aria-valuemax="100"
       aria-valuemin="0"
       aria-valuenow="42"
-      class="progress h-2 rounded-full overflow-hidden"
+      class="progress h-2 overflow-hidden rounded-full"
       role="progressbar"
     >
       <div
@@ -40,10 +42,11 @@ exports[`ProjectCard > matches snapshot 1`] = `
       />
     </div>
     <div
-      class="flex items-center justify-between text-xs mt-2"
-      style="color: var(--text-tertiary);"
+      class="flex items-center justify-between gap-3 text-xs text-[var(--text-tertiary)]"
     >
-      <span>
+      <span
+        class="min-w-0 flex-1"
+      >
         42%
       </span>
     </div>

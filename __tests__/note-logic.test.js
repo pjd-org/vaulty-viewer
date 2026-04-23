@@ -119,7 +119,9 @@ describe('note-path and note-markdown', () => {
 
     expect(source).toContain('/api/v1/graph/related/${encodedPath}?limit=8');
     expect(source).toContain('grid grid-cols-12 gap-6');
-    expect(source).toContain('className="col-span-12 lg:col-span-4 space-y-4"');
+    expect(source).toContain(
+      'className="col-span-12 lg:col-span-4 flex flex-col gap-4"'
+    );
     expect(source).toContain('NoteBodyRenderer');
     expect(source).toContain('NoteMetaRail');
   });

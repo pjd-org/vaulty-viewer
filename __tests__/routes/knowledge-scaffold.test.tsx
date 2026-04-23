@@ -95,10 +95,10 @@ describe('knowledge route scaffold', () => {
     expect(screen.getByText('Entities')).toBeTruthy();
   });
 
-  it('renders Search and Graph quick-links', () => {
+  it('renders Search notes and Open graph quick-links', () => {
     renderWithClient(<RouteComponent />);
-    expect(screen.getByText('Search')).toBeTruthy();
-    expect(screen.getByText('Graph')).toBeTruthy();
+    expect(screen.getByText('Search notes')).toBeTruthy();
+    expect(screen.getByText('Open graph')).toBeTruthy();
   });
 
   it('mounts KnowledgeWorkspaceSurface in the primary slot', () => {

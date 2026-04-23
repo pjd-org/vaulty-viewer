@@ -19,6 +19,7 @@ describe('viewer V3 routing canon', () => {
       '/portfolio',
       '/bubble',
       '/health',
+      '/cod-status',
       '/graph',
       '/timeline',
       '/settings',

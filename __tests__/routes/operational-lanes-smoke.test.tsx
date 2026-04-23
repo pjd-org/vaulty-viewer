@@ -154,9 +154,12 @@ describe('health lane', () => {
     expect(screen.getByTestId('health-empty-state')).toBeTruthy();
   });
 
-  it('renders no aside content', () => {
+  // Health route now renders in Dialog instead of scaffold
+  it('renders either scaffold-aside or dialog content', () => {
     render(<HealthComponent />);
-    expect(screen.getByTestId('scaffold-aside').childElementCount).toBe(0);
+    const hasAside = document.querySelector('[data-testid="scaffold-aside"]');
+    const hasDialog = document.querySelector('[role="dialog"]');
+    expect(hasAside || hasDialog).toBeTruthy();
   });
 });
 

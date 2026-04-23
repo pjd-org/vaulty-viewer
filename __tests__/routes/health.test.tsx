@@ -119,12 +119,14 @@ describe('health route — with health data', () => {
 
   it('renders a row for vault-api service', () => {
     render(<HealthComponent />);
-    expect(screen.getByText('API')).toBeTruthy();
+    const apiElements = screen.getAllByText('API');
+    expect(apiElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders a row for MCP service', () => {
     render(<HealthComponent />);
-    expect(screen.getByText('MCP')).toBeTruthy();
+    const mcpElements = screen.getAllByText('MCP');
+    expect(mcpElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows overall status badge', () => {

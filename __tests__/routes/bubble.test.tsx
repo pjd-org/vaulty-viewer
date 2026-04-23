@@ -13,21 +13,33 @@ import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 // Hoist shared mocks so they are available inside vi.mock factories
 // ---------------------------------------------------------------------------
 
-const { MockUnauthenticatedError, mockNavigate, mockUseBubbleSurface } =
-  vi.hoisted(() => {
-    class MockUnauthenticatedError extends Error {
-      constructor(msg?: string) {
-        super(msg);
-        this.name = 'UnauthenticatedError';
-        Object.setPrototypeOf(this, MockUnauthenticatedError.prototype);
-      }
+const {
+  MockUnauthenticatedError,
+  MockForbiddenError,
+  mockNavigate,
+  mockUseBubbleSurface,
+} = vi.hoisted(() => {
+  class MockUnauthenticatedError extends Error {
+    constructor(msg?: string) {
+      super(msg);
+      this.name = 'UnauthenticatedError';
+      Object.setPrototypeOf(this, MockUnauthenticatedError.prototype);
     }
-    return {
-      MockUnauthenticatedError,
-      mockNavigate: vi.fn(),
-      mockUseBubbleSurface: vi.fn(),
-    };
-  });
+  }
+  class MockForbiddenError extends Error {
+    constructor(msg?: string) {
+      super(msg);
+      this.name = 'ForbiddenError';
+      Object.setPrototypeOf(this, MockForbiddenError.prototype);
+    }
+  }
+  return {
+    MockUnauthenticatedError,
+    MockForbiddenError,
+    mockNavigate: vi.fn(),
+    mockUseBubbleSurface: vi.fn(),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Mock router + layout
@@ -78,11 +90,12 @@ vi.mock('../../app/lib/viewer-adapter', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Mock UnauthenticatedError
+// Mock UnauthenticatedError + ForbiddenError
 // ---------------------------------------------------------------------------
 
 vi.mock('../../src/utils/api', () => ({
   UnauthenticatedError: MockUnauthenticatedError,
+  ForbiddenError: MockForbiddenError,
   apiFetch: vi.fn(),
 }));
 

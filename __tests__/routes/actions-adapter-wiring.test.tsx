@@ -44,6 +44,19 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => mockRouteState.search,
   }),
   useNavigate: () => mockNavigate,
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: React.ReactNode;
+    to?: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={typeof to === 'string' ? to : '#'} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
@@ -93,9 +106,9 @@ vi.mock('../../app/components/layout', () => ({
 }));
 
 vi.mock('../../app/components/ui', async () => {
-  const actual = await vi.importActual<typeof import('../../app/components/ui')>(
-    '../../app/components/ui'
-  );
+  const actual = await vi.importActual<
+    typeof import('../../app/components/ui')
+  >('../../app/components/ui');
 
   return {
     ...actual,
