@@ -36,6 +36,7 @@ import { useMutationWithVerification } from '../hooks/use-mutation-with-verifica
 import { updateTaskStatus } from '../lib/api/tasks';
 import { CodSignalRow } from '../components/cod/CodSignalRow';
 import { CodActionRow } from '../components/cod/CodActionRow';
+import { SurfaceEntryGrid, type SurfaceEntryTile } from '../components/home/SurfaceEntryGrid';
 import { useUIStore } from '../../src/store/ui';
 
 const noteSearch = (path: string) => ({ p: path });
@@ -498,6 +499,84 @@ function FocusRoute() {
     health: snapshots.health.length,
   } as const;
 
+  const pressureTile: SurfaceEntryTile = {
+    label: 'Pressure',
+    role: 'Active blockers and pressure signals',
+    count: snapshotMap.pressure,
+    to: '/work',
+    nextStep: 'Review active blockers',
+  };
+
+  const queueTile: SurfaceEntryTile = {
+    label: 'Queue',
+    role: 'Ranked recommendations ready to execute',
+    count: snapshotMap.queue,
+    to: '/actions',
+    search: {
+      sort: undefined,
+      simulatableOnly: undefined,
+      selectedId: undefined,
+    },
+    nextStep: 'Execute or defer top move',
+  };
+
+  const portfolioTile: SurfaceEntryTile = {
+    label: 'Portfolio',
+    role: 'Cross-project pressure summary',
+    count: snapshotMap.portfolio,
+    to: '/portfolio',
+    search: { tab: undefined, selectedId: undefined },
+    nextStep: 'Inspect impacted projects',
+  };
+
+  const snapshotTiles: SurfaceEntryTile[] = [
+    pressureTile,
+    queueTile,
+    portfolioTile,
+    {
+      label: 'Automation',
+      role: 'Agents, runs, and scheduler load',
+      count: snapshotMap.automation,
+      to: '/automation',
+      search: {
+        tab: undefined,
+        subtab: undefined,
+        selectedId: undefined,
+        autoRefresh: undefined,
+      },
+      nextStep: 'Review active runs',
+    },
+    {
+      label: 'Bubble',
+      role: 'Runtime pressure and reward lanes',
+      count: snapshotMap.bubble,
+      to: '/bubble',
+      search: { tab: undefined, selectedId: undefined },
+      nextStep: 'Check momentum and rewards',
+    },
+    {
+      label: 'Knowledge',
+      role: 'Vault notes and retrieval context',
+      count: snapshotMap.knowledge,
+      to: '/knowledge',
+      nextStep: 'Review supporting context',
+    },
+    {
+      label: 'Health',
+      role: 'System diagnostics and checks',
+      count: snapshotMap.health,
+      to: '/health',
+      search: { tab: undefined, selectedId: undefined },
+      nextStep: 'Inspect health status',
+    },
+  ];
+
+  const heroSnapshotTiles: SurfaceEntryTile[] = [
+    pressureTile,
+    queueTile,
+    portfolioTile,
+  ];
+
   // ---------------------------------------------------------------------------
   // Signal / Recommendation callbacks
   // ---------------------------------------------------------------------------
@@ -548,108 +627,10 @@ function FocusRoute() {
   const asideContent = (
     <div className="flex flex-col gap-5">
       {/* Snapshot grid */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Link
-          to="/work"
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Pressure
-          </p>
-          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
-            {visiblePressureBand.length}
-          </p>
-          <div className="mt-2 h-px w-16 bg-border" />
-        </Link>
-        <Link
-          to="/actions"
-          search={{
-            sort: undefined,
-            simulatableOnly: undefined,
-            selectedId: undefined,
-          }}
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Queue
-          </p>
-          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
-            {visibleDecisionQueue.length}
-          </p>
-          <div className="mt-2 h-px w-16 bg-border" />
-        </Link>
-        <Link
-          to="/portfolio"
-          search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Portfolio
-          </p>
-          <p className="mt-0.5 text-[1.65rem] font-semibold leading-none tabular-nums text-foreground">
-            {snapshotMap.portfolio}
-          </p>
-          <div className="mt-2 h-px w-16 bg-border" />
-        </Link>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link
-          to="/automation"
-          search={{
-            tab: undefined,
-            subtab: undefined,
-            selectedId: undefined,
-            autoRefresh: undefined,
-          }}
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Automation
-          </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
-            {snapshotMap.automation}
-          </p>
-          <div className="mt-2 h-px w-14 bg-border" />
-        </Link>
-        <Link
-          to="/bubble"
-          search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Bubble
-          </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
-            {snapshotMap.bubble}
-          </p>
-          <div className="mt-2 h-px w-14 bg-border" />
-        </Link>
-        <Link
-          to="/knowledge"
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Knowledge
-          </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
-            {snapshotMap.knowledge}
-          </p>
-          <div className="mt-2 h-px w-14 bg-border" />
-        </Link>
-        <Link
-          to="/health"
-          search={{ tab: undefined, selectedId: undefined }}
-          className="rounded-xl border border-border bg-card/70 px-3 py-2 hover:bg-muted/60"
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Health
-          </p>
-          <p className="mt-0.5 text-2xl font-semibold leading-none text-foreground">
-            {snapshotMap.health}
-          </p>
-          <div className="mt-2 h-px w-14 bg-border" />
-        </Link>
-      </div>
+      <SurfaceEntryGrid
+        tiles={snapshotTiles}
+        loading={surfaceLoading && !surface}
+      />
 
       {/* Context tail placeholder */}
       <div className="rounded-[18px] border border-border bg-muted/40 px-4 py-4">
@@ -754,7 +735,7 @@ function FocusRoute() {
                 className="absolute inset-y-0 left-0 w-2.5 bg-gradient-to-b from-fuchsia-300 via-violet-500 to-purple-600"
               />
               {/* Logo link + Snapshot grid */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <Link
                     to="/"
@@ -766,35 +747,12 @@ function FocusRoute() {
                     Immediate Interventions
                   </p>
                 </div>
-                {/* Snapshot pill */}
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/work"
-                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-                  >
-                    <span className="text-primary">{snapshotMap.pressure}</span>{' '}
-                    pressure
-                  </Link>
-                  <span className="text-border">·</span>
-                  <Link
-                    to="/actions"
-                    search={{ sort: undefined, simulatableOnly: undefined, selectedId: undefined }}
-                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-                  >
-                    <span className="text-primary">{snapshotMap.queue}</span>{' '}
-                    queue
-                  </Link>
-                  <span className="text-border">·</span>
-                  <Link
-                    to="/portfolio"
-                    search={{ tab: undefined, selectedId: undefined }}
-                    className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
-                  >
-                    <span className="text-primary">
-                      {snapshotMap.portfolio}
-                    </span>{' '}
-                    portfolio
-                  </Link>
+                <div className="w-full max-w-[520px]">
+                  <SurfaceEntryGrid
+                    tiles={heroSnapshotTiles}
+                    loading={surfaceLoading && !surface}
+                    columns={3}
+                  />
                 </div>
               </div>
               {featuredTask ? (

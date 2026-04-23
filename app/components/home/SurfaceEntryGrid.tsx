@@ -13,6 +13,8 @@ export interface SurfaceEntryTile {
   count: number;
   /** Where to navigate when the tile is clicked */
   to: string;
+  /** Optional route search payload, used to preserve reset semantics */
+  search?: Record<string, unknown>;
   /** Human-readable state line derived from count */
   stateLabel?: string;
   /** Next-step hint shown below the count */
@@ -24,6 +26,8 @@ interface SurfaceEntryGridProps {
   loading?: boolean;
   /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
   accentColor?: string;
+  /** Number of columns used by the grid (default: 2). */
+  columns?: 2 | 3;
 }
 
 // ---------------------------------------------------------------------------
@@ -34,14 +38,17 @@ export function SurfaceEntryGrid({
   tiles,
   loading,
   accentColor,
+  columns = 2,
 }: SurfaceEntryGridProps) {
   const accent = accentColor ?? 'var(--a-sky)';
+  const columnsClass = columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className={`grid ${columnsClass} gap-3`}>
       {tiles.map((tile) => (
         <Link
           key={tile.label}
           to={tile.to as never}
+          search={tile.search as never}
           className="group rounded-[18px] border border-[var(--border-glass)] bg-[var(--surf-utility)] p-4 transition hover:-translate-y-0.5 hover:bg-[var(--surf-elevated)] focus-visible:outline-none"
           onFocus={(e) => {
             (e.currentTarget as HTMLAnchorElement).style.boxShadow =

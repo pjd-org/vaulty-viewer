@@ -74,3 +74,38 @@ export const ZeroCounts: Story = {
     tiles: baseTiles.map((t) => ({ ...t, count: 0 })),
   },
 };
+
+export const ThreeUpWithSearchResets: Story = {
+  args: {
+    columns: 3,
+    tiles: [
+      {
+        label: 'Pressure',
+        role: 'Active blockers and pressure signals',
+        count: 2,
+        to: '/work',
+        nextStep: 'Review active blockers',
+      },
+      {
+        label: 'Queue',
+        role: 'Ranked recommendations ready to execute',
+        count: 4,
+        to: '/actions',
+        search: {
+          sort: undefined,
+          simulatableOnly: undefined,
+          selectedId: undefined,
+        },
+        nextStep: 'Execute or defer top move',
+      },
+      {
+        label: 'Portfolio',
+        role: 'Cross-project pressure summary',
+        count: 1,
+        to: '/portfolio',
+        search: { tab: undefined, selectedId: undefined },
+        nextStep: 'Inspect impacted projects',
+      },
+    ],
+  },
+};

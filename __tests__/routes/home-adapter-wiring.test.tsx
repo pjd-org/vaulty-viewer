@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
@@ -177,6 +177,10 @@ const RouteComponent = Route.options.component as React.ComponentType;
 
 beforeEach(async () => {
   await (RouteComponent as { preload?: () => Promise<void> }).preload?.();
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 function renderWithClient(ui: React.ReactElement) {
@@ -384,6 +388,29 @@ describe('home adapter wiring', () => {
     expect(screen.getByText('Snapshot Grid')).toBeTruthy();
     expect(screen.getByText('Context Tail')).toBeTruthy();
     expect(
+      screen.getAllByLabelText('Pressure — Active blockers and pressure signals')
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText(
+        'Queue — Ranked recommendations ready to execute'
+      )
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText('Portfolio — Cross-project pressure summary')
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText('Automation — Agents, runs, and scheduler load')
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText('Bubble — Runtime pressure and reward lanes')
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText('Knowledge — Vault notes and retrieval context')
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByLabelText('Health — System diagnostics and checks')
+    ).toHaveLength(1);
+    expect(
       screen.getByText('Adapter pressure spike', { selector: 'h3' })
     ).toBeTruthy();
     expect(
@@ -392,6 +419,45 @@ describe('home adapter wiring', () => {
     expect(
       screen.getByText('Adapter context tail item', { selector: 'p' })
     ).toBeTruthy();
+  });
+
+  it('renders the hero three-up snapshot grid when tasks exist', () => {
+    mockUseHomeSurface.mockReturnValue({
+      data: {
+        ...homeSurface,
+        tasks: [
+          {
+            id: 'task-top-1',
+            path: 'notes/tasks/task-top-1.md',
+            title: 'Top task for hero',
+            score: 8.6,
+            priority: 8,
+            effortScore: 3,
+            focusCost: 2,
+            estimatedTimeMin: 25,
+            status: 'todo',
+            tags: ['hero'],
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+      isError: false,
+    });
+
+    renderWithClient(<RouteComponent />);
+
+    expect(
+      screen.getAllByLabelText('Pressure — Active blockers and pressure signals')
+    ).toHaveLength(2);
+    expect(
+      screen.getAllByLabelText(
+        'Queue — Ranked recommendations ready to execute'
+      )
+    ).toHaveLength(2);
+    expect(
+      screen.getAllByLabelText('Portfolio — Cross-project pressure summary')
+    ).toHaveLength(2);
   });
 
   it('shows a pending indicator when verification phase is pending', () => {
