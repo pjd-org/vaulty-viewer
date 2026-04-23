@@ -1,4 +1,8 @@
 import React from 'react';
+import {
+  Button as VaultButton,
+  ButtonProps as VaultButtonProps,
+} from '@vault/ui';
 
 export interface ButtonBaseProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
@@ -9,6 +13,11 @@ export interface IconButtonProps extends Omit<ButtonBaseProps, 'children'> {
   label?: string;
 }
 
+/**
+ * PrimaryButton - wraps @vault/ui Button with primary variant + GENIE_CSS btn-primary class.
+ * Uses Vault Button for accessibility, motion, and semantic correctness.
+ * Adds btn-primary class for GENIE_CSS token compatibility with genie-card system.
+ */
 export function PrimaryButton({
   type = 'button',
   onClick,
@@ -18,18 +27,24 @@ export function PrimaryButton({
   ...props
 }: ButtonBaseProps) {
   return (
-    <button
+    <VaultButton
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-primary rounded-full px-4 py-2 text-sm font-medium text-[var(--n-0)] transition-colors hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      variant="primary"
+      className={`btn-primary rounded-full ${className}`}
       {...props}
     >
       {children}
-    </button>
+    </VaultButton>
   );
 }
 
+/**
+ * SecondaryButton - wraps @vault/ui Button with secondary variant + GENIE_CSS btn-secondary class.
+ * Uses Vault Button for accessibility, motion, and semantic correctness.
+ * Adds btn-secondary class for GENIE_CSS token compatibility with genie-card system.
+ */
 export function SecondaryButton({
   type = 'button',
   onClick,
@@ -39,18 +54,24 @@ export function SecondaryButton({
   ...props
 }: ButtonBaseProps) {
   return (
-    <button
+    <VaultButton
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`btn-secondary rounded-full px-4 py-2 text-sm font-medium text-text2 transition-colors hover:bg-[var(--surf-utility)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      variant="secondary"
+      className={`btn-secondary rounded-full ${className}`}
       {...props}
     >
       {children}
-    </button>
+    </VaultButton>
   );
 }
 
+/**
+ * IconButton - wraps @vault/ui Button with icon size.
+ * Uses Vault Button for accessibility, motion, and semantic correctness.
+ * Adds glass styling for GENIE_CSS token compatibility with genie-card system.
+ */
 export function IconButton({
   type = 'button',
   onClick,
@@ -61,18 +82,19 @@ export function IconButton({
   ...props
 }: IconButtonProps) {
   return (
-    <button
+    <VaultButton
       type={type}
       onClick={onClick}
       disabled={disabled}
+      size="icon"
       aria-label={label}
-      className={`w-8 h-8 flex items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] backdrop-blur-md text-text2 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--n-0)_60%,transparent)] transition-all hover:bg-[var(--surf-elevated)] hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-mint)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${className}`}
+      className={`w-8 h-8 flex items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surf-glass)] backdrop-blur-md text-text2 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--n-0)_60%,transparent)] transition-all hover:bg-[var(--surf-elevated)] hover:shadow-sm ${className}`}
       {...props}
     >
       {label && <span className="sr-only">{label}</span>}
       <span className="w-4 h-4 flex items-center justify-center leading-none text-base">
         {icon}
       </span>
-    </button>
+    </VaultButton>
   );
 }
