@@ -19,4 +19,14 @@ describe('agent-shell route hydration contract', () => {
     expect(source).toContain('replace: true');
     expect(source).toContain('Preparing chat thread...');
   });
+
+  it('keeps hook order deterministic before threadId early return', () => {
+    const source = loadAgentShellRouteSource();
+    const useMemoIndex = source.indexOf('const store = React.useMemo');
+    const earlyReturnIndex = source.indexOf('if (!threadId) {');
+
+    expect(useMemoIndex).toBeGreaterThanOrEqual(0);
+    expect(earlyReturnIndex).toBeGreaterThanOrEqual(0);
+    expect(useMemoIndex).toBeLessThan(earlyReturnIndex);
+  });
 });

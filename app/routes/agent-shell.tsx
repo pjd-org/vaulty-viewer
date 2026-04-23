@@ -42,6 +42,10 @@ function AgentShellRoute() {
   const { threadId } = Route.useSearch();
   const { sandboxAvailable } = Route.useLoaderData();
   const navigate = useNavigate();
+  const store = React.useMemo(
+    () => createAgentRunStore('deepagent'),
+    [threadId]
+  );
 
   React.useEffect(() => {
     if (threadId) return;
@@ -69,11 +73,6 @@ function AgentShellRoute() {
   }
 
   const activeThreadId = threadId;
-
-  const store = React.useMemo(
-    () => createAgentRunStore('deepagent'),
-    [activeThreadId]
-  );
 
   function handleSelectThread(entry: ThreadEntry) {
     navigate({ to: '/agent-shell', search: { threadId: entry.id } });
