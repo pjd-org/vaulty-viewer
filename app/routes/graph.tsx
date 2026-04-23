@@ -301,7 +301,7 @@ function GraphFlow({
 
   return (
     <div
-      className="h-[640px] w-full overflow-hidden rounded-xl border border-border bg-card/80"
+      className="genie-surface genie-surface--utility h-[640px] w-full overflow-hidden rounded-[24px]"
       data-testid="graph-flow"
     >
       <ReactFlow
@@ -359,7 +359,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   if (!excalidraw) {
     return (
-      <div className="grid h-[640px] w-full place-items-center rounded-xl border border-border bg-card/80 text-sm text-muted-foreground">
+      <div className="genie-surface genie-surface--utility grid h-[640px] w-full place-items-center rounded-[24px] text-sm text-[var(--text-secondary)]">
         Loading sketch canvas…
       </div>
     );
@@ -367,7 +367,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   const Excalidraw = excalidraw;
   return (
-    <div className="h-[640px] w-full overflow-hidden rounded-xl border border-border bg-card/80">
+    <div className="genie-surface genie-surface--utility h-[640px] w-full overflow-hidden rounded-[24px]">
       <Excalidraw
         initialData={{
           elements,
@@ -421,15 +421,15 @@ function GraphRoute() {
       primaryTitle="Knowledge"
       primarySubtitle="Interactive or sketch topology map."
       actions={
-        <div className="inline-flex rounded-full border border-border bg-card p-1">
+        <div className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] p-1 shadow-sm">
           <button
             type="button"
             onClick={() => setViewMode('interactive')}
             className={[
-              'cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+              'cursor-pointer rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'interactive'
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted/40',
+                ? 'bg-[var(--n-900)] text-[var(--n-0)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surf-base)]',
             ].join(' ')}
           >
             Interactive
@@ -438,10 +438,10 @@ function GraphRoute() {
             type="button"
             onClick={() => setViewMode('sketch')}
             className={[
-              'cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+              'cursor-pointer rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'sketch'
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted/40',
+                ? 'bg-[var(--n-900)] text-[var(--n-0)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surf-base)]',
             ].join(' ')}
           >
             Sketch
@@ -453,10 +453,10 @@ function GraphRoute() {
           <RouteLoadingState label="Loading graph topology..." />
         ) : data == null ? (
           <div data-testid="graph-empty-state" className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
               Graph not available.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[var(--text-tertiary)]">
               The knowledge graph will appear once the vault runtime connects.
             </p>
           </div>
@@ -469,12 +469,12 @@ function GraphRoute() {
               {graphStats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl border border-border bg-card p-4"
+                  className="genie-surface genie-surface--utility rounded-[20px] p-4"
                 >
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     {stat.label}
                   </p>
-                  <p className="mt-1 text-2xl font-semibold text-foreground">
+                  <p className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
                     {stat.value}
                   </p>
                 </div>
@@ -482,15 +482,15 @@ function GraphRoute() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-              <aside className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
+              <aside className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[22px] p-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     Selected
                   </p>
-                  <p className="mt-1 text-sm font-semibold leading-snug text-foreground">
+                  <p className="mt-1 text-sm font-semibold leading-snug text-[var(--text-primary)]">
                     {selectedNode?.title || 'Untitled note'}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     {selectedPath
                       ? `${outgoingCount} out · ${incomingCount} in`
                       : 'No node selected'}
@@ -498,7 +498,7 @@ function GraphRoute() {
                 </div>
 
                 <div data-testid="graph-node-list" className="flex flex-col gap-2">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     Node list
                   </p>
                   <div className="max-h-[420px] flex flex-col gap-1 overflow-y-auto pr-1">
@@ -512,14 +512,14 @@ function GraphRoute() {
                           className={[
                             'block w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                             active
-                              ? 'border-primary/30 bg-primary/10'
-                              : 'border-border bg-card hover:border-border/80 hover:bg-muted/30',
+                              ? 'border-[color-mix(in_srgb,var(--a-sky)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))]'
+                              : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)] hover:border-[var(--border-glass-default)] hover:bg-[var(--surf-utility)]',
                           ].join(' ')}
                         >
-                          <span className="block truncate text-sm font-medium text-foreground">
+                          <span className="block truncate text-sm font-medium text-[var(--text-primary)]">
                             {node.title || 'Untitled note'}
                           </span>
-                          <span className="block truncate text-[11px] text-muted-foreground">
+                          <span className="block truncate text-[11px] text-[var(--text-secondary)]">
                             {path}
                           </span>
                         </button>

@@ -91,114 +91,109 @@ function KnowledgeRoute() {
       hint: 'authoring',
     },
   ];
+  const summaryItems = metricCards.map((metric) => ({
+    label: metric.label,
+    value: metric.value,
+    detail: metric.hint,
+  }));
 
   return (
     <WorkspaceScaffold
       title="Knowledge"
       subtitle="Workspace"
+      statusLine={`${filtered.length} matching note${filtered.length === 1 ? '' : 's'} · ${allNotes.length} total`}
+      summaryItems={summaryItems}
       primaryTitle="Workspace"
       primarySubtitle="Note library"
       primary={
         <div className="flex flex-col gap-5">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {metricCards.map((metric) => (
-              <div
-                key={metric.label}
-                className="px-4 py-3 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)]"
-              >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
-                  {metric.label}
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
-                  {metric.value}
-                </p>
-                <p className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">
-                  {metric.hint}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                setAudience((current) =>
-                  current === 'all'
-                    ? 'human'
-                    : current === 'human'
-                      ? 'agent'
-                      : current === 'agent'
-                        ? 'bubble'
-                        : 'all'
-                )
-              }
-              className={cn(
-                'rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200',
-                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80',
-                'hover:bg-white/15 hover:text-white cursor-pointer'
-              )}
-            >
-              Audience: {audience}
-            </button>
-
-            {/* Quick-links */}
-            <Link
-              to="/knowledge"
-              search={{ q: 'search' }}
-              className="rounded-full bg-white/8 backdrop-blur-sm border border-white/15 px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/15 hover:text-white transition-all duration-200"
-            >
-              Search
-            </Link>
-            <Link
-              to="/knowledge"
-              search={{ q: 'graph' }}
-              className="rounded-full bg-white/8 backdrop-blur-sm border border-white/15 px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/15 hover:text-white transition-all duration-200"
-            >
-              Graph
-            </Link>
-
-            <label
-              className={cn(
-                'rounded-full px-3 py-1.5 text-xs',
-                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80'
-              )}
-            >
-              Domain
-              <select
-                value={domain}
-                onChange={(event) => setDomain(event.target.value)}
-                className="ml-2 bg-transparent outline-none text-white/80 [&>option]:bg-zinc-900 [&>option]:text-white"
-              >
-                <option value="">All</option>
-                {domains.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label
-              className={cn(
-                'rounded-full px-3 py-1.5 text-xs',
-                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/80'
-              )}
-            >
-              Maturity
-              <select
-                value={maturity}
-                onChange={(event) =>
-                  setMaturity(event.target.value as MaturityFilter)
+          <div className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
+                Filters
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setAudience((current) =>
+                    current === 'all'
+                      ? 'human'
+                      : current === 'human'
+                        ? 'agent'
+                        : current === 'agent'
+                          ? 'bubble'
+                          : 'all'
+                  )
                 }
-                className="ml-2 bg-transparent outline-none text-white/80 [&>option]:bg-zinc-900 [&>option]:text-white"
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200',
+                  'border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]',
+                  'hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)] cursor-pointer'
+                )}
               >
-                <option value="">All</option>
-                <option value="draft">Draft</option>
-                <option value="stable">Stable</option>
-                <option value="deprecated">Deprecated</option>
-              </select>
-            </label>
+                Audience: {audience}
+              </button>
+
+              <Link
+                to="/knowledge/search"
+                search={{ q: '', searchMode: 'tag' }}
+                className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)] transition-all duration-200"
+              >
+                Search notes
+              </Link>
+              <Link
+                to="/knowledge/graph"
+                className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))] transition-all duration-200"
+              >
+                Open graph
+              </Link>
+
+              <label
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-xs',
+                  'border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]'
+                )}
+              >
+                Domain
+                <select
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  className="ml-2 bg-transparent outline-none text-[var(--text-secondary)] [&>option]:bg-[var(--surf-elevated)] [&>option]:text-[var(--text-primary)]"
+                >
+                  <option value="">All</option>
+                  {domains.map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-xs',
+                  'border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]'
+                )}
+              >
+                Maturity
+                <select
+                  value={maturity}
+                  onChange={(event) =>
+                    setMaturity(event.target.value as MaturityFilter)
+                  }
+                  className="ml-2 bg-transparent outline-none text-[var(--text-secondary)] [&>option]:bg-[var(--surf-elevated)] [&>option]:text-[var(--text-primary)]"
+                >
+                  <option value="">All</option>
+                  <option value="draft">Draft</option>
+                  <option value="stable">Stable</option>
+                  <option value="deprecated">Deprecated</option>
+                </select>
+              </label>
+            </div>
+            <p className="mt-2 px-1 text-xs text-[var(--text-tertiary)]">
+              Filter by audience/domain/maturity, then open graph or search for
+              deeper exploration.
+            </p>
           </div>
 
           {loading ? (
@@ -236,13 +231,13 @@ function KnowledgeRoute() {
               aria-label="Previous page"
               className={cn(
                 'rounded-lg px-3 py-1.5 text-xs transition-all duration-200',
-                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
-                'hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+                'border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]',
+                'hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
               )}
             >
               Prev
             </button>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-[var(--text-tertiary)]">
               {safePage} / {totalPages}
             </p>
             <button
@@ -252,8 +247,8 @@ function KnowledgeRoute() {
               aria-label="Next page"
               className={cn(
                 'rounded-lg px-3 py-1.5 text-xs transition-all duration-200',
-                'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
-                'hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+                'border border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)]',
+                'hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
               )}
             >
               Next

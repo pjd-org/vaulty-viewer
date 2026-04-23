@@ -34,41 +34,52 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-sm" data-testid="archive-item-detail">
+    <div
+      className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[20px] p-4 text-sm"
+      data-testid="archive-item-detail"
+    >
       <div>
-        <p className="font-medium leading-snug text-foreground">{item.title}</p>
+        <p className="font-medium leading-snug text-[var(--text-primary)]">
+          {item.title}
+        </p>
         {item.summary && (
-          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+          <p className="mt-1 break-all font-mono text-xs text-[var(--text-secondary)]">
             {item.summary}
           </p>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+        <span className="rounded-full bg-[var(--surf-base)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
           {bucketLabel[item.inboxBucket] ?? item.inboxBucket}
         </span>
         <span
-          className={`rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-muted-foreground'}`}
+          className={`rounded-full bg-[var(--surf-base)] px-2 py-0.5 text-[11px] font-medium ${severityColor[item.severity] ?? 'text-[var(--text-secondary)]'}`}
         >
           {item.severity}
         </span>
       </div>
 
-      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      <div className="flex flex-col gap-1 text-xs text-[var(--text-secondary)]">
         <p>
-          <span className="font-medium text-foreground">Why archived:</span>{' '}
+          <span className="font-medium text-[var(--text-primary)]">
+            Why archived:
+          </span>{' '}
           {item.whySurfaced}
         </p>
         {item.rejectionReason && (
           <p>
-            <span className="font-medium text-foreground">Reason:</span>{' '}
+            <span className="font-medium text-[var(--text-primary)]">
+              Reason:
+            </span>{' '}
             {item.rejectionReason}
           </p>
         )}
         {item.confidence !== undefined && (
           <p>
-            <span className="font-medium text-foreground">Confidence:</span>{' '}
+            <span className="font-medium text-[var(--text-primary)]">
+              Confidence:
+            </span>{' '}
             {(item.confidence * 100).toFixed(0)}%
           </p>
         )}
@@ -76,14 +87,14 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
 
       {item.allowedActions.length > 0 && (
         <div className="flex flex-col gap-1">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
             Available actions
           </p>
           <ul className="flex flex-col gap-1">
             {item.allowedActions.map((action) => (
               <li
                 key={action.actionType}
-                className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground"
+                className="rounded-md bg-[var(--surf-base)] px-2 py-1 text-xs text-[var(--text-secondary)]"
               >
                 {action.label}
               </li>
@@ -113,15 +124,18 @@ function ArchiveSection({
   onSelect: (item: InboxItem) => void;
 }) {
   return (
-    <div data-testid={testId} className="flex flex-col gap-2">
-      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+    <div
+      data-testid={testId}
+      className="genie-surface genie-surface--utility flex flex-col gap-2 rounded-[20px] p-4"
+    >
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
         {label}
-        <span className="ml-2 text-xs font-normal text-muted-foreground/60">
+        <span className="ml-2 text-xs font-normal text-[var(--text-secondary)]">
           ({items.length})
         </span>
       </h3>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">None.</p>
+        <p className="text-xs italic text-[var(--text-secondary)]">None.</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {items.map((item) => (
@@ -130,13 +144,13 @@ function ArchiveSection({
                 type="button"
                 onClick={() => onSelect(item)}
                 className={[
-                  'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+                  'flex w-full items-center gap-2 rounded-[14px] border px-3 py-2 text-sm transition-all text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                   selectedId === item.id
-                    ? 'bg-muted text-foreground'
-                    : 'hover:bg-muted/60 text-muted-foreground',
+                    ? 'border-[color-mix(in_srgb,var(--a-sky)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] text-[var(--text-primary)]'
+                    : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] hover:bg-[var(--surf-utility)]',
                 ].join(' ')}
               >
-                <span className="font-mono text-xs text-muted-foreground shrink-0">
+                <span className="font-mono text-xs text-[var(--text-tertiary)] shrink-0">
                   ▸
                 </span>
                 <span className="truncate">{item.title}</span>

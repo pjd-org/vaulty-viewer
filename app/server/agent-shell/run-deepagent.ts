@@ -21,6 +21,7 @@ import { readDeepAgentsStream } from './deepagents-stream-adapter';
 import type { ModeAdapter } from './run-dispatcher';
 import type {
   AgentShellEvent,
+  AttachedFile,
   RunAgentRequest,
 } from '../../lib/agent-shell/types';
 
@@ -46,6 +47,10 @@ function buildDeepAgentRequestBody(
   return body;
 }
 
+function normalizeFiles(files: RunAgentRequest['files']): AttachedFile[] {
+  return (files ?? []).map((file) => file);
+}
+
 // ── Adapter ───────────────────────────────────────────────────────────────────
 
 async function* runDeepAgent(
@@ -63,7 +68,11 @@ async function* runDeepAgent(
   }
 
   const path = buildPrimaryAgentServerStreamPath(threadId);
-  const body = buildDeepAgentRequestBody({ ...request, threadId });
+  const body = buildDeepAgentRequestBody({
+    ...request,
+    threadId,
+    files: normalizeFiles(request.files),
+  });
 
   let response: Response;
   try {

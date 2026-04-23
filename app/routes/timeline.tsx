@@ -89,11 +89,11 @@ function FilterBar({
             type="button"
             onClick={() => onNamespace(f.value)}
             className={cn(
-              'px-3 py-1 rounded-full text-xs font-medium transition-all duration-200',
-              'border backdrop-blur-sm cursor-pointer',
+              'px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200',
+              'border cursor-pointer',
               activeNamespace === f.value
-                ? 'bg-white/20 border-white/40 text-white'
-                : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white/80'
+                ? 'bg-[var(--n-900)] border-[var(--n-900)] text-[var(--n-0)]'
+                : 'bg-[var(--surf-elevated)] border-[var(--border-glass-soft)] text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:text-[var(--text-primary)]'
             )}
           >
             {f.label}
@@ -136,20 +136,20 @@ function EventRow({
       onClick={() => onSelect(event.id)}
       className={cn(
         'w-full px-3 py-2.5 text-left transition-all duration-200',
-        'border-b border-white/10 last:border-0',
+        'border-b border-[var(--border-glass-soft)] last:border-0',
         selected
-          ? 'bg-white/15 backdrop-blur-sm'
-          : 'hover:bg-white/8 bg-transparent'
+          ? 'bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-elevated))]'
+          : 'hover:bg-[var(--surf-utility)] bg-transparent'
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <EventTypeBadge type={event.type} />
-        <span className="shrink-0 text-xs text-white/60">
+        <span className="shrink-0 text-xs text-[var(--text-secondary)]">
           {dateLabel} {timeLabel}
         </span>
       </div>
       {event.meta && typeof event.meta.run_id === 'string' && (
-        <p className="mt-1 truncate font-mono text-xs text-white/60">
+        <p className="mt-1 truncate font-mono text-xs text-[var(--text-secondary)]">
           {event.meta.run_id}
         </p>
       )}
@@ -177,7 +177,7 @@ function Pagination({
 
   return (
     <div className="flex items-center justify-between pt-3">
-      <span className="text-xs text-white/60">
+      <span className="text-xs text-[var(--text-secondary)]">
         Page {page + 1} of {totalPages}
       </span>
       <div className="flex items-center gap-2">
@@ -187,11 +187,11 @@ function Pagination({
           onClick={() => onPage(page - 1)}
           aria-label="Previous page"
           className={cn(
-            'px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-            'border backdrop-blur-sm',
+            'px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200',
+            'border',
             page === 0
-              ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-              : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15 hover:text-white cursor-pointer'
+              ? 'bg-[var(--surf-base)] border-[var(--border-glass-soft)] text-[var(--text-tertiary)] cursor-not-allowed'
+              : 'bg-[var(--surf-elevated)] border-[var(--border-glass-soft)] text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:text-[var(--text-primary)] cursor-pointer'
           )}
         >
           ← Prev
@@ -202,11 +202,11 @@ function Pagination({
           onClick={() => onPage(page + 1)}
           aria-label="Next page"
           className={cn(
-            'px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-            'border backdrop-blur-sm',
+            'px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200',
+            'border',
             page >= totalPages - 1
-              ? 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-              : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/15 hover:text-white cursor-pointer'
+              ? 'bg-[var(--surf-base)] border-[var(--border-glass-soft)] text-[var(--text-tertiary)] cursor-not-allowed'
+              : 'bg-[var(--surf-elevated)] border-[var(--border-glass-soft)] text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:text-[var(--text-primary)] cursor-pointer'
           )}
         >
           Next →
@@ -227,33 +227,33 @@ function EventDetail({ event }: { event: TimelineEventEntry }) {
       data-testid="timeline-event-detail"
     >
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
           Type
         </p>
         <EventTypeBadge type={event.type} />
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
           Timestamp
         </p>
-        <p className="font-mono text-xs text-white/80">{event.ts}</p>
+        <p className="font-mono text-xs text-[var(--text-secondary)]">{event.ts}</p>
       </div>
       {Object.keys(event.meta).length > 0 && (
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
             Meta
           </p>
-          <pre className="max-h-32 overflow-auto rounded-xl bg-white/5 border border-white/10 p-2 font-mono text-xs text-white/60">
+          <pre className="max-h-32 overflow-auto rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-2 font-mono text-xs text-[var(--text-secondary)]">
             {JSON.stringify(event.meta, null, 2)}
           </pre>
         </div>
       )}
       {Object.keys(event.data).length > 0 && (
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
             Data
           </p>
-          <pre className="max-h-40 overflow-auto rounded-xl bg-white/5 border border-white/10 p-2 font-mono text-xs text-white/60">
+          <pre className="max-h-40 overflow-auto rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-base)] p-2 font-mono text-xs text-[var(--text-secondary)]">
             {JSON.stringify(event.data, null, 2)}
           </pre>
         </div>
@@ -312,10 +312,10 @@ function TimelineContent({
   if (data.events.length === 0) {
     return (
       <div data-testid="timeline-empty-state" className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-white/70">
+        <p className="text-sm font-medium text-[var(--text-secondary)]">
           No timeline events yet.
         </p>
-        <p className="text-xs text-white/60">
+        <p className="text-xs text-[var(--text-tertiary)]">
           Adapter context is wired. Live and audit event streams will appear
           once the runtime surface connects.
         </p>
@@ -332,7 +332,7 @@ function TimelineContent({
         onNamespace={onEventTypeFilter}
       />
 
-      <p className="px-1 text-xs text-white/60">
+      <p className="px-1 text-xs text-[var(--text-secondary)]">
         {filtered.length} of {data.total} events
         {q || eventTypeFilter ? ' (filtered)' : ''}
       </p>
@@ -340,11 +340,11 @@ function TimelineContent({
       <GlassCard
         variant="light"
         glowEffect={false}
-        className="overflow-hidden p-0"
+        className="genie-surface genie-surface--utility overflow-hidden rounded-[20px] p-0"
       >
         <div>
           {paginated.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-white/60 text-center">
+            <p className="px-4 py-6 text-center text-sm text-[var(--text-secondary)]">
               No events match the current filter.
             </p>
           ) : (
@@ -368,7 +368,11 @@ function TimelineContent({
       />
 
       {selectedEvent && (
-        <GlassCard variant="light" glowEffect={false} className="p-4">
+        <GlassCard
+          variant="light"
+          glowEffect={false}
+          className="genie-surface genie-surface--utility rounded-[20px] p-4"
+        >
           <EventDetail event={selectedEvent} />
         </GlassCard>
       )}
@@ -488,10 +492,10 @@ function TimelineRoute() {
             data-testid="timeline-empty-state"
             className="flex flex-col gap-2"
           >
-            <p className="text-sm font-medium text-white/70">
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
               No timeline events yet.
             </p>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-[var(--text-tertiary)]">
               Adapter context is wired. Live and audit event streams will appear
               once the runtime surface connects.
             </p>

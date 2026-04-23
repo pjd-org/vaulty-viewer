@@ -278,7 +278,8 @@ export function useAgentRun({
 
       const request: RunAgentRequest = {
         mode: store.state.mode,
-        threadId: store.state.threadId ?? undefined,
+        // Prefer store-bound threadId, then route-bound threadId for resumed chats.
+        threadId: store.state.threadId ?? threadId ?? undefined,
         message,
         files,
       };

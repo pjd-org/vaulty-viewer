@@ -15,13 +15,13 @@ import { renderNoteMarkdown } from '../../src/lib/note-markdown';
 import { toNoteHeaderDisplay } from '../lib/display';
 import { PageContainer, SoftPanel } from '../components/layout';
 import { PrimaryButton, SecondaryButton } from '../components/ui';
+import { NoteHeader } from '../components/note/NoteHeader';
+import { NoteMetaRail } from '../components/note/NoteMetaRail';
+import { NoteBodyRenderer } from '../components/note/NoteBodyRenderer';
 import {
-  NoteHeader,
-  NoteMetaRail,
-  NoteBodyRenderer,
   NoteEditor,
   type NoteEditorSaveResult,
-} from '../components/note';
+} from '../components/note/NoteEditor';
 import { updateNote, patchNote } from '../lib/api/notes';
 
 const formatDate = (dateStr: string | undefined | null) => {
@@ -704,16 +704,18 @@ function NoteRoute() {
       }
       // Optimistically update local state
       const nextFrontmatter = { ...note.frontmatter, ...result.frontmatter };
-        dispatchNote({
-          type: 'NOTE_UPDATED',
-          note: {
-            ...note,
-            content: result.bodyChanged ? result.body : note.content,
-            html: result.bodyChanged ? renderNoteMarkdown(result.body) : note.html,
-            frontmatter: nextFrontmatter,
-            title:
-              typeof result.frontmatter.title === 'string'
-                ? result.frontmatter.title
+      dispatchNote({
+        type: 'NOTE_UPDATED',
+        note: {
+          ...note,
+          content: result.bodyChanged ? result.body : note.content,
+          html: result.bodyChanged
+            ? renderNoteMarkdown(result.body)
+            : note.html,
+          frontmatter: nextFrontmatter,
+          title:
+            typeof result.frontmatter.title === 'string'
+              ? result.frontmatter.title
               : note.title,
           tags: Array.isArray(result.frontmatter.tags)
             ? result.frontmatter.tags

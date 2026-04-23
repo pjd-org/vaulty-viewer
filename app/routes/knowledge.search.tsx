@@ -80,15 +80,15 @@ function KnowledgeSearchRoute() {
           placeholder="Search knowledge notes…"
         />
       </div>
-      <div className="flex overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
+      <div className="flex overflow-hidden rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)]">
         <button
           type="button"
           onClick={() => handleModeChange('tag')}
           className={cn(
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition cursor-pointer',
             mode === 'tag'
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white/80'
+              ? 'bg-[var(--n-900)] text-[var(--n-0)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
           Structural
@@ -99,8 +99,8 @@ function KnowledgeSearchRoute() {
           className={cn(
             'px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition cursor-pointer',
             mode === 'semantic'
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white/80'
+              ? 'bg-[var(--n-900)] text-[var(--n-0)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           )}
         >
           Semantic
@@ -110,8 +110,8 @@ function KnowledgeSearchRoute() {
         type="submit"
         className={cn(
           'rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-200',
-          'bg-white/10 backdrop-blur-sm border border-white/20 text-white/70',
-          'hover:bg-white/15 hover:text-white cursor-pointer'
+          'border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] text-[var(--text-secondary)]',
+          'hover:bg-[var(--surf-utility)] hover:text-[var(--text-primary)] cursor-pointer'
         )}
       >
         Search
@@ -150,7 +150,7 @@ function KnowledgeSearchRoute() {
 
           {searchError && (
             <div
-              className="rounded-[18px] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-300"
+              className="genie-surface genie-surface--danger rounded-[18px] p-4 text-sm text-[var(--text-danger)]"
               role="alert"
             >
               Search failed: {searchError.message}
@@ -162,7 +162,7 @@ function KnowledgeSearchRoute() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
+                  className="genie-surface genie-surface--utility h-20 animate-pulse rounded-[18px]"
                 />
               ))}
             </div>
@@ -200,26 +200,26 @@ function KnowledgeSearchRoute() {
       asideTitle="Search Tips"
       asideSubtitle="How to get the best results."
       aside={
-        <div className="flex flex-col gap-4 text-sm text-white/60">
+        <div className="flex flex-col gap-4 text-sm text-[var(--text-secondary)]">
           <GlassCard
             variant="light"
             glowEffect={false}
-            className="p-4 flex flex-col gap-3"
+            className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4"
           >
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                 Structural mode
               </p>
-              <p className="mt-2 text-white/60">
+              <p className="mt-2 text-[var(--text-secondary)]">
                 Matches notes by tag, frontmatter type, or audience field. Exact
                 and prefix matching.
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
                 Semantic mode
               </p>
-              <p className="mt-2 text-white/60">
+              <p className="mt-2 text-[var(--text-secondary)]">
                 Uses vector embeddings to find conceptually similar notes even
                 without exact keyword matches.
               </p>

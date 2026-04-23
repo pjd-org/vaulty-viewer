@@ -357,7 +357,7 @@ function KnowledgeGraphRoute() {
       aside={
         selectedNode ? (
           <div className="flex flex-col gap-4">
-            <GlassCard variant="light" className="p-4">
+            <GlassCard className="p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
                 Selected note
               </p>

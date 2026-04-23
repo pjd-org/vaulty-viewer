@@ -12,7 +12,9 @@ import {
 } from '../../../src/lib/note-path';
 import { renderNoteMarkdown } from '../../../src/lib/note-markdown';
 import { toNoteHeaderDisplay } from '../../lib/display';
-import { NoteBodyRenderer, NoteHeader, NoteMetaRail } from '../note';
+import { NoteBodyRenderer } from '../note/NoteBodyRenderer';
+import { NoteHeader } from '../note/NoteHeader';
+import { NoteMetaRail } from '../note/NoteMetaRail';
 import { SoftPanel } from '../layout';
 import { EmptyState, SoftChip } from '../ui';
 

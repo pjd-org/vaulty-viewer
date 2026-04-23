@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
-import { Slot } from 'radix-ui';
+import { Slottable } from '@radix-ui/react-slot';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vault/ui';
 import { Button } from '@vault/ui';
@@ -46,7 +46,7 @@ export const TooltipIconButton = forwardRef<
             )}
             ref={ref}
           >
-            <Slot.Slottable>{children}</Slot.Slottable>
+            <Slottable>{children}</Slottable>
             <span className="aui-sr-only sr-only">{tooltip}</span>
           </Button>
         </TooltipTrigger>

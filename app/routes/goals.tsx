@@ -103,7 +103,7 @@ function GoalsRoute() {
         aria-label="Sort goals"
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value)}
-        className="rounded-full border border-border bg-muted/40 px-3 py-2 text-xs text-foreground transition cursor-pointer focus:border-primary focus-visible:outline-none"
+        className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)] transition cursor-pointer focus:border-primary focus-visible:outline-none"
       >
         <option value="priority">Sort: Priority</option>
         <option value="progress">Sort: Progress</option>
@@ -115,7 +115,7 @@ function GoalsRoute() {
         type="button"
         onClick={refresh}
         disabled={loading}
-        className="rounded-full border border-border bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition hover:bg-muted/60 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-primary)] transition hover:bg-[var(--surf-utility)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Refreshing…' : 'Refresh'}
       </button>
@@ -146,7 +146,7 @@ function GoalsRoute() {
         <div className="flex flex-col gap-4">
           {error && (
             <div
-              className="flex items-center justify-between rounded-[18px] border border-warning/30 bg-warning/10 p-4 text-sm text-warning"
+              className="genie-surface genie-surface--warning flex items-center justify-between rounded-[18px] p-4 text-sm text-warning"
               role="alert"
             >
               <span>{error}</span>
@@ -165,7 +165,7 @@ function GoalsRoute() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-[22px] border border-border bg-muted/40"
+                  className="genie-surface genie-surface--utility h-24 animate-pulse rounded-[22px]"
                 />
               ))}
             </div>
@@ -200,39 +200,39 @@ function GoalsRoute() {
       asideSubtitle="Navigate and manage goals."
       aside={
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3 rounded-[22px] border border-border bg-muted/40 p-4">
+          <div className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[22px] p-4">
             <Link
               to="/"
               search={{ q: undefined, collection: undefined }}
-              className="flex items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60"
+              className="flex items-center gap-3 rounded-[14px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 text-sm text-[var(--text-primary)] transition hover:bg-[var(--surf-utility)]"
             >
               <span>Open Tasks</span>
             </Link>
             <button
               type="button"
               onClick={() => dispatchNavOverlay('avatar')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60 cursor-pointer"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 text-sm text-[var(--text-primary)] transition hover:bg-[var(--surf-utility)] cursor-pointer"
             >
               Avatar Dashboard
             </button>
             <button
               type="button"
               onClick={() => setFilter('active')}
-              className="flex w-full items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60 cursor-pointer"
+              className="flex w-full items-center gap-3 rounded-[14px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 text-sm text-[var(--text-primary)] transition hover:bg-[var(--surf-utility)] cursor-pointer"
             >
               Show Active Goals
             </button>
             <Link
               to="/note"
               search={{ p: 'goals' }}
-              className="flex items-center gap-3 rounded-[14px] border border-border bg-muted/40 px-4 py-3 text-sm text-foreground transition hover:bg-muted/60"
+              className="flex items-center gap-3 rounded-[14px] border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-4 py-3 text-sm text-[var(--text-primary)] transition hover:bg-[var(--surf-utility)]"
             >
               Browse Goals Folder
             </Link>
           </div>
 
           {updatedAt && (
-            <p className="px-1 text-xs text-muted-foreground">
+            <p className="px-1 text-xs text-[var(--text-secondary)]">
               Last updated: {new Date(updatedAt).toLocaleTimeString()}
             </p>
           )}

@@ -778,6 +778,7 @@ function FocusRoute() {
                   <span className="text-border">·</span>
                   <Link
                     to="/actions"
+                    search={{ sort: undefined, simulatableOnly: undefined, selectedId: undefined }}
                     className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
                   >
                     <span className="text-primary">{snapshotMap.queue}</span>{' '}
@@ -786,6 +787,7 @@ function FocusRoute() {
                   <span className="text-border">·</span>
                   <Link
                     to="/portfolio"
+                    search={{ tab: undefined, selectedId: undefined }}
                     className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
                   >
                     <span className="text-primary">

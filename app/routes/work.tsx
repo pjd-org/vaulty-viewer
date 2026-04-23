@@ -44,7 +44,7 @@ function TaskList({
         return (
           <li
             key={task.id}
-            className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] shadow-sm"
+            className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] shadow-sm transition-colors hover:bg-[var(--surf-elevated)]"
           >
             <button
               type="button"
@@ -121,7 +121,10 @@ function TaskSection({
 }) {
   if (!data) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
+      <div
+        data-testid="work-task-empty-state"
+        className="mt-4 flex flex-col gap-2"
+      >
         <p className="text-sm font-medium text-muted-foreground">
           Task and dependency data not yet connected.
         </p>
@@ -135,7 +138,10 @@ function TaskSection({
 
   if (data.tasks.length === 0) {
     return (
-      <div data-testid="work-task-empty-state" className="mt-4 flex flex-col gap-2">
+      <div
+        data-testid="work-task-empty-state"
+        className="mt-4 flex flex-col gap-2"
+      >
         <p className="text-sm font-medium text-muted-foreground">
           No tasks ready.
         </p>
@@ -431,6 +437,9 @@ function WorkRoute() {
             </div>
             <div className="rounded-2xl border border-border bg-card/70 px-3 py-2">
               <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
+                  View filter
+                </span>
                 <button
                   type="button"
                   onClick={() => setTaskFilter('all')}
@@ -465,6 +474,10 @@ function WorkRoute() {
                   Blocked ({blockedCount})
                 </button>
               </div>
+              <p className="mt-2 px-1 text-xs text-[var(--text-tertiary)]">
+                Expand any card for blockers and next-step CTAs. Use filters to
+                isolate execution lanes.
+              </p>
             </div>
             <ProjectsWorkspace />
             <TaskSection

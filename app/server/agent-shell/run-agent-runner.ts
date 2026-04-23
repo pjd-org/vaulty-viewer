@@ -40,6 +40,7 @@ import {
 import type { ModeAdapter } from './run-dispatcher';
 import type {
   AgentShellEvent,
+  AttachedFile,
   RunAgentRequest,
 } from '../../lib/agent-shell/types';
 
@@ -85,6 +86,10 @@ function buildSandboxBody(
   return body;
 }
 
+function normalizeFiles(files: RunAgentRequest['files']): AttachedFile[] {
+  return (files ?? []).map((file) => file);
+}
+
 // ── Adapter ───────────────────────────────────────────────────────────────────
 
 async function* runAgentRunner(
@@ -107,7 +112,10 @@ async function* runAgentRunner(
 
   yield { type: 'run.status', status: 'running', threadId };
 
-  const body = buildSandboxBody(request, threadId);
+  const body = buildSandboxBody(
+    { ...request, files: normalizeFiles(request.files) },
+    threadId
+  );
 
   let response: Response;
   try {

@@ -33,11 +33,13 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     const { pipeline } = selection;
     return (
       <div
-        className="flex flex-col gap-3 text-sm"
+        className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4 text-sm"
         data-testid="automation-pipeline-detail"
       >
-        <p className="font-mono font-medium text-foreground">{pipeline.name}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="font-mono font-medium text-[var(--text-primary)]">
+          {pipeline.name}
+        </p>
+        <p className="text-xs text-[var(--text-secondary)]">
           No execution history yet. Trigger a run via the scheduler or CLI to
           see runtime metadata here.
         </p>
@@ -58,34 +60,49 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     const isFailed = lastRunStatus?.startsWith('failed');
 
     return (
-      <div className="flex flex-col gap-4 text-sm" data-testid="automation-job-detail">
+      <div
+        className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[20px] p-4 text-sm"
+        data-testid="automation-job-detail"
+      >
         <div>
-          <p className="font-mono font-medium text-foreground">{job.id}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{job.pipeline}</p>
+          <p className="font-mono font-medium text-[var(--text-primary)]">
+            {job.id}
+          </p>
+          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+            {job.pipeline}
+          </p>
         </div>
 
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-1 text-xs text-[var(--text-secondary)]">
           {job.cron && (
             <p>
-              <span className="font-medium text-foreground">Cron:</span>{' '}
+              <span className="font-medium text-[var(--text-primary)]">
+                Cron:
+              </span>{' '}
               <span className="font-mono">{job.cron}</span>
             </p>
           )}
           {job.intervalSec != null && (
             <p>
-              <span className="font-medium text-foreground">Interval:</span>{' '}
+              <span className="font-medium text-[var(--text-primary)]">
+                Interval:
+              </span>{' '}
               {job.intervalSec}s
             </p>
           )}
           {job.mode && (
             <p>
-              <span className="font-medium text-foreground">Mode:</span>{' '}
+              <span className="font-medium text-[var(--text-primary)]">
+                Mode:
+              </span>{' '}
               {job.mode}
             </p>
           )}
           {job.source && (
             <p>
-              <span className="font-medium text-foreground">Source:</span>{' '}
+              <span className="font-medium text-[var(--text-primary)]">
+                Source:
+              </span>{' '}
               {job.source}
             </p>
           )}
@@ -93,7 +110,7 @@ function AutomationDetail({ selection }: { selection: Selection }) {
 
         {lastRunStatus && (
           <div className="flex flex-col gap-1 text-xs">
-            <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Last run
             </p>
             <p
@@ -130,7 +147,7 @@ function PipelineList({
 }) {
   if (pipelines.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground italic">
+      <p className="text-sm italic text-[var(--text-secondary)]">
         No pipelines defined.
       </p>
     );
@@ -143,13 +160,13 @@ function PipelineList({
             type="button"
             onClick={() => onSelect(p)}
             className={[
-              'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+              'flex w-full items-center gap-2 rounded-[14px] border px-3 py-2 text-sm transition-all text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               selectedId === p.name
-                ? 'bg-muted text-foreground'
-                : 'hover:bg-muted/60 text-muted-foreground',
+                ? 'border-[color-mix(in_srgb,var(--a-sky)_32%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] text-[var(--text-primary)]'
+                : 'border-[var(--border-glass-soft)] bg-[var(--surf-base)] text-[var(--text-secondary)] hover:bg-[var(--surf-utility)]',
             ].join(' ')}
           >
-            <span className="font-mono text-xs text-muted-foreground shrink-0">
+            <span className="font-mono text-xs text-[var(--text-tertiary)] shrink-0">
               ▸
             </span>
             <span>{p.name}</span>
@@ -176,38 +193,39 @@ function SchedulerSection({
   return (
     <div data-testid="automation-scheduler-section" className="flex flex-col gap-3">
       <div className="flex items-center gap-2 text-sm">
-        <span className="font-medium text-muted-foreground">Scheduler</span>
+        <span className="font-medium text-[var(--text-secondary)]">Scheduler</span>
         {scheduler.enabled ? (
-          <span className="text-xs font-semibold text-success uppercase">
+          <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold uppercase text-success">
             enabled
           </span>
         ) : (
-          <span className="text-xs font-semibold text-muted-foreground uppercase">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold uppercase text-[var(--text-secondary)]">
             disabled
           </span>
         )}
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-[var(--text-secondary)]">
           · {scheduler.mode} · {scheduler.tz}
         </span>
       </div>
       {scheduler.jobs.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">
+        <p className="text-xs italic text-[var(--text-secondary)]">
           No scheduled jobs.
         </p>
       ) : (
-        <table className="w-full text-sm border-collapse">
+        <div className="genie-surface genie-surface--utility overflow-hidden rounded-[18px]">
+        <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-border text-left">
-              <th className="py-2 pr-4 font-medium text-muted-foreground">
+            <tr className="border-b border-[var(--border-glass-soft)] text-left">
+              <th className="px-3 py-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
                 ID
               </th>
-              <th className="py-2 pr-4 font-medium text-muted-foreground">
+              <th className="px-3 py-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
                 Pipeline
               </th>
-              <th className="py-2 pr-4 font-medium text-muted-foreground">
+              <th className="px-3 py-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
                 Schedule
               </th>
-              <th className="py-2 font-medium text-muted-foreground">
+              <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-tertiary)]">
                 Last run
               </th>
             </tr>
@@ -236,25 +254,27 @@ function SchedulerSection({
                     }
                   }}
                   className={[
-                    'border-b border-border/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20',
-                    selectedJobId === job.id ? 'bg-muted' : 'hover:bg-muted/60',
+                    'border-b border-[var(--border-glass-soft)]/70 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20',
+                    selectedJobId === job.id
+                      ? 'bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-elevated))]'
+                      : 'hover:bg-[var(--surf-utility)]',
                   ].join(' ')}
                 >
-                  <td className="py-2 pr-4 font-mono text-xs text-foreground">
+                  <td className="px-3 py-2 pr-4 font-mono text-xs text-[var(--text-primary)]">
                     {job.id}
                   </td>
-                  <td className="py-2 pr-4">{job.pipeline}</td>
-                  <td className="py-2 pr-4 font-mono text-xs text-muted-foreground">
+                  <td className="px-3 py-2 pr-4 text-[var(--text-primary)]">{job.pipeline}</td>
+                  <td className="px-3 py-2 pr-4 font-mono text-xs text-[var(--text-secondary)]">
                     {job.cron ??
                       (job.intervalSec != null ? `${job.intervalSec}s` : '—')}
                   </td>
-                  <td className="py-2 text-xs">
+                  <td className="px-3 py-2 text-xs">
                     {job.lastRun != null ? (
                       <span
                         className={
                           failed
                             ? 'text-destructive font-medium'
-                            : 'text-muted-foreground'
+                            : 'text-[var(--text-secondary)]'
                         }
                       >
                         {status}
@@ -269,6 +289,7 @@ function SchedulerSection({
             })}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );
@@ -329,8 +350,10 @@ function AutomationRoute() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">Pipelines</h3>
+            <div className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+                Pipelines
+              </h3>
               <PipelineList
                 pipelines={data.pipelines}
                 selectedId={selectedPipelineId}
@@ -339,11 +362,13 @@ function AutomationRoute() {
                 }
               />
             </div>
-            <SchedulerSection
-              scheduler={data.scheduler}
-              selectedJobId={selectedJobId}
-              onSelectJob={(job) => setSelection({ kind: 'job', job })}
-            />
+            <div className="genie-surface genie-surface--utility rounded-[20px] p-4">
+              <SchedulerSection
+                scheduler={data.scheduler}
+                selectedJobId={selectedJobId}
+                onSelectJob={(job) => setSelection({ kind: 'job', job })}
+              />
+            </div>
           </div>
         )
       }

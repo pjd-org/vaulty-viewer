@@ -25,6 +25,13 @@ import type {
   RunAgentRequest,
 } from '../../lib/agent-shell/types';
 
+export type ModeAdapter = {
+  run: (
+    request: RunAgentRequest,
+    signal?: AbortSignal
+  ) => AsyncGenerator<AgentShellEvent>;
+};
+
 // ── Real adapters ────────────────────────────────────────────────────────────
 import { agentRunnerAdapter } from './run-agent-runner';
 import { deepAgentAdapter } from './run-deepagent';
@@ -126,13 +133,15 @@ export function dispatchAgentRun(
  * Returns null and emits an error stream if the body is malformed.
  */
 export async function parseRunRequest(
-  req: Request
+  req: Request,
+  opts: { mode?: AgentExecutionMode } = {}
 ): Promise<RunAgentRequest | null> {
   try {
     const body = (await req.json()) as Partial<RunAgentRequest>;
-    if (!body.mode || !body.message) return null;
+    const resolvedMode = opts.mode ?? body.mode;
+    if (!resolvedMode || !body.message) return null;
     return {
-      mode: body.mode,
+      mode: resolvedMode,
       message: body.message,
       threadId: body.threadId,
       files: body.files,

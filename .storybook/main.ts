@@ -9,9 +9,7 @@ const __dirname = path.dirname(__filename);
 const config: StorybookConfig = {
   staticDirs: [...getCodeEditorStaticDirs(__filename)],
   stories: [
-    '../app/**/*.mdx',
     '../app/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    '../src/**/*.mdx',
     '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
   addons: [
@@ -40,6 +38,34 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
       '@': path.resolve(__dirname, '..'),
+    };
+
+    config.build = config.build ?? {};
+    config.build.rollupOptions = config.build.rollupOptions ?? {};
+    const existingOnWarn = config.build.rollupOptions.onwarn;
+    config.build.rollupOptions.onwarn = (warning, warn) => {
+      const message =
+        typeof warning === 'string' ? warning : (warning.message ?? '');
+      if (
+        message.includes(
+          'Module level directives cause errors when bundled, "use client"'
+        )
+      ) {
+        return;
+      }
+      if (
+        message.includes(
+          "Error when using sourcemap for reporting an error: Can't resolve original location of error."
+        )
+      ) {
+        return;
+      }
+
+      if (typeof existingOnWarn === 'function') {
+        existingOnWarn(warning, warn);
+        return;
+      }
+      warn(warning);
     };
 
     return config;

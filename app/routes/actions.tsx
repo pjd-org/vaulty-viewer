@@ -156,66 +156,72 @@ function ActionsRoute() {
   );
 
   const toolbar = (
-    <div className="flex flex-wrap items-end gap-4">
-      <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-        <Badge
-          variant="muted"
-          className="w-fit px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
-        >
-          Sort mode
-        </Badge>
-        <select
-          id="actions-sort"
-          aria-label="Sort actions"
-          value={currentSort}
-          onChange={(event) =>
-            setSearch({
-              sort: event.target.value as
-                | 'urgency'
-                | 'impact'
-                | 'confidence'
-                | 'source'
-                | 'reversibility',
-              simulatableOnly,
-            })
-          }
-          className="rounded-full border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-        >
-          <option value="urgency">Urgency</option>
-          <option value="impact">Impact</option>
-          <option value="confidence">Confidence</option>
-          <option value="source">Source</option>
-          <option value="reversibility">Reversibility</option>
-        </select>
+    <div className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-3">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+          <Badge
+            variant="muted"
+            className="w-fit px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
+          >
+            Sort mode
+          </Badge>
+          <select
+            id="actions-sort"
+            aria-label="Sort actions"
+            value={currentSort}
+            onChange={(event) =>
+              setSearch({
+                sort: event.target.value as
+                  | 'urgency'
+                  | 'impact'
+                  | 'confidence'
+                  | 'source'
+                  | 'reversibility',
+                simulatableOnly,
+              })
+            }
+            className="rounded-full border border-border bg-muted/40 px-3 py-2 text-sm text-foreground transition focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+          >
+            <option value="urgency">Urgency</option>
+            <option value="impact">Impact</option>
+            <option value="confidence">Confidence</option>
+            <option value="source">Source</option>
+            <option value="reversibility">Reversibility</option>
+          </select>
+        </div>
+        <label className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm text-foreground">
+          <input
+            id="actions-simulatable-only"
+            type="checkbox"
+            checked={Boolean(simulatableOnly)}
+            onChange={(event) =>
+              setSearch({
+                sort: currentSort,
+                simulatableOnly: event.target.checked ? true : undefined,
+              })
+            }
+            className="h-4 w-4 rounded border-border bg-transparent text-primary"
+          />
+          <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-muted-foreground">
+            Simulatable only
+          </span>
+        </label>
+        <div className="rounded-full border border-border bg-muted/40 px-4 py-2 text-right text-xs text-muted-foreground">
+          <Badge
+            variant="muted"
+            className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
+          >
+            Showing {recommendations.length} of {allRecommendations.length}
+          </Badge>
+          <p className="font-medium text-foreground">
+            Selected: {selected?.title ?? 'None'}
+          </p>
+        </div>
       </div>
-      <label className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm text-foreground">
-        <input
-          id="actions-simulatable-only"
-          type="checkbox"
-          checked={Boolean(simulatableOnly)}
-          onChange={(event) =>
-            setSearch({
-              sort: currentSort,
-              simulatableOnly: event.target.checked ? true : undefined,
-            })
-          }
-          className="h-4 w-4 rounded border-border bg-transparent text-primary"
-        />
-        <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-muted-foreground">
-          Simulatable only
-        </span>
-      </label>
-      <div className="rounded-full border border-border bg-muted/40 px-4 py-2 text-right text-xs text-muted-foreground">
-        <Badge
-          variant="muted"
-          className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
-        >
-          Showing {recommendations.length} of {allRecommendations.length}
-        </Badge>
-        <p className="font-medium text-foreground">
-          Selected: {selected?.title ?? 'None'}
-        </p>
-      </div>
+      <p className="mt-2 px-1 text-xs text-[var(--text-tertiary)]">
+        Rank by impact or urgency, then expand a row to execute, simulate, or
+        defer.
+      </p>
     </div>
   );
 
@@ -250,6 +256,7 @@ function ActionsRoute() {
     <WorkspaceScaffold
       title="Actions"
       subtitle="Execution console for COD-ranked interventions."
+      statusLine={`${recommendations.length} action${recommendations.length === 1 ? '' : 's'} ranked · sort: ${currentSort}`}
       actions={toolbar}
       summaryItems={summaryItems}
       primaryTitle="Recommended Actions"

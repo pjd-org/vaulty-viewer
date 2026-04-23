@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/_viewer/',
   ssr: {
     // Bundle packages not present in the container's node_modules into SSR output.
-    noExternal: ['radix-ui', '@radix-ui/react-collapsible'],
+    noExternal: ['@radix-ui/react-collapsible'],
     // Keep React external so there is exactly one copy at runtime.
     // The react/react-dom aliases below were inlining a second copy into
     // dist/server/server.js, causing `useState` to be null on SSR render.

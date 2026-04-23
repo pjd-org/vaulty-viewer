@@ -8,9 +8,9 @@
     "build": "vite build",
     "start": "node app/server-node.mjs",
     "test": "vitest --config vitest.config.ts",
-    "storybook": "pnpm -C ../.. exec storybook dev -p 6006 -c .storybook",
-    "build-storybook": "pnpm -C ../.. exec storybook build -c .storybook",
-    "storybook:mcp": "pnpm -C ../.. exec storybook dev -p 6006 -c .storybook",
+    "storybook": "storybook dev -p 6006 -c .storybook",
+    "build-storybook": "storybook build -c .storybook",
+    "storybook:mcp": "storybook dev -p 6006 -c .storybook",
     "test-storybook": "vitest --config vitest.config.ts --project=storybook"
   },
   "dependencies": {
@@ -63,7 +63,6 @@
     "motion": "^12.38.0",
     "next-themes": "^0.4.6",
     "prosekit": "^0.19.0",
-    "radix-ui": "^1.4.3",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.2.0",

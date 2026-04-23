@@ -19,17 +19,32 @@ import { readDeepAgentsStream } from './deepagents-stream-adapter';
 import type { ModeAdapter } from './run-dispatcher';
 import type {
   AgentShellEvent,
+  AttachedFile,
   RunAgentRequest,
 } from '../../lib/agent-shell/types';
 
 function buildPromptRunnerBody(
   request: RunAgentRequest
 ): Record<string, unknown> {
-  return {
+  const body: Record<string, unknown> = {
     thread_id: request.threadId ?? '',
     mode: 'prompt',
     messages: [{ role: 'user', content: request.message }],
   };
+
+  if (request.files && request.files.length > 0) {
+    body.attachments = request.files.map((f) => ({
+      name: f.name,
+      mime_type: f.mimeType,
+      data: f.data,
+    }));
+  }
+
+  return body;
+}
+
+function normalizeFiles(files: RunAgentRequest['files']): AttachedFile[] {
+  return (files ?? []).map((file) => file);
 }
 
 async function* runPromptRunner(
@@ -45,7 +60,11 @@ async function* runPromptRunner(
   }
 
   const path = buildPrimaryAgentServerStreamPath(threadId);
-  const body = buildPromptRunnerBody({ ...request, threadId });
+  const body = buildPromptRunnerBody({
+    ...request,
+    threadId,
+    files: normalizeFiles(request.files),
+  });
 
   let response: Response;
   try {

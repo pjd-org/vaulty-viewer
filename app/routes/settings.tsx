@@ -41,18 +41,20 @@ function SettingsRoute() {
       primarySubtitle="Preference groups and control forms."
       primary={
         <div className="flex flex-col gap-6">
-          <section>
-            <h3 className="text-sm font-medium text-foreground mb-3">Theme</h3>
+          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+              Theme
+            </h3>
             <ThemeSelector />
           </section>
-          <section>
-            <h3 className="text-sm font-medium text-foreground mb-3">
+          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Layout density
             </h3>
             <DensitySelector />
           </section>
-          <section>
-            <h3 className="text-sm font-medium text-foreground mb-3">
+          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Sidebar
             </h3>
             <SidebarCollapseToggle />
@@ -62,9 +64,11 @@ function SettingsRoute() {
       asideTitle="Preview Panel"
       asideSubtitle="How changes affect the shell."
       aside={
-        <p className="text-sm text-muted-foreground">
-          Selected settings previews will render here.
-        </p>
+        <div className="genie-surface genie-surface--utility rounded-[20px] p-4">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Selected settings previews will render here.
+          </p>
+        </div>
       }
     />
   );
