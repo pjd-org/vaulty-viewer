@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const CLIENT_DIR = join(__dirname, '../dist/client');
 const VIEWER_PREFIX = '/_viewer/';
+const VIEWER_API_PREFIXES = ['/api/agent-shell/run/'];
 
 /** Minimal MIME map for Vite build output. */
 const MIME = {
@@ -35,7 +36,35 @@ const MIME = {
   '.map':   'application/json',
 };
 
-const { default: app } = await import('../dist/server/server.js');
+let app = null;
+for (const candidate of ['../dist/server/ssr.js', '../dist/server/server.js']) {
+  try {
+    const mod = await import(candidate);
+    app = mod?.default ?? null;
+    if (app) break;
+  } catch {
+    // Try next candidate.
+  }
+}
+
+if (!app) {
+  throw new Error(
+    'Viewer SSR entry not found. Expected dist/server/ssr.js or dist/server/server.js.'
+  );
+}
+
+const appHandler =
+  typeof app === 'function'
+    ? app
+    : typeof app?.fetch === 'function'
+      ? app.fetch.bind(app)
+      : null;
+
+if (!appHandler) {
+  throw new Error(
+    'Viewer SSR entry does not expose a handler. Expected default function or { fetch }.'
+  );
+}
 
 const HOST = process.env.HOST ?? '0.0.0.0';
 const PORT = Number(process.env.PORT ?? 8000);
@@ -88,7 +117,11 @@ const httpServer = createServer(async (req, res) => {
     ...(body ? { duplex: 'half' } : {}),
   };
 
-  if (req.url?.startsWith('/api/')) {
+  const isViewerOwnedApi = VIEWER_API_PREFIXES.some((prefix) =>
+    req.url?.startsWith(prefix)
+  );
+
+  if (req.url?.startsWith('/api/') && !isViewerOwnedApi) {
     const apiProxyUrl = process.env.API_PROXY_URL?.trim();
     if (apiProxyUrl) {
       const upstreamUrl = new URL(req.url, apiProxyUrl);
@@ -126,7 +159,7 @@ const httpServer = createServer(async (req, res) => {
 
   let response;
   try {
-    response = await app.fetch(request);
+    response = await appHandler(request);
   } catch (err) {
     console.error('[viewer] unhandled fetch error', err);
     res.writeHead(500);
