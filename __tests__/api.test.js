@@ -238,4 +238,19 @@ describe('apiFetch internal server token mode', () => {
     expect(headers.get('Authorization')).toBeNull();
     expect(headers.get('X-Vault-Service-Auth')).toBeNull();
   });
+
+  it('sends browser requests with credentials included by default', async () => {
+    globalThis.window = {
+      location: { hostname: 'localhost', port: '8080' },
+    };
+
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    globalThis.fetch = mockFetch;
+
+    const { apiFetch } = await import('../src/utils/api.js');
+    await apiFetch('/api/v1/tasks');
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][1]?.credentials).toBe('include');
+  });
 });

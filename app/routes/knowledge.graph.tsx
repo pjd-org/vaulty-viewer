@@ -357,14 +357,14 @@ function KnowledgeGraphRoute() {
       aside={
         selectedNode ? (
           <div className="flex flex-col gap-4">
-            <GlassCard className="p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
+            <GlassCard variant="light" className="p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
                 Selected note
               </p>
-              <h3 className="mt-3 text-lg font-semibold text-white">
+              <h3 className="mt-3 text-lg font-semibold text-[var(--text-primary)]">
                 {selectedNode.title}
               </h3>
-              <p className="mt-1 text-xs text-white/60">
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">
                 {selectedNode.audience ?? 'no audience'}
               </p>
               <button

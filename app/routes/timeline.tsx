@@ -336,7 +336,11 @@ function TimelineContent({
         {q || eventTypeFilter ? ' (filtered)' : ''}
       </p>
 
-      <GlassCard glowEffect={false} className="overflow-hidden p-0">
+      <GlassCard
+        variant="light"
+        glowEffect={false}
+        className="overflow-hidden p-0"
+      >
         <div>
           {paginated.length === 0 ? (
             <p className="px-4 py-6 text-sm text-white/60 text-center">
@@ -363,7 +367,7 @@ function TimelineContent({
       />
 
       {selectedEvent && (
-        <GlassCard glowEffect={false} className="p-4">
+        <GlassCard variant="light" glowEffect={false} className="p-4">
           <EventDetail event={selectedEvent} />
         </GlassCard>
       )}

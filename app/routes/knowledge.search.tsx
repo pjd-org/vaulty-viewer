@@ -201,7 +201,11 @@ function KnowledgeSearchRoute() {
       asideSubtitle="How to get the best results."
       aside={
         <div className="flex flex-col gap-4 text-sm text-white/60">
-          <GlassCard glowEffect={false} className="p-4 flex flex-col gap-3">
+          <GlassCard
+            variant="light"
+            glowEffect={false}
+            className="p-4 flex flex-col gap-3"
+          >
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                 Structural mode

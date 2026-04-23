@@ -198,6 +198,14 @@ const withAuthorizationHeader = (
   };
 };
 
+const withDefaultCredentials = (init: RequestInit | undefined): RequestInit => {
+  if (init?.credentials) return init;
+  return {
+    ...(init || {}),
+    credentials: 'include',
+  };
+};
+
 const mintInternalToken = async (
   config: InternalTokenConfig
 ): Promise<CachedToken> => {
@@ -320,7 +328,7 @@ export async function apiFetch(
   while (true) {
     // Resolve auth token on each attempt so retries use a fresh token
     // if the previous one expired during backoff
-    const requestInit = await getRequestInit(init);
+    const requestInit = withDefaultCredentials(await getRequestInit(init));
     try {
       const response = await fetch(url, requestInit);
       const canRetry = shouldRetryStatus(response.status) && attempt < retries;

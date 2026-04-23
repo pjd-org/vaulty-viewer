@@ -271,7 +271,7 @@ function NotesRoute() {
         )}
       </form>
 
-      <GlassCard glowEffect={false} className="p-4">
+      <GlassCard variant="light" glowEffect={false} className="p-4">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-[11px] font-medium uppercase tracking-widest text-white/60">
             Collection

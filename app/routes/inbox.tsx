@@ -581,7 +581,7 @@ function InboxRoute() {
           </TabsRoot>
 
           {/* ── Filter + sort toolbar ─────────────────────────────────── */}
-          <GlassCard glowEffect={false} className="px-3 py-2.5">
+          <GlassCard variant="light" glowEffect={false} className="px-3 py-2.5">
             <FilterBar
               sort={currentSort}
               onSort={(v) => setSearch({ sort: v })}

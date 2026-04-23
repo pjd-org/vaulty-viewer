@@ -47,11 +47,13 @@ function StatusBadge({ status }: { status: string }) {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <GlassCard glowEffect={false} className="p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
-        ID
+    <GlassCard variant="light" glowEffect={false} className="p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)]">
+        {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
+        {value}
+      </p>
     </GlassCard>
   );
 }
@@ -197,7 +199,7 @@ function ProjectTimelineRoute() {
                     <StatusBadge status={selectedHint.status} />
                   )}
                 </div>
-                <GlassCard glowEffect={false} className="p-4">
+                <GlassCard variant="light" glowEffect={false} className="p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
                     ID
                   </p>
@@ -228,7 +230,12 @@ function ProjectTimelineRoute() {
             ) : (
               <div className="flex flex-col gap-3">
                 {verificationRail.map((v) => (
-                  <GlassCard key={v.id} glowEffect={false} className="p-4">
+                  <GlassCard
+                    key={v.id}
+                    variant="light"
+                    glowEffect={false}
+                    className="p-4"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-semibold text-white/90">
                         {v.summary}
