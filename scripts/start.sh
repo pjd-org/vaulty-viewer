@@ -5,6 +5,7 @@ set -e
 PORT="${PORT:-4400}"
 VAULT_CONTENT_PATH="${VAULT_CONTENT_PATH:-${VAULT_PATH:-/vault}}"
 VAULT_API_URL="${VAULT_API_URL:-}"
+TENSURA_BASE_URL="${TENSURA_BASE_URL:-http://127.0.0.1:${TENSURA_PORT:-3000}}"
 # API_PROXY_URL: backend URL for nginx to proxy /api/ requests
 # Derives from API_PORT (set by services/start.sh or .env); pod mode should use
 # loopback so nginx reaches the API over the shared network namespace.
@@ -28,6 +29,7 @@ cat > "${CONFIG_PATH}" <<EOF
 {
   "vaultContentPath": "${VAULT_CONTENT_PATH}",
   "apiUrl": "${VAULT_API_URL}",
+  "tensuraUrl": "${TENSURA_BASE_URL}",
   "generatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 EOF
@@ -39,6 +41,12 @@ if [ -f "$INDEX_PATH" ] && [ -n "$VAULT_API_URL" ]; then
   echo "[viewer] Injecting VAULT_API_URL=${VAULT_API_URL} into index.html" >&2
   INJECT_SCRIPT="<script>window.VAULT_API_URL=\"${VAULT_API_URL}\";</script>"
   # Insert the script tag right after <head>
+  sed -i "s|<head>|<head>${INJECT_SCRIPT}|" "$INDEX_PATH"
+fi
+
+if [ -f "$INDEX_PATH" ] && [ -n "$TENSURA_BASE_URL" ]; then
+  echo "[viewer] Injecting TENSURA_BASE_URL=${TENSURA_BASE_URL} into index.html" >&2
+  INJECT_SCRIPT="<script>window.TENSURA_BASE_URL=\"${TENSURA_BASE_URL}\";</script>"
   sed -i "s|<head>|<head>${INJECT_SCRIPT}|" "$INDEX_PATH"
 fi
 

@@ -20,7 +20,10 @@ import {
   TopCommandBar,
 } from '../components/layout';
 import { Toaster } from '../components/ui/sonner';
-import { serializeDehydratedQueryState } from '../../src/query-client';
+import {
+  getBrowserDehydratedStateForRender,
+  serializeDehydratedQueryState,
+} from '../../src/query-client';
 import {
   NAV_OVERLAY_EVENT,
   type NavOverlay,
@@ -31,6 +34,12 @@ import { useUIStore, THEME_STORAGE_KEY } from '../../src/store/ui';
 import appCss from '../../src/styles.css?url';
 
 const SHELL_V3 = import.meta.env.VITE_SHELL_V3 === 'true';
+const RUNTIME_API_URL =
+  typeof process !== 'undefined' ? process.env.VAULT_API_URL?.trim() ?? '' : '';
+const RUNTIME_TENSURA_URL =
+  typeof process !== 'undefined'
+    ? process.env.TENSURA_BASE_URL?.trim() ?? ''
+    : '';
 
 type PreloadableComponent = React.ComponentType & {
   preload?: () => Promise<void>;
@@ -177,7 +186,9 @@ function RootComponent() {
   }, [hideShell]);
 
   const dehydratedState =
-    typeof window === 'undefined' ? dehydrate(queryClient) : undefined;
+    typeof window === 'undefined'
+      ? dehydrate(queryClient)
+      : getBrowserDehydratedStateForRender();
 
   return (
     <MotionConfig reducedMotion="user">
@@ -251,12 +262,29 @@ function RootDocument({
   const hydrationScript = dehydratedState
     ? `window.__VIEWER_DEHYDRATED_STATE__=${serializeDehydratedQueryState(dehydratedState)};`
     : '';
+  const viewerConfig = {
+    ...(RUNTIME_API_URL ? { apiUrl: RUNTIME_API_URL } : {}),
+    ...(RUNTIME_TENSURA_URL ? { tensuraUrl: RUNTIME_TENSURA_URL } : {}),
+  };
+  const viewerConfigScript =
+    Object.keys(viewerConfig).length > 0
+      ? `window.VIEWER_CONFIG=${JSON.stringify(viewerConfig).replace(
+          /</g,
+          '\\u003c'
+        )};`
+      : '';
 
   return (
     <html lang="en" style={{ colorScheme: 'light' }}>
       <head>
         <HeadContent />
         <meta name="theme-color" content="var(--background)" />
+        {viewerConfigScript ? (
+          <script
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: viewerConfigScript }}
+          />
+        ) : null}
         {/* Theme script must be in <head> to block paint before body renders */}
         <script
           suppressHydrationWarning

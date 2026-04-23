@@ -30,6 +30,14 @@ describe('getApiBase', () => {
     expect(getApiBase()).toBe('http://127.0.0.1:4300');
   });
 
+  it('routes tensura requests to TENSURA_BASE_URL', async () => {
+    process.env.TENSURA_BASE_URL = 'http://127.0.0.1:8080/';
+    const { getApiBaseForPath } = await import('../src/utils/api.js');
+    expect(
+      getApiBaseForPath('/tensura/v1/agent-server/threads/thread-1/stream')
+    ).toBe('http://127.0.0.1:8080');
+  });
+
   it('ignores empty VAULT_API_URL and uses API_PROXY_URL', async () => {
     process.env.VAULT_API_URL = '   ';
     process.env.API_PROXY_URL = 'http://api-internal:4300/';
@@ -86,6 +94,42 @@ describe('apiFetch retry policy', () => {
     expect(response.status).toBe(200);
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(mockFetch.mock.calls[0][0]).toBe('http://api.example.com/api/v1/health');
+  });
+
+  it('uses TENSURA_BASE_URL for tensura requests', async () => {
+    process.env.TENSURA_BASE_URL = 'http://tensura.example.com';
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    globalThis.fetch = mockFetch;
+
+    const { apiFetch } = await import('../src/utils/api.js');
+    await apiFetch('/tensura/v1/agent-server/threads/thread-abc/stream', undefined, {
+      retries: 0,
+      retryDelayMs: 0,
+      retryMultiplier: 1,
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][0]).toBe(
+      'http://tensura.example.com/tensura/v1/agent-server/threads/thread-abc/stream'
+    );
+  });
+
+  it('falls back to same-origin tensura requests when no explicit base is configured in the browser', async () => {
+    globalThis.window = { location: { hostname: 'localhost', port: '8080' } };
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    globalThis.fetch = mockFetch;
+
+    const { apiFetch } = await import('../src/utils/api.js');
+    await apiFetch('/tensura/v1/agent-server/threads/thread-abc/stream', undefined, {
+      retries: 0,
+      retryDelayMs: 0,
+      retryMultiplier: 1,
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][0]).toBe(
+      '/tensura/v1/agent-server/threads/thread-abc/stream'
+    );
   });
 
   it('does not retry on 4xx responses', async () => {

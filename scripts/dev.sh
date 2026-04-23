@@ -76,12 +76,15 @@ fi
 
 PORT="${PORT:-${VIEWER_PORT:-8000}}"
 API_PORT="${API_PORT:-4300}"
+TENSURA_PORT="${TENSURA_PORT:-3000}"
 VAULT_API_URL="${VAULT_API_URL:-http://localhost:${API_PORT}}"
+TENSURA_BASE_URL="${TENSURA_BASE_URL:-http://localhost:${TENSURA_PORT}}"
 
 export VAULT_CONTENT_PATH
 export VAULT_PATH="$VAULT_CONTENT_PATH"
 export PORT
 export VAULT_API_URL
+export TENSURA_BASE_URL
 export NODE_ENV=development
 
 exec pnpm exec vinxi dev

@@ -7,6 +7,11 @@
  * 2) window.VIEWER_CONFIG.apiUrl
  * 3) Same-origin /api (relative)
  *
+ * Tensura requests:
+ * 1) window.TENSURA_BASE_URL / window.VIEWER_CONFIG.tensuraUrl / TENSURA_BASE_URL
+ * 2) Same-origin /tensura (relative) in the browser
+ * 3) Server-side absolute base from TENSURA_API_URL when configured
+ *
  * Server runtime:
  * 1) VAULT_API_URL
  * 2) API_PROXY_URL (internal pod/service target)
@@ -15,6 +20,7 @@
 
 type ViewerConfig = {
   apiUrl?: string;
+  tensuraUrl?: string;
 };
 
 /**
@@ -41,6 +47,7 @@ export class ForbiddenError extends Error {
 declare global {
   interface Window {
     VAULT_API_URL?: string;
+    TENSURA_BASE_URL?: string;
     VIEWER_CONFIG?: ViewerConfig;
   }
 }
@@ -104,6 +111,9 @@ const shouldRetryError = (error: unknown) => {
 };
 
 const isServerRuntime = () => typeof window === 'undefined';
+
+const isTensuraPath = (path: string) =>
+  path === '/tensura' || path.startsWith('/tensura/');
 
 const parseDurationMs = (value: string): number | null => {
   const trimmed = value.trim();
@@ -187,6 +197,29 @@ const getInternalTokenConfig = (): InternalTokenConfig | null => {
     apiKey,
     authBase: strip(authBase),
   };
+};
+
+const getTensuraBase = (): string => {
+  if (typeof window !== 'undefined') {
+    if (window.TENSURA_BASE_URL) {
+      return strip(window.TENSURA_BASE_URL);
+    }
+
+    if (window.VIEWER_CONFIG?.tensuraUrl) {
+      return strip(window.VIEWER_CONFIG.tensuraUrl);
+    }
+  }
+
+  if (typeof process !== 'undefined') {
+    const tensuraBaseUrl =
+      process.env?.TENSURA_BASE_URL?.trim() ||
+      process.env?.TENSURA_API_URL?.trim();
+    if (tensuraBaseUrl) {
+      return strip(tensuraBaseUrl);
+    }
+  }
+
+  return '';
 };
 
 const withAuthorizationHeader = (
@@ -321,6 +354,10 @@ export function getApiBase(): string {
   return '';
 }
 
+export function getApiBaseForPath(path: string): string {
+  return isTensuraPath(path) ? getTensuraBase() : getApiBase();
+}
+
 export async function apiFetch(
   path: string,
   init?: RequestInit,
@@ -330,7 +367,13 @@ export async function apiFetch(
   let delayMs = retryOptions?.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
   const retryMultiplier =
     retryOptions?.retryMultiplier ?? DEFAULT_RETRY_MULTIPLIER;
-  const url = joinApiPath(getApiBase(), path);
+  const base = getApiBaseForPath(path);
+  if (isTensuraPath(path) && !base && isServerRuntime()) {
+    throw new Error(
+      `[viewer-api] TENSURA_BASE_URL is not configured for ${path}; set TENSURA_BASE_URL or VIEWER_CONFIG.tensuraUrl`
+    );
+  }
+  const url = joinApiPath(base, path);
 
   let attempt = 0;
   while (true) {
