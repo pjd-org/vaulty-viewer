@@ -8,7 +8,6 @@ import { GlassCard } from '../components/ui/glass-card';
 import { GlassBadge } from '../components/ui/glass-badge';
 import Timeline, {
   TimelineItem,
-  TimelineItemDate,
   TimelineItemTitle,
   TimelineItemDescription,
 } from '../components/ui/timeline';
@@ -133,11 +132,10 @@ function ProjectTimelineRoute() {
           ) : (
             <Timeline
               orientation="vertical"
-              alternating={false}
-              alignment="top/left"
-              noCards={false}
-              vertItemSpacing={110}
+              alternating
+              vertItemSpacing={130}
               vertItemMaxWidth={600}
+              className="min-h-[560px]"
             >
               {timelineHints.map((hint) => {
                 const active = selectedHint?.id === hint.id;

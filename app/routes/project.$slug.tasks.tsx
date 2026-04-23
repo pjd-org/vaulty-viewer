@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { SoftPanel } from '../components/layout';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SoftChip, StatusPill, type TaskStatus } from '../components/ui/Chips';
+import { BlockersRail } from '../components/projects/BlockersRail';
 import { getAllTasksQueryOptions, useAllTasks } from '../lib/queries/tasks';
 import type { KanbanTask } from '../../src/lib/kanban-logic';
 import { projectSearchParams } from '../../src/lib/routes/search-params';
@@ -56,6 +57,7 @@ function buildTaskSearch(
 function ProjectTasksRoute() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
+  const navigate = useNavigate();
   const { data: allTasks = [], isLoading, error } = useAllTasks();
 
   const projectTasks = React.useMemo(
@@ -265,55 +267,32 @@ function ProjectTasksRoute() {
             )}
           </SoftPanel>
 
-          <SoftPanel
-            variant="utility"
-            title="Blockers"
-            subtitle="Tasks currently holding the project up."
-            actions={
-              <Link
-                to="/project/$slug/risks"
-                params={{ slug }}
-                search={{ ...search, selectedId: undefined }}
-                className="rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
-              >
-                View risks
-              </Link>
-            }
-          >
-            {blockedTasks.length ? (
-              <div className="flex flex-col gap-3">
-                {blockedTasks.map((task) => (
-                  <Link
-                    key={task.id}
-                    to="/project/$slug/tasks"
-                    params={{ slug }}
-                    search={buildTaskSearch(search, task.id)}
-                    className="block rounded-[18px] border border-border bg-card p-4 transition hover:border-border/80 hover:bg-muted/30"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {task.title}
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {task.estimatedTimeMin != null &&
-                          task.estimatedTimeMin > 0
-                            ? `${task.estimatedTimeMin}m estimated`
-                            : 'No estimate yet'}
-                        </p>
-                      </div>
-                      <StatusPill status="blocked" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
+          {blockedTasks.length ? (
+            <BlockersRail
+              blockedTasks={blockedTasks}
+              subtitle="Tasks currently holding the project up."
+              selectedTaskId={selectedTask?.id}
+              showSelectCta
+              onSelectTask={(taskId) =>
+                void navigate({
+                  to: '/project/$slug/tasks',
+                  params: { slug },
+                  search: buildTaskSearch(search, taskId),
+                })
+              }
+            />
+          ) : (
+            <SoftPanel
+              variant="utility"
+              title="Blockers"
+              subtitle="Tasks currently holding the project up."
+            >
               <EmptyState
                 title="No blockers surfaced."
                 description="Once a task stalls, it will appear here for faster triage."
               />
-            )}
-          </SoftPanel>
+            </SoftPanel>
+          )}
         </div>
       </div>
     </div>

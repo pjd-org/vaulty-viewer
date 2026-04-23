@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 import { BlockersRail } from './BlockersRail';
 import type { KanbanTask } from '../../../src/lib/kanban-logic';
 
@@ -59,6 +60,16 @@ export const MultipleBlockers: Story = {
 
 export const NoTags: Story = {
   args: { blockedTasks: [blockedTasks[2]] },
+};
+
+export const InteractiveSelection: Story = {
+  args: {
+    blockedTasks,
+    subtitle: 'Tasks currently holding the project up.',
+    selectedTaskId: 'task-001',
+    showSelectCta: true,
+    onSelectTask: fn(),
+  },
 };
 
 // BlockersRail returns null when empty — show a placeholder note instead

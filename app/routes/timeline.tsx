@@ -6,6 +6,12 @@ import { EmptyState, RouteLoadingState } from '../components/ui';
 import { GlassCard } from '../components/ui/glass-card';
 import { GlassInput } from '../components/ui/glass-input';
 import { GlassBadge } from '../components/ui/glass-badge';
+import Timeline, {
+  TimelineItem,
+  TimelineItemDate,
+  TimelineItemTitle,
+  TimelineItemDescription,
+} from '../components/ui/timeline';
 import { timelineSearchParams } from '../../src/lib/routes/search-params';
 import {
   getTimelineSurfaceQueryOptions,
@@ -105,7 +111,7 @@ function FilterBar({
 }
 
 // ---------------------------------------------------------------------------
-// Event row (glass)
+// Event row (timeline card content)
 // ---------------------------------------------------------------------------
 
 function EventRow({
@@ -118,6 +124,8 @@ function EventRow({
   onSelect: (id: string) => void;
 }) {
   const date = new Date(event.ts);
+  const eventLabel =
+    event.type.split('.').at(-1)?.replaceAll('_', ' ') ?? event.type;
   const timeLabel = isNaN(date.getTime())
     ? event.ts
     : date.toLocaleTimeString(undefined, {
@@ -135,21 +143,32 @@ function EventRow({
       data-testid="timeline-event-row"
       onClick={() => onSelect(event.id)}
       className={cn(
-        'w-full px-3 py-2.5 text-left transition-all duration-200',
-        'border-b border-[var(--border-glass-soft)] last:border-0',
+        'w-full rounded-xl px-3 py-2.5 text-left transition-all duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--a-sky)]/60',
         selected
-          ? 'bg-[color-mix(in_srgb,var(--a-sky)_10%,var(--surf-elevated))]'
+          ? 'bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))]'
           : 'hover:bg-[var(--surf-utility)] bg-transparent'
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <TimelineItemTitle className="text-sm font-semibold text-[var(--text-primary)]">
+          {eventLabel}
+        </TimelineItemTitle>
+        <TimelineItemDate className="shrink-0 text-[11px] text-[var(--text-secondary)]">
+          {date}
+        </TimelineItemDate>
+      </div>
+      <TimelineItemDescription className="mt-2 text-xs text-[var(--text-secondary)]">
+        {event.id}
+      </TimelineItemDescription>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <EventTypeBadge type={event.type} />
         <span className="shrink-0 text-xs text-[var(--text-secondary)]">
           {dateLabel} {timeLabel}
         </span>
       </div>
       {event.meta && typeof event.meta.run_id === 'string' && (
-        <p className="mt-1 truncate font-mono text-xs text-[var(--text-secondary)]">
+        <p className="mt-2 truncate font-mono text-xs text-[var(--text-secondary)]">
           {event.meta.run_id}
         </p>
       )}
@@ -340,24 +359,38 @@ function TimelineContent({
       <GlassCard
         variant="light"
         glowEffect={false}
-        className="genie-surface genie-surface--utility overflow-hidden rounded-[20px] p-0"
+        className="genie-surface genie-surface--utility overflow-hidden rounded-[20px] p-3 sm:p-4"
       >
-        <div>
-          {paginated.length === 0 ? (
-            <p className="px-4 py-6 text-center text-sm text-[var(--text-secondary)]">
-              No events match the current filter.
-            </p>
-          ) : (
-            paginated.map((event) => (
-              <EventRow
-                key={event.id}
-                event={event}
-                selected={event.id === selectedId}
-                onSelect={onSelect}
-              />
-            ))
-          )}
-        </div>
+        {paginated.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-[var(--text-secondary)]">
+            No events match the current filter.
+          </p>
+        ) : (
+          <Timeline
+            orientation="vertical"
+            alternating
+            vertItemSpacing={130}
+            vertItemMaxWidth={620}
+            className="min-h-[560px]"
+          >
+            {paginated.map((event) => {
+              const selected = event.id === selectedId;
+              return (
+                <TimelineItem
+                  key={event.id}
+                  variant={selected ? 'glass' : 'outline'}
+                  hollow={!selected}
+                >
+                  <EventRow
+                    event={event}
+                    selected={selected}
+                    onSelect={onSelect}
+                  />
+                </TimelineItem>
+              );
+            })}
+          </Timeline>
+        )}
       </GlassCard>
 
       <Pagination

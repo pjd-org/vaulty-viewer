@@ -1,6 +1,6 @@
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
@@ -15,6 +15,7 @@ const mockRouteState = vi.hoisted(() => ({
     memoryTab: undefined as string | undefined,
   },
 }))
+const mockNavigate = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
   lazyRouteComponent: createLazyRouteComponentMock(),
@@ -23,6 +24,7 @@ vi.mock('@tanstack/react-router', () => ({
     useParams: () => mockRouteState.params,
     useSearch: () => mockRouteState.search,
   }),
+  useNavigate: () => mockNavigate,
   Link: ({
     to,
     params,
@@ -63,6 +65,7 @@ describe('project tasks lane', () => {
   })
 
   beforeEach(() => {
+    mockNavigate.mockReset()
     mockRouteState.params = { slug: 'rent-stability-pantin' }
     mockRouteState.search = {
       selectedId: 'task-2',
@@ -136,5 +139,17 @@ describe('project tasks lane', () => {
     const blockerPanel = screen.getByRole('heading', { name: 'Blockers' }).closest('section')
     expect(blockerPanel).not.toBeNull()
     expect(within(blockerPanel as HTMLElement).getByText('Resolve blocker')).toBeTruthy()
+    const selectTaskButton = within(blockerPanel as HTMLElement).getByRole(
+      'button',
+      { name: 'Select task' }
+    )
+    fireEvent.click(selectTaskButton)
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/project/$slug/tasks',
+      params: { slug: 'rent-stability-pantin' },
+      search: expect.objectContaining({
+        selectedId: 'task-3',
+      }),
+    })
   })
 })

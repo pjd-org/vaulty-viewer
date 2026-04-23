@@ -14,6 +14,7 @@ import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 // ---------------------------------------------------------------------------
 
 const {
+  MockForbiddenError,
   MockUnauthenticatedError,
   mockNavigate,
   mockUseTimelineSurface,
@@ -26,7 +27,15 @@ const {
       Object.setPrototypeOf(this, MockUnauthenticatedError.prototype);
     }
   }
+  class MockForbiddenError extends Error {
+    constructor(msg?: string) {
+      super(msg);
+      this.name = 'ForbiddenError';
+      Object.setPrototypeOf(this, MockForbiddenError.prototype);
+    }
+  }
   return {
+    MockForbiddenError,
     MockUnauthenticatedError,
     mockNavigate: vi.fn(),
     mockUseTimelineSurface: vi.fn(),
@@ -92,6 +101,7 @@ vi.mock('../../app/lib/viewer-adapter', () => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('../../src/utils/api', () => ({
+  ForbiddenError: MockForbiddenError,
   UnauthenticatedError: MockUnauthenticatedError,
   apiFetch: vi.fn(),
 }));
