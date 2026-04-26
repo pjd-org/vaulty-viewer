@@ -7,10 +7,56 @@ import getApiBase, {
 } from '../utils/api';
 import { useHydrated } from './useHydrated';
 
+interface CODValidation {
+  status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN';
+  warnings: string[];
+  lastChecked: string | null;
+}
+
+interface CODHumanState {
+  energy: number;
+  focusCapacity: 'low' | 'med' | 'high' | 'unknown';
+  stress: number;
+  sleepDebt: number;
+  timeAvailableMin: number;
+  source?: string;
+  timestamp?: string | null;
+}
+
+interface CODSessionTask {
+  title: string;
+  status: 'pending' | 'in_progress' | 'done';
+  estimatedMin?: number;
+}
+
+interface CODSession {
+  id?: string;
+  startedAt: string;
+  budgetMin: number;
+  tasks?: CODSessionTask[];
+}
+
+interface CODAvatarVitals {
+  money?: {
+    default_currency?: string;
+    balances?: Record<string, number>;
+    forms?: Record<string, number | string>;
+  };
+  notoriety?: number;
+  health?: number;
+  healthTrend?: number | null;
+}
+
 /**
  * Default/mock COD status for static builds or when API unavailable
  */
-const DEFAULT_STATUS = {
+const DEFAULT_STATUS: {
+  validation: CODValidation;
+  humanState: CODHumanState;
+  session: CODSession | null;
+  warnings: string[];
+  avatarVitals: CODAvatarVitals;
+} = {
   validation: {
     status: 'UNKNOWN',
     warnings: [],
@@ -35,11 +81,91 @@ const DEFAULT_STATUS = {
   },
 };
 
+interface CODValidation {
+  status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN';
+  warnings: string[];
+  lastChecked: string | null;
+}
+
+interface CODHumanState {
+  energy: number;
+  focusCapacity: 'low' | 'med' | 'high' | 'unknown';
+  stress: number;
+  sleepDebt: number;
+  timeAvailableMin: number;
+  source?: string;
+  timestamp?: string | null;
+}
+
+interface CODSessionTask {
+  title: string;
+  status: 'pending' | 'in_progress' | 'done';
+  estimatedMin?: number;
+}
+
+interface CODSession {
+  id?: string;
+  startedAt: string;
+  budgetMin: number;
+  tasks?: CODSessionTask[];
+}
+
+interface CODAvatarVitals {
+  money?: {
+    default_currency?: string;
+    balances?: Record<string, number>;
+    forms?: Record<string, number | string>;
+  };
+  notoriety?: number;
+  health?: number;
+  healthTrend?: number | null;
+}
+
+interface CODHumanStateFormData {
+  energy: number;
+  focusCapacity: 'low' | 'med' | 'high';
+  stress: number;
+  sleepHours: number;
+  timeAvailableMin: number;
+  source: 'morning-check' | 'moment-check' | 'manual' | string;
+}
+
+interface CODMutationResult {
+  success: boolean;
+  error?: string;
+  session?: unknown;
+}
+
+interface UseCODStatusResult {
+  validation: CODValidation;
+  humanState: CODHumanState;
+  session: CODSession | null;
+  warnings: string[];
+  avatarVitals: CODAvatarVitals;
+  loading: boolean;
+  updating: boolean;
+  error: string | null;
+  refresh: () => Promise<unknown>;
+  updateHumanState: (newState: CODHumanStateFormData) => Promise<CODMutationResult>;
+  startSession: (options?: {
+    taskIds?: string[];
+    budgetMin?: number;
+  }) => Promise<CODMutationResult>;
+  endSession: (
+    sessionId: string,
+    status?: 'completed' | 'aborted' | string
+  ) => Promise<CODMutationResult>;
+}
+
 /**
  * Compute validation status from human state
  */
-function computeValidation(humanState, session, avatarVitals = {}) {
-  const warnings = [];
+function computeValidation(
+  humanState: CODHumanState | undefined,
+  session: CODSession | null,
+  avatarVitals: CODAvatarVitals = {}
+): CODValidation {
+  const warnings: string[] = [];
 
   if (humanState) {
     // Energy check — API returns 0–100 integers
@@ -93,7 +219,7 @@ function computeValidation(humanState, session, avatarVitals = {}) {
     }
   }
 
-  let status = 'PASS';
+  let status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' = 'PASS';
   if (warnings.length > 0) {
     // Check for blocking conditions
     const hasBlocking = warnings.some((w) => {
@@ -119,9 +245,12 @@ function computeValidation(humanState, session, avatarVitals = {}) {
  * Hook to fetch and manage COD status
  * Uses static data from GraphQL at build time, with optional API polling for live updates
  */
-export function useCODStatus(staticData = null, profileOverride = null) {
+export function useCODStatus(
+  staticData: unknown | null = null,
+  profileOverride: string | null = null
+): UseCODStatusResult {
   const queryClient = useQueryClient();
-  const [actionError, setActionError] = useState(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const hydrated = useHydrated();
 
   // Get API URL helper
@@ -135,8 +264,11 @@ export function useCODStatus(staticData = null, profileOverride = null) {
 
   const initialData = useMemo(() => {
     if (staticData) {
-      const humanState = staticData.humanStateJson || DEFAULT_STATUS.humanState;
-      const session = staticData.activeSessionJson || null;
+      const humanState =
+        (staticData as { humanStateJson?: CODHumanState }).humanStateJson ||
+        DEFAULT_STATUS.humanState;
+      const session =
+        (staticData as { activeSessionJson?: CODSession }).activeSessionJson || null;
       const validation = computeValidation(humanState, session);
       return {
         validation,
@@ -177,7 +309,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
         result.structuredContent?.session || result.session || null;
 
       // Try to load avatar vitals (money / notoriety / health)
-      let avatarVitals = DEFAULT_STATUS.avatarVitals;
+      let avatarVitals: CODAvatarVitals = DEFAULT_STATUS.avatarVitals;
       try {
         const avatarRes = await apiFetch('/api/v1/cod/avatar');
         if (avatarRes.status === 401) {
@@ -194,7 +326,9 @@ export function useCODStatus(staticData = null, profileOverride = null) {
             avatarJson?.structuredContent ||
             avatarJson;
           const vitals =
-            avatarState?.vitals || avatarJson?.structuredContent?.vitals || avatarJson?.vitals;
+            avatarState?.vitals ||
+            avatarJson?.structuredContent?.vitals ||
+            avatarJson?.vitals;
           if (vitals) {
             avatarVitals = {
               money: vitals.money ?? avatarVitals.money,
@@ -230,7 +364,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
   }, [hydrated, statusQuery]);
 
   const updateHumanStateMutation = useMutation({
-    mutationFn: async ({ newState }) => {
+    mutationFn: async ({ newState }: { newState: CODHumanStateFormData }) => {
       const response = await apiFetch('/api/v1/cod/human-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -247,13 +381,19 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       setActionError(null);
       await queryClient.invalidateQueries({ queryKey });
     },
-    onError: (err) => {
+    onError: (err: unknown) => {
       setActionError(err instanceof Error ? err.message : String(err));
     },
   });
 
   const startSessionMutation = useMutation({
-    mutationFn: async ({ taskIds = [], budgetMin = 60 }) => {
+    mutationFn: async ({
+      taskIds = [],
+      budgetMin = 60,
+    }: {
+      taskIds?: string[];
+      budgetMin?: number;
+    }) => {
       const response = await apiFetch('/api/v1/cod/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -271,13 +411,19 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       setActionError(null);
       await queryClient.invalidateQueries({ queryKey });
     },
-    onError: (err) => {
+    onError: (err: unknown) => {
       setActionError(err instanceof Error ? err.message : String(err));
     },
   });
 
   const endSessionMutation = useMutation({
-    mutationFn: async ({ sessionId, status = 'completed' }) => {
+    mutationFn: async ({
+      sessionId,
+      status = 'completed',
+    }: {
+      sessionId: string;
+      status?: string;
+    }) => {
       const response = await apiFetch('/api/v1/cod/session/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -295,7 +441,7 @@ export function useCODStatus(staticData = null, profileOverride = null) {
       setActionError(null);
       await queryClient.invalidateQueries({ queryKey });
     },
-    onError: (err) => {
+    onError: (err: unknown) => {
       setActionError(err instanceof Error ? err.message : String(err));
     },
   });
@@ -304,7 +450,9 @@ export function useCODStatus(staticData = null, profileOverride = null) {
    * Update human state via API
    */
   const updateHumanState = useCallback(
-    async (newState) => {
+    async (
+      newState: CODHumanStateFormData
+    ): Promise<CODMutationResult> => {
       if (!queryEnabled) {
         return { success: false, error: 'API not available' };
       }
@@ -327,17 +475,16 @@ export function useCODStatus(staticData = null, profileOverride = null) {
    * Start a new work session
    */
   const startSession = useCallback(
-    async ({ taskIds = [], budgetMin = 60 } = {}) => {
+    async (
+      options?: { taskIds?: string[]; budgetMin?: number }
+    ): Promise<CODMutationResult> => {
       if (!queryEnabled) {
         return { success: false, error: 'API not available' };
       }
 
       setActionError(null);
       try {
-        const session = await startSessionMutation.mutateAsync({
-          taskIds,
-          budgetMin,
-        });
+        const session = await startSessionMutation.mutateAsync(options || {});
         await refresh();
         return { success: true, session };
       } catch (err) {
@@ -353,7 +500,10 @@ export function useCODStatus(staticData = null, profileOverride = null) {
    * End current session
    */
   const endSession = useCallback(
-    async (sessionId, status = 'completed') => {
+    async (
+      sessionId: string,
+      status: string = 'completed'
+    ): Promise<CODMutationResult> => {
       if (!queryEnabled) {
         return { success: false, error: 'API not available' };
       }
@@ -396,5 +546,15 @@ export function useCODStatus(staticData = null, profileOverride = null) {
     endSession,
   };
 }
+
+export type {
+  CODValidation,
+  CODHumanState,
+  CODSession,
+  CODAvatarVitals,
+  CODHumanStateFormData,
+  CODMutationResult,
+  UseCODStatusResult,
+};
 
 export default useCODStatus;

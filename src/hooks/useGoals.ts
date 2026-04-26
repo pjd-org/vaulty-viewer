@@ -7,10 +7,63 @@ import getApiBase, {
 } from '../utils/api';
 import { useHydrated } from './useHydrated';
 
+export interface GoalTask {
+  id?: string;
+  path?: string;
+  title: string;
+  status: string;
+  effortScore?: number;
+  effort?: number;
+  estimatedTimeMin?: number;
+  priority?: number;
+  tags?: string[];
+  goalId?: string;
+  dueDate?: string;
+  completedAt?: string;
+  frontmatter?: {
+    completedAt?: string;
+    completed?: string;
+  };
+  completed?: string;
+}
+
+export interface GoalStats {
+  total: number;
+  completed: number;
+  inProgress?: number;
+  todo?: number;
+  blocked?: number;
+  totalEffort?: number;
+  completedEffort?: number;
+  remainingEffort?: number;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  priority: number;
+  progress: number;
+  progressByCount?: number;
+  status: string;
+  targetDate?: string | null;
+  eta?: string | null;
+  stats: GoalStats;
+  tasks: GoalTask[];
+}
+
+export interface UseGoalsResult {
+  goals: Goal[];
+  loading: boolean;
+  error: string | null;
+  apiStatus: 'online' | 'offline' | 'unknown';
+  updatedAt: string | null;
+  refresh: () => Promise<unknown>;
+}
+
 /**
  * Get API URL from window config or default to relative path
  */
-const getApiUrl = () => {
+const getApiUrl = (): string => {
   const base = getApiBase();
   return base;
 };
@@ -18,7 +71,11 @@ const getApiUrl = () => {
 /**
  * Calculate goal status based on progress and target date
  */
-function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
+function calculateGoalStatus(
+  progress: number,
+  targetDate: Date | null,
+  hasBlockedTasks: boolean
+): string {
   if (progress >= 100) return 'completed';
   if (hasBlockedTasks && progress < 50) return 'blocked';
 
@@ -26,7 +83,9 @@ function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
 
   const now = new Date();
   const target = new Date(targetDate);
-  const daysUntilTarget = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  const daysUntilTarget = Math.ceil(
+    (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   // Simple ETA: assume linear progress
   const remainingProgress = 100 - progress;
@@ -41,7 +100,7 @@ function calculateGoalStatus(progress, targetDate, hasBlockedTasks) {
 /**
  * Hook to fetch and compute goal progress from tasks
  */
-export function useGoals() {
+export function useGoals(): UseGoalsResult {
   const apiUrl = getApiUrl();
   const hydrated = useHydrated();
   const queryEnabled = hydrated;
@@ -63,7 +122,9 @@ export function useGoals() {
         throw new Error(`Failed to fetch tasks: ${tasksRes.status}`);
       }
       const tasksData = await tasksRes.json();
-      return tasksData.structuredContent?.tasks || tasksData.tasks || [];
+      return (
+        tasksData.structuredContent?.tasks || tasksData.tasks || []
+      ) as GoalTask[];
     },
   });
 
@@ -110,7 +171,8 @@ export function useGoals() {
           ? t.effortScore
           : typeof t.effort === 'number' && t.effort > 0
             ? t.effort
-            : typeof t.estimatedTimeMin === 'number' && t.estimatedTimeMin > 0
+            : typeof t.estimatedTimeMin === 'number' &&
+                t.estimatedTimeMin > 0
               ? Math.max(1, Math.round(t.estimatedTimeMin / 15))
               : 1;
       return { ...t, status, effortScore };
@@ -118,11 +180,11 @@ export function useGoals() {
 
     // Sanitize a raw goalId/tag value: strip stray YAML quote artifacts
     // e.g. "'platform-foundation'" -> "platform-foundation"
-    const sanitizeId = (raw) =>
+    const sanitizeId = (raw: string): string =>
       String(raw).trim().replace(/^['"]/, '').replace(/['"]$/, '');
 
     // Find unique goalIds from explicit field or goal:* tags
-    const goalIdSet = new Set();
+    const goalIdSet = new Set<string>();
     normalizedTasks.forEach((t) => {
       if (t.goalId) goalIdSet.add(sanitizeId(t.goalId));
       (t.tags || [])
@@ -149,7 +211,9 @@ export function useGoals() {
         const completedTasks = goalTasks.filter(
           (t) => t.status === 'completed'
         );
-        const blockedTasks = goalTasks.filter((t) => t.status === 'blocked');
+        const blockedTasks = goalTasks.filter(
+          (t) => t.status === 'blocked'
+        );
         const inProgressTasks = goalTasks.filter(
           (t) => t.status === 'in-progress'
         );
@@ -166,7 +230,10 @@ export function useGoals() {
         );
         const progressByEffort =
           totalEffort > 0
-            ? Math.min(100, Math.round((completedEffort / totalEffort) * 100))
+            ? Math.min(
+                100,
+                Math.round((completedEffort / totalEffort) * 100)
+              )
             : 0;
 
         // Calculate progress by count
@@ -190,11 +257,14 @@ export function useGoals() {
 
         // Find target date (could be extracted from goal notes in the future)
         // For now, look for tasks with due dates
-        const dueDates = goalTasks
-          .filter((t) => t.dueDate)
-          .map((t) => new Date(t.dueDate));
-        const targetDate =
-          dueDates.length > 0 ? new Date(Math.min(...dueDates)) : null;
+        const dueDateVals = goalTasks
+          .filter((t) => !!t.dueDate)
+          .map((t) => new Date(t.dueDate as string).getTime());
+        const targetDateTimestamp =
+          dueDateVals.length > 0 ? Math.min(...dueDateVals) : null;
+        const targetDate = targetDateTimestamp
+          ? new Date(targetDateTimestamp)
+          : null;
 
         // Calculate status
         const status = calculateGoalStatus(
@@ -205,7 +275,8 @@ export function useGoals() {
 
         // Calculate ETA (simple linear projection)
         const remainingEffort = totalEffort - completedEffort;
-        const avgEffortPerDay = completedEffort > 0 ? completedEffort / 7 : 5; // assume 7 days or 5 effort/day
+        const avgEffortPerDay =
+          completedEffort > 0 ? completedEffort / 7 : 5; // assume 7 days or 5 effort/day
         const daysRemaining =
           remainingEffort > 0
             ? Math.ceil(remainingEffort / avgEffortPerDay)
@@ -234,8 +305,10 @@ export function useGoals() {
           },
           tasks: goalTasks.sort((a, b) => {
             // Sort: completed last, then by priority desc
-            if (a.status === 'completed' && b.status !== 'completed') return 1;
-            if (a.status !== 'completed' && b.status === 'completed') return -1;
+            if (a.status === 'completed' && b.status !== 'completed')
+              return 1;
+            if (a.status !== 'completed' && b.status === 'completed')
+              return -1;
             return (b.priority || 0) - (a.priority || 0);
           }),
         };

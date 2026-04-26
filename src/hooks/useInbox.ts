@@ -5,8 +5,81 @@ import getApiBase, {
   UnauthenticatedError,
   apiFetch,
 } from '../utils/api';
-import { splitInboxNotes, computeInboxCounts } from '../lib/inbox-logic';
 import { useHydrated } from './useHydrated';
+
+export interface InboxNote {
+  path: string;
+  title?: string;
+  status?: string;
+  error?: string;
+}
+
+export interface InboxRunItem {
+  path?: string;
+  targetPath?: string;
+  domainFields?: Record<string, unknown>;
+}
+
+export interface InboxRun {
+  runId: string;
+  runType?: string;
+  action?: string;
+  itemCount: number;
+  confidence?: number;
+  templateRef?: string;
+  items: InboxRunItem[];
+  error?: string;
+}
+
+export interface InboxPendingConfirmation {
+  token?: string;
+  expiresAt?: string;
+  message?: string;
+}
+
+export type InboxActionState = Record<
+  string,
+  'committing' | 'rejecting' | 'error' | undefined
+>;
+
+export interface InboxMutationResult {
+  status?: 'pending_confirmation' | 'committed';
+  token?: string;
+  expiresAt?: string;
+  message?: string;
+  mode?: string;
+  structuredContent?: {
+    status?: 'pending_confirmation' | 'committed';
+    token?: string;
+    expiresAt?: string;
+    message?: string;
+    committed?: number;
+    failed?: number;
+    rejected?: number;
+    errors?: number | string[];
+  };
+  [key: string]: unknown;
+}
+
+export interface UseInboxResult {
+  notes: InboxNote[];
+  workbenchNotes: InboxNote[];
+  archiveNotes: InboxNote[];
+  runs: InboxRun[];
+  counts: {
+    queue: number;
+    workbench: number;
+    archive: number;
+  };
+  loading: boolean;
+  error: string | null;
+  apiStatus: 'online' | 'offline' | 'unknown';
+  refresh: () => Promise<unknown>;
+  commitRun: (runId: string) => Promise<InboxMutationResult>;
+  rejectRun: (runId: string) => Promise<InboxMutationResult>;
+  actionState: InboxActionState;
+  pendingConfirmations: Record<string, InboxPendingConfirmation | undefined>;
+}
 
 /**
  * Hook to manage the combined inbox view.
@@ -22,16 +95,18 @@ import { useHydrated } from './useHydrated';
  *   rejectRun   — (runId) => Promise — reject/delete a run
  *   actionState — { [runId]: 'committing' | 'rejecting' | 'error' }
  */
-export function useInbox() {
-  const [actionState, setActionState] = useState({});
-  const [pendingConfirmations, setPendingConfirmations] = useState({});
+export function useInbox(): UseInboxResult {
+  const [actionState, setActionState] = useState<InboxActionState>({});
+  const [pendingConfirmations, setPendingConfirmations] = useState<
+    Record<string, InboxPendingConfirmation | undefined>
+  >({});
   const queryClient = useQueryClient();
   const hydrated = useHydrated();
   const base = getApiBase();
   const queryEnabled = hydrated;
   const queryKey = ['inbox', base];
 
-  const clearPendingConfirmation = useCallback((runId) => {
+  const clearPendingConfirmation = useCallback((runId: string) => {
     setPendingConfirmations((prev) => {
       if (!prev[runId]) return prev;
       const next = { ...prev };
@@ -40,16 +115,25 @@ export function useInbox() {
     });
   }, []);
 
-  const readCommitField = useCallback((body, field) => {
-    if (!body || typeof body !== 'object') return undefined;
-    const structured = body?.structuredContent;
-    if (structured && typeof structured === 'object' && field in structured) {
-      return structured[field];
-    }
-    return body[field];
-  }, []);
+  const readCommitField = useCallback(
+    (body: unknown, field: string): unknown => {
+      if (!body || typeof body !== 'object') return undefined;
+      const structured = (body as { structuredContent?: unknown })
+        ?.structuredContent;
+      if (structured && typeof structured === 'object' && field in structured) {
+        return (structured as Record<string, unknown>)[field];
+      }
+      return (body as Record<string, unknown>)[field];
+    },
+    []
+  );
 
-  const inboxQuery = useQuery({
+  interface InboxQueryData {
+  notes: InboxNote[];
+  runs: InboxRun[];
+}
+
+  const inboxQuery = useQuery<InboxQueryData>({
     queryKey,
     enabled: queryEnabled,
     staleTime: 10_000,
@@ -72,7 +156,15 @@ export function useInbox() {
           throw new Error(`API returned ${res.status}`);
         }
 
-        const body = await res.json().catch(() => ({}));
+        const body = (await res.json().catch(() => ({}))) as {
+          structuredContent?: {
+            notes?: InboxNote[];
+            runs?: InboxRun[];
+          };
+          notes?: InboxNote[];
+          runs?: InboxRun[];
+          error?: string;
+        };
         const structured = body?.structuredContent;
         const notes = structured?.notes ?? body?.notes;
         const runs = structured?.runs ?? body?.runs;
@@ -103,12 +195,18 @@ export function useInbox() {
   });
 
   const commitMutation = useMutation({
-    mutationFn: async ({ runId, token }) => {
+    mutationFn: async ({
+      runId,
+      token,
+    }: {
+      runId: string;
+      token?: string;
+    }): Promise<InboxMutationResult> => {
       const commitToken =
         typeof token === 'string' && token.trim().length > 0
           ? token.trim()
           : '';
-      const init = {
+      const init: RequestInit = {
         method: 'POST',
         ...(commitToken
           ? {
@@ -125,7 +223,7 @@ export function useInbox() {
       );
       // Parse body before mutating state — if JSON is malformed the error
       // is caught below and state stays consistent (never 'done' + missing run).
-      const body = await res.json().catch(() => ({}));
+      const body = (await res.json().catch(() => ({}))) as InboxMutationResult;
       if (!res.ok) {
         throw new Error(body?.message ?? `Commit failed: ${res.status}`);
       }
@@ -133,12 +231,16 @@ export function useInbox() {
       const returnedToken = readCommitField(body, 'token');
       if (status === 'pending_confirmation' && !returnedToken) {
         throw new Error(
-          readCommitField(body, 'message') ?? 'Promotion confirmation failed'
+          (readCommitField(body, 'message') as string) ??
+            'Promotion confirmation failed'
         );
       }
       return body;
     },
-    onSuccess: async (body, variables) => {
+    onSuccess: async (
+      body: InboxMutationResult,
+      variables: { runId: string; token?: string }
+    ) => {
       const runId = variables.runId;
       const status = readCommitField(body, 'status');
 
@@ -151,9 +253,13 @@ export function useInbox() {
         setPendingConfirmations((prev) => ({
           ...prev,
           [runId]: {
-            token: readCommitField(body, 'token'),
-            expiresAt: readCommitField(body, 'expiresAt'),
-            message: readCommitField(body, 'message'),
+            token: readCommitField(body, 'token') as string | undefined,
+            expiresAt: readCommitField(body, 'expiresAt') as
+              | string
+              | undefined,
+            message: readCommitField(body, 'message') as
+              | string
+              | undefined,
           },
         }));
         return;
@@ -169,7 +275,7 @@ export function useInbox() {
         return next;
       });
 
-      queryClient.setQueryData(queryKey, (current) => {
+      queryClient.setQueryData<InboxQueryData>(queryKey, (current) => {
         if (!current) return current;
         return {
           ...current,
@@ -179,17 +285,25 @@ export function useInbox() {
 
       await queryClient.invalidateQueries({ queryKey: ['inbox'] });
     },
-    onError: (errorObj, variables) => {
+    onError: (
+      errorObj: unknown,
+      variables: { runId: string; token?: string }
+    ) => {
       void errorObj;
       if (variables?.token) {
         clearPendingConfirmation(variables.runId);
       }
-      setActionState((prev) => ({ ...prev, [variables.runId]: 'error' }));
+      setActionState((prev) => ({
+        ...prev,
+        [variables.runId]: 'error',
+      }));
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (runId) => {
+    mutationFn: async (
+      runId: string
+    ): Promise<InboxMutationResult> => {
       const res = await apiFetch(
         `/api/v1/inbox/${encodeURIComponent(runId)}`,
         {
@@ -197,13 +311,16 @@ export function useInbox() {
         }
       );
       // Parse body before mutating state — same reason as commitRun above.
-      const body = await res.json().catch(() => ({}));
+      const body = (await res.json().catch(() => ({}))) as InboxMutationResult;
       if (!res.ok) {
         throw new Error(body?.message ?? `Reject failed: ${res.status}`);
       }
       return body;
     },
-    onSuccess: async (body, runId) => {
+    onSuccess: async (
+      body: InboxMutationResult,
+      runId: string
+    ) => {
       void body;
       clearPendingConfirmation(runId);
       // Prune actionState: same reason as commitRun above.
@@ -213,7 +330,7 @@ export function useInbox() {
         return next;
       });
 
-      queryClient.setQueryData(queryKey, (current) => {
+      queryClient.setQueryData<InboxQueryData>(queryKey, (current) => {
         if (!current) return current;
         return {
           ...current,
@@ -223,14 +340,14 @@ export function useInbox() {
 
       await queryClient.invalidateQueries({ queryKey: ['inbox'] });
     },
-    onError: (errorObj, runId) => {
+    onError: (errorObj: unknown, runId: string) => {
       void errorObj;
       setActionState((prev) => ({ ...prev, [runId]: 'error' }));
     },
   });
 
   const commitRun = useCallback(
-    async (runId) => {
+    async (runId: string): Promise<InboxMutationResult> => {
       const pending = pendingConfirmations[runId];
       const expiresAtMs =
         typeof pending?.expiresAt === 'string'
@@ -253,7 +370,7 @@ export function useInbox() {
   );
 
   const rejectRun = useCallback(
-    async (runId) => {
+    async (runId: string): Promise<InboxMutationResult> => {
       clearPendingConfirmation(runId);
       setActionState((prev) => ({ ...prev, [runId]: 'rejecting' }));
       return rejectMutation.mutateAsync(runId);
@@ -263,8 +380,25 @@ export function useInbox() {
 
   const notes = inboxQuery.data?.notes || [];
   const runs = inboxQuery.data?.runs || [];
-  const { workbenchNotes, archiveNotes } = splitInboxNotes(notes);
-  const counts = computeInboxCounts(runs, workbenchNotes, archiveNotes);
+
+  // Compute workbench/archive split
+  const workbenchNotes: InboxNote[] = [];
+  const archiveNotes: InboxNote[] = [];
+  notes.forEach((note) => {
+    const path = note.path || '';
+    if (path.startsWith('archive/') || path.startsWith('_archive/')) {
+      archiveNotes.push(note);
+    } else {
+      workbenchNotes.push(note);
+    }
+  });
+
+  const counts = {
+    queue: runs.length,
+    workbench: workbenchNotes.length,
+    archive: archiveNotes.length,
+  };
+
   const loading =
     !hydrated ||
     ((!inboxQuery.data || !Array.isArray(inboxQuery.data.notes)) &&

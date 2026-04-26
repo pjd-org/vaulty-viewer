@@ -7,10 +7,75 @@ import getApiBase, {
 } from '../utils/api';
 import { useHydrated } from './useHydrated';
 
+interface AvatarProfile {
+  name: string;
+  handle: string;
+  archetype: string;
+  title: string;
+  location: string | null;
+  interests: string[];
+}
+
+interface AvatarVitals {
+  health: number;
+  energy: number;
+  stress: number;
+  rank: string;
+  tasksCompletedToday: number;
+  tasksCompletedThisWeek: number;
+  sessionsCompletedThisWeek: number;
+  totalTasksCompleted?: number;
+  totalSessions?: number;
+  activeSessions?: number;
+  needs: {
+    sleep: number;
+    social: number;
+    food: number;
+  };
+  [key: string]: unknown;
+}
+
+interface AvatarProgression {
+  level: number;
+  xp: number;
+  streakDays: number;
+  streakUpdated: string | null;
+}
+
+interface AvatarCapacity {
+  focusCostMax: number;
+  effortScoreMax: number;
+  timeBudgetMin: number;
+}
+
+interface AvatarKnowledge {
+  domains: Record<string, unknown>;
+  learning: {
+    now: string[];
+    next: string[];
+  };
+  gaps: string[];
+}
+
+interface AvatarFlags {
+  stagnation: boolean;
+  entropyWarning: boolean;
+}
+
+interface AvatarState {
+  profile: AvatarProfile;
+  vitals: AvatarVitals;
+  progression: AvatarProgression;
+  capacity: AvatarCapacity;
+  knowledge: AvatarKnowledge;
+  flags: AvatarFlags;
+  updated: string | null;
+}
+
 /**
  * Default avatar state when API unavailable
  */
-const DEFAULT_AVATAR = {
+const DEFAULT_AVATAR: AvatarState = {
   profile: {
     name: 'Unknown',
     handle: 'unknown',
@@ -52,18 +117,30 @@ const DEFAULT_AVATAR = {
   updated: null,
 };
 
+export interface UseAvatarResult {
+  avatar: AvatarState;
+  loading: boolean;
+  error: string | null;
+  refresh: () => Promise<unknown>;
+  apiStatus: 'online' | 'offline' | 'loading' | 'unknown';
+  level: number;
+  currentXp: number;
+  xpToNext: number;
+  xpProgress: number;
+}
+
 /**
  * Calculate XP needed for next level
  * Simple formula: 100 * level^1.5
  */
-function xpForLevel(level) {
+function xpForLevel(level: number): number {
   return Math.floor(100 * Math.pow(level, 1.5));
 }
 
 /**
  * Hook to fetch and manage avatar state
  */
-export function useAvatar() {
+export function useAvatar(): UseAvatarResult {
   // Allow empty string to mean "same origin /api"
   const getApiUrl = useCallback(() => {
     const base = getApiBase();
@@ -95,8 +172,10 @@ export function useAvatar() {
       }
       if (!avatarRes.ok) throw new Error(`HTTP ${avatarRes.status}`);
       const avatarResult = await avatarRes.json();
-      const avatarPayload = avatarResult?.structuredContent ?? avatarResult ?? {};
-      const state = avatarPayload.state || avatarPayload || {};
+      const avatarPayload =
+        avatarResult?.structuredContent ?? avatarResult ?? {};
+      const state =
+        (avatarPayload as { state?: AvatarState }).state || avatarPayload as AvatarState;
 
       // Get session stats
       let sessionStats = {
@@ -107,7 +186,9 @@ export function useAvatar() {
       if (sessionStatsRes?.ok) {
         const sessionData = await sessionStatsRes.json();
         sessionStats =
-          sessionData?.structuredContent || sessionData || sessionStats;
+          (sessionData?.structuredContent as typeof sessionStats) ||
+          sessionData ||
+          sessionStats;
       }
 
       // Compute task stats from tasks
@@ -118,8 +199,8 @@ export function useAvatar() {
       if (tasksRes?.ok) {
         const tasksData = await tasksRes.json();
         const tasks =
-          tasksData?.structuredContent?.tasks ||
-          tasksData?.tasks ||
+          (tasksData?.structuredContent as { tasks?: unknown[] })?.tasks ||
+          (tasksData as { tasks?: unknown[] })?.tasks ||
           [];
 
         const now = new Date();
@@ -131,7 +212,12 @@ export function useAvatar() {
         const weekStart = new Date(todayStart);
         weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
 
-        tasks.forEach((task) => {
+        (tasks as Array<{
+          status?: string;
+          completedAt?: string;
+          frontmatter?: { completedAt?: string; completed?: string };
+          completed?: string;
+        }>).forEach((task) => {
           if (task.status === 'completed') {
             totalCompleted++;
             // Check completion date if available
@@ -150,7 +236,7 @@ export function useAvatar() {
       }
 
       // Merge real stats into vitals
-      const vitals = {
+      const vitals: AvatarVitals = {
         ...(state.vitals || DEFAULT_AVATAR.vitals),
         tasksCompletedToday:
           tasksCompletedToday || state.vitals?.tasksCompletedToday || 0,
@@ -184,13 +270,14 @@ export function useAvatar() {
       ? avatarQuery.error.message
       : String(avatarQuery.error)
     : null;
-  const apiStatus = avatarQuery.isFetching && !avatarQuery.data
-    ? "loading"
-    : avatarQuery.isError
-      ? "offline"
-      : avatarQuery.isSuccess
-        ? "online"
-        : "unknown";
+  const apiStatus =
+    avatarQuery.isFetching && !avatarQuery.data
+      ? 'loading'
+      : avatarQuery.isError
+        ? 'offline'
+        : avatarQuery.isSuccess
+          ? 'online'
+          : 'unknown';
 
   // Calculate derived values
   const level = avatar.progression?.level || 1;
@@ -211,5 +298,15 @@ export function useAvatar() {
     xpProgress,
   };
 }
+
+export type {
+  AvatarProfile,
+  AvatarVitals,
+  AvatarProgression,
+  AvatarCapacity,
+  AvatarKnowledge,
+  AvatarFlags,
+  AvatarState,
+};
 
 export default useAvatar;

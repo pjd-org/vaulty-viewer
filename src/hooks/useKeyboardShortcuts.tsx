@@ -1,6 +1,20 @@
 import { useEffect, useCallback } from 'react';
 import { dispatchNavOverlay } from '../lib/nav-overlays';
 
+// Declare global window properties used for keyboard prefix shortcuts
+declare global {
+  interface Window {
+    __goPrefixActive?: boolean;
+    __goPrefixTimeout?: ReturnType<typeof setTimeout>;
+  }
+}
+
+interface KeyboardShortcutsOptions {
+  onSearch?: () => void;
+  onHelp?: () => void;
+  onNavigate?: (route: string) => void;
+}
+
 /**
  * Keyboard shortcuts for power users.
  *
@@ -13,11 +27,15 @@ import { dispatchNavOverlay } from '../lib/nav-overlays';
  * - /: Focus search
  * - ?: Show help
  */
-export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
+export function useKeyboardShortcuts(
+  options: KeyboardShortcutsOptions = {}
+): void {
+  const { onSearch, onHelp, onNavigate } = options;
+
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: KeyboardEvent) => {
       // Skip if in input/textarea/contenteditable
-      const target = e.target;
+      const target = e.target as HTMLElement;
       const tagName = target.tagName.toLowerCase();
       if (
         tagName === 'input' ||
@@ -36,7 +54,7 @@ export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
           // Try to focus search input
           const searchInput = document.querySelector(
             "#vault-search, [type='search']"
-          );
+          ) as HTMLInputElement | null;
           if (searchInput) {
             searchInput.focus();
           }
@@ -66,7 +84,7 @@ export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
         clearTimeout(window.__goPrefixTimeout);
         window.__goPrefixActive = false;
 
-        const routes = {
+        const routes: Record<string, string> = {
           h: '/',
           k: '/kanban',
           g: '/goals',
@@ -97,8 +115,8 @@ export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
       // Escape to clear focus
       if (e.key === 'Escape') {
         const active = document.activeElement;
-        if (active && active !== document.body) {
-          active.blur();
+        if (active && active !== document.body && 'blur' in active) {
+          (active as HTMLElement).blur();
         }
       }
     },
@@ -109,16 +127,27 @@ export function useKeyboardShortcuts({ onSearch, onHelp, onNavigate } = {}) {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      clearTimeout(window.__goPrefixTimeout);
+      clearTimeout((window as unknown as { __goPrefixTimeout: ReturnType<typeof setTimeout> }).__goPrefixTimeout);
     };
   }, [handleKeyDown]);
+}
+
+interface ShortcutItem {
+  keys: string[];
+  description: string;
+}
+
+interface KeyboardShortcutsHelpProps {
+  onClose?: () => void;
 }
 
 /**
  * Component to display keyboard shortcut hints
  */
-export function KeyboardShortcutsHelp({ onClose }) {
-  const shortcuts = [
+export function KeyboardShortcutsHelp({
+  onClose,
+}: KeyboardShortcutsHelpProps): JSX.Element {
+  const shortcuts: ShortcutItem[] = [
     { keys: ['g', 'h'], description: 'Go to Home' },
     { keys: ['g', 'k'], description: 'Go to Kanban' },
     { keys: ['g', 'a'], description: 'Go to Avatar' },
@@ -130,7 +159,7 @@ export function KeyboardShortcutsHelp({ onClose }) {
   ];
 
   useEffect(() => {
-    const handleEsc = (e) => {
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && onClose) {
         onClose();
       }
@@ -143,7 +172,9 @@ export function KeyboardShortcutsHelp({ onClose }) {
     <div
       className="keyboard-help-overlay"
       onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') onClose(); }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === 'Escape') onClose?.();
+      }}
       role="button"
       tabIndex={0}
       aria-label="Close keyboard shortcuts"
@@ -157,7 +188,10 @@ export function KeyboardShortcutsHelp({ onClose }) {
       >
         <div className="keyboard-help__header">
           <h3>Keyboard Shortcuts</h3>
-          <button className="keyboard-help__close" onClick={onClose}>
+          <button
+            className="keyboard-help__close"
+            onClick={onClose}
+          >
             ✕
           </button>
         </div>

@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [
     tanstackStart({
       srcDirectory: 'src',
-      // Entries are resolved from srcDirectory; route to top-level app/* files.
+      // Entries are resolved from viewer root (app/ is at root level now)
       client: { entry: '../app/client.tsx' },
       server: { entry: '../app/ssr.tsx' },
       start: { entry: 'start.ts' },

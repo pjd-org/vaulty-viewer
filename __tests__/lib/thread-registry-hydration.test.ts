@@ -52,4 +52,17 @@ describe('thread registry hydration', () => {
     expect(ids).toContain('da-persisted');
     expect(ids).toContain('da-new');
   });
+
+  it('uses the current Agent Shell default mode for new entries without a mode', async () => {
+    const { ThreadRegistry } = await import(
+      '../../app/lib/agent-shell/thread-registry'
+    );
+
+    ThreadRegistry.upsert({
+      id: 'pr-new',
+      title: 'New default thread',
+    });
+
+    expect(ThreadRegistry.get('pr-new')?.mode).toBe('prompt_runner');
+  });
 });

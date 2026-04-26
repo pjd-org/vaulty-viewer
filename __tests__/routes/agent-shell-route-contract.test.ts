@@ -15,6 +15,9 @@ describe('agent-shell route hydration contract', () => {
     const source = loadAgentShellRouteSource();
 
     expect(source).not.toContain('threadId ?? `da-${Date.now()}`');
+    expect(source).not.toContain("createAgentRunStore('deepagent')");
+    expect(source).toContain('createAgentRunStore(DEFAULT_MODE)');
+    expect(source).toContain('`pr-${Date.now()}`');
     expect(source).toContain('if (threadId) return;');
     expect(source).toContain('replace: true');
     expect(source).toContain('Preparing chat thread...');

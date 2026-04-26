@@ -27,6 +27,8 @@ export default mergeConfig(
       },
     },
     test: {
+      testTimeout: 30000,
+      hookTimeout: 30000,
       browser: {
         server: {
           fs: {

@@ -25,6 +25,7 @@ import { Route as InboxRouteImport } from './../app/routes/inbox'
 import { Route as HealthRouteImport } from './../app/routes/health'
 import { Route as GraphRouteImport } from './../app/routes/graph'
 import { Route as GoalsRouteImport } from './../app/routes/goals'
+import { Route as GenesisRouteImport } from './../app/routes/genesis'
 import { Route as CodStatusRouteImport } from './../app/routes/cod-status'
 import { Route as BubbleRouteImport } from './../app/routes/bubble'
 import { Route as AvatarRouteImport } from './../app/routes/avatar'
@@ -36,6 +37,9 @@ import { Route as IndexRouteImport } from './../app/routes/index'
 import { Route as SessionIdRouteImport } from './../app/routes/session.$id'
 import { Route as ProjectsProjectIdRouteImport } from './../app/routes/projects.$projectId'
 import { Route as ProjectSlugRouteImport } from './../app/routes/project.$slug'
+import { Route as OnboardingWelcomeRouteImport } from './../app/routes/onboarding.welcome'
+import { Route as OnboardingReviewRouteImport } from './../app/routes/onboarding.review'
+import { Route as OnboardingProfileRouteImport } from './../app/routes/onboarding.profile'
 import { Route as OauthConsentRouteImport } from './../app/routes/oauth/consent'
 import { Route as KnowledgeSearchRouteImport } from './../app/routes/knowledge.search'
 import { Route as KnowledgeGraphRouteImport } from './../app/routes/knowledge.graph'
@@ -130,6 +134,11 @@ const GoalsRoute = GoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GenesisRoute = GenesisRouteImport.update({
+  id: '/genesis',
+  path: '/genesis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CodStatusRoute = CodStatusRouteImport.update({
   id: '/cod-status',
   path: '/cod-status',
@@ -183,6 +192,21 @@ const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
 const ProjectSlugRoute = ProjectSlugRouteImport.update({
   id: '/project/$slug',
   path: '/project/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingWelcomeRoute = OnboardingWelcomeRouteImport.update({
+  id: '/onboarding/welcome',
+  path: '/onboarding/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingReviewRoute = OnboardingReviewRouteImport.update({
+  id: '/onboarding/review',
+  path: '/onboarding/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingProfileRoute = OnboardingProfileRouteImport.update({
+  id: '/onboarding/profile',
+  path: '/onboarding/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OauthConsentRoute = OauthConsentRouteImport.update({
@@ -263,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/avatar': typeof AvatarRoute
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -282,6 +307,9 @@ export interface FileRoutesByFullPath {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/profile': typeof OnboardingProfileRoute
+  '/onboarding/review': typeof OnboardingReviewRoute
+  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/project/$slug': typeof ProjectSlugRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/session/$id': typeof SessionIdRoute
@@ -305,6 +333,7 @@ export interface FileRoutesByTo {
   '/avatar': typeof AvatarRoute
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -324,6 +353,9 @@ export interface FileRoutesByTo {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/profile': typeof OnboardingProfileRoute
+  '/onboarding/review': typeof OnboardingReviewRoute
+  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/project/$slug': typeof ProjectSlugRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/session/$id': typeof SessionIdRoute
@@ -348,6 +380,7 @@ export interface FileRoutesById {
   '/avatar': typeof AvatarRoute
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -367,6 +400,9 @@ export interface FileRoutesById {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/profile': typeof OnboardingProfileRoute
+  '/onboarding/review': typeof OnboardingReviewRoute
+  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/project/$slug': typeof ProjectSlugRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/session/$id': typeof SessionIdRoute
@@ -392,6 +428,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/bubble'
     | '/cod-status'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -411,6 +448,9 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/profile'
+    | '/onboarding/review'
+    | '/onboarding/welcome'
     | '/project/$slug'
     | '/projects/$projectId'
     | '/session/$id'
@@ -434,6 +474,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/bubble'
     | '/cod-status'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -453,6 +494,9 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/profile'
+    | '/onboarding/review'
+    | '/onboarding/welcome'
     | '/project/$slug'
     | '/projects/$projectId'
     | '/session/$id'
@@ -476,6 +520,7 @@ export interface FileRouteTypes {
     | '/avatar'
     | '/bubble'
     | '/cod-status'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -495,6 +540,9 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/profile'
+    | '/onboarding/review'
+    | '/onboarding/welcome'
     | '/project/$slug'
     | '/projects/$projectId'
     | '/session/$id'
@@ -519,6 +567,7 @@ export interface RootRouteChildren {
   AvatarRoute: typeof AvatarRoute
   BubbleRoute: typeof BubbleRoute
   CodStatusRoute: typeof CodStatusRoute
+  GenesisRoute: typeof GenesisRoute
   GoalsRoute: typeof GoalsRoute
   GraphRoute: typeof GraphRoute
   HealthRoute: typeof HealthRoute
@@ -536,6 +585,9 @@ export interface RootRouteChildren {
   TimelineRoute: typeof TimelineRoute
   WorkRoute: typeof WorkRoute
   OauthConsentRoute: typeof OauthConsentRoute
+  OnboardingProfileRoute: typeof OnboardingProfileRoute
+  OnboardingReviewRoute: typeof OnboardingReviewRoute
+  OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
   ProjectSlugRoute: typeof ProjectSlugRouteWithChildren
   SessionIdRoute: typeof SessionIdRoute
   ApiAgentShellRunAgentRunnerRoute: typeof ApiAgentShellRunAgentRunnerRoute
@@ -657,6 +709,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/genesis': {
+      id: '/genesis'
+      path: '/genesis'
+      fullPath: '/genesis'
+      preLoaderRoute: typeof GenesisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cod-status': {
       id: '/cod-status'
       path: '/cod-status'
@@ -732,6 +791,27 @@ declare module '@tanstack/react-router' {
       path: '/project/$slug'
       fullPath: '/project/$slug'
       preLoaderRoute: typeof ProjectSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/welcome': {
+      id: '/onboarding/welcome'
+      path: '/onboarding/welcome'
+      fullPath: '/onboarding/welcome'
+      preLoaderRoute: typeof OnboardingWelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/review': {
+      id: '/onboarding/review'
+      path: '/onboarding/review'
+      fullPath: '/onboarding/review'
+      preLoaderRoute: typeof OnboardingReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/profile': {
+      id: '/onboarding/profile'
+      path: '/onboarding/profile'
+      fullPath: '/onboarding/profile'
+      preLoaderRoute: typeof OnboardingProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oauth/consent': {
@@ -887,6 +967,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvatarRoute: AvatarRoute,
   BubbleRoute: BubbleRoute,
   CodStatusRoute: CodStatusRoute,
+  GenesisRoute: GenesisRoute,
   GoalsRoute: GoalsRoute,
   GraphRoute: GraphRoute,
   HealthRoute: HealthRoute,
@@ -904,6 +985,9 @@ const rootRouteChildren: RootRouteChildren = {
   TimelineRoute: TimelineRoute,
   WorkRoute: WorkRoute,
   OauthConsentRoute: OauthConsentRoute,
+  OnboardingProfileRoute: OnboardingProfileRoute,
+  OnboardingReviewRoute: OnboardingReviewRoute,
+  OnboardingWelcomeRoute: OnboardingWelcomeRoute,
   ProjectSlugRoute: ProjectSlugRouteWithChildren,
   SessionIdRoute: SessionIdRoute,
   ApiAgentShellRunAgentRunnerRoute: ApiAgentShellRunAgentRunnerRoute,
