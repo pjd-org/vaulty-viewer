@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { AgentChat } from '../components/agent-shell/agent-chat';
 import { ThreadHistory } from '../components/agent-shell/thread-history';
 import { ChatShell } from '../components/chat-kit/ChatShell';
+import { DEFAULT_MODE } from '../lib/agent-shell/mode-config';
 import { createAgentRunStore } from '../lib/agent-shell/run-store';
 import type { ThreadEntry } from '../lib/agent-shell/thread-registry';
 
@@ -43,7 +44,7 @@ function AgentShellRoute() {
   const { sandboxAvailable } = Route.useLoaderData();
   const navigate = useNavigate();
   const store = React.useMemo(
-    () => createAgentRunStore('deepagent'),
+    () => createAgentRunStore(DEFAULT_MODE),
     [threadId]
   );
 
@@ -51,18 +52,18 @@ function AgentShellRoute() {
     if (threadId) return;
     navigate({
       to: '/agent-shell',
-      search: { threadId: `da-${Date.now()}` },
+      search: { threadId: `pr-${Date.now()}` },
       replace: true,
     });
   }, [threadId, navigate]);
 
   if (!threadId) {
     return (
-      <div className="h-[calc(100vh-3.5rem)] min-h-0 px-4 pb-4">
+      <div className="h-[calc(100dvh-3.5rem)] min-h-0 px-4 pb-6">
         <ChatShell
           title="Agent Shell"
           subtitle="Run codex workflows with thread history, live tools, and execution state."
-          className="h-full rounded-[30px]"
+          className="h-full rounded-[28px]"
         >
           <div className="flex h-full items-center justify-center text-sm text-[--text-muted,theme(colors.zinc.400)]">
             Preparing chat thread...
@@ -79,7 +80,7 @@ function AgentShellRoute() {
   }
 
   function handleNewThread() {
-    navigate({ to: '/agent-shell', search: { threadId: `da-${Date.now()}` } });
+    navigate({ to: '/agent-shell', search: { threadId: `pr-${Date.now()}` } });
   }
 
   const sidebar = (
@@ -103,12 +104,12 @@ function AgentShellRoute() {
   );
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] min-h-0 px-4 pb-4">
+    <div className="h-[calc(100dvh-3.5rem)] min-h-0 px-4 pb-6">
       <ChatShell
         title="Agent Shell"
         subtitle="Run codex workflows with thread history, live tools, and execution state."
         sidebar={sidebar}
-        className="h-full rounded-[30px]"
+        className="h-full rounded-[28px]"
       >
         <AgentChat
           key={activeThreadId}

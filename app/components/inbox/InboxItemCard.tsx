@@ -1,9 +1,7 @@
 import React from 'react';
-import { useModals } from 'react-easy-modals';
 import { cn } from '@/src/lib/utils';
 import type { InboxItemDisplay } from '../../types/display';
 import { SoftChip } from '../ui';
-import { InboxInspectModal } from './InboxInspectModal';
 import type { InboxItemDetail } from './InboxInspectModal';
 
 interface InboxItemCardProps {
@@ -16,6 +14,7 @@ interface InboxItemCardProps {
   onInspect: () => void;
   onPromote?: () => void;
   onReject?: () => void;
+  actionInFlight?: boolean;
   /** Optional slot rendered in the modal footer (e.g. "Convert to task" button) */
   convertPanel?: React.ReactNode;
   /** Override the primary accent colour. Accepts any CSS colour value or var(--a-*) token. */
@@ -109,25 +108,13 @@ export function InboxItemCard({
   onInspect,
   onPromote,
   onReject,
+  actionInFlight: _actionInFlight,
   convertPanel,
   accentColor,
 }: InboxItemCardProps) {
   const accent = accentColor ?? 'var(--a-sky)';
-  const modals = useModals();
 
   const sev = getSeverityConfig(detail?.severity);
-
-  const handleInspect = () => {
-    onInspect?.();
-    modals.open(InboxInspectModal, {
-      item,
-      detail,
-      onPromote,
-      onReject,
-      convertPanel,
-      accentColor,
-    });
-  };
 
   return (
     <div
@@ -161,8 +148,8 @@ export function InboxItemCard({
           ],
           item.isBlocked &&
             'bg-transparent border-[var(--border-glass)] border-2 shadow-none'
-        )}
-      >
+          )}
+        >
         {/* severity accent bar */}
         {!item.isBlocked && sev && (
           <div
@@ -235,7 +222,7 @@ export function InboxItemCard({
           <div className="mt-auto flex items-center gap-2 pt-4">
             <button
               type="button"
-              onClick={handleInspect}
+              onClick={() => onInspect()}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 cursor-pointer',
                 'text-xs font-medium transition-all duration-150',
@@ -272,8 +259,8 @@ export function InboxItemCard({
                   strokeLinecap="round"
                 />
               </svg>
-              Inspect
-            </button>
+          Inspect
+        </button>
           </div>
         </div>
       </div>

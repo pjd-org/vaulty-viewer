@@ -25,6 +25,10 @@ vi.mock('../../app/components/layout', () => ({
   ),
 }));
 
+vi.mock('../../app/components/config/ConfigAdminPanel', () => ({
+  ConfigAdminPanel: () => <div data-testid="config-admin-panel">Config admin</div>,
+}));
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -57,6 +61,11 @@ describe('settings route — rendering', () => {
   it('renders SidebarCollapseToggle button', () => {
     render(<SettingsComponent />);
     expect(screen.getByRole('button', { name: /sidebar/i })).toBeTruthy();
+  });
+
+  it('renders config admin panel', () => {
+    render(<SettingsComponent />);
+    expect(screen.getByTestId('config-admin-panel')).toBeTruthy();
   });
 });
 

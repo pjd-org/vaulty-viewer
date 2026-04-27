@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
 import type { ModalProps } from 'react-easy-modals';
+import { useBeforeClose } from 'react-easy-modals';
 import { cn } from '@/src/lib/utils';
 import type { InboxItemDisplay } from '../../types/display';
 import { PrimaryButton, SoftChip } from '../ui';
@@ -33,6 +34,7 @@ export interface InboxInspectModalOwnProps {
   detail?: InboxItemDetail;
   onPromote?: () => void;
   onReject?: () => void;
+  onClose?: () => void;
   convertPanel?: React.ReactNode;
   accentColor?: string;
 }
@@ -136,11 +138,22 @@ export function InboxInspectModal({
   detail,
   onPromote,
   onReject,
+  onClose,
   convertPanel,
   accentColor,
 }: InboxInspectModalProps) {
   const accent = accentColor ?? 'var(--a-sky)';
   const sev = getSeverityConfig(detail?.severity);
+  useBeforeClose(() => {
+    onClose?.();
+    return true;
+  });
+  const requestClose = React.useCallback(
+    (value?: InboxInspectCloseValue) => {
+      close(value);
+    },
+    [close]
+  );
 
   return (
     <Modal>
@@ -287,7 +300,7 @@ export function InboxInspectModal({
               <Link
                 to="/note"
                 search={{ p: detail.sourceId.replace(/\.md$/i, '') }}
-                onClick={() => close(undefined)}
+                onClick={() => requestClose(undefined)}
                 style={{
                   background: `color-mix(in srgb, ${accent} 10%, transparent)`,
                   borderColor: `color-mix(in srgb, ${accent} 20%, transparent)`,
@@ -322,7 +335,7 @@ export function InboxInspectModal({
             )}
             <Link
               to="/primary-agent"
-              onClick={() => close(undefined)}
+              onClick={() => requestClose(undefined)}
               className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surf-elevated)] border border-[var(--border-glass)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surf-utility)] hover:border-[var(--border-glass-soft)] transition-colors"
             >
               Ask Primary Agent
@@ -356,7 +369,7 @@ export function InboxInspectModal({
                   className="cursor-pointer rounded-full border border-[color-mix(in_srgb,var(--a-rose)_20%,transparent)] bg-[var(--surf-elevated)] px-4 py-2 text-xs font-medium text-[var(--text-danger)] hover:bg-[color-mix(in_srgb,var(--a-rose)_8%,transparent)] hover:border-[color-mix(in_srgb,var(--a-rose)_30%,transparent)] transition-colors"
                   onClick={() => {
                     onReject();
-                    close('reject');
+                    requestClose('reject');
                   }}
                 >
                   Reject
@@ -366,7 +379,7 @@ export function InboxInspectModal({
                 <PrimaryButton
                   onClick={() => {
                     onPromote();
-                    close('promote');
+                    requestClose('promote');
                   }}
                 >
                   Promote

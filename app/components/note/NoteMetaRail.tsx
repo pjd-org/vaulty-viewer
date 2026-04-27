@@ -193,11 +193,7 @@ export function NoteMetaRail({
                   key={related.path}
                   to={workspaceLink ? (workspaceTo ?? '/knowledge') : '/note'}
                   params={workspaceLink ? workspaceParams : undefined}
-                  search={
-                    workspaceLink
-                      ? { ...(workspaceSearch ?? {}), noteId: slug }
-                      : { p: slug }
-                  }
+                  search={(workspaceLink ? workspaceSearch : { p: slug }) as never}
                   className="block p-2.5 rounded-xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] transition-all group"
                   onMouseEnter={(e) => {
                     const el = e.currentTarget as HTMLAnchorElement;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
-import { RouteLoadingState } from '../components/ui';
+import { EmptyState, RouteLoadingState } from '../components/ui';
 import { portfolioSearchParams } from '../../src/lib/routes/search-params';
 import {
   usePortfolioSurface,
@@ -245,7 +245,7 @@ function PortfolioRoute() {
   return (
     <WorkspaceScaffold
       title="Portfolio"
-      subtitle={`Pressure-band snapshot${data ? ` (top ${data.total})` : ''}. Full capital allocation surface requires backend API.`}
+      subtitle={`Pressure-band snapshot${data ? ` (top ${data.total})` : ''}.`}
       summaryItems={[
         {
           label: 'Total',
@@ -274,15 +274,18 @@ function PortfolioRoute() {
         isLoading ? (
           <RouteLoadingState label="Loading pressure signals..." />
         ) : data == null || data.total === 0 ? (
-          <div data-testid="portfolio-empty-state" className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground">
-              No projects in the pressure band.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Project-scoped signals will appear here once COD surfaces
-              project-linked tasks.
-            </p>
-          </div>
+          <EmptyState
+            title="No projects in the pressure band."
+            description="Project-scoped signals will appear here once COD surfaces project-linked tasks."
+            action={
+              <Link
+                to="/work"
+                className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                Review Work
+              </Link>
+            }
+          />
         ) : (
           <PortfolioList
             data={data}

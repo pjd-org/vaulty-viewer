@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
-import { RouteLoadingState } from '../components/ui';
+import { EmptyState, RouteLoadingState } from '../components/ui';
 import { KnowledgeNoteCard } from '../../src/components/KnowledgeNoteCard';
 import { notesSearchParams } from '../../src/lib/routes/search-params';
 import {
@@ -56,7 +56,18 @@ function NoteGrid({
 
   if (notes.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-white/60">No notes found.</p>
+      <EmptyState
+        title="No notes found."
+        description="Create a note or clear the current filter."
+        action={
+          <Link
+            to="/note-new"
+            className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+          >
+            New Note
+          </Link>
+        }
+      />
     );
   }
 
@@ -233,13 +244,14 @@ function NotesRoute() {
   const primaryContent = (
     <div className="flex flex-col gap-4">
       {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="flex-1">
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
+        <div className="min-w-0 flex-1">
           <GlassInput
             type="search"
             value={draftQ}
             onChange={(e) => setDraftQ(e.target.value)}
             placeholder="Search notes…"
+            className="min-w-0"
           />
         </div>
         <button

@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import '@xyflow/react/dist/style.css';
 import {
@@ -95,7 +95,7 @@ function graphToFlow(data: GraphJson): {
       (ring % 2 === 0 ? 0 : Math.PI / 8);
     const radiusX = 160 + ring * 110;
     const radiusY = 120 + ring * 84;
-    const size = Math.max(12, Math.min(22, 12 + degree * 1.6));
+    const size = Math.max(16, Math.min(26, 14 + degree * 1.8));
 
     return {
       id: path,
@@ -112,7 +112,7 @@ function graphToFlow(data: GraphJson): {
       },
       style: {
         borderRadius: 999,
-        border: `1.5px solid color-mix(in_srgb, ${
+        border: `2px solid color-mix(in_srgb, ${
           AUDIENCE_COLORS[audience] ?? AUDIENCE_COLORS.unknown
         } 72%, var(--border))`,
         background: 'var(--card)',
@@ -138,7 +138,7 @@ function graphToFlow(data: GraphJson): {
         animated: false,
         style: {
           stroke: 'color-mix(in_srgb,var(--text-secondary)_28%,transparent)',
-          strokeWidth: 1.1,
+          strokeWidth: 1.35,
         },
       });
     }
@@ -301,7 +301,7 @@ function GraphFlow({
 
   return (
     <div
-      className="genie-surface genie-surface--utility h-[640px] w-full overflow-hidden rounded-[24px]"
+      className="genie-surface genie-surface--utility h-[680px] w-full overflow-hidden rounded-[24px]"
       data-testid="graph-flow"
     >
       <ReactFlow
@@ -316,7 +316,7 @@ function GraphFlow({
       >
         <Background
           color="color-mix(in_srgb,var(--text-secondary)_16%,transparent)"
-          gap={28}
+          gap={24}
         />
         <MiniMap
           pannable
@@ -359,7 +359,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   if (!excalidraw) {
     return (
-      <div className="genie-surface genie-surface--utility grid h-[640px] w-full place-items-center rounded-[24px] text-sm text-[var(--text-secondary)]">
+      <div className="genie-surface genie-surface--utility grid h-[680px] w-full place-items-center rounded-[24px] text-sm text-[var(--text-secondary)]">
         Loading sketch canvas…
       </div>
     );
@@ -367,7 +367,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   const Excalidraw = excalidraw;
   return (
-    <div className="genie-surface genie-surface--utility h-[640px] w-full overflow-hidden rounded-[24px]">
+      <div className="genie-surface genie-surface--utility h-[680px] w-full overflow-hidden rounded-[24px]">
       <Excalidraw
         initialData={{
           elements,
@@ -386,6 +386,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
 }
 
 function GraphRoute() {
+  const { focus, selectedId } = useSearch({ from: Route.id });
   const { data, isLoading } = useKnowledgeGraph();
   const [selectedPath, setSelectedPath] = React.useState<string | null>(null);
   const [viewMode, setViewMode] = React.useState<GraphViewMode>('interactive');
@@ -413,6 +414,10 @@ function GraphRoute() {
         { label: 'Agent', value: data.by_audience?.agent.length ?? 0 },
       ]
     : [];
+
+  React.useEffect(() => {
+    setSelectedPath(focus ?? selectedId ?? null);
+  }, [focus, selectedId]);
 
   return (
     <WorkspaceScaffold
@@ -481,7 +486,7 @@ function GraphRoute() {
               ))}
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+            <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
               <aside className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[22px] p-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">

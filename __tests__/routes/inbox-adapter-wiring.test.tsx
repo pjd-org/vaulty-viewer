@@ -33,6 +33,13 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 
+vi.mock('react-easy-modals', () => ({
+  useModals: () => ({
+    open: vi.fn(),
+    stack: [],
+  }),
+}));
+
 vi.mock('../../src/hooks/useInbox', () => ({
   useInbox: () => mockUseInbox(),
 }));
@@ -328,9 +335,9 @@ describe('inbox adapter wiring', () => {
   it('renders archive content and counts from the adapter surface', () => {
     render(<RouteComponent />);
 
-    expect(screen.getByRole('tab', { name: /Queue1/ })).toBeTruthy();
-    expect(screen.getByRole('tab', { name: /Workbench1/ })).toBeTruthy();
-    expect(screen.getByRole('tab', { name: /Archive2/ })).toBeTruthy();
+    expect(screen.getByText('Queue (1)')).toBeTruthy();
+    expect(screen.getByText('Workbench (1)')).toBeTruthy();
+    expect(screen.getByText('Archive (2)')).toBeTruthy();
     expect(screen.getByText('Human rejected proposal')).toBeTruthy();
     expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
     expect(screen.queryByText('No rejected notes')).toBeNull();

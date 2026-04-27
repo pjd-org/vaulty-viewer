@@ -57,7 +57,6 @@ export default mergeConfig(
               '**/node_modules/**',
               '**/dist/**',
               '**/.cache/**',
-              '__tests__/e2e/**',
             ],
           },
         },
@@ -77,6 +76,18 @@ export default mergeConfig(
               provider: playwright({}),
               instances: [{ browser: 'chromium' }],
             },
+          },
+        },
+        {
+          test: {
+            name: 'e2e',
+            browser: {
+              enabled: true,
+              headless: true,
+              provider: playwright({}),
+              instances: [{ browser: 'chromium' }],
+            },
+            include: ['__tests__/e2e/**/*.test.ts'],
           },
         },
       ],

@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "node app/server-node.mjs",
-    "test": "vitest --config vitest.config.ts",
+    "test": "vitest --config vitest.unit.config.ts",
     "storybook": "storybook dev -p 6006 -c .storybook",
     "build-storybook": "storybook build -c .storybook",
     "storybook:mcp": "storybook dev -p 6006 -c .storybook",

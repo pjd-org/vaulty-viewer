@@ -33,14 +33,14 @@ function MomentumBar({ score }: { score: number }) {
         ? 'bg-warning'
         : 'bg-muted-foreground';
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div
-        className={`h-2 rounded-full ${color} transition-all`}
-        style={{ width: `${pct}%` }}
-        data-testid="momentum-bar"
-        aria-label={`Momentum ${score}/10`}
-      />
-    </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+        className={`h-2 rounded-full ${color} transition-[width] duration-300`}
+          style={{ width: `${pct}%` }}
+          data-testid="momentum-bar"
+          aria-label={`Momentum ${score}/10`}
+        />
+      </div>
   );
 }
 
@@ -70,7 +70,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
   return (
     <div className="flex flex-col gap-5" data-testid="bubble-content">
       {/* Momentum */}
-      <section data-testid="bubble-momentum">
+      <section data-testid="bubble-momentum" className="rounded-2xl border border-border bg-card/70 p-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Momentum
         </h3>
@@ -104,7 +104,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
       </section>
 
       {/* Pressure */}
-      <section data-testid="bubble-pressure">
+      <section data-testid="bubble-pressure" className="rounded-2xl border border-border bg-card/70 p-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Pressure
         </h3>
@@ -118,7 +118,7 @@ function BubbleContent({ data }: { data: BubbleSurfacePayload }) {
 
       {/* Signals */}
       {data.signals.length > 0 && (
-        <section data-testid="bubble-signals">
+        <section data-testid="bubble-signals" className="rounded-2xl border border-border bg-card/70 p-4">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Signals
           </h3>
@@ -159,7 +159,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
   return (
     <div className="flex flex-col gap-5" data-testid="bubble-aside">
       {/* Energy */}
-      <section data-testid="bubble-energy">
+      <section data-testid="bubble-energy" className="rounded-2xl border border-border bg-card/70 p-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Energy
         </h3>
@@ -173,7 +173,7 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
       </section>
 
       {/* Rewards */}
-      <section data-testid="bubble-rewards">
+      <section data-testid="bubble-rewards" className="rounded-2xl border border-border bg-card/70 p-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Rewards
         </h3>

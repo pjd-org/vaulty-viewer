@@ -5,6 +5,7 @@ import { WorkspaceScaffold } from '../components/layout';
 import { ThemeSelector } from '../components/settings/ThemeSelector';
 import { DensitySelector } from '../components/settings/DensitySelector';
 import { SidebarCollapseToggle } from '../components/settings/SidebarCollapseToggle';
+import { ConfigAdminPanel } from '../components/config/ConfigAdminPanel';
 import { readStringSearchParam } from '../../src/lib/routes/search-params';
 
 export const Route = createFileRoute('/settings')({
@@ -42,6 +43,15 @@ function SettingsRoute() {
       primary={
         <div className="flex flex-col gap-6">
           <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+              Navigation
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Sidebar is collapsed to icons. Use the sidebar toggle to expand
+              labels.
+            </p>
+          </section>
+          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
             <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Theme
             </h3>
@@ -59,6 +69,7 @@ function SettingsRoute() {
             </h3>
             <SidebarCollapseToggle />
           </section>
+          <ConfigAdminPanel />
         </div>
       }
       asideTitle="Preview Panel"

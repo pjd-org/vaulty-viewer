@@ -16,6 +16,7 @@ import { toNoteHeaderDisplay } from '../lib/display';
 import { PageContainer, SoftPanel } from '../components/layout';
 import { PrimaryButton, SecondaryButton } from '../components/ui';
 import { NoteHeader } from '../components/note/NoteHeader';
+import { NoteGraphDendrogram } from '../components/note/NoteGraphDendrogram';
 import { NoteMetaRail } from '../components/note/NoteMetaRail';
 import { NoteBodyRenderer } from '../components/note/NoteBodyRenderer';
 import {
@@ -814,8 +815,8 @@ function NoteRoute() {
                     nodeId: undefined,
                     pathMode: undefined,
                     entityType: undefined,
-                    focus: undefined,
-                    selectedId: undefined,
+                    focus: note.path,
+                    selectedId: note.path,
                   }}
                   className="rounded-full border border-[color-mix(in_srgb,var(--a-sky)_30%,transparent)] bg-[color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--a-sky)_18%,var(--surf-elevated))]"
                 >
@@ -1076,6 +1077,26 @@ function NoteRoute() {
                 ) : (
                   <NoteBodyRenderer html={note.html} />
                 )}
+
+                <SoftPanel title="Focus Graph" className="mt-6">
+                  <div className="overflow-x-auto">
+                    <div className="min-w-fit">
+                      <NoteGraphDendrogram
+                        rootTitle={note.title}
+                        rootPath={note.path}
+                        relatedNotes={relatedNotes}
+                        width={760}
+                        height={420}
+                        onNodeClick={(path) =>
+                          navigate({
+                            to: '/note',
+                            search: { p: stripMarkdownExtension(path) },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </SoftPanel>
               </>
             )}
           </SoftPanel>

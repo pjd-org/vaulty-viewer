@@ -686,6 +686,14 @@ function FocusRoute() {
           <EmptyState
             title="No pressure signals."
             description="All clear — no active blockers or risks right now."
+            action={
+              <Link
+                to="/work"
+                className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                Open Work
+              </Link>
+            }
           />
         )}
       </section>
@@ -707,6 +715,19 @@ function FocusRoute() {
           <EmptyState
             title="Decision queue is clear."
             description="No ranked moves right now."
+            action={
+              <Link
+                to="/actions"
+                search={{
+                  sort: undefined,
+                  simulatableOnly: undefined,
+                  selectedId: undefined,
+                }}
+                className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                Open Actions
+              </Link>
+            }
           />
         )}
       </section>
@@ -815,10 +836,18 @@ function FocusRoute() {
                   </div>
                 </>
               ) : (
-                <EmptyState
-                  title="No best move available."
-                  description="When tasks surface, the top recommendation appears here."
-                />
+              <EmptyState
+                title="No best move available."
+                description="When tasks surface, the top recommendation appears here."
+                action={
+                  <Link
+                    to="/inbox"
+                    className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+                  >
+                    Review Inbox
+                  </Link>
+                }
+              />
               )}
             </article>
           </div>
@@ -860,6 +889,14 @@ function FocusRoute() {
               <EmptyState
                 title="No backlog candidates."
                 description="Additional surfaced tasks will appear here."
+                action={
+                  <Link
+                    to="/projects"
+                    className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+                  >
+                    Open Projects
+                  </Link>
+                }
               />
             )}
           </section>

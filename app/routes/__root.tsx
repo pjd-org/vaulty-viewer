@@ -24,6 +24,7 @@ import {
   getBrowserDehydratedStateForRender,
   serializeDehydratedQueryState,
 } from '../../src/query-client';
+import { useBootstrapGate } from '../../src/hooks/useBootstrapGate';
 import {
   NAV_OVERLAY_EVENT,
   type NavOverlay,
@@ -194,6 +195,7 @@ function RootComponent() {
     <MotionConfig reducedMotion="user">
       <RootDocument dehydratedState={dehydratedState}>
         <QueryClientProvider client={queryClient}>
+          <BootstrapGate pathname={pathname} navigate={router.navigate} />
           <ModalProvider>
             <div className="min-h-screen">
               <a
@@ -250,6 +252,24 @@ function RootComponent() {
       </RootDocument>
     </MotionConfig>
   );
+}
+
+function BootstrapGate({
+  pathname,
+  navigate,
+}: {
+  pathname: string;
+  navigate?: (options: { to: string; replace?: boolean }) => void;
+}) {
+  const bootstrapGate = useBootstrapGate(pathname);
+
+  React.useEffect(() => {
+    if (bootstrapGate.redirectTo && navigate) {
+      void navigate({ to: bootstrapGate.redirectTo, replace: true });
+    }
+  }, [bootstrapGate.redirectTo, navigate]);
+
+  return null;
 }
 
 function RootDocument({

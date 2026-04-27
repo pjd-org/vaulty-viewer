@@ -13,7 +13,9 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => ({}),
   }),
+  useSearch: () => ({}),
   useNavigate: () => vi.fn(),
+  Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -105,7 +107,7 @@ beforeEach(async () => {
 describe('portfolio lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<PortfolioComponent />);
-    expect(screen.getByTestId('portfolio-empty-state')).toBeTruthy();
+    expect(screen.getByText('No projects in the pressure band.')).toBeTruthy();
   });
 
   it('renders no aside content', () => {
@@ -223,7 +225,7 @@ beforeEach(async () => {
 describe('graph lane', () => {
   it('renders empty-state with correct testid when data is null', () => {
     render(<GraphComponent />);
-    expect(screen.getByTestId('graph-empty-state')).toBeTruthy();
+    expect(screen.getByText('Graph not available.')).toBeTruthy();
   });
 
   it('renders no aside content', () => {

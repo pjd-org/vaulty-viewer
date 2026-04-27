@@ -26,10 +26,10 @@ const SOURCE_FILES = [
   'app/routes/kanban.tsx',
   'app/routes/note.tsx',
   'src/components/GoalCard.tsx',
-  'src/hooks/useGoals.js',
-  'src/hooks/useAvatar.js',
-  'src/hooks/useCODStatus.js',
-  'src/hooks/useInbox.js',
+  'src/hooks/useGoals.ts',
+  'src/hooks/useAvatar.ts',
+  'src/hooks/useCODStatus.ts',
+  'src/hooks/useInbox.ts',
 ];
 
 function loadViewerSource() {

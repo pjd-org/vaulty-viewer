@@ -132,6 +132,14 @@ function TaskSection({
           Adapter context is wired. Task and dependency workspaces will appear
           once the runtime surface connects.
         </p>
+        <div className="pt-2">
+          <Link
+            to="/projects"
+            className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+          >
+            Open projects
+          </Link>
+        </div>
       </div>
     );
   }
@@ -148,6 +156,14 @@ function TaskSection({
         <p className="text-xs text-muted-foreground">
           All tasks may be blocked or no unblocked tasks remain.
         </p>
+        <div className="pt-2">
+          <Link
+            to="/projects"
+            className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+          >
+            Browse projects
+          </Link>
+        </div>
       </div>
     );
   }
@@ -384,9 +400,7 @@ function WorkRoute() {
           label: 'Mode',
           value: data ? data.mode : '—',
           detail:
-            data?.mode === 'cod'
-              ? 'COD-ranked priority'
-              : 'Local fallback order',
+            data?.mode === 'cod' ? 'COD-ranked priority' : 'Local priority',
         },
         {
           label: 'Scope',

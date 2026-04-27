@@ -96,9 +96,9 @@ export function CODStatusOverlay({ onRequestClose }: CODStatusOverlayProps = {})
     <Dialog open onOpenChange={(open) => !open && closeOverlay()}>
       <DialogContent
         aria-label="COD status"
-        className="!max-w-[min(1100px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
+        className="!max-w-[min(960px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
-        <div className="max-h-[min(90vh,920px)] overflow-y-auto">
+        <div className="max-h-[min(88vh,860px)] overflow-y-auto">
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">COD Status</DialogTitle>
@@ -108,7 +108,7 @@ export function CODStatusOverlay({ onRequestClose }: CODStatusOverlayProps = {})
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <GlassBadge tone="sky" size="md" className="justify-between px-3">
                 <span className="uppercase tracking-[0.2em]">Tasks</span>
                 <strong>{tasks?.length ?? 0}</strong>

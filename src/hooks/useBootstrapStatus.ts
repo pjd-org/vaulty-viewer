@@ -1,30 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '../utils/api';
-
-export type BootstrapStatus = 'new' | 'draft' | 'review' | 'preflight_running' | 'preflight_failed' | 'preflight_passed' | 'genesis_queued' | 'genesis_running' | 'genesis_failed' | 'active' | 'reset_required';
-
-export interface BootstrapViewerState {
-  navMode: 'full' | 'bootstrap';
-  firstRunBanner: boolean;
-}
-
-export interface BootstrapStatusResponse {
-  bootstrap: {
-    state: BootstrapStatus;
-    activeGenesisJobId: string | null;
-    preflightReportId: string | null;
-    nextAction: {
-      route: string;
-      cta: string;
-      description: string;
-    };
-    updatedAt: string;
-  };
-  viewer: BootstrapViewerState;
-}
+import { getBootstrapStatus, type BootstrapStatus } from '../lib/bootstrap';
 
 export interface UseBootstrapStatusResult {
-  status: BootstrapStatusResponse | null;
+  status: BootstrapStatus | null;
   isActive: boolean;
   loading: boolean;
   error: string | null;
@@ -34,20 +12,14 @@ export interface UseBootstrapStatusResult {
 export function useBootstrapStatus(): UseBootstrapStatusResult {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['bootstrap', 'status'],
-    queryFn: async (): Promise<BootstrapStatusResponse> => {
-      const response = await apiFetch('/bootstrap/status', { method: 'GET' });
-      if (!response.ok) {
-        throw new Error(`Bootstrap status failed: ${response.status}`);
-      }
-      return response.json();
-    },
+    queryFn: getBootstrapStatus,
     staleTime: 5000, // 5 seconds
     retry: 1,
   });
 
   return {
     status: data ?? null,
-    isActive: data?.bootstrap?.state === 'active',
+    isActive: Boolean(data?.locked),
     loading: isLoading,
     error: error instanceof Error ? error.message : null,
     refetch,

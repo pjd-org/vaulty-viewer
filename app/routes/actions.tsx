@@ -280,6 +280,14 @@ function ActionsRoute() {
           <EmptyState
             title="No actions are surfaced right now."
             description="Once the queue refreshes, this lane will rank the best next moves."
+            action={
+              <Link
+                to="/work"
+                className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
+              >
+                Review Work
+              </Link>
+            }
           />
         ) : (
           <div className="flex flex-col gap-3">

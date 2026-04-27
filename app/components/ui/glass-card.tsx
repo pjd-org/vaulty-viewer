@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/src/lib/utils';
+import { GlassCard as SharedGlassCard } from '@vault/ui/molecules';
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   glowEffect?: boolean;
@@ -15,31 +16,22 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
     const isLight = variant === 'light';
 
     return (
-      <div className="relative">
-        {glowEffect && !isLight && (
-          <div className="absolute -inset-1 rounded-2xl bg-linear-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 blur-xl opacity-70" />
-        )}
-        <div
-          ref={ref}
+      <div ref={ref} className="relative">
+        <SharedGlassCard
+          glow={glowEffect && !isLight}
+          blur={isLight ? 'md' : 'lg'}
+          radius="xl"
           className={cn(
-            'relative rounded-2xl border',
+            'relative overflow-hidden',
             isLight
               ? 'border-[var(--border-glass-soft)] bg-[var(--surf-utility)] shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
               : 'border-white/20 bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37)]',
-            'before:absolute before:inset-0 before:rounded-2xl',
-            isLight
-              ? 'before:bg-transparent'
-              : 'before:bg-linear-to-b before:from-white/20 before:to-transparent before:pointer-events-none',
-            'after:absolute after:inset-px after:rounded-[calc(1rem-1px)]',
-            isLight
-              ? 'after:shadow-none'
-              : 'after:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] after:pointer-events-none',
             className
           )}
           {...props}
         >
-          <div className="relative z-10">{children}</div>
-        </div>
+          {children}
+        </SharedGlassCard>
       </div>
     );
   }

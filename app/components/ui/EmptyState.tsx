@@ -14,21 +14,21 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/50 px-5 py-10 text-center shadow-sm">
       {icon && (
         <div className="text-4xl" style={{ color: 'var(--text-tertiary)' }}>
           {icon}
         </div>
       )}
       <h2
-        className="text-lg font-semibold mt-4"
+        className="mt-4 text-lg font-semibold tracking-tight"
         style={{ color: 'var(--text-primary)' }}
       >
         {title}
       </h2>
       {description && (
         <p
-          className="text-sm mt-2 max-w-sm"
+          className="mt-2 max-w-md text-sm leading-6"
           style={{ color: 'var(--text-tertiary)' }}
         >
           {description}

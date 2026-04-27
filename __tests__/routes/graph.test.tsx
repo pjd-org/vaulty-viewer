@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (_path: string) => (options: Record<string, unknown>) => ({
     options,
   }),
-  useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  useSearch: () => ({ focus: undefined, selectedId: undefined }),
 }));
 
 vi.mock('../../app/components/layout', () => ({

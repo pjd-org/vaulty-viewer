@@ -12,13 +12,13 @@ function StatefulFilterBar() {
   return (
     <FilterBar
       sort={sort}
-      onSort={setSort}
+      onSortChange={setSort}
       runType={runType}
-      onRunType={setRunType}
+      onRunTypeChange={setRunType}
       reversibility={reversibility}
-      onReversibility={setReversibility}
+      onReversibilityChange={setReversibility}
       severity={severity}
-      onSeverity={setSeverity}
+      onSeverityChange={setSeverity}
       loading={false}
       anyInFlight={false}
       onRefresh={() => {}}
@@ -38,13 +38,13 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     sort: 'newest',
-    onSort: () => {},
+    onSortChange: () => {},
     runType: '',
-    onRunType: () => {},
+    onRunTypeChange: () => {},
     reversibility: '',
-    onReversibility: () => {},
+    onReversibilityChange: () => {},
     severity: '',
-    onSeverity: () => {},
+    onSeverityChange: () => {},
     loading: false,
     anyInFlight: false,
     onRefresh: () => {},
@@ -55,13 +55,13 @@ export const Default: Story = {
 export const Loading: Story = {
   args: {
     sort: 'newest',
-    onSort: () => {},
+    onSortChange: () => {},
     runType: '',
-    onRunType: () => {},
+    onRunTypeChange: () => {},
     reversibility: '',
-    onReversibility: () => {},
+    onReversibilityChange: () => {},
     severity: '',
-    onSeverity: () => {},
+    onSeverityChange: () => {},
     loading: true,
     anyInFlight: false,
     onRefresh: () => {},
@@ -71,13 +71,13 @@ export const Loading: Story = {
 export const InFlight: Story = {
   args: {
     sort: 'confidence',
-    onSort: () => {},
+    onSortChange: () => {},
     runType: 'signals_infer',
-    onRunType: () => {},
+    onRunTypeChange: () => {},
     reversibility: 'high',
-    onReversibility: () => {},
+    onReversibilityChange: () => {},
     severity: 'medium',
-    onSeverity: () => {},
+    onSeverityChange: () => {},
     loading: false,
     anyInFlight: true,
     onRefresh: () => {},

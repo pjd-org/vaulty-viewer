@@ -26,6 +26,7 @@
 import { Store } from '@tanstack/store';
 import { useStore } from '@tanstack/react-store';
 import { useEffect } from 'react';
+import { DEFAULT_MODE } from './mode-config';
 import type { AgentExecutionMode } from './types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -122,7 +123,7 @@ export const ThreadRegistry = {
         // New thread — require title for creation
         const newEntry: ThreadEntry = {
           id: entry.id,
-          mode: entry.mode ?? 'deepagent',
+          mode: entry.mode ?? DEFAULT_MODE,
           title: truncate(entry.title ?? entry.id, TITLE_MAX),
           preview: truncate(entry.preview ?? '', PREVIEW_MAX),
           createdAt: entry.createdAt ?? now,

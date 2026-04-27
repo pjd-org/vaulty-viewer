@@ -1,2 +1,6 @@
 export { InboxItemCard } from './InboxItemCard'
 export { InboxViewSwitcher } from './InboxViewSwitcher'
+export { FilterBar } from './FilterBar'
+export { InboxSummaryLine } from './InboxSummaryLine'
+export { InboxItemList } from './InboxItemList'
+export { InboxInspectModal } from './InboxInspectModal'

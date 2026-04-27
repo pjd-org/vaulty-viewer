@@ -9,6 +9,7 @@ vi.mock('@tanstack/react-router', () => ({
     options,
   }),
   useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
 
 vi.mock('../../app/components/layout', () => ({
@@ -93,7 +94,7 @@ describe('portfolio route — empty / null data', () => {
 
   it('renders empty state when no data', () => {
     render(<PortfolioComponent />);
-    expect(screen.getByTestId('portfolio-empty-state')).toBeTruthy();
+    expect(screen.getByText('No projects in the pressure band.')).toBeTruthy();
   });
 
   it('renders no aside content', () => {

@@ -191,9 +191,9 @@ function HealthRoute() {
     >
       <DialogContent
         aria-label="Health details"
-        className="!top-[50%] !max-w-[min(1100px,calc(100vw-2rem))] !rounded-[24px] !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
+        className="!top-[50%] !max-w-[min(960px,calc(100vw-2rem))] !rounded-[24px] !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
-        <div className="max-h-[min(90vh,920px)] overflow-y-auto">
+        <div className="max-h-[min(88vh,860px)] overflow-y-auto">
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">Health</DialogTitle>
@@ -204,7 +204,7 @@ function HealthRoute() {
             </DialogHeader>
 
             {data && (
-              <div className="mt-4 grid gap-3 sm:grid-cols-4">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <GlassBadge tone="sky" size="md" className="justify-between px-3">
                   <span className="uppercase tracking-[0.2em]">Overall</span>
                   <strong>{data.overall === 'ok' ? 'OK' : 'Degraded'}</strong>
@@ -244,7 +244,7 @@ function HealthRoute() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.95fr]">
+              <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
                 <GlassSurface
                   as="section"
                   variant="base"

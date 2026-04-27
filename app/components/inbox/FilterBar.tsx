@@ -4,13 +4,13 @@ type SortKey = 'newest' | 'oldest' | 'confidence' | 'itemCount';
 
 export interface FilterBarProps {
   sort: SortKey;
-  onSort: (v: SortKey) => void;
+  onSortChange: (v: SortKey) => void;
   runType: string;
-  onRunType: (v: string) => void;
+  onRunTypeChange: (v: string) => void;
   reversibility: string;
-  onReversibility: (v: string) => void;
+  onReversibilityChange: (v: string) => void;
   severity: string;
-  onSeverity: (v: string) => void;
+  onSeverityChange: (v: string) => void;
   loading: boolean;
   anyInFlight: boolean;
   onRefresh: () => void;
@@ -18,13 +18,13 @@ export interface FilterBarProps {
 
 export function FilterBar({
   sort,
-  onSort,
+  onSortChange,
   runType,
-  onRunType,
+  onRunTypeChange,
   reversibility,
-  onReversibility,
+  onReversibilityChange,
   severity,
-  onSeverity,
+  onSeverityChange,
   loading,
   anyInFlight,
   onRefresh,
@@ -39,7 +39,7 @@ export function FilterBar({
       </span>
       <select
         value={sort}
-        onChange={(e) => onSort(e.target.value as SortKey)}
+        onChange={(e) => onSortChange(e.target.value as SortKey)}
         className={selectCls}
       >
         <option value="newest">Newest first</option>
@@ -53,7 +53,7 @@ export function FilterBar({
       </span>
       <select
         value={runType}
-        onChange={(e) => onRunType(e.target.value)}
+        onChange={(e) => onRunTypeChange(e.target.value)}
         className={selectCls}
       >
         <option value="">Run type: All</option>
@@ -63,7 +63,7 @@ export function FilterBar({
       </select>
       <select
         value={reversibility}
-        onChange={(e) => onReversibility(e.target.value)}
+        onChange={(e) => onReversibilityChange(e.target.value)}
         className={selectCls}
       >
         <option value="">Reversibility: All</option>
@@ -73,7 +73,7 @@ export function FilterBar({
       </select>
       <select
         value={severity}
-        onChange={(e) => onSeverity(e.target.value)}
+        onChange={(e) => onSeverityChange(e.target.value)}
         className={selectCls}
       >
         <option value="">Severity: All</option>

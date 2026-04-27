@@ -65,12 +65,12 @@ export const MODE_CONFIGS: Record<AgentExecutionMode, ModeConfig> = {
 };
 
 export const MODE_ORDER: AgentExecutionMode[] = [
+  'prompt_runner',
   'deepagent',
   'agent_runner',
-  'prompt_runner',
 ];
 
-export const DEFAULT_MODE: AgentExecutionMode = 'deepagent';
+export const DEFAULT_MODE: AgentExecutionMode = 'prompt_runner';
 
 /**
  * Returns the config for a given mode.

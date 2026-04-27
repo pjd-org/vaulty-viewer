@@ -1,14 +1,8 @@
-import { useRouterState } from '@tanstack/react-router';
+import React from 'react';
 
-import { useBootstrapStatus } from './useBootstrapStatus';
+import { getBootstrapStatus, type BootstrapStatus } from '../lib/bootstrap';
 
-const BYPASS_ROUTES = [
-  '/login',
-  '/onboarding/welcome',
-  '/onboarding/profile',
-  '/onboarding/review',
-  '/genesis',
-];
+const BYPASS_ROUTES = ['/login', '/onboarding/welcome', '/onboarding/profile', '/onboarding/review'];
 
 function isBypassPath(pathname: string): boolean {
   return BYPASS_ROUTES.some((route) => pathname.startsWith(route));
@@ -19,36 +13,66 @@ export interface BootstrapGateResult {
   redirectTo: string | null;
 }
 
-export function useBootstrapGate(): BootstrapGateResult {
-  const { status, isActive, loading, error } = useBootstrapStatus();
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
+export function useBootstrapGate(pathname: string): BootstrapGateResult {
+  const [status, setStatus] = React.useState<BootstrapStatus | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getBootstrapStatus()
+      .then((nextStatus) => {
+        if (cancelled) return;
+        setStatus(nextStatus);
+        setError(null);
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setStatus(null);
+        setError(nextError instanceof Error ? nextError.message : 'Failed to load bootstrap status');
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // If still loading, don't block — gives API time to respond
   if (loading) {
     return { shouldBlock: false, redirectTo: null };
   }
 
-  // Allow bypass routes even if API fails
+  if (status?.locked && pathname === '/bootstrap') {
+    return { shouldBlock: true, redirectTo: '/' };
+  }
+
+  if (status?.required && pathname !== '/bootstrap') {
+    return { shouldBlock: true, redirectTo: '/bootstrap' };
+  }
+
+  // Allow bypass routes even if API fails.
   if (isBypassPath(pathname)) {
     return { shouldBlock: false, redirectTo: null };
   }
 
-  // If API errored and we have no status, default to onboarding (user can retry)
+  // If API errored and we have no status, default to bootstrap.
   if (error && !status) {
-    return { shouldBlock: true, redirectTo: '/onboarding/welcome' };
+    return {
+      shouldBlock: pathname !== '/bootstrap',
+      redirectTo: pathname !== '/bootstrap' ? '/bootstrap' : null,
+    };
   }
 
-  // Active — full access
-  if (isActive) {
+  // Active — full access.
+  if (status?.locked) {
     return { shouldBlock: false, redirectTo: null };
   }
 
-  // Use nextAction route from API, fallback to onboarding
-  if (status?.bootstrap?.nextAction?.route) {
-    return { shouldBlock: true, redirectTo: status.bootstrap.nextAction.route };
-  }
-
-  return { shouldBlock: true, redirectTo: '/onboarding/welcome' };
+  return { shouldBlock: false, redirectTo: null };
 }

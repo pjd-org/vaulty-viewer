@@ -14,7 +14,7 @@ function OnboardingReview() {
           <p className="text-muted-foreground max-w-md">
             Review your bootstrap plan before provisioning.
           </p>
-          <PrimaryButton onClick={() => window.location.href = '/genesis'}>
+          <PrimaryButton onClick={() => window.location.href = '/bootstrap'}>
             Continue
           </PrimaryButton>
         </div>

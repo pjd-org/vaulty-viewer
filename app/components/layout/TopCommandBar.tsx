@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { PanelLeft, Search } from 'lucide-react';
+import { Activity, Heart, PanelLeft, Search } from 'lucide-react';
 import { Button, GlassBadge, GlassSurface } from '@vault/ui';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { CreateArtifactDialog } from './CreateArtifactDialog';
 import { useUIStore } from '../../../src/store/ui';
+import { dispatchNavOverlay } from '../../../src/lib/nav-overlays';
+import { useHealthSurface } from '../../lib/viewer-adapter';
+import useCODStatus from '../../../src/hooks/useCODStatus';
 
 interface TopCommandBarProps {
   /** Optional scope label — e.g. project or context name — shown as a chip */
@@ -17,6 +20,13 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   const accent = accentColor ?? 'var(--a-sky)';
   const isMobile = useIsMobile();
   const [createOpen, setCreateOpen] = React.useState(false);
+  const { data: healthData, isLoading: healthLoading, error: healthError } =
+    useHealthSurface();
+  const {
+    validation: codValidation,
+    loading: codLoading,
+    error: codError,
+  } = useCODStatus();
   const leftSidebarCollapsed = useUIStore(
     (state) => state.layout.leftSidebarCollapsed
   );
@@ -37,6 +47,37 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   }, [isMobile, toggleLeftSidebar, toggleMobileNav]);
 
   const menuPressed = isMobile ? mobileNavOpen : !leftSidebarCollapsed;
+  const healthStatus = healthLoading
+    ? 'Loading'
+    : healthError
+      ? 'Offline'
+      : healthData?.overall === 'ok'
+        ? 'OK'
+        : 'Degraded';
+  const healthTone = healthLoading
+    ? 'aqua'
+    : healthError
+      ? 'rose'
+      : healthData?.overall === 'ok'
+        ? 'mint'
+        : 'sun';
+
+  const codStatus = codLoading
+    ? 'Loading'
+    : codError
+      ? 'Offline'
+      : codValidation.status;
+  const codTone = codLoading
+    ? 'aqua'
+    : codError
+      ? 'rose'
+      : codValidation.status === 'PASS'
+        ? 'mint'
+        : codValidation.status === 'WARN'
+          ? 'sun'
+          : codValidation.status === 'FAIL'
+            ? 'rose'
+            : 'aqua';
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8">
@@ -104,6 +145,40 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
           </label>
 
           <div className="flex shrink-0 items-center gap-2">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="!rounded-full"
+            >
+              <Link
+                to="/health"
+                search={{ tab: undefined, selectedId: undefined }}
+                aria-label="Open health status"
+              >
+                <Heart className="h-4 w-4" aria-hidden="true" />
+                <span>Health</span>
+                <GlassBadge tone={healthTone} size="sm" className="shrink-0">
+                  {healthStatus}
+                </GlassBadge>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="!rounded-full"
+              onClick={() => dispatchNavOverlay('cod')}
+              aria-haspopup="dialog"
+              aria-label="Open COD status"
+            >
+              <Activity className="h-4 w-4" aria-hidden="true" />
+              <span>COD</span>
+              <GlassBadge tone={codTone} size="sm" className="shrink-0">
+                {codStatus}
+              </GlassBadge>
+            </Button>
+
             <Button
               variant="ghost"
               size="sm"
