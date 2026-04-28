@@ -2,10 +2,19 @@ import React from 'react';
 
 import { getBootstrapStatus, type BootstrapStatus } from '../lib/bootstrap';
 
-const BYPASS_ROUTES = ['/login', '/onboarding/welcome', '/onboarding/profile', '/onboarding/review'];
+const BYPASS_ROUTES = ['/onboarding/welcome', '/onboarding/profile', '/onboarding/review'];
 
 function isBypassPath(pathname: string): boolean {
   return BYPASS_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+function isBootstrapSurfacePath(pathname: string): boolean {
+  return (
+    pathname === '/bootstrap' ||
+    pathname.startsWith('/onboarding/') ||
+    pathname.startsWith('/preflight') ||
+    pathname.startsWith('/genesis')
+  );
 }
 
 export interface BootstrapGateResult {
@@ -48,11 +57,11 @@ export function useBootstrapGate(pathname: string): BootstrapGateResult {
     return { shouldBlock: false, redirectTo: null };
   }
 
-  if (status?.locked && pathname === '/bootstrap') {
-    return { shouldBlock: true, redirectTo: '/' };
+  if (status?.nextRoute && isBootstrapSurfacePath(pathname) && pathname !== status.nextRoute) {
+    return { shouldBlock: true, redirectTo: status.nextRoute };
   }
 
-  if (status?.required && pathname !== '/bootstrap') {
+  if (status?.required && isBootstrapSurfacePath(pathname) && pathname !== '/bootstrap') {
     return { shouldBlock: true, redirectTo: '/bootstrap' };
   }
 
@@ -63,15 +72,13 @@ export function useBootstrapGate(pathname: string): BootstrapGateResult {
 
   // If API errored and we have no status, default to bootstrap.
   if (error && !status) {
+    if (!isBootstrapSurfacePath(pathname)) {
+      return { shouldBlock: false, redirectTo: null };
+    }
     return {
       shouldBlock: pathname !== '/bootstrap',
       redirectTo: pathname !== '/bootstrap' ? '/bootstrap' : null,
     };
-  }
-
-  // Active — full access.
-  if (status?.locked) {
-    return { shouldBlock: false, redirectTo: null };
   }
 
   return { shouldBlock: false, redirectTo: null };

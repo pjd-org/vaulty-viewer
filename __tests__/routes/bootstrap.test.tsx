@@ -6,7 +6,7 @@ import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockInvalidateQueries = vi.hoisted(() => vi.fn());
 const mockGetBootstrapStatus = vi.hoisted(() => vi.fn());
-const mockCreateGenesisRoot = vi.hoisted(() => vi.fn());
+const mockCreateBootstrapRootUser = vi.hoisted(() => vi.fn());
 let currentPathname = '/bootstrap';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -28,9 +28,12 @@ vi.mock('@tanstack/react-query', () => ({
 
 vi.mock('../../src/lib/bootstrap', () => ({
   getBootstrapStatus: mockGetBootstrapStatus,
-  createGenesisRoot: mockCreateGenesisRoot,
+  createBootstrapRootUser: mockCreateBootstrapRootUser,
   resolveBootstrapRedirect: async (pathname: string) => {
     const status = await mockGetBootstrapStatus();
+    if (status.nextRoute && pathname !== status.nextRoute) {
+      return { status, redirectTo: status.nextRoute };
+    }
     if (status.required && pathname !== '/bootstrap') {
       return { status, redirectTo: '/bootstrap' };
     }
@@ -46,7 +49,7 @@ afterEach(() => {
   mockNavigate.mockReset();
   mockInvalidateQueries.mockReset();
   mockGetBootstrapStatus.mockReset();
-  mockCreateGenesisRoot.mockReset();
+  mockCreateBootstrapRootUser.mockReset();
   currentPathname = '/bootstrap';
 });
 
@@ -61,6 +64,19 @@ beforeEach(async () => {
 describe('bootstrap route', () => {
   it('renders bootstrap wizard when required', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
+      state: 'root_user_required',
+      phase: 'bootstrap',
+      nextRoute: '/bootstrap',
+      lock: { active: false, reason: null, scope: null },
+      compat: {
+        required: true,
+        locked: false,
+        reason: 'missing-root-user',
+      },
+      rootUser: { exists: false },
+      draft: null,
+      preflight: null,
+      genesisJob: null,
       required: true,
       locked: false,
       reason: 'missing-root-user',
@@ -72,6 +88,19 @@ describe('bootstrap route', () => {
 
   it('redirects away when locked', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
+      state: 'active',
+      phase: 'active',
+      nextRoute: '/',
+      lock: { active: true, reason: 'root user exists', scope: 'all' },
+      compat: {
+        required: false,
+        locked: true,
+        reason: 'root-user-exists',
+      },
+      rootUser: { exists: true },
+      draft: null,
+      preflight: null,
+      genesisJob: null,
       required: false,
       locked: true,
       reason: 'root-user-exists',
@@ -86,19 +115,28 @@ describe('bootstrap route', () => {
 
   it('submits genesis root and redirects to config', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
+      state: 'root_user_required',
+      phase: 'bootstrap',
+      nextRoute: '/bootstrap',
+      lock: { active: false, reason: null, scope: null },
+      compat: {
+        required: true,
+        locked: false,
+        reason: 'missing-root-user',
+      },
+      rootUser: { exists: false },
+      draft: null,
+      preflight: null,
+      genesisJob: null,
       required: true,
       locked: false,
       reason: 'missing-root-user',
     });
-    mockCreateGenesisRoot.mockResolvedValue({
-      ok: true,
-      user: {
-        id: 'root-1',
-        email: 'root@example.test',
-        role: 'root',
-        emailVerified: true,
-        createdByBootstrap: true,
-      },
+    mockCreateBootstrapRootUser.mockResolvedValue({
+      state: 'new',
+      nextRoute: '/onboarding/welcome',
+      rootUserId: 'root-1',
+      authSessionEstablished: false,
     });
 
     render(<BootstrapComponent />);
@@ -118,29 +156,37 @@ describe('bootstrap route', () => {
     fireEvent.submit(screen.getByRole('button', { name: /create root user/i }));
 
     await waitFor(() => {
-      expect(mockCreateGenesisRoot).toHaveBeenCalledWith({
+      expect(mockCreateBootstrapRootUser).toHaveBeenCalledWith({
         displayName: 'Darry',
         email: 'root@example.test',
         password: 'super-secret',
-      });
+      }, expect.stringContaining('boot_'));
     });
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ to: '/config' });
+      expect(mockNavigate).toHaveBeenCalledWith({ to: '/onboarding/welcome' });
     });
   });
 
   it('shows locked state on 409', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
+      state: 'root_user_required',
+      phase: 'bootstrap',
+      nextRoute: '/bootstrap',
+      lock: { active: false, reason: null, scope: null },
+      compat: {
+        required: true,
+        locked: false,
+        reason: 'missing-root-user',
+      },
+      rootUser: { exists: false },
+      draft: null,
+      preflight: null,
+      genesisJob: null,
       required: true,
       locked: false,
       reason: 'missing-root-user',
     });
-    mockCreateGenesisRoot.mockResolvedValue({
-      ok: false,
-      code: 'BOOTSTRAP_LOCKED',
-      reason: 'root-user-exists',
-      message: 'Bootstrap is already locked.',
-    });
+    mockCreateBootstrapRootUser.mockRejectedValue(new Error('A root user already exists.'));
 
     render(<BootstrapComponent />);
 
@@ -156,15 +202,24 @@ describe('bootstrap route', () => {
     fireEvent.submit(screen.getByRole('button', { name: /create root user/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert').textContent).toContain('locked');
+      expect(screen.getByRole('alert').textContent).toContain('A root user already exists.');
     });
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ to: '/' });
-    });
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('blocks password mismatch submit', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
+      state: 'root_user_required',
+      phase: 'bootstrap',
+      nextRoute: '/bootstrap',
+      lock: { active: false, reason: null, scope: null },
+      compat: {
+        required: true,
+        locked: false,
+        reason: 'missing-root-user',
+      },
+      rootUser: { exists: false },
+      draft: null,
       required: true,
       locked: false,
       reason: 'missing-root-user',
@@ -183,7 +238,7 @@ describe('bootstrap route', () => {
     });
     fireEvent.submit(screen.getByRole('button', { name: /create root user/i }));
 
-    expect(mockCreateGenesisRoot).not.toHaveBeenCalled();
+    expect(mockCreateBootstrapRootUser).not.toHaveBeenCalled();
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 });

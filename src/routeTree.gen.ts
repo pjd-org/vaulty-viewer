@@ -25,6 +25,7 @@ import { Route as InboxRouteImport } from './../app/routes/inbox'
 import { Route as HealthRouteImport } from './../app/routes/health'
 import { Route as GraphRouteImport } from './../app/routes/graph'
 import { Route as GoalsRouteImport } from './../app/routes/goals'
+import { Route as GenesisRouteImport } from './../app/routes/genesis'
 import { Route as ConfigRouteImport } from './../app/routes/config'
 import { Route as CodStatusRouteImport } from './../app/routes/cod-status'
 import { Route as BubbleRouteImport } from './../app/routes/bubble'
@@ -133,6 +134,11 @@ const GraphRoute = GraphRouteImport.update({
 const GoalsRoute = GoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenesisRoute = GenesisRouteImport.update({
+  id: '/genesis',
+  path: '/genesis',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfigRoute = ConfigRouteImport.update({
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -342,6 +349,7 @@ export interface FileRoutesByTo {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -390,6 +398,7 @@ export interface FileRoutesById {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
   '/health': typeof HealthRoute
@@ -439,6 +448,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -486,6 +496,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -533,6 +544,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/genesis'
     | '/goals'
     | '/graph'
     | '/health'
@@ -581,6 +593,7 @@ export interface RootRouteChildren {
   BubbleRoute: typeof BubbleRoute
   CodStatusRoute: typeof CodStatusRoute
   ConfigRoute: typeof ConfigRoute
+  GenesisRoute: typeof GenesisRoute
   GoalsRoute: typeof GoalsRoute
   GraphRoute: typeof GraphRoute
   HealthRoute: typeof HealthRoute
@@ -720,6 +733,13 @@ declare module '@tanstack/react-router' {
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/genesis': {
+      id: '/genesis'
+      path: '/genesis'
+      fullPath: '/genesis'
+      preLoaderRoute: typeof GenesisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/config': {
@@ -989,6 +1009,7 @@ const rootRouteChildren: RootRouteChildren = {
   BubbleRoute: BubbleRoute,
   CodStatusRoute: CodStatusRoute,
   ConfigRoute: ConfigRoute,
+  GenesisRoute: GenesisRoute,
   GoalsRoute: GoalsRoute,
   GraphRoute: GraphRoute,
   HealthRoute: HealthRoute,

@@ -3,9 +3,9 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { PageFrame, SoftPanel } from '../components/layout';
-import { Badge, Input, PrimaryButton, EmptyState } from '../components/ui';
+import { Badge, Input, PrimaryButton } from '../components/ui';
 import {
-  createGenesisRoot,
+  createBootstrapRootUser,
   getBootstrapStatus,
   resolveBootstrapRedirect,
   type BootstrapStatus,
@@ -41,6 +41,7 @@ function BootstrapRoute() {
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
+  const idempotencyKeyRef = React.useRef(cryptoRandomId());
 
   React.useEffect(() => {
     let mounted = true;
@@ -48,8 +49,8 @@ function BootstrapRoute() {
       .then((nextStatus) => {
         if (!mounted) return;
         setStatus(nextStatus);
-        if (nextStatus.locked) {
-          void navigate({ to: '/' });
+        if (nextStatus.nextRoute !== '/bootstrap') {
+          void navigate({ to: nextStatus.nextRoute });
         }
       })
       .catch(() => {
@@ -79,25 +80,14 @@ function BootstrapRoute() {
 
     setSubmitting(true);
     try {
-      const result = await createGenesisRoot({
+      const result = await createBootstrapRootUser({
         email,
         password,
         displayName: displayName || undefined,
-      });
-
-      if (!result.ok) {
-        if (result.code === 'BOOTSTRAP_LOCKED') {
-          setError('Bootstrap is already locked. Redirecting…');
-          await queryClient.invalidateQueries({ queryKey: ['bootstrap', 'status'] });
-          void navigate({ to: '/' });
-          return;
-        }
-        setError(result.message ?? 'Bootstrap failed.');
-        return;
-      }
+      }, idempotencyKeyRef.current);
 
       await queryClient.invalidateQueries({ queryKey: ['bootstrap', 'status'] });
-      void navigate({ to: '/config' });
+      void navigate({ to: result.nextRoute });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Bootstrap failed.');
     } finally {
@@ -105,29 +95,17 @@ function BootstrapRoute() {
     }
   };
 
-  if (status?.locked) {
-    return (
-      <PageFrame title="Bootstrap locked" subtitle="This vault already has a root user.">
-        <EmptyState
-          title="Bootstrap is locked."
-          description="The first root user already exists."
-          action={
-            <PrimaryButton onClick={() => navigate({ to: '/' })}>
-              Go home
-            </PrimaryButton>
-          }
-        />
-      </PageFrame>
-    );
+  if (status?.nextRoute && status.nextRoute !== '/bootstrap') {
+    return null;
   }
 
   return (
     <PageFrame
       title="Create root user"
       subtitle="Create the first root user for this Vaulty instance. This account owns recovery, config, and admin access."
-      statusLine={status?.required ? 'Bootstrap required' : 'Bootstrap status loading'}
+      statusLine={status ? `Bootstrap ${status.state}` : 'Loading bootstrap status'}
       nextAction="Use the root account to finish setup."
-      actions={<Badge variant="muted">Genesis only</Badge>}
+      actions={<Badge variant="muted">Root user</Badge>}
     >
       <SoftPanel variant="elevated" className="mx-auto w-full max-w-2xl p-0 overflow-hidden">
         <div className="p-6 sm:p-8">
@@ -150,6 +128,10 @@ function BootstrapRoute() {
       </SoftPanel>
     </PageFrame>
   );
+}
+
+function cryptoRandomId(): string {
+  return `boot_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
 }
 
 function BootstrapWizard({

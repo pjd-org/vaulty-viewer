@@ -76,16 +76,34 @@ async function callWriteNoteUnified(
 ): Promise<WriteNoteResult> {
   const res = await apiFetch('/api/v1/tools/write_note_unified/execute', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // Tool execution can return either JSON or SSE, and the API requires the
+      // client to advertise support for both.
+      Accept: 'application/json, text/event-stream',
+    },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      (err as { message?: string }).message ??
-        `write_note_unified failed (${res.status})`
-    );
+    const raw = await res.text().catch(() => '');
+    const parsed = (() => {
+      try {
+        return raw ? (JSON.parse(raw) as unknown) : null;
+      } catch {
+        return null;
+      }
+    })();
+    const message =
+      (parsed &&
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'message' in parsed &&
+        typeof (parsed as { message?: unknown }).message === 'string' &&
+        (parsed as { message: string }).message.trim()) ||
+      raw.trim() ||
+      `write_note_unified failed (${res.status})`;
+    throw new Error(message);
   }
 
   const json = await res.json();
