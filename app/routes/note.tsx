@@ -1,6 +1,12 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import {
   formatNoteLabel,
   getLifecycleContext,
@@ -228,9 +234,12 @@ function reviewReducer(state: ReviewState, action: ReviewAction): ReviewState {
 function NoteRoute() {
   const { p } = Route.useSearch();
   const navigate = useNavigate();
+  const location = useLocation();
   const redirectToLogin = React.useCallback(() => {
-    void navigate({ to: '/login' });
-  }, [navigate]);
+    void navigate({
+      to: buildAuthTransitionPath(`${location.pathname}${location.search}`),
+    });
+  }, [location.pathname, location.search, navigate]);
   const throwIfUnauthorized = React.useCallback(
     (response: Response, context: string) => {
       if (response.status === 401) {

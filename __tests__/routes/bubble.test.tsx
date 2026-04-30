@@ -51,6 +51,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => ({}),
   }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
 }));
 
@@ -271,7 +279,9 @@ describe('BubbleRoute — unauthenticated', () => {
 
   it('navigates to /login on 401 error', () => {
     render(<BubbleComponent />);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/?auth=required&return_to=%2F',
+    });
   });
 
   it('renders null while redirecting', () => {

@@ -12,6 +12,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
   }),
   useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
 }));
 
@@ -179,7 +187,9 @@ describe('health route — unauthorized data', () => {
 
   it('redirects to login instead of rendering the empty state', () => {
     render(<HealthComponent />);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/?auth=required&return_to=%2F',
+    });
     expect(screen.queryByTestId('health-empty-state')).toBeNull();
   });
 });

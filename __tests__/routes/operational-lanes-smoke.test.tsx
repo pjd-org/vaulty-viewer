@@ -14,6 +14,14 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => ({}),
   }),
   useSearch: () => ({}),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => vi.fn(),
   Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));

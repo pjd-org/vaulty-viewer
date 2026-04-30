@@ -18,8 +18,11 @@ function isBootstrapSurfacePath(pathname: string): boolean {
 }
 
 export interface BootstrapGateResult {
+  loading: boolean;
   shouldBlock: boolean;
   redirectTo: string | null;
+  status: BootstrapStatus | null;
+  error: string | null;
 }
 
 export function useBootstrapGate(pathname: string): BootstrapGateResult {
@@ -54,32 +57,71 @@ export function useBootstrapGate(pathname: string): BootstrapGateResult {
 
   // If still loading, don't block — gives API time to respond
   if (loading) {
-    return { shouldBlock: false, redirectTo: null };
+    return {
+      loading: true,
+      shouldBlock: false,
+      redirectTo: null,
+      status: null,
+      error: null,
+    };
   }
 
   if (status?.nextRoute && isBootstrapSurfacePath(pathname) && pathname !== status.nextRoute) {
-    return { shouldBlock: true, redirectTo: status.nextRoute };
+    return {
+      loading: false,
+      shouldBlock: true,
+      redirectTo: status.nextRoute,
+      status,
+      error,
+    };
   }
 
   if (status?.required && isBootstrapSurfacePath(pathname) && pathname !== '/bootstrap') {
-    return { shouldBlock: true, redirectTo: '/bootstrap' };
+    return {
+      loading: false,
+      shouldBlock: true,
+      redirectTo: '/bootstrap',
+      status,
+      error,
+    };
   }
 
   // Allow bypass routes even if API fails.
   if (isBypassPath(pathname)) {
-    return { shouldBlock: false, redirectTo: null };
+    return {
+      loading: false,
+      shouldBlock: false,
+      redirectTo: null,
+      status,
+      error,
+    };
   }
 
   // If API errored and we have no status, default to bootstrap.
   if (error && !status) {
     if (!isBootstrapSurfacePath(pathname)) {
-      return { shouldBlock: false, redirectTo: null };
+      return {
+        loading: false,
+        shouldBlock: false,
+        redirectTo: null,
+        status,
+        error,
+      };
     }
     return {
+      loading: false,
       shouldBlock: pathname !== '/bootstrap',
       redirectTo: pathname !== '/bootstrap' ? '/bootstrap' : null,
+      status,
+      error,
     };
   }
 
-  return { shouldBlock: false, redirectTo: null };
+  return {
+    loading: false,
+    shouldBlock: false,
+    redirectTo: null,
+    status,
+    error,
+  };
 }

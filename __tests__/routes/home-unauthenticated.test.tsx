@@ -32,6 +32,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => ({}),
   }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
   Link: ({
     children,
@@ -163,7 +171,10 @@ describe('home route — unauthenticated state (401)', () => {
 
   it('calls navigate({ to: "/login" }) when error is UnauthenticatedError', () => {
     renderWithClient(<RouteComponent />);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/?auth=required&return_to=%2F',
+      replace: true,
+    });
   });
 
   it('renders nothing (null) while redirect is pending', () => {

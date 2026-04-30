@@ -3,6 +3,7 @@ import {
   QueryCache,
   type DehydratedState,
 } from '@tanstack/react-query';
+import { buildAuthTransitionPath } from './lib/auth-transition';
 import { UnauthenticatedError } from './utils/api';
 
 declare global {
@@ -24,7 +25,11 @@ function makeQueryCache() {
         error instanceof UnauthenticatedError &&
         typeof window !== 'undefined'
       ) {
-        window.location.replace('/login');
+        window.location.replace(
+          buildAuthTransitionPath(
+            `${window.location.pathname}${window.location.search}`
+          )
+        );
       }
     },
   });

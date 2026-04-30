@@ -5,8 +5,14 @@ import React, {
   useReducer,
   useState,
 } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import {
   STATUS_COLUMNS,
   buildColumns,
@@ -259,6 +265,7 @@ const KanbanCard = React.memo(function KanbanCard({
 
 function KanbanRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [{ apiStatus, apiTasks, mutatingTaskId, draggingTaskId }, dispatch] =
     useReducer(kanbanReducer, {
       apiStatus: 'unknown',
@@ -364,11 +371,15 @@ function KanbanRoute() {
             body: JSON.stringify({ status }),
           }
         );
-        if (res.status === 401) {
-          dispatch({ type: 'MUTATE_FAIL' });
-          navigate({ to: '/login' });
-          return;
-        }
+      if (res.status === 401) {
+        dispatch({ type: 'MUTATE_FAIL' });
+        navigate({
+          to: buildAuthTransitionPath(
+            `${location.pathname}${location.search}`
+          ),
+        });
+        return;
+      }
         if (!res.ok) {
           dispatch({ type: 'MUTATE_FAIL' });
           return;
@@ -383,14 +394,18 @@ function KanbanRoute() {
         });
       } catch (err) {
         if (err instanceof UnauthenticatedError) {
-          navigate({ to: '/login' });
+          navigate({
+            to: buildAuthTransitionPath(
+              `${location.pathname}${location.search}`
+            ),
+          });
         } else {
           console.warn('[kanban] status update failed', err);
         }
         dispatch({ type: 'MUTATE_FAIL' });
       }
     },
-    [navigate]
+    [location.pathname, location.search, navigate]
   );
 
   const handleDragStart = useCallback(

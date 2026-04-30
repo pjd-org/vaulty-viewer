@@ -18,13 +18,16 @@ import {
 } from '@tanstack/react-query';
 import {
   TopCommandBar,
+  PageFrame,
 } from '../components/layout';
+import { RouteLoadingState } from '../components/ui';
 import { Toaster } from '../components/ui/sonner';
 import {
   getBrowserDehydratedStateForRender,
   serializeDehydratedQueryState,
 } from '../../src/query-client';
 import { useBootstrapGate } from '../../src/hooks/useBootstrapGate';
+import { normalizeReturnTo } from '../../src/lib/auth-transition';
 import {
   NAV_OVERLAY_EVENT,
   type NavOverlay,
@@ -118,12 +121,35 @@ function RootComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const search = useRouterState({
+    select: (state) => state.location.search,
+  });
   const [navOverlay, setNavOverlay] = React.useState<NavOverlay | null>(null);
   const hideShell = isShellHiddenPath(pathname);
   const routeHasOwnOverlay =
     pathname === '/avatar' || pathname === '/cod-status';
+  const searchParams = React.useMemo(() => new URLSearchParams(search), [search]);
+  const authTransitionRequested = searchParams.get('auth') === 'required';
+  const loginReturnTo = normalizeReturnTo(
+    searchParams.get('return_to') ?? pathname
+  );
 
   const theme = useUIStore((s) => s.theme);
+  const bootstrapGate = useBootstrapGate(pathname);
+
+  React.useEffect(() => {
+    if (bootstrapGate.redirectTo) {
+      void router.navigate({ to: bootstrapGate.redirectTo, replace: true });
+      return;
+    }
+
+    if (authTransitionRequested) {
+      void router.navigate({
+        to: `/login?return_to=${encodeURIComponent(loginReturnTo)}`,
+        replace: true,
+      });
+    }
+  }, [authTransitionRequested, bootstrapGate.redirectTo, loginReturnTo, router]);
 
   React.useEffect(() => {
     const root = document.documentElement;
@@ -195,9 +221,15 @@ function RootComponent() {
     <MotionConfig reducedMotion="user">
       <RootDocument dehydratedState={dehydratedState}>
         <QueryClientProvider client={queryClient}>
-          <BootstrapGate pathname={pathname} navigate={router.navigate} />
           <ModalProvider>
-            <div className="min-h-screen">
+            {bootstrapGate.loading || bootstrapGate.redirectTo || authTransitionRequested ? (
+              <BootstrapTransitionScreen
+                pathname={pathname}
+                error={bootstrapGate.error}
+                authTransitionRequested={authTransitionRequested}
+              />
+            ) : (
+              <div className="min-h-screen">
               <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-[var(--surf-elevated)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-primary)] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent)]"
@@ -245,7 +277,8 @@ function RootComponent() {
                   <LazyCommandHost />
                 </React.Suspense>
               )}
-            </div>
+              </div>
+            )}
           </ModalProvider>
         </QueryClientProvider>
         <Toaster />
@@ -254,23 +287,60 @@ function RootComponent() {
   );
 }
 
-function BootstrapGate({
+function BootstrapTransitionScreen({
   pathname,
-  navigate,
+  error,
+  authTransitionRequested,
 }: {
   pathname: string;
-  navigate?: (options: { to: string; replace?: boolean }) => void;
+  error: string | null;
+  authTransitionRequested: boolean;
 }) {
-  const bootstrapGate = useBootstrapGate(pathname);
+  const isBootstrapPath =
+    pathname === '/bootstrap' ||
+    pathname.startsWith('/onboarding/') ||
+    pathname.startsWith('/preflight') ||
+    pathname.startsWith('/genesis');
+  const title = authTransitionRequested
+    ? 'Preparing sign-in'
+    : isBootstrapPath
+      ? 'Loading bootstrap state'
+      : 'Preparing access';
+  const subtitle = error
+    ? 'Loading the safest route while the bootstrap state resolves.'
+    : authTransitionRequested
+      ? 'Loading the handoff before sign-in.'
+      : isBootstrapPath
+      ? 'Checking setup before this surface opens.'
+      : 'Checking setup and auth before this surface opens.';
 
-  React.useEffect(() => {
-    if (bootstrapGate.redirectTo && navigate) {
-      void navigate({ to: bootstrapGate.redirectTo, replace: true });
-    }
-  }, [bootstrapGate.redirectTo, navigate]);
-
-  return null;
+  return (
+    <main className="flex min-h-screen items-center justify-center px-4 py-10">
+      <div className="w-full max-w-3xl">
+        <PageFrame
+          title={title}
+          subtitle={subtitle}
+          statusLine="Transition"
+          nextAction="This will redirect automatically."
+        >
+          <div className="rounded-[28px] border border-border bg-[var(--surf-elevated)] p-6 shadow-sm">
+            <RouteLoadingState
+              label={
+                authTransitionRequested
+                  ? 'Preparing sign-in…'
+                  : isBootstrapPath
+                    ? 'Checking bootstrap…'
+                    : 'Checking access…'
+              }
+              rows={5}
+            />
+          </div>
+        </PageFrame>
+      </div>
+    </main>
+  );
 }
+
 
 function RootDocument({
   children,
