@@ -9,31 +9,32 @@ import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
 import { Buffer } from 'node:buffer';
 import { createReadStream, existsSync, statSync } from 'node:fs';
-import { extname, join } from 'node:path';
+import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const CLIENT_DIR = join(__dirname, '../dist/client');
+const CLIENT_DIR_RESOLVED = resolve(CLIENT_DIR);
 const VIEWER_PREFIX = '/_viewer/';
 const VIEWER_API_PREFIXES = ['/api/agent-shell/run/'];
 
 /** Minimal MIME map for Vite build output. */
 const MIME = {
-  '.js':    'application/javascript; charset=utf-8',
-  '.mjs':   'application/javascript; charset=utf-8',
-  '.css':   'text/css; charset=utf-8',
-  '.html':  'text/html; charset=utf-8',
-  '.json':  'application/json; charset=utf-8',
-  '.svg':   'image/svg+xml',
-  '.png':   'image/png',
-  '.jpg':   'image/jpeg',
-  '.jpeg':  'image/jpeg',
-  '.ico':   'image/x-icon',
-  '.woff':  'font/woff',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
   '.woff2': 'font/woff2',
-  '.ttf':   'font/ttf',
-  '.eot':   'application/vnd.ms-fontobject',
-  '.map':   'application/json',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.map': 'application/json',
 };
 
 let app = null;
@@ -75,10 +76,29 @@ const httpServer = createServer(async (req, res) => {
   // Strip the prefix and serve directly from the filesystem so the SSR
   // handler never has to render asset paths.
   if (req.url?.startsWith(VIEWER_PREFIX)) {
-    const rel = req.url.slice(VIEWER_PREFIX.length).split('?')[0]; // strip query
-    const filePath = join(CLIENT_DIR, rel);
-    if (existsSync(filePath) && statSync(filePath).isFile()) {
-      const ext = extname(filePath).toLowerCase();
+    const rawRel = req.url.slice(VIEWER_PREFIX.length).split('?')[0]; // strip query
+    let rel;
+    try {
+      rel = decodeURIComponent(rawRel);
+    } catch (e) {
+      res.writeHead(400);
+      res.end('Bad request');
+      return;
+    }
+
+    // Prevent absolute path usage and normalize the requested path.
+    const attempted = resolve(CLIENT_DIR_RESOLVED, '.' + rel);
+    if (
+      !attempted.startsWith(CLIENT_DIR_RESOLVED + sep) &&
+      attempted !== CLIENT_DIR_RESOLVED
+    ) {
+      res.writeHead(403);
+      res.end('Forbidden');
+      return;
+    }
+
+    if (existsSync(attempted) && statSync(attempted).isFile()) {
+      const ext = extname(attempted).toLowerCase();
       const mime = MIME[ext] ?? 'application/octet-stream';
       // Content-hashed assets are safe to cache indefinitely.
       const isHashed = /\.[a-f0-9]{8,}\./.test(rel);
@@ -88,7 +108,7 @@ const httpServer = createServer(async (req, res) => {
           ? 'public, max-age=31536000, immutable'
           : 'no-cache',
       });
-      createReadStream(filePath).pipe(res);
+      createReadStream(attempted).pipe(res);
       return;
     }
     // Asset not found — fall through to SSR (will likely 404).
@@ -153,8 +173,22 @@ const httpServer = createServer(async (req, res) => {
     }
   }
 
-  const host = req.headers.host ?? `${HOST}:${PORT}`;
-  const url = `http://${host}${req.url}`;
+  const rawHost = req.headers.host ?? `${HOST}:${PORT}`;
+  const hostAllowlist = /^([a-zA-Z0-9.\-]+)(:\d+)?$/;
+  const safeHost = hostAllowlist.test(String(rawHost))
+    ? String(rawHost)
+    : `${HOST}:${PORT}`;
+
+  let url;
+  try {
+    // Use URL constructor to build a safe absolute URL for the request
+    url = new URL(req.url ?? '/', `http://${safeHost}`).toString();
+  } catch (err) {
+    res.writeHead(400);
+    res.end('Bad Request');
+    return;
+  }
+
   const request = new Request(url, requestInit);
 
   let response;

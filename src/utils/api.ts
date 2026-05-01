@@ -239,12 +239,33 @@ const withAuthorizationHeader = (
   };
 };
 
-const withDefaultCredentials = (init: RequestInit | undefined): RequestInit => {
+const withDefaultCredentials = (
+  init: RequestInit | undefined,
+  url?: string
+): RequestInit => {
   if (init?.credentials) return init;
-  return {
-    ...(init || {}),
-    credentials: 'include',
-  };
+  const baseInit: RequestInit = { ...(init || {}) };
+
+  // In browser: default to 'same-origin' for cross-origin targets and
+  // only use 'include' for same-origin requests. Callers may opt-in
+  // to cross-site credentials by providing `init.credentials` explicitly.
+  if (typeof window !== 'undefined' && url) {
+    try {
+      const target = new URL(url, window.location.origin);
+      if (target.origin === window.location.origin) {
+        baseInit.credentials = 'include';
+      } else {
+        baseInit.credentials = 'same-origin';
+      }
+      return baseInit;
+    } catch {
+      // Fall through to safe default
+    }
+  }
+
+  // Server runtime or unknown: use conservative default
+  baseInit.credentials = 'same-origin';
+  return baseInit;
 };
 
 const mintInternalToken = async (
@@ -379,7 +400,7 @@ export async function apiFetch(
   while (true) {
     // Resolve auth token on each attempt so retries use a fresh token
     // if the previous one expired during backoff
-    const requestInit = withDefaultCredentials(await getRequestInit(init));
+    const requestInit = withDefaultCredentials(await getRequestInit(init), url);
     try {
       const response = await fetch(url, requestInit);
       const canRetry = shouldRetryStatus(response.status) && attempt < retries;
@@ -399,10 +420,7 @@ export async function apiFetch(
   }
 }
 
-export function toApiAuthError(
-  status: number,
-  context: string
-): Error | null {
+export function toApiAuthError(status: number, context: string): Error | null {
   if (status === 401) {
     return new UnauthenticatedError(`Unauthorized: ${context}`);
   }

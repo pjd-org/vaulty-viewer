@@ -848,7 +848,7 @@
         const sevBar = document.getElementById('modal-sev-bar');
         sevBar.className = 'modal-sev-bar ' + sev;
 
-        // chips
+        // chips (safe insertion)
         const chipsEl = document.getElementById('modal-chips');
         const bucketLabel =
           bucket === 'action-needed'
@@ -857,10 +857,22 @@
               ? 'Needs approval'
               : bucket;
         const bucketClass = bucket;
-        chipsEl.innerHTML =
-          `<span class="chip ${bucketClass}">${bucketLabel}</span>` +
-          `<span class="chip agent">agent</span>` +
-          `<span class="modal-age">${row.dataset.age}</span>`;
+        // clear existing
+        chipsEl.textContent = '';
+        const bucketChip = document.createElement('span');
+        bucketChip.className = `chip ${bucketClass}`;
+        bucketChip.textContent = bucketLabel;
+        chipsEl.appendChild(bucketChip);
+
+        const agentChip = document.createElement('span');
+        agentChip.className = 'chip agent';
+        agentChip.textContent = 'agent';
+        chipsEl.appendChild(agentChip);
+
+        const ageEl = document.createElement('span');
+        ageEl.className = 'modal-age';
+        ageEl.textContent = row.dataset.age ?? '';
+        chipsEl.appendChild(ageEl);
 
         // meta grid
         const meta = document.getElementById('modal-meta');
@@ -878,7 +890,13 @@
         fields.forEach((f) => {
           const div = document.createElement('div');
           div.className = 'meta-field';
-          div.innerHTML = `<label>${f.label}</label><span${f.mono ? ' class="mono"' : ''}>${f.value}</span>`;
+          const labelEl = document.createElement('label');
+          labelEl.textContent = f.label;
+          const spanEl = document.createElement('span');
+          if (f.mono) spanEl.className = 'mono';
+          spanEl.textContent = f.value;
+          div.appendChild(labelEl);
+          div.appendChild(spanEl);
           meta.appendChild(div);
         });
 
@@ -935,16 +953,28 @@
           const list = document.querySelector('.inbox-list');
 
           if (label === 'Queue') {
-            summaryLine.innerHTML =
-              'Showing <strong>3 items</strong> · Queue · Promote or reject each run';
+            summaryLine.textContent = '';
+            const strong = document.createElement('strong');
+            strong.textContent = '3 items';
+            summaryLine.appendChild(document.createTextNode('Showing '));
+            summaryLine.appendChild(strong);
+            summaryLine.appendChild(document.createTextNode(' · Queue · Promote or reject each run'));
             list.style.display = 'flex';
           } else if (label === 'Workbench') {
-            summaryLine.innerHTML =
-              'Showing <strong>1 item</strong> · Workbench · Deferred for later review';
+            summaryLine.textContent = '';
+            const strong = document.createElement('strong');
+            strong.textContent = '1 item';
+            summaryLine.appendChild(document.createTextNode('Showing '));
+            summaryLine.appendChild(strong);
+            summaryLine.appendChild(document.createTextNode(' · Workbench · Deferred for later review'));
             list.style.display = 'none';
           } else {
-            summaryLine.innerHTML =
-              'Showing <strong>6 items</strong> · Archive · Rejected runs';
+            summaryLine.textContent = '';
+            const strong = document.createElement('strong');
+            strong.textContent = '6 items';
+            summaryLine.appendChild(document.createTextNode('Showing '));
+            summaryLine.appendChild(strong);
+            summaryLine.appendChild(document.createTextNode(' · Archive · Rejected runs'));
             list.style.display = 'none';
           }
         });
