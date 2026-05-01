@@ -15,6 +15,7 @@ import {
   getAuthFailureKind,
   useLoginRedirectOnUnauthenticated,
 } from '../hooks/use-login-redirect';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import { healthSearchParams } from '../../src/lib/routes/search-params';
 import {
   useHealthSurface,
@@ -186,7 +187,7 @@ function HealthRoute() {
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open) void navigate({ to: '/' });
+        if (!open) void navigate({ to: buildAuthTransitionPath('/') });
       }}
     >
       <DialogContent

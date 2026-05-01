@@ -38,6 +38,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => mockRouteState.search,
   }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
   Link: ({
     children,

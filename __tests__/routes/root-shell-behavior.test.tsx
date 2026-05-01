@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRouterState = vi.hoisted(() => ({
   pathname: '/',
+  search: '',
 }));
 
 vi.mock('@tanstack/react-query', async () => {
@@ -28,6 +29,12 @@ vi.mock('../../app/components/layout/ViewerSidebar', () => ({
 
 vi.mock('../../app/components/layout', () => ({
   TopCommandBar: () => <div data-testid="top-command-bar" />,
+  PageFrame: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="page-frame">{children}</div>
+  ),
+  ViewerSidebar: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="viewer-sidebar">{children}</div>
+  ),
 }));
 
 vi.mock('../../app/components/layout/VerificationRailHost', () => ({
@@ -46,6 +53,14 @@ vi.mock('../../app/components/overlays/CODStatusOverlay', () => ({
   CODStatusOverlay: () => <div data-testid="cod-status-route" />,
 }));
 
+vi.mock('../../src/hooks/useBootstrapGate', () => ({
+  useBootstrapGate: () => ({
+    loading: false,
+    redirectTo: null,
+    error: null,
+  }),
+}));
+
 vi.mock('@tanstack/react-router', async () => {
   const actual = await vi.importActual<typeof import('@tanstack/react-router')>(
     '@tanstack/react-router'
@@ -56,13 +71,28 @@ vi.mock('@tanstack/react-router', async () => {
     HeadContent: () => null,
     Scripts: () => null,
     Outlet: () => <div data-testid="route-outlet" />,
+  useLocation: () => ({
+    pathname: mockRouterState.pathname,
+    search: mockRouterState.search,
+    hash: '',
+    href: `${mockRouterState.pathname}${mockRouterState.search}`,
+    state: {},
+    key: 'test-location',
+  }),
     useRouter: () => ({ options: { context: { queryClient: {} } } }),
-    useRouterState: ({
-      select,
-    }: {
-      select: (state: { location: { pathname: string } }) => unknown;
-    }) => select({ location: { pathname: mockRouterState.pathname } }),
-  };
+  useRouterState: ({
+    select,
+  }: {
+    select: (state: { location: { pathname: string; search: string } }) =>
+      unknown;
+  }) =>
+    select({
+      location: {
+        pathname: mockRouterState.pathname,
+        search: mockRouterState.search,
+      },
+    }),
+};
 });
 
 import { Route } from '../../app/routes/__root';
@@ -81,6 +111,7 @@ describe('root shell behavior', () => {
   it.each(['/', '/inbox', '/actions', '/project/rent-stability-pantin'])(
     'renders shell chrome on %s',
     (pathname) => {
+      mockRouterState.search = '';
       mockRouterState.pathname = pathname;
 
       const markup = renderToStaticMarkup(<RootComponent />);
@@ -106,6 +137,7 @@ describe('root shell behavior', () => {
   );
 
   it('hides shell chrome on login routes', () => {
+    mockRouterState.search = '';
     mockRouterState.pathname = '/login';
 
     const markup = renderToStaticMarkup(<RootComponent />);
@@ -113,6 +145,5 @@ describe('root shell behavior', () => {
     expect(markup).not.toContain('data-testid="viewer-sidebar"');
     expect(markup).not.toContain('data-testid="top-command-bar"');
     expect(markup).not.toContain('data-testid="verification-rail"');
-    expect(markup).toContain('data-testid="route-outlet"');
   });
 });

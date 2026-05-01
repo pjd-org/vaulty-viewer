@@ -1,5 +1,9 @@
 import React from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
@@ -10,6 +14,7 @@ import {
   type BubbleSurfacePayload,
 } from '../lib/viewer-adapter';
 import { UnauthenticatedError } from '../../src/utils/api';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import { getAuthFailureKind } from '../hooks/use-login-redirect';
 
 export const Route = createFileRoute('/bubble')({
@@ -194,14 +199,19 @@ function BubbleAside({ data }: { data: BubbleSurfacePayload }) {
 
 function BubbleRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data, isLoading, error } = useBubbleSurface();
   const authFailureKind = getAuthFailureKind(error);
 
   React.useEffect(() => {
     if (error instanceof UnauthenticatedError) {
-      void navigate({ to: '/login' });
+      void navigate({
+        to: buildAuthTransitionPath(
+          `${location.pathname}${location.search}`
+        ),
+      });
     }
-  }, [error, navigate]);
+  }, [error, location.pathname, location.search, navigate]);
 
   if (error instanceof UnauthenticatedError) return null;
 

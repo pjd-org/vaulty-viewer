@@ -1,5 +1,9 @@
 import React from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
@@ -19,6 +23,7 @@ import {
   type TimelineEventEntry,
 } from '../lib/viewer-adapter';
 import { UnauthenticatedError } from '../../src/utils/api';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import { getAuthFailureKind } from '../hooks/use-login-redirect';
 import { cn } from '@/src/lib/utils';
 
@@ -419,6 +424,7 @@ function TimelineContent({
 
 function TimelineRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const search = Route.useSearch();
   const { data, isLoading, error } = useTimelineSurface({ limit: 50 });
 
@@ -430,9 +436,13 @@ function TimelineRoute() {
 
   React.useEffect(() => {
     if (error instanceof UnauthenticatedError) {
-      void navigate({ to: '/login' });
+      void navigate({
+        to: buildAuthTransitionPath(
+          `${location.pathname}${location.search}`
+        ),
+      });
     }
-  }, [error, navigate]);
+  }, [error, location.pathname, location.search, navigate]);
 
   if (error instanceof UnauthenticatedError) return null;
 

@@ -30,6 +30,14 @@ vi.mock('@tanstack/react-router', async () => {
   );
   return {
     ...actual,
+    useLocation: () => ({
+      pathname: '/',
+      search: '',
+      hash: '',
+      href: '/',
+      state: {},
+      key: 'test-location',
+    }),
     Link: ({
       to,
       children,

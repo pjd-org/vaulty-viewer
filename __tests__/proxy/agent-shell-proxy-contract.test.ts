@@ -10,6 +10,20 @@ function getProxyTemplate(): string {
 }
 
 describe('proxy contract for agent-shell run endpoints', () => {
+  it('exempts bootstrap API routes before generic /api auth gating', () => {
+    const template = getProxyTemplate();
+    const bootstrapIdx = template.indexOf('location ^~ /api/v1/bootstrap/');
+    const genericApiIdx = template.indexOf('location /api/');
+
+    expect(bootstrapIdx).toBeGreaterThanOrEqual(0);
+    expect(genericApiIdx).toBeGreaterThanOrEqual(0);
+    expect(bootstrapIdx).toBeLessThan(genericApiIdx);
+
+    const block = template.slice(bootstrapIdx, genericApiIdx);
+    expect(block).not.toContain('auth_request /_auth_verify_api;');
+    expect(block).toContain('proxy_pass http://api;');
+  });
+
   it('routes /api/agent-shell/run/* to viewer before generic /api routing', () => {
     const template = getProxyTemplate();
     const agentShellIdx = template.indexOf('location ^~ /api/agent-shell/run/');

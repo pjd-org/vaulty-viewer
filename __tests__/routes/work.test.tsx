@@ -12,6 +12,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
   }),
   useSearch: () => ({ tab: undefined, selectedId: undefined }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
   Link: ({ children }: { children: React.ReactNode }) => (
     <span>{children}</span>
@@ -169,7 +177,9 @@ describe('work route — unauthorized data', () => {
 
   it('redirects to login instead of rendering the empty state', () => {
     render(<WorkComponent />);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/?auth=required&return_to=%2F',
+    });
     expect(screen.queryByTestId('work-task-empty-state')).toBeNull();
     expect(screen.queryByTestId('projects-workspace')).toBeNull();
   });

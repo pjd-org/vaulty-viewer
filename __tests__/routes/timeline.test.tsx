@@ -53,6 +53,14 @@ vi.mock('@tanstack/react-router', () => ({
     options,
     useSearch: () => mockUseSearch(),
   }),
+  useLocation: () => ({
+    pathname: '/',
+    search: '',
+    hash: '',
+    href: '/',
+    state: {},
+    key: 'test-location',
+  }),
   useNavigate: () => mockNavigate,
 }));
 
@@ -278,7 +286,9 @@ describe('TimelineRoute — unauthenticated', () => {
 
   it('navigates to /login on 401 error', () => {
     render(<TimelineComponent />);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/login' });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/?auth=required&return_to=%2F',
+    });
   });
 
   it('renders null while redirecting', () => {

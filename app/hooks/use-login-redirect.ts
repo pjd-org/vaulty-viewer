@@ -1,16 +1,25 @@
 import { useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 
+import {
+  buildAuthTransitionPath,
+  normalizeReturnTo,
+} from '../../src/lib/auth-transition';
 import { ForbiddenError, UnauthenticatedError } from '../../src/utils/api';
 
 export function useLoginRedirectOnUnauthenticated(error: unknown) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (error instanceof UnauthenticatedError) {
-      void navigate({ to: '/login' });
+      void navigate({
+        to: buildAuthTransitionPath(
+          normalizeReturnTo(`${location.pathname}${location.search}`)
+        ),
+      });
     }
-  }, [error, navigate]);
+  }, [error, location.pathname, location.search, navigate]);
 
   return error instanceof UnauthenticatedError;
 }

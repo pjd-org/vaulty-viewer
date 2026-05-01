@@ -1,8 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { homeSearchParams } from '../../src/lib/routes/search-params';
 import { apiFetch, UnauthenticatedError } from '../../src/utils/api';
+import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import {
   formatSessionDuration,
   elapsedMinutes,
@@ -340,6 +346,7 @@ function BacklogStripCard({
 
 function FocusRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { q, collection, session, snapshot, detailId } = Route.useSearch();
   const {
@@ -370,7 +377,11 @@ function FocusRoute() {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
     } catch (err) {
       if (err instanceof UnauthenticatedError) {
-        navigate({ to: '/login' });
+        navigate({
+          to: buildAuthTransitionPath(
+            `${location.pathname}${location.search}`
+          ),
+        });
         return;
       }
       setEndSessionError(
@@ -420,9 +431,12 @@ function FocusRoute() {
   // Hard-redirect to /login on 401 — return null while in-flight (D3)
   useEffect(() => {
     if (surfaceError instanceof UnauthenticatedError) {
-      navigate({ to: '/login' });
+      navigate({
+        to: buildAuthTransitionPath(`${location.pathname}${location.search}`),
+        replace: true,
+      });
     }
-  }, [surfaceError, navigate]);
+  }, [location.pathname, location.search, navigate, surfaceError]);
 
   if (surfaceError instanceof UnauthenticatedError) {
     return null;

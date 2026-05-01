@@ -29,6 +29,14 @@ vi.mock('@tanstack/react-router', async () => {
     HeadContent: () => null,
     Scripts: () => null,
     Outlet: () => <div data-testid="outlet" />,
+    useLocation: () => ({
+      pathname: '/',
+      search: '',
+      hash: '',
+      href: '/',
+      state: {},
+      key: 'test-location',
+    }),
     useRouter: () => ({ options: { context: { queryClient: {} } } }),
     useRouterState: ({
       select,
@@ -59,6 +67,9 @@ vi.mock('../../app/components/layout/ViewerSidebar', () => ({
 
 vi.mock('../../app/components/layout', () => ({
   TopCommandBar: () => null,
+  PageFrame: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="page-frame">{children}</div>
+  ),
 }));
 
 vi.mock('../../app/components/layout/VerificationRailHost', () => ({
