@@ -251,8 +251,21 @@ const withDefaultCredentials = (
   // to cross-site credentials by providing `init.credentials` explicitly.
   if (typeof window !== 'undefined' && url) {
     try {
-      const target = new URL(url, window.location.origin);
-      if (target.origin === window.location.origin) {
+      const windowOrigin = (window as any)?.location?.origin;
+      const windowLocation = (window as any)?.location;
+      const fallbackOrigin = windowLocation
+        ? `http://${windowLocation.hostname}${windowLocation.port ? `:${windowLocation.port}` : ''}`
+        : undefined;
+      const currentOrigin = windowOrigin || fallbackOrigin;
+      // If the request path is a relative path (starts with '/'), treat it as
+      // same-origin and include credentials by default.
+      if (url.startsWith('/')) {
+        baseInit.credentials = 'include';
+        return baseInit;
+      }
+      const baseForUrl = currentOrigin || undefined;
+      const target = new URL(url, baseForUrl);
+      if (currentOrigin && target.origin === currentOrigin) {
         baseInit.credentials = 'include';
       } else {
         baseInit.credentials = 'same-origin';

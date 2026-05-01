@@ -1,24 +1,29 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS deps
 
-WORKDIR /app
+WORKDIR /repo
 
 ENV CI=1
 ENV npm_config_cache=/tmp/.npm
 ENV HOST=0.0.0.0
 ENV PORT=8000
 
-# Use the same package manager/version as local to keep TanStack deps consistent.
 RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
-# Resolve local workspace dependency (@vault/ui -> ../../packages/ui)
-COPY packages/ui /packages/ui
-COPY apps/viewer/package.json apps/viewer/pnpm-lock.yaml apps/viewer/pnpm-workspace.yaml ./
+# Copy manifests first so dependency install stays cached across source edits.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/viewer/package.json apps/viewer/package.json
+COPY packages/ui/package.json packages/ui/package.json
+
 RUN pnpm install --frozen-lockfile
 
-COPY apps/viewer .
-RUN pnpm run build
+FROM deps AS build
 
-FROM node:20-alpine AS runtime
+COPY apps/viewer apps/viewer
+COPY packages/ui packages/ui
+
+RUN pnpm --filter ./apps/viewer build
+
+FROM node:22-alpine AS runtime
 
 WORKDIR /app
 
@@ -27,13 +32,10 @@ ENV HOST=0.0.0.0
 ENV PORT=8000
 ENV HOME=/home/node
 
-# Runtime needs node_modules for external imports in dist/server/server.js
-# (react, @tanstack/react-router, etc. are not bundled)
-COPY --from=build /app/node_modules /app/node_modules
-# Vite SSR build output (client assets + server render module)
-COPY --from=build /app/dist /app/dist
-# Node.js HTTP adapter — adapts the WinterCG { fetch } export to http.createServer
-COPY --from=build /app/app/server-node.mjs /app/app/server-node.mjs
+# Runtime needs node_modules for external imports in the SSR entry.
+COPY --from=build /repo/node_modules /app/node_modules
+COPY --from=build /repo/apps/viewer/dist /app/dist
+COPY --from=build /repo/apps/viewer/app/server-node.mjs /app/app/server-node.mjs
 
 USER node
 
