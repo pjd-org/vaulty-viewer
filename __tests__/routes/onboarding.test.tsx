@@ -54,7 +54,7 @@ afterEach(() => cleanup());
 describe('onboarding routes', () => {
   it('saves the welcome draft and advances to profile', async () => {
     mockGetBootstrapStatus.mockResolvedValue({
-      state: 'new',
+      state: 'onboarding_draft',
       phase: 'onboarding',
       nextRoute: '/onboarding/welcome',
       lock: { active: false, reason: null, scope: null },

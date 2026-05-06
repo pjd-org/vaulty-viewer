@@ -3,9 +3,12 @@ import { apiFetch } from '../utils/api';
 export type BootstrapStatus = {
   state:
     | 'root_user_required'
-    | 'new'
+    | 'onboarding_draft'
+    | 'github_host_required'
+    | 'github_host_connected'
     | 'draft'
     | 'review'
+    | 'preflight_ready'
     | 'preflight_failed'
     | 'preflight_passed'
     | 'genesis_queued'
@@ -59,7 +62,7 @@ export type BootstrapRootUserInput = {
 };
 
 export type BootstrapRootUserResponse = {
-  state: 'new';
+  state: 'onboarding_draft';
   nextRoute: '/onboarding/welcome';
   rootUserId: string;
   authSessionEstablished: false;
@@ -72,6 +75,19 @@ export type BootstrapDraft = {
   workspaceIntent?: string;
   focusAreas?: string[];
   modules?: Record<string, boolean>;
+  githubPlan?: BootstrapGitHubPlan;
+};
+
+export type BootstrapGitHubPlan = {
+  owner: string;
+  ownerType: 'user' | 'organization';
+  repo: string;
+  branch: string;
+  visibility: 'private' | 'internal' | 'public';
+  installationId?: number;
+  appInstalled: boolean;
+  verified: boolean;
+  conflictPolicy: 'block' | 'adopt-existing' | 'overwrite-never';
 };
 
 export type BootstrapDraftResponse = {
@@ -284,6 +300,45 @@ export async function getBootstrapGenesisJob(jobId: string): Promise<GenesisJob>
     throw new Error('Failed to load genesis job');
   }
   return (await response.json()) as GenesisJob;
+}
+
+export type GitHubInstallStartResponse = {
+  installUrl: string;
+  state: 'github_host_required';
+};
+
+export type GitHubStatusResponse = {
+  state: 'github_host_required' | 'github_host_connected';
+  installationId: number | null;
+  owner: string | null;
+  ownerType: 'user' | 'organization' | null;
+  appInstalled: boolean;
+  verified: boolean;
+  permissions: { metadata: string; contents: string; administration: string } | null;
+  permissionsOk: boolean;
+};
+
+export async function startGitHubInstall(
+  owner: string,
+  ownerType: 'user' | 'organization',
+): Promise<GitHubInstallStartResponse> {
+  const response = await apiFetch('/api/v1/bootstrap/github/install/start', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ owner, ownerType }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to start GitHub install.');
+  }
+  return (await response.json()) as GitHubInstallStartResponse;
+}
+
+export async function getGitHubStatus(): Promise<GitHubStatusResponse> {
+  const response = await apiFetch('/api/v1/bootstrap/github/status', { method: 'GET' });
+  if (!response.ok) {
+    throw new Error('Failed to load GitHub status.');
+  }
+  return (await response.json()) as GitHubStatusResponse;
 }
 
 export async function resolveBootstrapRedirect(pathname: string) {

@@ -94,8 +94,9 @@ describe('PrimaryAgentWorkspace — render', () => {
         <PrimaryAgentWorkspace intentTemplate={null} />
       </PrimaryAgentWorkspaceWrapper>
     );
-    expect(screen.getByRole('dialog')).toBeTruthy();
-    expect(screen.getByText(/Execution interface/i)).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Primary Agent thread' })
+    ).toBeTruthy();
   });
 
   it('Send button is disabled when composer input is empty', () => {

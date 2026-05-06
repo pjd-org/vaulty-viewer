@@ -42,6 +42,7 @@ import { Route as ProjectSlugRouteImport } from './../app/routes/project.$slug'
 import { Route as OnboardingWelcomeRouteImport } from './../app/routes/onboarding.welcome'
 import { Route as OnboardingReviewRouteImport } from './../app/routes/onboarding.review'
 import { Route as OnboardingProfileRouteImport } from './../app/routes/onboarding.profile'
+import { Route as OnboardingGithubRouteImport } from './../app/routes/onboarding.github'
 import { Route as OauthConsentRouteImport } from './../app/routes/oauth/consent'
 import { Route as KnowledgeSearchRouteImport } from './../app/routes/knowledge.search'
 import { Route as KnowledgeGraphRouteImport } from './../app/routes/knowledge.graph'
@@ -221,6 +222,11 @@ const OnboardingProfileRoute = OnboardingProfileRouteImport.update({
   path: '/onboarding/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingGithubRoute = OnboardingGithubRouteImport.update({
+  id: '/onboarding/github',
+  path: '/onboarding/github',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OauthConsentRoute = OauthConsentRouteImport.update({
   id: '/oauth/consent',
   path: '/oauth/consent',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/github': typeof OnboardingGithubRoute
   '/onboarding/profile': typeof OnboardingProfileRoute
   '/onboarding/review': typeof OnboardingReviewRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
@@ -369,6 +376,7 @@ export interface FileRoutesByTo {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/github': typeof OnboardingGithubRoute
   '/onboarding/profile': typeof OnboardingProfileRoute
   '/onboarding/review': typeof OnboardingReviewRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
@@ -418,6 +426,7 @@ export interface FileRoutesById {
   '/knowledge/graph': typeof KnowledgeGraphRoute
   '/knowledge/search': typeof KnowledgeSearchRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/onboarding/github': typeof OnboardingGithubRoute
   '/onboarding/profile': typeof OnboardingProfileRoute
   '/onboarding/review': typeof OnboardingReviewRoute
   '/onboarding/welcome': typeof OnboardingWelcomeRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/github'
     | '/onboarding/profile'
     | '/onboarding/review'
     | '/onboarding/welcome'
@@ -516,6 +526,7 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/github'
     | '/onboarding/profile'
     | '/onboarding/review'
     | '/onboarding/welcome'
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/knowledge/graph'
     | '/knowledge/search'
     | '/oauth/consent'
+    | '/onboarding/github'
     | '/onboarding/profile'
     | '/onboarding/review'
     | '/onboarding/welcome'
@@ -611,6 +623,7 @@ export interface RootRouteChildren {
   TimelineRoute: typeof TimelineRoute
   WorkRoute: typeof WorkRoute
   OauthConsentRoute: typeof OauthConsentRoute
+  OnboardingGithubRoute: typeof OnboardingGithubRoute
   OnboardingProfileRoute: typeof OnboardingProfileRoute
   OnboardingReviewRoute: typeof OnboardingReviewRoute
   OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
@@ -854,6 +867,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/github': {
+      id: '/onboarding/github'
+      path: '/onboarding/github'
+      fullPath: '/onboarding/github'
+      preLoaderRoute: typeof OnboardingGithubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oauth/consent': {
       id: '/oauth/consent'
       path: '/oauth/consent'
@@ -1027,6 +1047,7 @@ const rootRouteChildren: RootRouteChildren = {
   TimelineRoute: TimelineRoute,
   WorkRoute: WorkRoute,
   OauthConsentRoute: OauthConsentRoute,
+  OnboardingGithubRoute: OnboardingGithubRoute,
   OnboardingProfileRoute: OnboardingProfileRoute,
   OnboardingReviewRoute: OnboardingReviewRoute,
   OnboardingWelcomeRoute: OnboardingWelcomeRoute,
