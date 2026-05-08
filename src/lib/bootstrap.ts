@@ -318,11 +318,13 @@ export type GitHubStatusResponse = {
   permissionsOk: boolean;
 };
 
+const GITHUB_SERVICE_URL = 'http://localhost:3100';
+
 export async function startGitHubInstall(
   owner: string,
   ownerType: 'user' | 'organization',
 ): Promise<GitHubInstallStartResponse> {
-  const response = await apiFetch('/api/v1/bootstrap/github/install/start', {
+  const response = await fetch(`${GITHUB_SERVICE_URL}/github/install/start`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ owner, ownerType }),
@@ -334,7 +336,7 @@ export async function startGitHubInstall(
 }
 
 export async function getGitHubStatus(): Promise<GitHubStatusResponse> {
-  const response = await apiFetch('/api/v1/bootstrap/github/status', { method: 'GET' });
+  const response = await fetch(`${GITHUB_SERVICE_URL}/github/status`, { method: 'GET' });
   if (!response.ok) {
     throw new Error('Failed to load GitHub status.');
   }
