@@ -1,7 +1,8 @@
 import React from 'react';
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { PageFrame, SoftPanel } from '../components/layout';
-import { Input, PrimaryButton } from '../components/ui';
+import { Input } from '@/app/components/ui/input';
+import { PrimaryButton } from '../components/ui';
 import {
   getBootstrapStatus,
   getGitHubStatus,
@@ -102,7 +103,6 @@ function OnboardingGitHub() {
     setError(null);
     try {
       const bootstrapStatus = await getBootstrapStatus();
-      const etag = bootstrapStatus.draft?.etag ?? '';
       const result = await patchBootstrapDraft(
         {
           githubPlan: {
@@ -117,7 +117,7 @@ function OnboardingGitHub() {
             conflictPolicy: 'block',
           },
         },
-        etag,
+        bootstrapStatus.draft?.etag ?? '',
       );
       void navigate({ to: result.status.nextRoute });
     } catch {
@@ -167,7 +167,7 @@ function OnboardingGitHub() {
                   <option value="public">Public</option>
                 </select>
               </div>
-              <PrimaryButton onClick={handleContinue} disabled={saving || loading}>
+              <PrimaryButton onClick={handleContinue} disabled={saving || loading || !isConnected}>
                 {saving ? 'Saving…' : 'Continue'}
               </PrimaryButton>
             </div>

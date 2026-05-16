@@ -3,7 +3,9 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { PageFrame, SoftPanel } from '../components/layout';
-import { Badge, Input, PrimaryButton } from '../components/ui';
+import { Badge } from '@/app/components/ui/badge';
+import { Input } from '@/app/components/ui/input';
+import { PrimaryButton } from '../components/ui';
 import {
   createBootstrapRootUser,
   getBootstrapStatus,

@@ -2,7 +2,7 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
 import { Card } from '@/app/components/ui/card';
-import { CardBody, Input, Toast } from '@vault/ui/molecules';
+import { CardBody, Toast } from '@vault/ui/molecules';
 import { Label } from '@vault/ui/atoms';
 
 /* ── Token callout helper ──────────────────────────────────────────────── */

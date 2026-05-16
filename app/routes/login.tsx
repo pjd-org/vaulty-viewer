@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Badge, Input, PrimaryButton } from '../components/ui';
+import { Badge } from '@/app/components/ui/badge';
+import { Input } from '@/app/components/ui/input';
+import { PrimaryButton } from '../components/ui';
 import { PageFrame, SoftPanel } from '../components/layout';
 
 type LoginSearch = {

@@ -1,7 +1,8 @@
 import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { PageFrame, SoftPanel } from '../components/layout';
-import { Input, PrimaryButton } from '../components/ui';
+import { Input } from '@/app/components/ui/input';
+import { PrimaryButton } from '../components/ui';
 import { getBootstrapStatus, patchBootstrapDraft } from '../../src/lib/bootstrap';
 
 export const Route = createFileRoute('/onboarding/profile')({

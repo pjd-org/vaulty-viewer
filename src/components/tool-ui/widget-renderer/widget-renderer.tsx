@@ -1,7 +1,10 @@
 'use client';
 
-import { Badge, Button, Card, CardBody, CardHeader } from '@vault/ui';
-import { Input, Label } from '@vault/ui';
+import { Badge } from '@/app/components/ui/badge';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardBody, CardHeader } from '@vault/ui';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -9,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select';
-import { Checkbox } from '@vault/ui';
+import { Checkbox } from '@/app/components/ui/checkbox';
 import { cn } from '@/src/lib/utils';
 import React, { createContext, useContext, useState } from 'react';
 import type {
