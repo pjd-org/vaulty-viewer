@@ -22,15 +22,15 @@ import {
   Terminal,
 } from 'lucide-react';
 import { Button } from '@/app/components/ui';
+import { GlassSurface } from '@vault/ui';
+import { Separator } from '@/app/components/ui/separator';
 import {
-  GlassSurface,
-  Separator,
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@vault/ui';
+} from '@/app/components/ui/sheet';
 import {
   Separator,
 } from '@/app/components/ui/separator';
