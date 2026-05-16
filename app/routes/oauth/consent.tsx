@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Badge, PrimaryButton, SecondaryButton } from '../../components/ui';
+import { Badge } from '@/app/components/ui/badge';
+import { PrimaryButton, SecondaryButton } from '../../components/ui';
 import { PageFrame, SoftPanel } from '../../components/layout';
 
 type ConsentSearch = {

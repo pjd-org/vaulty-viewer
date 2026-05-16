@@ -1,4 +1,4 @@
-import { Button } from '@vault/ui';
+import { Button } from '@/app/components/ui/button';
 import { cn } from '@/src/lib/utils';
 
 export interface ChatEmptyStateProps {

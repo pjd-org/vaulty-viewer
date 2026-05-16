@@ -2,14 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { Button } from '@vault/ui';
+import { Button } from '@/app/components/ui/button';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from '@vault/ui';
-import { Badge } from '@vault/ui';
+import { Badge } from '@/app/components/ui/badge';
 
 // ── Button ────────────────────────────────────────────────────────────────────
 

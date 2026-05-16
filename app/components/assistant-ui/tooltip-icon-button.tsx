@@ -4,8 +4,8 @@ import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
 import { Slottable } from '@radix-ui/react-slot';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@vault/ui';
-import { Button } from '@vault/ui';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/app/components/ui/tooltip';
+import { Button } from '@/app/components/ui/button';
 import { cn } from '@/src/lib/utils';
 
 export type TooltipIconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

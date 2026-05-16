@@ -13,7 +13,11 @@ import {
   type ToolCallMessagePartStatus,
   type ToolCallMessagePartComponent,
 } from '@assistant-ui/react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@vault/ui';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/app/components/ui/collapsible';
 import { cn } from '@/src/lib/utils';
 
 const ANIMATION_DURATION = 200;

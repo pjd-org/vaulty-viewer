@@ -20,7 +20,7 @@ import {
   useLocalRuntime,
   type ChatModelAdapter,
 } from '@assistant-ui/react';
-import { TooltipProvider } from '@vault/ui';
+import { TooltipProvider } from '@/app/components/ui/tooltip';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 

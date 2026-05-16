@@ -2,7 +2,13 @@ import React from 'react';
 
 import { getBootstrapStatus, type BootstrapStatus } from '../lib/bootstrap';
 
-const BYPASS_ROUTES = ['/onboarding/welcome', '/onboarding/profile', '/onboarding/review'];
+const BYPASS_ROUTES = [
+  '/onboarding/welcome',
+  '/onboarding/profile',
+  '/onboarding/github',
+  '/onboarding/review',
+  '/genesis',
+];
 
 function isBypassPath(pathname: string): boolean {
   return BYPASS_ROUTES.some((route) => pathname.startsWith(route));

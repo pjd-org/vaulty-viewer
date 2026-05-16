@@ -2,8 +2,8 @@ import React from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
+import { Badge } from '@/app/components/ui/badge';
 import {
-  Badge,
   EmptyState,
   PrimaryButton,
   SecondaryButton,

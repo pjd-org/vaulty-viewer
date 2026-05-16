@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Button } from '@vault/ui';
+import { Button } from '@/app/components/ui/button';
 
 describe('Button smoke tests', () => {
   afterEach(() => {

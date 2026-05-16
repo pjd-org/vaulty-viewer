@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Badge } from '@vault/ui';
+import { Badge } from '@/app/components/ui/badge';
 
 describe('Badge smoke tests', () => {
   afterEach(() => {

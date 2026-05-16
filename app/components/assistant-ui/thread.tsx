@@ -26,7 +26,8 @@ const MarkdownText = lazy(() =>
   }))
 );
 import { TooltipIconButton } from '@/app/components/assistant-ui/tooltip-icon-button';
-import { Button, Dock, DockIcon, DockLink } from '@vault/ui';
+import { Button } from '@/app/components/ui/button';
+import { Dock, DockIcon, DockLink } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import { createContext, useContext } from 'react';
 import {

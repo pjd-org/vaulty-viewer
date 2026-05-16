@@ -1,7 +1,8 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { Badge } from '@/app/components/ui/badge';
 
-import { WorkspaceScaffold } from '../components/layout';
+import { PageFrame, SoftPanel } from '../components/layout';
 import { ConfigAdminPanel } from '../components/config/ConfigAdminPanel';
 
 export const Route = createFileRoute('/config')({
@@ -10,14 +11,16 @@ export const Route = createFileRoute('/config')({
 
 function ConfigRoute() {
   return (
-    <WorkspaceScaffold
+    <PageFrame
       title="Config Admin"
-      subtitle="Browser -> API bridge -> private config surface."
+      subtitle="Browser → API bridge → private config surface."
       statusLine="Preview before apply. Regenerate uses idempotent write guard."
       nextAction="Use Settings or this page for admin actions."
-      primaryTitle="Config Control"
-      primarySubtitle="Snapshot, preview, and apply config changes from the viewer."
-      primary={<ConfigAdminPanel />}
-    />
+      actions={<Badge variant="muted">Admin</Badge>}
+    >
+      <SoftPanel variant="elevated" noPadding className="overflow-hidden">
+        <ConfigAdminPanel />
+      </SoftPanel>
+    </PageFrame>
   );
 }

@@ -21,8 +21,8 @@ import {
   WorkspaceScaffold,
   SoftPanel,
 } from '../components/layout';
+import { Badge } from '@/app/components/ui/badge';
 import {
-  Badge,
   EmptyState,
   MetricCard,
   SurfaceChip,
