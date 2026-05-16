@@ -125,7 +125,7 @@ export function ChatComposer({
         } as ComposerStyle
       }
       className={cn(
-        'genie-surface genie-surface--overlay flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3',
+        'flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3',
         className
       )}
     >

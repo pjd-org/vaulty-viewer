@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { RouteLoadingState } from '../components/ui';
@@ -34,8 +35,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
   };
 
   return (
-    <div
-      className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[20px] p-4 text-sm"
+    <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-4 p-4 text-sm"
       data-testid="archive-item-detail"
     >
       <div>
@@ -102,7 +102,7 @@ function ArchiveItemDetail({ item }: { item: InboxItem }) {
           </ul>
         </div>
       )}
-    </div>
+    </GlassSurface>
   );
 }
 
@@ -124,9 +124,9 @@ function ArchiveSection({
   onSelect: (item: InboxItem) => void;
 }) {
   return (
-    <div
+    <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default"
       data-testid={testId}
-      className="genie-surface genie-surface--utility flex flex-col gap-2 rounded-[20px] p-4"
+      className="flex flex-col gap-2 p-4"
     >
       <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
         {label}
@@ -159,7 +159,7 @@ function ArchiveSection({
           ))}
         </ul>
       )}
-    </div>
+    </GlassSurface>
   );
 }
 

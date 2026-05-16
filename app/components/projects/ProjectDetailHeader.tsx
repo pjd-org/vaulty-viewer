@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import type { ProjectSummaryDisplay } from '../../types/display';
 import { SoftChip } from '../ui';
@@ -42,7 +43,7 @@ export function ProjectDetailHeader({
   };
 
   return (
-    <div className="genie-surface genie-surface--hero rounded-[28px] p-6 flex flex-col gap-6">
+    <GlassSurface variant="elevated" radius="2xl" className="p-6 flex flex-col gap-6">
       {/* ── Row 1: title + status ────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -163,7 +164,7 @@ export function ProjectDetailHeader({
           ))}
         </div>
       </div>
-    </div>
+    </GlassSurface>
   );
 }
 

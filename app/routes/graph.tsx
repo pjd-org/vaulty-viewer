@@ -16,6 +16,7 @@ import { graphSearchParams } from '../../src/lib/routes/search-params';
 import { useKnowledgeGraph, type GraphJson } from '../lib/viewer-adapter';
 import { RouteLoadingState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
+import { GlassSurface } from '@vault/ui';
 
 export const Route = createFileRoute('/graph')({
   validateSearch: graphSearchParams,
@@ -300,8 +301,7 @@ function GraphFlow({
   );
 
   return (
-    <div
-      className="genie-surface genie-surface--utility h-[680px] w-full overflow-hidden rounded-[24px]"
+    <GlassSurface variant="canvas" radius="2xl" className="h-[680px] w-full overflow-hidden"
       data-testid="graph-flow"
     >
       <ReactFlow
@@ -336,7 +336,7 @@ function GraphFlow({
         />
         <Controls showInteractive={false} />
       </ReactFlow>
-    </div>
+    </GlassSurface>
   );
 }
 
@@ -359,15 +359,15 @@ function GraphSketch({ data }: { data: GraphJson }) {
 
   if (!excalidraw) {
     return (
-      <div className="genie-surface genie-surface--utility grid h-[680px] w-full place-items-center rounded-[24px] text-sm text-[var(--text-secondary)]">
+      <GlassSurface variant="canvas" radius="2xl" className="grid h-[680px] w-full place-items-center text-sm text-[var(--text-secondary)]">
         Loading sketch canvas…
-      </div>
+      </GlassSurface>
     );
   }
 
   const Excalidraw = excalidraw;
   return (
-      <div className="genie-surface genie-surface--utility h-[680px] w-full overflow-hidden rounded-[24px]">
+      <GlassSurface variant="canvas" radius="2xl" className="h-[680px] w-full overflow-hidden">
       <Excalidraw
         initialData={{
           elements,
@@ -381,7 +381,7 @@ function GraphSketch({ data }: { data: GraphJson }) {
         zenModeEnabled
         theme="light"
       />
-    </div>
+    </GlassSurface>
   );
 }
 
@@ -472,22 +472,19 @@ function GraphRoute() {
               className="grid gap-4 sm:grid-cols-4"
             >
               {graphStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="genie-surface genie-surface--utility rounded-[20px] p-4"
-                >
+                <GlassSurface key={stat.label} variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
                   <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     {stat.label}
                   </p>
                   <p className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
                     {stat.value}
                   </p>
-                </div>
+                </GlassSurface>
               ))}
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-              <aside className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[22px] p-4">
+              <GlassSurface as="aside" variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-4 p-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-tertiary)]">
                     Selected
@@ -532,7 +529,7 @@ function GraphRoute() {
                     })}
                   </div>
                 </div>
-              </aside>
+              </GlassSurface>
 
               {viewMode === 'interactive' ? (
                 <GraphFlow

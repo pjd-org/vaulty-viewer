@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SegmentedControl } from '../ui';
 import { NoteBodyRenderer } from './NoteBodyRenderer';
+import { GlassSurface } from '@vault/ui';
 
 type Mode = 'read' | 'edit';
 
@@ -9,8 +10,8 @@ const MODE_OPTIONS = [
   { value: 'edit', label: 'Edit' },
 ];
 
-const EDIT_SHELL =
-  'genie-surface genie-surface--overlay rounded-[24px] border shadow-lg backdrop-blur-2xl overflow-hidden transition-all duration-300 ease-out';
+const EDIT_SHELL_CLASSES =
+  'overflow-hidden transition-all duration-300 ease-out';
 
 export interface NoteBodyEditorProps {
   html: string;
@@ -47,7 +48,7 @@ export function NoteBodyEditor({
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      <div className={`${EDIT_SHELL} ${borderClass}`} style={accentStyle}>
+      <GlassSurface variant="overlay" radius="2xl" shadow="lg" border="default" className={`${EDIT_SHELL_CLASSES} ${borderClass}`} style={accentStyle}>
         {/* Header bar: mode toggle */}
         <div
           className={`flex items-center justify-between gap-3 border-b border-[var(--border-glass-soft)] px-4 py-3 backdrop-blur-xl ${headerBg}`}
@@ -69,7 +70,7 @@ export function NoteBodyEditor({
           onChange={onChange}
           className="bg-transparent"
         />
-      </div>
+      </GlassSurface>
     </div>
   );
 }

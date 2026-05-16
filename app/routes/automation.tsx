@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { RouteLoadingState } from '../components/ui';
@@ -32,10 +33,9 @@ function AutomationDetail({ selection }: { selection: Selection }) {
   if (selection.kind === 'pipeline') {
     const { pipeline } = selection;
     return (
-      <div
-        className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4 text-sm"
-        data-testid="automation-pipeline-detail"
-      >
+    <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-3 p-4 text-sm"
+      data-testid="automation-pipeline-detail"
+    >
         <p className="font-mono font-medium text-[var(--text-primary)]">
           {pipeline.name}
         </p>
@@ -43,7 +43,7 @@ function AutomationDetail({ selection }: { selection: Selection }) {
           No execution history yet. Trigger a run via the scheduler or CLI to
           see runtime metadata here.
         </p>
-      </div>
+      </GlassSurface>
     );
   }
 
@@ -60,10 +60,9 @@ function AutomationDetail({ selection }: { selection: Selection }) {
     const isFailed = lastRunStatus?.startsWith('failed');
 
     return (
-      <div
-        className="genie-surface genie-surface--utility flex flex-col gap-4 rounded-[20px] p-4 text-sm"
-        data-testid="automation-job-detail"
-      >
+    <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-4 p-4 text-sm"
+      data-testid="automation-job-detail"
+    >
         <div>
           <p className="font-mono font-medium text-[var(--text-primary)]">
             {job.id}
@@ -125,7 +124,7 @@ function AutomationDetail({ selection }: { selection: Selection }) {
             </p>
           </div>
         )}
-      </div>
+      </GlassSurface>
     );
   }
 
@@ -212,7 +211,7 @@ function SchedulerSection({
           No scheduled jobs.
         </p>
       ) : (
-        <div className="genie-surface genie-surface--utility overflow-hidden rounded-[18px]">
+        <GlassSurface variant="canvas" radius="xl" shadow="sm" border="default" className="overflow-hidden">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--border-glass-soft)] text-left">
@@ -289,7 +288,7 @@ function SchedulerSection({
             })}
           </tbody>
         </table>
-        </div>
+        </GlassSurface>
       )}
     </div>
   );
@@ -350,7 +349,7 @@ function AutomationRoute() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            <div className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4">
+            <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-3 p-4">
               <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
                 Pipelines
               </h3>
@@ -361,14 +360,14 @@ function AutomationRoute() {
                   setSelection({ kind: 'pipeline', pipeline: p })
                 }
               />
-            </div>
-            <div className="genie-surface genie-surface--utility rounded-[20px] p-4">
+            </GlassSurface>
+            <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
               <SchedulerSection
                 scheduler={data.scheduler}
                 selectedJobId={selectedJobId}
                 onSelectJob={(job) => setSelection({ kind: 'job', job })}
               />
-            </div>
+            </GlassSurface>
           </div>
         )
       }

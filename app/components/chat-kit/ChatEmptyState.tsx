@@ -1,5 +1,6 @@
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
 
 export interface ChatEmptyStateProps {
   title: string;
@@ -44,7 +45,7 @@ export function ChatEmptyState({
               key={suggestion.title}
               type="button"
               unstyled
-              className="genie-surface genie-surface--utility h-auto flex-col items-start justify-start gap-1 rounded-[24px] border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-left shadow-md hover:bg-[var(--surf-elevated)]"
+              className="h-auto flex-col items-start justify-start gap-1 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-left shadow-md hover:bg-[var(--surf-elevated)]"
               onClick={() => onSuggestionClick?.(suggestion.title)}
             >
               <span className="text-sm font-medium text-[var(--text-primary)]">

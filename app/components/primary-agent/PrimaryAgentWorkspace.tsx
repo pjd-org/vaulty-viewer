@@ -7,6 +7,7 @@
  * Must be rendered inside PrimaryAgentAssistantProvider (AssistantRuntimeProvider).
  */
 import React from 'react';
+import { GlassSurface } from '@vault/ui';
 import { ChatThreadModal, ChatThread } from '../chat-kit';
 import type { IntentTemplate } from '../../../src/lib/primary-agent-intents';
 
@@ -49,9 +50,9 @@ export function PrimaryAgentWorkspace({
       header={
         <div className="flex flex-col gap-3">
           {intentTemplate && (
-            <div className="genie-surface genie-surface--hero rounded-[24px] px-4 py-3 text-sm text-[var(--text-secondary)] shadow-none">
+            <GlassSurface variant="elevated" radius="2xl" className="px-4 py-3 text-sm text-[var(--text-secondary)]">
               {intentTemplate.description}
-            </div>
+            </GlassSurface>
           )}
           {contextLine && (
             <div className="flex items-center gap-1.5">

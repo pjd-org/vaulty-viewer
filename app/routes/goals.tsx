@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 import { useGoals } from '../../src/hooks/useGoals';
 import GoalCard from '../../src/components/GoalCard';
 import {
@@ -145,8 +146,7 @@ function GoalsRoute() {
       primary={
         <div className="flex flex-col gap-4">
           {error && (
-            <div
-              className="genie-surface genie-surface--warning flex items-center justify-between rounded-[18px] p-4 text-sm text-warning"
+            <GlassSurface variant="base" radius="xl" shadow="sm" border="default" className="flex items-center justify-between p-4 text-sm text-warning"
               role="alert"
             >
               <span>{error}</span>
@@ -157,15 +157,13 @@ function GoalsRoute() {
               >
                 Retry
               </button>
-            </div>
+            </GlassSurface>
           )}
 
           {loading && (
             <div className="flex flex-col gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="genie-surface genie-surface--utility h-24 animate-pulse rounded-[22px]"
+                <GlassSurface key={i} variant="canvas" radius="2xl" className="h-24 animate-pulse"
                 />
               ))}
             </div>
@@ -200,7 +198,7 @@ function GoalsRoute() {
       asideSubtitle="Navigate and manage goals."
       aside={
         <div className="flex flex-col gap-4">
-          <div className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[22px] p-4">
+          <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-3 p-4">
             <Link
               to="/"
               search={{ q: undefined, collection: undefined }}
@@ -229,7 +227,7 @@ function GoalsRoute() {
             >
               Browse Goals Folder
             </Link>
-          </div>
+          </GlassSurface>
 
           {updatedAt && (
             <p className="px-1 text-xs text-[var(--text-secondary)]">

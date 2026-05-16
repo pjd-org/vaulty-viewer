@@ -1,5 +1,6 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import { WorkspaceScaffold } from '../components/layout';
 import { ThemeSelector } from '../components/settings/ThemeSelector';
@@ -42,7 +43,7 @@ function SettingsRoute() {
       primarySubtitle="Preference groups and control forms."
       primary={
         <div className="flex flex-col gap-6">
-          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+          <GlassSurface as="section" variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Navigation
             </h3>
@@ -50,36 +51,36 @@ function SettingsRoute() {
               Sidebar is collapsed to icons. Use the sidebar toggle to expand
               labels.
             </p>
-          </section>
-          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+          </GlassSurface>
+          <GlassSurface as="section" variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
             <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Theme
             </h3>
             <ThemeSelector />
-          </section>
-          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+          </GlassSurface>
+          <GlassSurface as="section" variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
             <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Layout density
             </h3>
             <DensitySelector />
-          </section>
-          <section className="genie-surface genie-surface--utility rounded-[20px] p-4">
+          </GlassSurface>
+          <GlassSurface as="section" variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
             <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
               Sidebar
             </h3>
             <SidebarCollapseToggle />
-          </section>
+          </GlassSurface>
           <ConfigAdminPanel />
         </div>
       }
       asideTitle="Preview Panel"
       asideSubtitle="How changes affect the shell."
       aside={
-        <div className="genie-surface genie-surface--utility rounded-[20px] p-4">
+        <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
           <p className="text-sm text-[var(--text-secondary)]">
             Selected settings previews will render here.
           </p>
-        </div>
+        </GlassSurface>
       }
     />
   );

@@ -1,5 +1,17 @@
 import React from 'react';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
+
+const variantToGlass: Record<
+  NonNullable<SoftPanelProps['variant']>,
+  'base' | 'elevated' | 'canvas' | 'overlay'
+> = {
+  base: 'base',
+  elevated: 'elevated',
+  hero: 'elevated',
+  utility: 'canvas',
+  overlay: 'overlay',
+};
 
 interface SoftPanelProps {
   title?: string;
@@ -12,17 +24,6 @@ interface SoftPanelProps {
   noPadding?: boolean;
   children: React.ReactNode;
 }
-
-const VARIANT_CLASSES: Record<
-  NonNullable<SoftPanelProps['variant']>,
-  string
-> = {
-  base: 'genie-surface',
-  elevated: 'genie-surface genie-surface--elevated',
-  hero: 'genie-surface genie-surface--hero',
-  utility: 'genie-surface genie-surface--utility',
-  overlay: 'genie-surface genie-surface--overlay',
-};
 
 export function SoftPanel({
   title,
@@ -43,10 +44,15 @@ export function SoftPanel({
         : '';
 
   return (
-    <section
+    <GlassSurface
+      as="section"
+      variant={variantToGlass[variant]}
+      radius="lg"
+      blur="lg"
+      border="default"
+      shadow="sm"
       className={cn(
-        'rounded-[22px] border text-[var(--text-primary)] shadow-sm',
-        VARIANT_CLASSES[variant],
+        'text-[var(--text-primary)]',
         toneClass,
         className
       )}
@@ -71,6 +77,6 @@ export function SoftPanel({
       >
         {children}
       </div>
-    </section>
+    </GlassSurface>
   );
 }

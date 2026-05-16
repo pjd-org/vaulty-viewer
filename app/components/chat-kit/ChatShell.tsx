@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
 
 export interface ChatShellProps {
   title?: ReactNode;
@@ -21,9 +22,14 @@ export function ChatShell({
   className,
 }: ChatShellProps) {
   return (
-    <section
+    <GlassSurface
+      as="section"
+      variant="overlay"
+      radius="2xl"
+      shadow="md"
+      border="default"
       className={cn(
-        'genie-surface genie-surface--overlay relative flex h-full min-h-0 flex-col overflow-hidden rounded-[32px] text-[var(--text-primary)]',
+        'relative flex h-full min-h-0 flex-col overflow-hidden text-[var(--text-primary)]',
         className
       )}
     >
@@ -65,6 +71,6 @@ export function ChatShell({
           {footer}
         </div>
       )}
-    </section>
+    </GlassSurface>
   );
 }

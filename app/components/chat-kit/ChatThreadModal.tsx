@@ -5,6 +5,7 @@ import {
   DialogPortal,
 } from '@/app/components/ui/dialog';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
 import { ChatShell } from './ChatShell';
 import type { ChatShellProps } from './ChatShell';
 
@@ -45,11 +46,13 @@ export function ChatThreadModal({
             dialogClassName
           )}
         >
-          <div
+          <GlassSurface
+            variant="overlay"
+            radius="2xl"
+            shadow="lg"
+            border="default"
             className={cn(
-              'genie-surface genie-surface--overlay relative flex h-[min(86vh,840px)] w-full max-w-[1320px] overflow-hidden rounded-[36px]',
-              'border border-[var(--border-glass)] bg-[var(--surf-elevated)]',
-              'shadow-lg backdrop-blur-xl',
+              'relative flex h-[min(86vh,840px)] w-full max-w-[1320px] overflow-hidden',
               panelClassName
             )}
           >
@@ -60,7 +63,7 @@ export function ChatThreadModal({
                 className
               )}
             />
-          </div>
+          </GlassSurface>
         </DialogContent>
       </DialogPortal>
     </Dialog>

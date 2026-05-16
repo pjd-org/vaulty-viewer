@@ -13,7 +13,7 @@ import { safeParseSerializableStatsDisplay } from '@/src/components/tool-ui/stat
 type ToolStatus = ComponentProps<typeof PrimaryAgentToolInvocation>['status'];
 
 const toolSurfaceWrapClass =
-  'genie-surface genie-surface--utility w-full rounded-[24px] p-3';
+  'w-full p-3 bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)] rounded-[24px]';
 
 export interface ChatToolSurfaceProps {
   toolName: string;

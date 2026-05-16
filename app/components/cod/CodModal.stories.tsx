@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
+import { GlassSurface } from '@vault/ui';
 import { CodSeverityPill } from './CodSeverityPill';
 import { CodActionRow } from './CodActionRow';
 import { CodConstraintTable } from './CodConstraintTable';
@@ -52,14 +53,14 @@ export const ClearState: Story = {
         onCheckIn={() => undefined}
       />
       <div className="grid grid-cols-2 gap-6 mt-6">
-        <div className="genie-surface genie-surface--utility p-4">
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={constraintItems} />
-        </div>
-        <div className="genie-surface genie-surface--utility p-4">
+        </GlassSurface>
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow items={signalItems} />
-        </div>
+        </GlassSurface>
       </div>
     </SoftPanel>
   ),
@@ -85,11 +86,11 @@ export const WarnState: Story = {
         onCheckIn={() => undefined}
       />
       <div className="grid grid-cols-2 gap-6 mt-6">
-        <div className="genie-surface genie-surface--utility p-4">
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={constraintItems} />
-        </div>
-        <div className="genie-surface genie-surface--utility p-4">
+        </GlassSurface>
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow
             items={[
@@ -98,7 +99,7 @@ export const WarnState: Story = {
               { label: 'Time available', value: '55%', variant: 'warn' },
             ]}
           />
-        </div>
+        </GlassSurface>
       </div>
     </SoftPanel>
   ),
@@ -124,11 +125,11 @@ export const StopState: Story = {
         onCheckIn={() => undefined}
       />
       <div className="grid grid-cols-2 gap-6 mt-6">
-        <div className="genie-surface genie-surface--utility p-4">
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={constraintItems} />
-        </div>
-        <div className="genie-surface genie-surface--utility p-4">
+        </GlassSurface>
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow
             items={[
@@ -137,7 +138,7 @@ export const StopState: Story = {
               { label: 'Time available', value: '30%', variant: 'warn' },
             ]}
           />
-        </div>
+        </GlassSurface>
       </div>
     </SoftPanel>
   ),
@@ -161,14 +162,14 @@ export const UnknownState: Story = {
         onCheckIn={() => undefined}
       />
       <div className="grid grid-cols-2 gap-6 mt-6">
-        <div className="genie-surface genie-surface--utility p-4">
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Constraints" />
           <CodConstraintTable items={[]} />
-        </div>
-        <div className="genie-surface genie-surface--utility p-4">
+        </GlassSurface>
+        <GlassSurface variant="canvas" radius="lg" shadow="sm" className="p-4">
           <SectionHeader title="Signals" />
           <CodSignalRow items={[]} />
-        </div>
+        </GlassSurface>
       </div>
     </SoftPanel>
   ),

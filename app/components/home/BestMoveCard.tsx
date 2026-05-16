@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 import { isBlocked, type NextAction } from '../../../src/lib/focus-logic';
 import { toTaskDisplayMeta } from '../../lib/display';
 import {
@@ -41,7 +42,7 @@ export function BestMoveCard({
   const whyNow = getWhyNowLine(task);
 
   return (
-    <div className="genie-surface genie-surface--hero genie-surface--sky flex flex-col gap-4 animate-fade-in p-6">
+    <GlassSurface variant="elevated" radius="lg" shadow="sm" border="default" className="flex flex-col gap-4 animate-fade-in p-6">
       <div className="space-y-2">
         <Link
           to="/note"
@@ -89,6 +90,6 @@ export function BestMoveCard({
           onClick={() => onSkip(task)}
         />
       </div>
-    </div>
+    </GlassSurface>
   );
 }

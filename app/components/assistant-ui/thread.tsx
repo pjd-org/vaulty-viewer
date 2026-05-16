@@ -27,7 +27,7 @@ const MarkdownText = lazy(() =>
 );
 import { TooltipIconButton } from '@/app/components/assistant-ui/tooltip-icon-button';
 import { Button } from '@/app/components/ui/button';
-import { Dock, DockIcon, DockLink } from '@vault/ui';
+import { Dock, DockIcon, DockLink, GlassSurface } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import { createContext, useContext } from 'react';
 import {
@@ -136,7 +136,7 @@ const ThreadWelcome: FC = () => {
   return (
     <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) flex-col gap-3">
       <div className="aui-thread-welcome-center flex w-full flex-col items-stretch py-2">
-        <div className="aui-thread-welcome-message genie-surface genie-surface--hero flex w-full flex-col justify-center rounded-[32px] px-6 py-7 shadow-none">
+        <GlassSurface className="aui-thread-welcome-message flex w-full flex-col justify-center px-6 py-7" variant="elevated" radius="2xl" shadow={false} border="default">
           <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
             Primary Agent
           </p>
@@ -149,7 +149,7 @@ const ThreadWelcome: FC = () => {
           <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both mt-1 text-sm leading-6 text-[var(--text-tertiary)] delay-100 duration-200">
             {welcomeDetail}
           </p>
-        </div>
+        </GlassSurface>
       </div>
       <div className="pt-1">
         <ThreadSuggestions />
@@ -201,7 +201,7 @@ const ThreadSuggestionItem: FC<{ title: string; description: string }> = ({
     <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
       <Button
         unstyled
-        className="aui-thread-welcome-suggestion genie-surface genie-surface--utility h-auto w-full flex-col items-start justify-start gap-1.5 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-md transition-colors hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)]"
+        className="aui-thread-welcome-suggestion h-auto w-full flex-col items-start justify-start gap-1.5 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-md transition-colors hover:bg-[var(--surf-elevated)] hover:text-[var(--text-primary)]"
         onClick={() => {
           aui.thread().append({
             content: [{ type: 'text', text: title }],
@@ -299,7 +299,7 @@ const Composer: FC = () => {
                 '0 18px 42px color-mix(in srgb, var(--composer-accent) 12%, rgba(17,21,29,0.12))',
             } as ComposerStyle
           }
-          className="genie-surface genie-surface--overlay flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3 transition-shadow data-[dragging=true]:border-dashed"
+          className="flex w-full flex-col items-stretch gap-2 rounded-[32px] px-3 py-3 transition-shadow data-[dragging=true]:border-dashed bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)]"
         >
           <ComposerAttachments />
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -358,7 +358,7 @@ const ComposerAction: FC = () => {
 const MessageError: FC = () => {
   return (
     <MessagePrimitive.Error>
-      <ErrorPrimitive.Root className="aui-message-error-root genie-surface genie-surface--danger mt-2 rounded-[20px] px-3 py-3 text-sm text-[var(--text-danger)]">
+      <ErrorPrimitive.Root className="aui-message-error-root mt-2 rounded-[20px] px-3 py-3 text-sm text-[var(--text-danger)] bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)]">
         <ErrorPrimitive.Message className="aui-message-error-message line-clamp-2" />
       </ErrorPrimitive.Root>
     </MessagePrimitive.Error>

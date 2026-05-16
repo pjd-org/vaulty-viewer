@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import {
   PROJECT_ROUTE_TABS,
@@ -46,7 +47,7 @@ export function ProjectRouteShell({
     <PageContainer>
       <SoftPanel variant="elevated" className="overflow-hidden" noPadding>
         {/* ── Hero header ─────────────────────────────────────────────── */}
-        <div className="px-6 py-5 genie-surface genie-surface--hero border-b border-[var(--border-glass)] rounded-t-lg">
+        <GlassSurface variant="elevated" radius="lg" className="px-6 py-5 border-b border-[var(--border-glass)] rounded-t-lg">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
@@ -94,7 +95,7 @@ export function ProjectRouteShell({
               ))}
             </div>
           )}
-        </div>
+        </GlassSurface>
 
         {/* ── Tab nav ─────────────────────────────────────────────────── */}
         <nav

@@ -1,5 +1,6 @@
 import { Button } from '@/app/components/ui/button';
 import { Skeleton } from '@/app/components/ui/skeleton';
+import { GlassSurface } from '@vault/ui';
 import {
   AuiIf,
   ThreadListItemMorePrimitive,
@@ -16,7 +17,7 @@ import type { FC } from 'react';
 
 export const ThreadList: FC = () => {
   return (
-    <ThreadListPrimitive.Root className="aui-root aui-thread-list-root genie-surface genie-surface--utility flex flex-col gap-2 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] p-3 shadow-md">
+    <ThreadListPrimitive.Root className="aui-root aui-thread-list-root flex flex-col gap-2 rounded-[24px] border border-[var(--border-glass-soft)] bg-[var(--surf-elevated)] p-3 shadow-sm backdrop-blur-[var(--blur-lg)]">
       <ThreadListNew />
       <AuiIf condition={(s) => s.threads.isLoading}>
         <ThreadListSkeleton />

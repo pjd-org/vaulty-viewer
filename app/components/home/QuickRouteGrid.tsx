@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 
 const routeTileClass =
-  'genie-surface genie-surface--utility p-4 transition-transform block hover:-translate-y-0.5';
+  'p-4 transition-transform block hover:-translate-y-0.5 bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)] rounded-[24px]';
 const routeTitleClass = 'text-sm font-semibold text-[var(--text-primary)]';
 const routeSubClass = 'text-xs text-[var(--text-secondary)] mt-0.5';
 

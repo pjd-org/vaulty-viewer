@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { GlassSurface } from '@vault/ui';
 import { PageContainer } from './PageContainer';
 import { SoftPanel } from './SoftPanel';
 import type { SummaryRowItem } from './SummaryRow';
@@ -48,8 +49,13 @@ function PanelHero({
   heroContent?: React.ReactNode;
 }) {
   return (
-    <div
-      className="relative px-5 py-4 pb-5 genie-surface genie-surface--hero rounded-t-lg"
+    <GlassSurface
+      variant="elevated"
+      radius="lg"
+      blur="lg"
+      border="default"
+      shadow="sm"
+      className="relative px-5 py-4 pb-5 rounded-t-lg"
       style={{ boxShadow: 'none' }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -108,7 +114,7 @@ function PanelHero({
       )}
       {/* bottom separator — sits below gradient, above white content */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--border-glass-soft)]" />
-    </div>
+    </GlassSurface>
   );
 }
 

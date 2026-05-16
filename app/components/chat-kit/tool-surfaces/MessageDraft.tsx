@@ -1,5 +1,5 @@
 import { Badge } from '@/app/components/ui/badge';
-import { CardHeader } from '@vault/ui';
+import { CardHeader, GlassSurface } from '@vault/ui';
 import { Card } from '@/app/components/ui/card';
 
 export function MessageDraft({
@@ -10,7 +10,7 @@ export function MessageDraft({
   body?: string;
 }) {
   return (
-    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
+    <Card className="overflow-hidden bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)] rounded-[24px]">
       <CardHeader label={title} subtitle={body} className="px-4 pb-2 pt-4" />
       <div className="flex items-center gap-2 px-4 pb-4 pt-0">
         <Badge

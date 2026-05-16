@@ -1,4 +1,5 @@
 import React from 'react';
+import { GlassSurface } from '@vault/ui';
 
 interface PageFrameProps {
   title: string;
@@ -21,8 +22,8 @@ export function PageFrame({
 }: PageFrameProps) {
   return (
     <div className="flex flex-col gap-6">
-      <header className="rounded-[28px] p-6 genie-surface genie-surface--hero genie-layer-hero">
-        <div className="genie-content flex items-start justify-between gap-4">
+      <GlassSurface as="header" variant="elevated" radius="2xl" shadow="sm" border="default" className="p-6">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
               {title}
@@ -45,7 +46,7 @@ export function PageFrame({
           </div>
           {actions && <div className="flex items-center gap-3">{actions}</div>}
         </div>
-      </header>
+      </GlassSurface>
       {children}
     </div>
   );

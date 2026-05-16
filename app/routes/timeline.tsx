@@ -26,6 +26,7 @@ import { UnauthenticatedError } from '../../src/utils/api';
 import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import { getAuthFailureKind } from '../hooks/use-login-redirect';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
 
 export const Route = createFileRoute('/timeline')({
   validateSearch: timelineSearchParams,
@@ -361,10 +362,8 @@ function TimelineContent({
         {q || eventTypeFilter ? ' (filtered)' : ''}
       </p>
 
-      <GlassCard
-        variant="light"
-        glowEffect={false}
-        className="genie-surface genie-surface--utility overflow-hidden rounded-[20px] p-3 sm:p-4"
+      <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default"
+        className="overflow-hidden p-3 sm:p-4"
       >
         {paginated.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-[var(--text-secondary)]">
@@ -396,7 +395,7 @@ function TimelineContent({
             })}
           </Timeline>
         )}
-      </GlassCard>
+      </GlassSurface>
 
       <Pagination
         page={page}
@@ -406,13 +405,9 @@ function TimelineContent({
       />
 
       {selectedEvent && (
-        <GlassCard
-          variant="light"
-          glowEffect={false}
-          className="genie-surface genie-surface--utility rounded-[20px] p-4"
-        >
+        <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
           <EventDetail event={selectedEvent} />
-        </GlassCard>
+        </GlassSurface>
       )}
     </div>
   );

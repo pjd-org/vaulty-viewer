@@ -1,5 +1,5 @@
 import { Button } from '@/app/components/ui/button';
-import { CardHeader } from '@vault/ui';
+import { CardHeader, GlassSurface } from '@vault/ui';
 import { Card } from '@/app/components/ui/card';
 
 export function ApprovalCard({
@@ -10,7 +10,7 @@ export function ApprovalCard({
   description?: string;
 }) {
   return (
-    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
+    <Card className="overflow-hidden bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm backdrop-blur-[var(--blur-lg)] rounded-[24px]">
       <CardHeader
         label={title}
         subtitle={description}

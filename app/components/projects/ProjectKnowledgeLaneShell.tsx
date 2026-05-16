@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 
 import { ProjectTabPlaceholder } from './ProjectTabPlaceholder';
 
@@ -73,7 +74,7 @@ export function ProjectKnowledgeLaneShell({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="genie-surface genie-surface--utility rounded-[24px] p-2">
+      <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="p-2">
         <div className="flex flex-wrap gap-2">
           {(['notes', 'views', 'memories'] as const).map((lane) => {
             const active = lane === activeLane;
@@ -102,7 +103,7 @@ export function ProjectKnowledgeLaneShell({
             );
           })}
         </div>
-      </div>
+      </GlassSurface>
 
       {activeLane === 'notes' ? (
         <React.Suspense

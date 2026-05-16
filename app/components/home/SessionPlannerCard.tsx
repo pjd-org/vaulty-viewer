@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/src/lib/utils';
+import { GlassSurface } from '@vault/ui';
 import { formatDuration, type NextAction } from '../../../src/lib/focus-logic';
 import {
   PrimaryButton,
@@ -149,7 +150,7 @@ export function SessionPlannerCard({
         </div>
 
         {aiPlan && !aiLoading && (
-          <div className="genie-surface genie-surface--utility flex flex-col gap-2 rounded-xl p-3">
+          <GlassSurface variant="canvas" radius="xl" shadow="sm" className="flex flex-col gap-2 p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-tertiary)]">
               AI session plan
             </p>
@@ -186,7 +187,7 @@ export function SessionPlannerCard({
             <PrimaryButton onClick={handleUseAiPlan} className="w-full">
               Start this session
             </PrimaryButton>
-          </div>
+          </GlassSurface>
         )}
 
         {!aiPlan && (

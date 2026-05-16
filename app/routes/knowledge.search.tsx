@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { GlassSurface } from '@vault/ui';
 import {
   useKnowledgeHealth,
   useKnowledgeSearch,
@@ -149,20 +150,17 @@ function KnowledgeSearchRoute() {
           <KnowledgeHealthBanner health={health ?? null} loading={false} />
 
           {searchError && (
-            <div
-              className="genie-surface genie-surface--danger rounded-[18px] p-4 text-sm text-[var(--text-danger)]"
+            <GlassSurface variant="base" radius="xl" shadow="sm" border="default" className="p-4 text-sm text-[var(--text-danger)]"
               role="alert"
             >
               Search failed: {searchError.message}
-            </div>
+            </GlassSurface>
           )}
 
           {searching && (
             <div className="flex flex-col gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="genie-surface genie-surface--utility h-20 animate-pulse rounded-[18px]"
+                <GlassSurface key={i} variant="canvas" className="h-20 animate-pulse"
                 />
               ))}
             </div>
@@ -201,10 +199,7 @@ function KnowledgeSearchRoute() {
       asideSubtitle="How to get the best results."
       aside={
         <div className="flex flex-col gap-4 text-sm text-[var(--text-secondary)]">
-          <GlassCard
-            variant="light"
-            glowEffect={false}
-            className="genie-surface genie-surface--utility flex flex-col gap-3 rounded-[20px] p-4"
+          <GlassSurface variant="canvas" radius="2xl" shadow="sm" border="default" className="flex flex-col gap-3 p-4"
           >
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-tertiary)]">
@@ -224,7 +219,7 @@ function KnowledgeSearchRoute() {
                 without exact keyword matches.
               </p>
             </div>
-          </GlassCard>
+          </GlassSurface>
         </div>
       }
     />

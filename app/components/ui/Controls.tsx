@@ -39,7 +39,7 @@ export function SegmentedControl({
     <div
       ref={containerRef}
       role="tablist"
-      className={`genie-surface genie-surface--utility inline-flex items-center rounded-full p-1 gap-1 ${className}`}
+      className={`inline-flex items-center rounded-full p-1 gap-1 bg-[var(--surf-glass)] border border-[var(--border-glass-default)] shadow-sm ${className}`}
     >
       {options.map((opt, index) => {
         const isActive = opt.value === value;
