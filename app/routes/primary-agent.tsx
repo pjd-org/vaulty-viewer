@@ -5,7 +5,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@vault/ui';
+} from '@/app/components/ui/resizable';
 import {
   INTENT_TEMPLATES,
   getTemplate,

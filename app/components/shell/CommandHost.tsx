@@ -8,9 +8,11 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
+} from '@/app/components/ui/command';
+import {
   Dialog,
   DialogContent,
-} from '@vault/ui';
+} from '@/app/components/ui/dialog';
 import { useUIStore } from '../../../src/store/ui';
 import {
   VIEWER_PRIMARY_NAV,

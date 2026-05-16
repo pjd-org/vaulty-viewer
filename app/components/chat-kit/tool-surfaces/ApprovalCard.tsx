@@ -1,4 +1,6 @@
-import { Button, Card, CardHeader } from '@vault/ui';
+import { Button } from '@/app/components/ui/button';
+import { CardHeader } from '@vault/ui';
+import { Card } from '@/app/components/ui/card';
 
 export function ApprovalCard({
   title,
@@ -8,10 +10,7 @@ export function ApprovalCard({
   description?: string;
 }) {
   return (
-    <Card
-      padding={false}
-      className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]"
-    >
+    <Card className="genie-surface genie-surface--utility overflow-hidden rounded-[24px]">
       <CardHeader
         label={title}
         subtitle={description}

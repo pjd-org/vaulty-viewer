@@ -9,10 +9,26 @@ import { useThread } from '@assistant-ui/react';
 import {
   Badge,
   Button,
-  Card,
+} from '@/app/components/ui';
+import { Card } from '@/app/components/ui/card';
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+} from '@/app/components/ui/collapsible';
+import {
+  DialogDescription,
+  DialogTitle,
+} from '@/app/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/app/components/ui/table';
+import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -20,17 +36,9 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  DialogDescription,
-  DialogTitle,
-  ProgressBar,
-  ScrollArea,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@vault/ui';
+} from '@/app/components/ui/command';
+import { Progress } from '@/app/components/ui/progress';
+import { ScrollArea } from '@/app/components/ui/scroll-area';
 import { cn } from '@/src/lib/utils';
 import {
   createPrimaryAgentStreamState,
@@ -313,7 +321,6 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
         <div className="flex flex-col gap-4 p-4">
           <Card
             data-slot="primary-agent-stream-state"
-            padding={false}
             className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
           >
             <div className="flex items-start justify-between gap-3 border-b border-border/60 px-4 py-4">
@@ -354,7 +361,6 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
 
           <Card
             data-slot="primary-agent-stream-hierarchy"
-            padding={false}
             className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
           >
             <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
@@ -454,7 +460,6 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
 
           <Card
             data-slot="primary-agent-stream-progress"
-            padding={false}
             className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
           >
             <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
@@ -477,8 +482,7 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
                 asyncActiveNodes.map((node) => (
                   <Card
                     key={node.id}
-                    padding={false}
-                    className="overflow-hidden border border-border/60 bg-card/80 shadow-none"
+                            className="overflow-hidden border border-border/60 bg-card/80 shadow-none"
                   >
                     <div className="border-b border-border/60 px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
@@ -498,7 +502,7 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
                     <div className="px-4 py-4">
                       {typeof node.progress === 'number' ? (
                         <div className="flex flex-col gap-2">
-                          <ProgressBar value={node.progress} height={6} />
+                          <Progress value={node.progress} />
                           <p className="text-xs text-muted-foreground">
                             {Math.max(0, Math.min(100, node.progress)).toFixed(
                               0
@@ -534,7 +538,6 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
 
           <Card
             data-slot="primary-agent-stream-live"
-            padding={false}
             className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
           >
             <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
@@ -632,8 +635,7 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
 
           <Collapsible defaultOpen={false}>
             <Card
-              padding={false}
-              className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
+                className="overflow-hidden border border-border/60 bg-background/70 shadow-none"
             >
               <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
                 <div>

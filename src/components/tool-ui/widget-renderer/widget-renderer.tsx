@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@vault/ui';
+} from '@/app/components/ui/select';
 import { Checkbox } from '@vault/ui';
 import { cn } from '@/src/lib/utils';
 import React, { createContext, useContext, useState } from 'react';
