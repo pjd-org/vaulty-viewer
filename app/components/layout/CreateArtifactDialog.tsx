@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Button, GlassBadge } from '@vault/ui';
+import { GlassBadge } from '@vault/ui';
+import { Button } from '@/app/components/ui';
 import {
   Dialog,
   DialogContent,

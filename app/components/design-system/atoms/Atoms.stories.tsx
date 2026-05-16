@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
-import { Button, Badge, Label } from '@vault/ui/atoms';
+import { Button, Badge, Label } from '@/app/components/ui';
 import { Input } from '@/app/components/ui/input';
 import { SuggestionChip } from '@vault/ui/molecules';
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar';

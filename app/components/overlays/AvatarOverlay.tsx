@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Button, GlassBadge, GlassSurface } from '@vault/ui';
+import { GlassBadge, GlassSurface } from '@vault/ui';
+import { Button } from '@/app/components/ui';
 import useAvatar from '../../../src/hooks/useAvatar';
 import VitalsPanel from '../../../src/components/VitalsPanel';
 import {

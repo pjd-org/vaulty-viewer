@@ -1,42 +1,26 @@
+// ─── Import conventions ────────────────────────────────────────────────────────
+// Primitives (Sheet, Separator, Collapsible, Avatar, Checkbox, Command,
+// Skeleton, ScrollArea, Accordion, Drawer, Dialog*, Tooltip*) have been migrated
+// to local shadcn equivalents at @/app/components/ui/. Do not re-export them here;
+// import directly from their module paths instead.
+
 // ─── @vault/ui pass-throughs ──────────────────────────────────────────────────
+// Badge and Button have been migrated to local shadcn with vault variants.
+// Re-export from local paths to maintain API compatibility.
+export {
+  Button,
+} from './button';
+export type { ButtonProps } from './button';
 export {
   Badge,
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  CardGlowOverlay,
-  Dock,
-  DockDropdownItem,
-  DockIcon,
-  DockItem,
-  DockLink,
-  GlassSurface,
-  Inline,
-  Input,
-  ProgressBar,
-  PromptInput,
-  SidebarRail,
-  Spinner,
-  Stack,
-  SuggestionChip,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  TabsRoot,
-  Toast,
-} from '@vault/ui';
-
-export type {
-  BadgeProps,
-  ButtonProps,
-  InputProps,
-  LabelProps,
-} from '@vault/ui';
+} from './badge';
+export type { BadgeProps } from './badge';
 
 // ─── Local atoms ──────────────────────────────────────────────────────────────
+export { Progress } from './progress';
+export { Label } from './label';
+export { Skeleton } from './skeleton';
+export { Spinner } from './spinner';
 export { PrimaryButton, SecondaryButton, IconButton } from './Buttons';
 export { VaultyLogo } from './vaulty-logo';
 export type { ButtonBaseProps, IconButtonProps } from './Buttons';

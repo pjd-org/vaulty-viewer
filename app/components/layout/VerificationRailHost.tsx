@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, GlassBadge, GlassSurface } from '@vault/ui';
+import { GlassBadge, GlassSurface } from '@vault/ui';
+import { Button } from '@/app/components/ui';
 import { useUIStore } from '../../../src/store/ui';
 import {
   useHomeSurface,

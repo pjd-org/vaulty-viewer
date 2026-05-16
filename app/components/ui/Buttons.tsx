@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-  Button as VaultButton,
-  ButtonProps as VaultButtonProps,
-} from '@vault/ui';
+import { Button as VaultButton } from './button';
+import type { ButtonProps } from './button';
 
 export interface ButtonBaseProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;

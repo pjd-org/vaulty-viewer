@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { Activity, Heart, PanelLeft, Search } from 'lucide-react';
-import { Button, GlassBadge, GlassSurface } from '@vault/ui';
+import { GlassBadge, GlassSurface } from '@vault/ui';
+import { Button } from '@/app/components/ui';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { CreateArtifactDialog } from './CreateArtifactDialog';
 import { useUIStore } from '../../../src/store/ui';

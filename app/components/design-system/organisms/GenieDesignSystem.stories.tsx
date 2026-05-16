@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@vault/ui/atoms';
+import { Button } from '@/app/components/ui';
 import { SuggestionChip, PromptInput } from '@vault/ui/molecules';
 import {
   AssistantCard,

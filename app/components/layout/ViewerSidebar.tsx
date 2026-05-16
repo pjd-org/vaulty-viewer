@@ -21,8 +21,8 @@ import {
   Activity,
   Terminal,
 } from 'lucide-react';
+import { Button } from '@/app/components/ui';
 import {
-  Button,
   GlassSurface,
   Separator,
   Sheet,
@@ -31,6 +31,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@vault/ui';
+import {
+  Separator,
+} from '@/app/components/ui/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/app/components/ui/sheet';
 import { VaultyLogo } from '@/app/components/ui/vaulty-logo';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { dispatchNavOverlay } from '../../../src/lib/nav-overlays';
