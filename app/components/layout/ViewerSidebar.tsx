@@ -31,16 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/app/components/ui/sheet';
-import {
-  Separator,
-} from '@/app/components/ui/separator';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/app/components/ui/sheet';
+
 import { VaultyLogo } from '@/app/components/ui/vaulty-logo';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { dispatchNavOverlay } from '../../../src/lib/nav-overlays';
@@ -136,7 +127,9 @@ function ShellNavButton({
       size="md"
       className={cn(
         '!rounded-2xl transition-all duration-200',
-        collapsed ? '!h-10 !w-10 !justify-center !px-0' : '!h-11 !w-full !justify-start !px-3',
+        collapsed
+          ? '!h-10 !w-10 !justify-center !px-0'
+          : '!h-11 !w-full !justify-start !px-3',
         active && 'shadow-sm'
       )}
     >
@@ -170,7 +163,9 @@ function ShellActionButton({
       size="md"
       className={cn(
         '!rounded-2xl transition-all duration-200',
-        collapsed ? '!h-10 !w-10 !justify-center !px-0' : '!h-11 !w-full !justify-start !px-3'
+        collapsed
+          ? '!h-10 !w-10 !justify-center !px-0'
+          : '!h-11 !w-full !justify-start !px-3'
       )}
       onClick={onClick}
       aria-label={collapsed ? label : undefined}
@@ -204,11 +199,7 @@ function ShellRailContent({
               : '!h-11 !w-full !justify-start !px-3'
           )}
         >
-          <Link
-            to="/"
-            aria-label="Vault home"
-            onClick={onNavigate}
-          >
+          <Link to="/" aria-label="Vault home" onClick={onNavigate}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--a-sky),var(--a-mint))] text-[#0f172a] shadow-[0_10px_24px_rgba(51,95,255,0.28)]">
               <VaultyLogo className="h-5 w-5" />
             </span>
@@ -373,17 +364,19 @@ export function ViewerSidebar({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">{children}</div>
 
       <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-      <SheetContent
-        side="left"
-        className="w-[min(18rem,85vw)] !border-r !border-[var(--border-glass)] !bg-[var(--surf-canvas)] !p-0"
-      >
-        <SheetHeader className="sr-only">
-          <SheetTitle>Main navigation</SheetTitle>
-          <SheetDescription>Viewer navigation and overlay controls.</SheetDescription>
-        </SheetHeader>
-        <ShellRailContent collapsed={false} onNavigate={closeMobileNav} />
-      </SheetContent>
-    </Sheet>
-  </div>
-);
+        <SheetContent
+          side="left"
+          className="w-[min(18rem,85vw)] !border-r !border-[var(--border-glass)] !bg-[var(--surf-canvas)] !p-0"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Main navigation</SheetTitle>
+            <SheetDescription>
+              Viewer navigation and overlay controls.
+            </SheetDescription>
+          </SheetHeader>
+          <ShellRailContent collapsed={false} onNavigate={closeMobileNav} />
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
 }
