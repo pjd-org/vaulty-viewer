@@ -67,6 +67,12 @@ describe('note-path and note-markdown', () => {
     expect(toApiNotePath('notes/tasks/viewer/demo-task.md')).toBe(
       'notes/tasks/viewer/demo-task.md'
     );
+    expect(toApiNotePath('notes/tasks/viewer/demo-task.mdx')).toBe(
+      'notes/tasks/viewer/demo-task.mdx'
+    );
+    expect(toNoteHref('notes/tasks/viewer/demo-task.mdx')).toBe(
+      '/note?p=notes%2Ftasks%2Fviewer%2Fdemo-task.mdx'
+    );
   });
 
   it('derives staged and canonical lifecycle states from path and frontmatter', () => {

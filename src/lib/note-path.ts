@@ -21,16 +21,22 @@ export function formatNoteLabel(value: string) {
 }
 
 export function stripMarkdownExtension(value: string) {
-  return value.endsWith('.md') ? value.slice(0, -3) : value;
+  if (value.endsWith('.mdx')) return value.slice(0, -4);
+  if (value.endsWith('.md')) return value.slice(0, -3);
+  return value;
 }
 
 export function toNoteSearchPath(value: string) {
-  return stripMarkdownExtension(value.trim().replace(/^\/+/, ''));
+  const normalized = value.trim().replace(/^\/+/, '');
+  return normalized.endsWith('.md') ? normalized.slice(0, -3) : normalized;
 }
 
 export function toApiNotePath(value: string) {
   const normalized = toNoteSearchPath(value);
-  return normalized.endsWith('.md') ? normalized : `${normalized}.md`;
+  if (normalized.endsWith('.md') || normalized.endsWith('.mdx')) {
+    return normalized;
+  }
+  return `${normalized}.md`;
 }
 
 export function toNoteHref(value: string) {
