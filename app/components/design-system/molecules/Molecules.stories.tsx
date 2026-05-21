@@ -4,6 +4,7 @@ import { GENIE_CSS, GDS_WRAPPER_STYLE, useGenieFonts } from '../_genie-css';
 import { Card } from '@/app/components/ui/card';
 import { CardBody } from '@vault/ui/molecules';
 import { Label } from '@/app/components/ui';
+import { Input } from '@/app/components/ui/input';
 
 /* ── Token callout helper ──────────────────────────────────────────────── */
 function TokenTag({ name }: { name: string }) {

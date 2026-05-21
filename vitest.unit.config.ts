@@ -7,6 +7,16 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const unitViteConfig = {
   ...viteConfig,
+  ssr: {
+    ...(viteConfig.ssr ?? {}),
+    // Vitest with jsdom runs in SSR mode internally. The vite.config.ts sets
+    // ssr.external for react/react-dom to avoid duplicating them in SSR bundles,
+    // but in jsdom tests this causes separate instances to be loaded from
+    // different pnpm resolution paths (e.g. @testing-library/react's react-dom
+    // from root store vs viewer's react-dom from viewer store).
+    // Override to let Vite transform these modules consistently.
+    external: [],
+  },
   plugins: (viteConfig.plugins ?? []).filter((p) => {
     if (!p || typeof p !== 'object' || !('name' in p)) return true;
     const name = (p as { name: string }).name;
@@ -22,6 +32,8 @@ export default mergeConfig(
       alias: {
         react: path.resolve(dirname, 'node_modules/react'),
         'react-dom': path.resolve(dirname, 'node_modules/react-dom'),
+        'react/jsx-runtime': path.resolve(dirname, 'node_modules/react/jsx-runtime'),
+        'react/jsx-dev-runtime': path.resolve(dirname, 'node_modules/react/jsx-dev-runtime'),
       },
     },
     test: {

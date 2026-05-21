@@ -19,12 +19,18 @@ const NOTE_BODY_CLASS =
 function ReadOnlyBody({
   html,
   className = '',
+  role,
+  ariaMultiline,
 }: {
   html: string;
   className?: string;
+  role?: React.AriaRole;
+  ariaMultiline?: boolean;
 }) {
   return (
     <div
+      role={role}
+      aria-multiline={ariaMultiline}
       className={`${NOTE_BODY_CLASS} ${className}`.trim()}
       dangerouslySetInnerHTML={{ __html: html }}
     />
@@ -48,7 +54,16 @@ export function NoteBodyRenderer({
   }
 
   return (
-    <React.Suspense fallback={<ReadOnlyBody html={html} className={className} />}>
+    <React.Suspense
+      fallback={
+        <ReadOnlyBody
+          html={html}
+          className={className}
+          role="textbox"
+          ariaMultiline
+        />
+      }
+    >
       <NoteBodyRendererEditable
         html={html}
         className={className}
