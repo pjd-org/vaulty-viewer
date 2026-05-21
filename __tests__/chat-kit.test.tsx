@@ -131,7 +131,7 @@ describe('chat-kit', () => {
     );
 
     const composerShell = container.querySelector(
-      '.genie-surface--overlay'
+      '[style*="--composer-accent"]'
     ) as HTMLElement;
 
     expect(screen.getByRole('button', { name: /attach file/i })).toBeTruthy();

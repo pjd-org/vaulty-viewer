@@ -10,6 +10,8 @@ const badgeVariants = cva(
       variant: {
         default:
           "bg-surface-2 text-ink border border-subtle",
+        secondary:
+          "bg-surface-2 text-ink border border-subtle",
         accent:
           "bg-[var(--vault-accent)] text-white border-transparent",
         success:
