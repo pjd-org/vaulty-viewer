@@ -87,7 +87,7 @@ const httpServer = createServer(async (req, res) => {
     }
 
     // Prevent absolute path usage and normalize the requested path.
-    const attempted = resolve(CLIENT_DIR_RESOLVED, '.' + rel);
+    const attempted = resolve(CLIENT_DIR_RESOLVED, './' + rel);
     if (
       !attempted.startsWith(CLIENT_DIR_RESOLVED + sep) &&
       attempted !== CLIENT_DIR_RESOLVED
