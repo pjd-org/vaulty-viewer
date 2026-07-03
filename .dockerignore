@@ -1,0 +1,11 @@
+node_modules
+.cache
+public
+.git
+.gitignore
+.env
+.env.*
+*.log
+# Exclude stale and local build artifacts — Docker always builds fresh
+.output
+dist

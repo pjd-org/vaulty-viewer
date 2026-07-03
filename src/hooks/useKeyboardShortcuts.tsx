@@ -1,0 +1,221 @@
+import { useEffect, useCallback } from 'react';
+import { dispatchNavOverlay } from '../lib/nav-overlays';
+
+// Declare global window properties used for keyboard prefix shortcuts
+declare global {
+  interface Window {
+    __goPrefixActive?: boolean;
+    __goPrefixTimeout?: ReturnType<typeof setTimeout>;
+  }
+}
+
+interface KeyboardShortcutsOptions {
+  onSearch?: () => void;
+  onHelp?: () => void;
+  onNavigate?: (route: string) => void;
+}
+
+/**
+ * Keyboard shortcuts for power users.
+ *
+ * Available shortcuts:
+ * - g h: Go to Home
+ * - g k: Go to Kanban
+ * - g a: Go to Avatar
+ * - g g: Go to Goals
+ * - g c: Go to COD Status
+ * - /: Focus search
+ * - ?: Show help
+ */
+export function useKeyboardShortcuts(
+  options: KeyboardShortcutsOptions = {}
+): void {
+  const { onSearch, onHelp, onNavigate } = options;
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // Skip if in input/textarea/contenteditable
+      const target = e.target as HTMLElement;
+      const tagName = target.tagName.toLowerCase();
+      if (
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Handle slash for search
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        if (onSearch) {
+          onSearch();
+        } else {
+          // Try to focus search input
+          const searchInput = document.querySelector(
+            "#vault-search, [type='search']"
+          ) as HTMLInputElement | null;
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+        return;
+      }
+
+      // Handle ? for help
+      if (e.key === '?' && e.shiftKey) {
+        e.preventDefault();
+        if (onHelp) {
+          onHelp();
+        }
+        return;
+      }
+
+      // Handle 'g' prefix for navigation (like GitHub)
+      if (e.key === 'g' && !window.__goPrefixActive) {
+        window.__goPrefixActive = true;
+        window.__goPrefixTimeout = setTimeout(() => {
+          window.__goPrefixActive = false;
+        }, 1500);
+        return;
+      }
+
+      if (window.__goPrefixActive) {
+        clearTimeout(window.__goPrefixTimeout);
+        window.__goPrefixActive = false;
+
+        const routes: Record<string, string> = {
+          h: '/',
+          k: '/kanban',
+          g: '/goals',
+        };
+
+        if (e.key === 'a') {
+          e.preventDefault();
+          dispatchNavOverlay('avatar');
+          return;
+        }
+
+        if (e.key === 'c') {
+          e.preventDefault();
+          dispatchNavOverlay('cod');
+          return;
+        }
+
+        if (routes[e.key]) {
+          e.preventDefault();
+          if (onNavigate) {
+            onNavigate(routes[e.key]);
+          } else {
+            window.location.assign(routes[e.key]);
+          }
+        }
+      }
+
+      // Escape to clear focus
+      if (e.key === 'Escape') {
+        const active = document.activeElement;
+        if (active && active !== document.body && 'blur' in active) {
+          (active as HTMLElement).blur();
+        }
+      }
+    },
+    [onSearch, onHelp, onNavigate]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout((window as unknown as { __goPrefixTimeout: ReturnType<typeof setTimeout> }).__goPrefixTimeout);
+    };
+  }, [handleKeyDown]);
+}
+
+interface ShortcutItem {
+  keys: string[];
+  description: string;
+}
+
+interface KeyboardShortcutsHelpProps {
+  onClose?: () => void;
+}
+
+/**
+ * Component to display keyboard shortcut hints
+ */
+export function KeyboardShortcutsHelp({
+  onClose,
+}: KeyboardShortcutsHelpProps): JSX.Element {
+  const shortcuts: ShortcutItem[] = [
+    { keys: ['g', 'h'], description: 'Go to Home' },
+    { keys: ['g', 'k'], description: 'Go to Kanban' },
+    { keys: ['g', 'a'], description: 'Go to Avatar' },
+    { keys: ['g', 'g'], description: 'Go to Goals' },
+    { keys: ['g', 'c'], description: 'Go to COD Status' },
+    { keys: ['/'], description: 'Focus search' },
+    { keys: ['?'], description: 'Show this help' },
+    { keys: ['Esc'], description: 'Clear focus / close modal' },
+  ];
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  return (
+    <div
+      className="keyboard-help-overlay"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === 'Escape') onClose?.();
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="Close keyboard shortcuts"
+    >
+      <div
+        className="keyboard-help"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label="Keyboard shortcuts"
+      >
+        <div className="keyboard-help__header">
+          <h3>Keyboard Shortcuts</h3>
+          <button
+            className="keyboard-help__close"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+        <div className="keyboard-help__list">
+          {shortcuts.map(({ keys, description }) => (
+            <div key={description} className="keyboard-help__item">
+              <span className="keyboard-help__keys">
+                {keys.map((key, index) => (
+                  <span key={key}>
+                    <kbd className="keyboard-help__kbd">{key}</kbd>
+                    {index < keys.length - 1 && ' then '}
+                  </span>
+                ))}
+              </span>
+              <span className="keyboard-help__desc">{description}</span>
+            </div>
+          ))}
+        </div>
+        <div className="keyboard-help__footer">
+          Press <kbd>Esc</kbd> to close
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default useKeyboardShortcuts;

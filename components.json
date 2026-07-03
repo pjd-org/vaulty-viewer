@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.cjs",
+    "css": "src/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/app/components",
+    "utils": "@/src/lib/utils",
+    "ui": "@/app/components/ui",
+    "lib": "@/src/lib",
+    "hooks": "@/app/hooks"
+  },
+  "registries": {
+    "@lucide-animated": "https://lucide-animated.com/r/{name}.json",
+    "@tool-ui": "https://www.tool-ui.com/r/{name}.json",
+    "@einui": "https://ui.eindev.ir/r/{name}.json",
+    "@glass-ui": "https://glass-ui.crenspire.com/r/{name}.json",
+    "@react-easy-modals": "https://react-easy-modals-docs.vercel.app/r/styles/{style}/{name}.json"
+  }
+}
