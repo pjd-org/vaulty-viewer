@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './../app/routes/__root'
 import { Route as WorkRouteImport } from './../app/routes/work'
 import { Route as TimelineRouteImport } from './../app/routes/timeline'
 import { Route as SettingsRouteImport } from './../app/routes/settings'
+import { Route as ResetPasswordRouteImport } from './../app/routes/reset-password'
 import { Route as ProjectsRouteImport } from './../app/routes/projects'
 import { Route as PrimaryAgentRouteImport } from './../app/routes/primary-agent'
 import { Route as PortfolioRouteImport } from './../app/routes/portfolio'
@@ -26,6 +27,7 @@ import { Route as HealthRouteImport } from './../app/routes/health'
 import { Route as GraphRouteImport } from './../app/routes/graph'
 import { Route as GoalsRouteImport } from './../app/routes/goals'
 import { Route as GenesisRouteImport } from './../app/routes/genesis'
+import { Route as ForgotPasswordRouteImport } from './../app/routes/forgot-password'
 import { Route as ConfigRouteImport } from './../app/routes/config'
 import { Route as CodStatusRouteImport } from './../app/routes/cod-status'
 import { Route as BubbleRouteImport } from './../app/routes/bubble'
@@ -70,6 +72,11 @@ const TimelineRoute = TimelineRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsRoute = ProjectsRouteImport.update({
@@ -140,6 +147,11 @@ const GoalsRoute = GoalsRouteImport.update({
 const GenesisRoute = GenesisRouteImport.update({
   id: '/genesis',
   path: '/genesis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfigRoute = ConfigRouteImport.update({
@@ -307,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
@@ -321,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof PortfolioRoute
   '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/work': typeof WorkRoute
@@ -356,6 +370,7 @@ export interface FileRoutesByTo {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
@@ -370,6 +385,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof PortfolioRoute
   '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/work': typeof WorkRoute
@@ -406,6 +422,7 @@ export interface FileRoutesById {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
   '/graph': typeof GraphRoute
@@ -420,6 +437,7 @@ export interface FileRoutesById {
   '/portfolio': typeof PortfolioRoute
   '/primary-agent': typeof PrimaryAgentRoute
   '/projects': typeof ProjectsRouteWithChildren
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/work': typeof WorkRoute
@@ -457,6 +475,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/forgot-password'
     | '/genesis'
     | '/goals'
     | '/graph'
@@ -471,6 +490,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/primary-agent'
     | '/projects'
+    | '/reset-password'
     | '/settings'
     | '/timeline'
     | '/work'
@@ -506,6 +526,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/forgot-password'
     | '/genesis'
     | '/goals'
     | '/graph'
@@ -520,6 +541,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/primary-agent'
     | '/projects'
+    | '/reset-password'
     | '/settings'
     | '/timeline'
     | '/work'
@@ -555,6 +577,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/forgot-password'
     | '/genesis'
     | '/goals'
     | '/graph'
@@ -569,6 +592,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/primary-agent'
     | '/projects'
+    | '/reset-password'
     | '/settings'
     | '/timeline'
     | '/work'
@@ -605,6 +629,7 @@ export interface RootRouteChildren {
   BubbleRoute: typeof BubbleRoute
   CodStatusRoute: typeof CodStatusRoute
   ConfigRoute: typeof ConfigRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GenesisRoute: typeof GenesisRoute
   GoalsRoute: typeof GoalsRoute
   GraphRoute: typeof GraphRoute
@@ -619,6 +644,7 @@ export interface RootRouteChildren {
   PortfolioRoute: typeof PortfolioRoute
   PrimaryAgentRoute: typeof PrimaryAgentRoute
   ProjectsRoute: typeof ProjectsRouteWithChildren
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   TimelineRoute: typeof TimelineRoute
   WorkRoute: typeof WorkRoute
@@ -655,6 +681,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects': {
@@ -753,6 +786,13 @@ declare module '@tanstack/react-router' {
       path: '/genesis'
       fullPath: '/genesis'
       preLoaderRoute: typeof GenesisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/config': {
@@ -1029,6 +1069,7 @@ const rootRouteChildren: RootRouteChildren = {
   BubbleRoute: BubbleRoute,
   CodStatusRoute: CodStatusRoute,
   ConfigRoute: ConfigRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GenesisRoute: GenesisRoute,
   GoalsRoute: GoalsRoute,
   GraphRoute: GraphRoute,
@@ -1043,6 +1084,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortfolioRoute: PortfolioRoute,
   PrimaryAgentRoute: PrimaryAgentRoute,
   ProjectsRoute: ProjectsRouteWithChildren,
+  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   TimelineRoute: TimelineRoute,
   WorkRoute: WorkRoute,

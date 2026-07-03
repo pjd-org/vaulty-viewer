@@ -141,7 +141,11 @@ function LoginRoute() {
                   </p>
                 ) : null}
 
-                <form className="flex flex-col gap-4" method="post" action="/auth/login">
+                <form
+                  className="flex flex-col gap-4"
+                  method="post"
+                  action="/auth/login"
+                >
                   <input type="hidden" name="return_to" value={returnTo} />
                   <div className="flex flex-col gap-1.5">
                     <label
@@ -186,6 +190,13 @@ function LoginRoute() {
                 </form>
 
                 <p className="mt-5 text-[0.72rem] uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+                  <a
+                    className="text-[var(--text-primary)] underline-offset-4 hover:underline"
+                    href="/forgot-password"
+                  >
+                    Forgot password
+                  </a>
+                  <span className="mx-2 text-[var(--text-tertiary)]">/</span>
                   By continuing, you agree to runtime policy and audit logging.
                 </p>
               </div>
