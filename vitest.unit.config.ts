@@ -5,6 +5,17 @@ import viteConfig from './vite.config';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const testResolve = {
+  dedupe: ['react', 'react-dom'],
+  alias: {
+    '@': dirname,
+    react: path.resolve(dirname, 'node_modules/react'),
+    'react-dom': path.resolve(dirname, 'node_modules/react-dom'),
+    'react/jsx-runtime': path.resolve(dirname, 'node_modules/react/jsx-runtime'),
+    'react/jsx-dev-runtime': path.resolve(dirname, 'node_modules/react/jsx-dev-runtime'),
+  },
+};
+
 const unitViteConfig = {
   ...viteConfig,
   ssr: {
@@ -28,19 +39,16 @@ export default mergeConfig(
   unitViteConfig,
   defineConfig({
     resolve: {
-      dedupe: ['react', 'react-dom'],
-      alias: {
-        react: path.resolve(dirname, 'node_modules/react'),
-        'react-dom': path.resolve(dirname, 'node_modules/react-dom'),
-        'react/jsx-runtime': path.resolve(dirname, 'node_modules/react/jsx-runtime'),
-        'react/jsx-dev-runtime': path.resolve(dirname, 'node_modules/react/jsx-dev-runtime'),
-      },
+      ...testResolve,
     },
     test: {
       testTimeout: 30000,
       hookTimeout: 30000,
       projects: [
         {
+          resolve: {
+            ...testResolve,
+          },
           test: {
             name: 'node',
             environment: 'node',
@@ -58,11 +66,18 @@ export default mergeConfig(
               '__tests__/e2e/**',
               '__tests__/api/**',
               '__tests__/hooks/**',
+              '__tests__/lib/primary-agent-thread-history.test.ts',
+              '__tests__/lib/thread-registry-hydration.test.ts',
+              '__tests__/store/ui-layout.test.ts',
+              '__tests__/store/ui-theme.test.ts',
               '__tests__/query-client.test.ts',
             ],
           },
         },
         {
+          resolve: {
+            ...testResolve,
+          },
           test: {
             name: 'jsdom',
             environment: 'jsdom',
@@ -74,6 +89,10 @@ export default mergeConfig(
               '__tests__/query-client.test.ts',
               '__tests__/api/**/*.test.ts',
               '__tests__/hooks/**/*.test.ts',
+              '__tests__/lib/primary-agent-thread-history.test.ts',
+              '__tests__/lib/thread-registry-hydration.test.ts',
+              '__tests__/store/ui-layout.test.ts',
+              '__tests__/store/ui-theme.test.ts',
             ],
             exclude: [
               '**/node_modules/**',
