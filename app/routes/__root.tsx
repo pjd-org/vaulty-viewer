@@ -27,7 +27,10 @@ import {
   serializeDehydratedQueryState,
 } from '../../src/query-client';
 import { useBootstrapGate } from '../../src/hooks/useBootstrapGate';
-import { normalizeReturnTo } from '../../src/lib/auth-transition';
+import {
+  buildViewerLoginPath,
+  normalizeReturnTo,
+} from '../../src/lib/auth-transition';
 import {
   NAV_OVERLAY_EVENT,
   type NavOverlay,
@@ -144,10 +147,7 @@ function RootComponent() {
     }
 
     if (authTransitionRequested) {
-      void router.navigate({
-        to: `/login?return_to=${encodeURIComponent(loginReturnTo)}`,
-        replace: true,
-      });
+      window.location.replace(buildViewerLoginPath(loginReturnTo));
     }
   }, [authTransitionRequested, bootstrapGate.redirectTo, loginReturnTo, router]);
 

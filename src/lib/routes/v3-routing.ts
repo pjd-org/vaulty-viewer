@@ -101,6 +101,8 @@ export function getLegacyViewerRedirect(pathname: string): string | null {
 export function isShellHiddenPath(pathname: string): boolean {
   return (
     pathname === '/login' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
     pathname === '/bootstrap' ||
     pathname === '/oauth/consent'
   );
