@@ -192,7 +192,7 @@ function LoginRoute() {
                 <p className="mt-5 text-[0.72rem] uppercase tracking-[0.14em] text-[var(--text-secondary)]">
                   <a
                     className="text-[var(--text-primary)] underline-offset-4 hover:underline"
-                    href="/forgot-password"
+                    href="/_viewer/forgot-password"
                   >
                     Forgot password
                   </a>

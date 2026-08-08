@@ -136,14 +136,17 @@ describe('root shell behavior', () => {
     }
   );
 
-  it('hides shell chrome on login routes', () => {
-    mockRouterState.search = '';
-    mockRouterState.pathname = '/login';
+  it.each(['/login', '/forgot-password', '/reset-password'])(
+    'hides shell chrome on public auth route %s',
+    (pathname) => {
+      mockRouterState.search = '';
+      mockRouterState.pathname = pathname;
 
-    const markup = renderToStaticMarkup(<RootComponent />);
+      const markup = renderToStaticMarkup(<RootComponent />);
 
-    expect(markup).not.toContain('data-testid="viewer-sidebar"');
-    expect(markup).not.toContain('data-testid="top-command-bar"');
-    expect(markup).not.toContain('data-testid="verification-rail"');
-  });
+      expect(markup).not.toContain('data-testid="viewer-sidebar"');
+      expect(markup).not.toContain('data-testid="top-command-bar"');
+      expect(markup).not.toContain('data-testid="verification-rail"');
+    }
+  );
 });

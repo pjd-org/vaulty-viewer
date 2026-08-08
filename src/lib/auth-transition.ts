@@ -11,3 +11,9 @@ export function buildAuthTransitionPath(returnTo: string): string {
     normalizeReturnTo(returnTo)
   )}`;
 }
+
+export function buildViewerLoginPath(returnTo: string = '/'): string {
+  return `/_viewer/login?return_to=${encodeURIComponent(
+    normalizeReturnTo(returnTo)
+  )}`;
+}
