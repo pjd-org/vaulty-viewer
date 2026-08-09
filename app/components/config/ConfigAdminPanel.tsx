@@ -40,21 +40,20 @@ export function ConfigAdminPanel() {
     }));
   }, [admin.snapshot]);
 
-  const primaryRequest = React.useCallback(
-    () => ({
-      target: '.env',
-      changes: {
-        LLM_PROVIDER: primaryConfig.provider,
-        LLM_MODEL: primaryConfig.model,
-        OLLAMA_BASE_URL: primaryConfig.baseUrl,
-        OLLAMA_CHAT_MODEL: primaryConfig.chatModel,
-        ...(primaryConfig.apiKey.trim()
-          ? { OLLAMA_API_KEY: primaryConfig.apiKey }
-          : {}),
-      },
-    }),
-    [primaryConfig]
-  );
+  const primaryRequest = React.useCallback(() => {
+    const changes: Record<string, string> = {};
+    for (const [key, value] of [
+      ['LLM_PROVIDER', primaryConfig.provider],
+      ['LLM_MODEL', primaryConfig.model],
+      ['OLLAMA_BASE_URL', primaryConfig.baseUrl],
+      ['OLLAMA_CHAT_MODEL', primaryConfig.chatModel],
+    ]) {
+      if (value.trim()) changes[key] = value;
+    }
+    if (primaryConfig.apiKey.trim()) changes.OLLAMA_API_KEY = primaryConfig.apiKey;
+
+    return { target: '.env', changes };
+  }, [primaryConfig]);
 
   const runPrimaryPreview = React.useCallback(async () => {
     await admin.previewMutation(primaryRequest());
