@@ -133,7 +133,7 @@ describe('bootstrap route', () => {
       reason: 'missing-root-user',
     });
     mockCreateBootstrapRootUser.mockResolvedValue({
-      state: 'onboarding_draft',
+      state: 'new',
       nextRoute: '/onboarding/welcome',
       rootUserId: 'root-1',
       authSessionEstablished: false,

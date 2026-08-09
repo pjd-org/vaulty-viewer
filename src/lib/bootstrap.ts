@@ -3,12 +3,9 @@ import { apiFetch } from '../utils/api';
 export type BootstrapStatus = {
   state:
     | 'root_user_required'
-    | 'onboarding_draft'
-    | 'github_host_required'
-    | 'github_host_connected'
+    | 'new'
     | 'draft'
     | 'review'
-    | 'preflight_ready'
     | 'preflight_failed'
     | 'preflight_passed'
     | 'genesis_queued'
@@ -62,7 +59,7 @@ export type BootstrapRootUserInput = {
 };
 
 export type BootstrapRootUserResponse = {
-  state: 'onboarding_draft';
+  state: 'new';
   nextRoute: '/onboarding/welcome';
   rootUserId: string;
   authSessionEstablished: false;
