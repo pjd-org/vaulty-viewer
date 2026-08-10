@@ -80,6 +80,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@chromatic-com/storybook": "^5.1.2",
     "@storybook/addon-a11y": "^10.3.5",
     "@storybook/addon-designs": "^11.1.3",

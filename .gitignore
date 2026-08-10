@@ -6,6 +6,8 @@ public/
 .playwright-cli/
 dist/
 output/
+.lamiliss/proof/
+.lamiliss/out/
 app.config.timestamp_*.js
 .env
 .env.*
