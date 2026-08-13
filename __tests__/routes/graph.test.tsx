@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
@@ -13,13 +13,16 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('../../app/components/layout', () => ({
   WorkspaceScaffold: ({
+    actions,
     primary,
     aside,
   }: {
+    actions?: React.ReactNode;
     primary?: React.ReactNode;
     aside?: React.ReactNode;
   }) => (
     <div>
+      <div data-testid="scaffold-actions">{actions}</div>
       <div data-testid="scaffold-primary">{primary}</div>
       <div data-testid="scaffold-aside">{aside}</div>
     </div>
@@ -121,6 +124,22 @@ describe('graph route — with graph data', () => {
   it('renders node list', () => {
     render(<GraphComponent />);
     expect(screen.getByTestId('graph-node-list')).toBeTruthy();
+  });
+
+  it('uses the same accessible inactive style for both graph modes', () => {
+    render(<GraphComponent />);
+    const interactive = screen.getByRole('button', { name: 'Interactive' });
+    const sketch = screen.getByRole('button', { name: 'Sketch' });
+
+    expect(interactive.getAttribute('aria-pressed')).toBe('true');
+    expect(sketch.getAttribute('aria-pressed')).toBe('false');
+    expect(sketch.className).toContain('text-[var(--text-primary)]');
+
+    fireEvent.click(sketch);
+
+    expect(sketch.getAttribute('aria-pressed')).toBe('true');
+    expect(interactive.getAttribute('aria-pressed')).toBe('false');
+    expect(interactive.className).toContain('text-[var(--text-primary)]');
   });
 
   it('keeps the aside slot empty', () => {

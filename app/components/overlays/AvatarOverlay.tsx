@@ -101,7 +101,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">Avatar</DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+              <DialogDescription className="mt-1 text-sm text-[var(--text-primary)]">
                 Readiness, vitals, and the working envelope for the current
                 avatar state.
               </DialogDescription>
@@ -127,7 +127,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
             </div>
           </div>
 
-          <main className="px-6 py-5">
+          <div className="px-6 py-5 [--text-secondary:var(--text-primary)] [--text-tertiary:var(--text-primary)]">
             <nav className="mb-4">
               <Button
                 asChild
@@ -191,7 +191,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
             ) : (
               <>
                 <section className="mb-5 flex flex-col gap-2">
-                  <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-foreground">
                     Vitals
                   </p>
                   <VitalsPanel vitals={vitals} />
@@ -204,7 +204,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
                 <ExecutionStats vitals={vitals} />
 
                 <details className="group mb-4">
-                  <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
+                  <summary className="cursor-pointer select-none text-[11px] font-medium uppercase tracking-widest text-foreground">
                     Progression
                   </summary>
                   <div className="mt-2">
@@ -233,7 +233,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
                 )}
               </>
             )}
-          </main>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

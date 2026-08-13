@@ -150,7 +150,7 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
               asChild
               variant="ghost"
               size="sm"
-              className="!rounded-full"
+              className="!rounded-full !bg-transparent !text-[var(--text-primary)] hover:!bg-[var(--surf-utility)]"
             >
               <Link
                 to="/health"

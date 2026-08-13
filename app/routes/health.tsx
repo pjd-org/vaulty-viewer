@@ -29,10 +29,10 @@ export const Route = createFileRoute('/health')({
 });
 
 const STATUS_COLORS: Record<HealthServiceEntry['status'], string> = {
-  ok: 'text-success',
-  degraded: 'text-warning',
-  timeout: 'text-warning',
-  error: 'text-destructive',
+  ok: 'text-emerald-800 dark:text-emerald-300',
+  degraded: 'text-amber-800 dark:text-amber-300',
+  timeout: 'text-amber-800 dark:text-amber-300',
+  error: 'text-red-800 dark:text-red-300',
 };
 
 function StatusBadge({ status }: { status: HealthServiceEntry['status'] }) {
@@ -76,7 +76,7 @@ function ServiceTable({
             key={svc.id}
             role="button"
             tabIndex={0}
-            aria-selected={selectedId === svc.id}
+            aria-pressed={selectedId === svc.id}
             onClick={() => onSelect(svc)}
             onKeyDown={(e) =>
               (e.key === 'Enter' || e.key === ' ') && onSelect(svc)
@@ -149,7 +149,10 @@ function ServiceDetail({ svc }: { svc: HealthServiceEntry }) {
 }
 
 function OverallBadge({ payload }: { payload: HealthSurfacePayload }) {
-  const color = payload.overall === 'ok' ? 'text-success' : 'text-warning';
+  const color =
+    payload.overall === 'ok'
+      ? 'text-emerald-800 dark:text-emerald-300'
+      : 'text-amber-800 dark:text-amber-300';
   return (
     <span
       data-testid="health-overall-status"
@@ -198,7 +201,7 @@ function HealthRoute() {
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">Health</DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+              <DialogDescription className="mt-1 text-sm text-[var(--text-primary)]">
                 Platform-integrity lane for freshness, incidents, sync, and
                 degraded services.
               </DialogDescription>

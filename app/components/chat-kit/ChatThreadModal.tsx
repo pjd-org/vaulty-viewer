@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogOverlay,
   DialogPortal,
+  DialogTitle,
 } from '@/app/components/ui/dialog';
 import { cn } from '@/src/lib/utils';
 import { GlassSurface } from '@vault/ui';
@@ -46,6 +47,7 @@ export function ChatThreadModal({
             dialogClassName
           )}
         >
+          <DialogTitle className="sr-only">{ariaLabel}</DialogTitle>
           <GlassSurface
             variant="overlay"
             radius="2xl"

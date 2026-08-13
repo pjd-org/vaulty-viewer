@@ -458,7 +458,7 @@ function KanbanRoute() {
       type="button"
       onClick={handleRefresh}
       disabled={isRefreshing}
-      className="rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] font-medium text-muted-foreground transition hover:bg-muted/60 disabled:opacity-50"
+      className="rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted/60 disabled:opacity-50"
     >
       {isRefreshing ? 'Refreshing…' : 'Refresh'}
     </button>
@@ -469,10 +469,10 @@ function KanbanRoute() {
       className={[
         'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
         apiStatus === 'online'
-          ? 'bg-success/10 text-success'
+          ? 'bg-emerald-100 text-emerald-800'
           : apiStatus === 'error'
-            ? 'bg-warning/10 text-warning'
-            : 'bg-destructive/10 text-destructive',
+            ? 'bg-amber-100 text-amber-800'
+            : 'bg-red-100 text-red-800',
       ].join(' ')}
     >
       {apiStatus === 'online'
@@ -505,7 +505,12 @@ function KanbanRoute() {
       primary={
         <div className="flex flex-col gap-6">
           {/* Board columns — horizontally scrollable on narrow viewports */}
-          <div className="overflow-x-auto -mx-1 px-1 pb-2">
+          <div
+            className="overflow-x-auto -mx-1 px-1 pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            tabIndex={0}
+            role="region"
+            aria-label="Kanban board columns"
+          >
             <div className="flex gap-4 min-w-[680px]">
               {columns.map((col) => {
                 const isCompletedColumn = col.key === 'completed';

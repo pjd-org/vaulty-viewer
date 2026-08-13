@@ -16,7 +16,7 @@ const variantClasses: Record<ChipVariant, string> = {
   primary:
     'bg-[linear-gradient(135deg,var(--n-950),var(--n-900))] text-[var(--n-0)] border border-[var(--border-glass-soft)] shadow-[var(--shadow-card)]',
   success:
-    'bg-[color-mix(in_srgb,var(--a-mint)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
+    'bg-[color-mix(in_srgb,var(--a-mint)_45%,transparent)] text-slate-950 border border-[var(--border-glass)]',
   warning:
     'bg-[color-mix(in_srgb,var(--a-sun)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
   danger:

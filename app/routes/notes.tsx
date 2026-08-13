@@ -251,7 +251,7 @@ function NotesRoute() {
             value={draftQ}
             onChange={(e) => setDraftQ(e.target.value)}
             placeholder="Search notes…"
-            className="min-w-0"
+            className="min-w-0 text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <button
@@ -285,7 +285,7 @@ function NotesRoute() {
 
       <GlassCard variant="light" glowEffect={false} className="p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-white/60">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-foreground">
             Collection
           </p>
           {COLLECTION_OPTIONS.map((opt) => (
@@ -297,7 +297,7 @@ function NotesRoute() {
                 'rounded-lg px-3 py-2 text-left text-sm transition-all duration-200 cursor-pointer',
                 audienceFilter === opt.value && !searchEnabled
                   ? 'bg-white/20 text-white border border-white/30'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
+                  : 'text-foreground hover:bg-white/20 hover:text-foreground'
               )}
             >
               {opt.label}
@@ -306,7 +306,7 @@ function NotesRoute() {
         </div>
 
         {!searchEnabled && (
-          <p className="mt-2 text-xs text-white/60">
+          <p className="mt-2 text-xs text-foreground">
             Use the search bar to find notes by content or tags.
           </p>
         )}

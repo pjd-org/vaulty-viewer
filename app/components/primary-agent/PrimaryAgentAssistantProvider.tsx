@@ -27,6 +27,7 @@ import {
 } from '../../../src/lib/primary-agent-adapter';
 import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/primary-agent-thread-history';
 import { primaryAgentToolkit } from '../../../src/lib/primary-agent-toolkit';
+import { TooltipProvider } from '../ui/tooltip';
 
 interface PrimaryAgentAssistantProviderProps {
   children: React.ReactNode;
@@ -90,8 +91,10 @@ export function PrimaryAgentAssistantProvider({
   });
 
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <PrimaryAgentToolkitBridge>{children}</PrimaryAgentToolkitBridge>
-    </AssistantRuntimeProvider>
+    <TooltipProvider>
+      <AssistantRuntimeProvider runtime={runtime}>
+        <PrimaryAgentToolkitBridge>{children}</PrimaryAgentToolkitBridge>
+      </AssistantRuntimeProvider>
+    </TooltipProvider>
   );
 }

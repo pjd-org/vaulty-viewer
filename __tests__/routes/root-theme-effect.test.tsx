@@ -134,7 +134,7 @@ describe('root theme effect — DOM class mutations', () => {
   });
 
   afterEach(() => {
-    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.remove('dark', 'light');
     cleanup();
     _changeListeners = [];
   });
@@ -143,6 +143,7 @@ describe('root theme effect — DOM class mutations', () => {
     mockTheme = 'dark';
     render(<RootComponent />);
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.classList.contains('light')).toBe(false);
   });
 
   it('removes .dark when theme is "light" (even if class was pre-existing)', () => {
@@ -150,6 +151,7 @@ describe('root theme effect — DOM class mutations', () => {
     mockTheme = 'light';
     render(<RootComponent />);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.classList.contains('light')).toBe(true);
   });
 
   it('adds .dark when theme is "system" and OS prefers dark', () => {
@@ -157,6 +159,7 @@ describe('root theme effect — DOM class mutations', () => {
     mockTheme = 'system';
     render(<RootComponent />);
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.classList.contains('light')).toBe(false);
   });
 
   it('does not add .dark when theme is "system" and OS prefers light', () => {
@@ -164,6 +167,7 @@ describe('root theme effect — DOM class mutations', () => {
     mockTheme = 'system';
     render(<RootComponent />);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.classList.contains('light')).toBe(false);
   });
 
   it('system: OS preference change to dark adds .dark', () => {

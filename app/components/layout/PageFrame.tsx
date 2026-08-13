@@ -22,7 +22,7 @@ export function PageFrame({
 }: PageFrameProps) {
   return (
     <div className="flex flex-col gap-6">
-      <GlassSurface as="header" variant="elevated" radius="2xl" shadow="sm" border="default" className="p-6">
+      <GlassSurface as="div" variant="elevated" radius="2xl" shadow="sm" border="default" className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">

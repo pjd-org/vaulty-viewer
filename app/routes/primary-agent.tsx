@@ -334,13 +334,13 @@ function PrimaryAgentRouteInner({
   );
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1320px] flex-col gap-5 px-4 pb-6 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1320px] flex-col gap-5 px-4 pb-6 sm:px-6 lg:px-8">
       <PrimaryAgentSplitSurface
         isMobile={isMobile}
         leftPane={leftPane}
         rightPane={rightPane}
       />
-    </main>
+    </div>
   );
 }
 

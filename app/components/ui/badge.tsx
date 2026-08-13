@@ -13,23 +13,23 @@ const badgeVariants = cva(
         secondary:
           "bg-surface-2 text-ink border border-subtle",
         accent:
-          "bg-[var(--vault-accent)] text-white border-transparent",
+          "bg-[var(--vault-accent)] text-slate-950 border-transparent",
         success:
-          "bg-[var(--vault-status-pass)] text-white border-transparent",
+          "bg-[var(--vault-status-pass)] text-slate-950 border-transparent",
         warning:
-          "bg-[var(--vault-status-warn)] text-white border-transparent",
+          "bg-[var(--vault-status-warn)] text-slate-950 border-transparent",
         danger:
-          "bg-[var(--vault-status-fail)] text-white border-transparent",
+          "bg-[var(--vault-status-fail)] text-slate-950 border-transparent",
         muted:
-          "bg-surface-3 text-muted border border-faint",
+          "bg-surface-3 text-foreground border border-faint",
         online:
           "bg-[var(--vault-status-online)] text-white border-transparent",
         offline:
           "bg-[var(--vault-status-offline)] text-white border-transparent",
         loading:
-          "bg-[var(--vault-status-loading)] text-white border-transparent",
+          "bg-[var(--vault-status-loading)] text-slate-950 border-transparent",
         unknown:
-          "bg-surface-3 text-muted border-transparent",
+          "bg-surface-3 text-foreground border-transparent",
       },
     },
     defaultVariants: {

@@ -64,12 +64,12 @@ function PanelHero({
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
+            <p className="mt-1.5 text-sm text-[var(--text-primary)]">
               {subtitle}
             </p>
           )}
           {statusLine && (
-            <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+            <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
               {statusLine}
             </p>
           )}

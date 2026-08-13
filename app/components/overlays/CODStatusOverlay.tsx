@@ -102,7 +102,7 @@ export function CODStatusOverlay({ onRequestClose }: CODStatusOverlayProps = {})
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">COD Status</DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+              <DialogDescription className="mt-1 text-sm text-[var(--text-primary)]">
                 Readiness, constraints, and the current working envelope for the
                 command center.
               </DialogDescription>

@@ -26,6 +26,7 @@ function NoteNewRoute() {
 
   return (
     <PageContainer className="max-w-3xl pb-12">
+      <h1 className="sr-only">New Note</h1>
       <nav className="mb-4">
         <button
           type="button"

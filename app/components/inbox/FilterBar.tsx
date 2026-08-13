@@ -38,6 +38,7 @@ export function FilterBar({
         Sort
       </span>
       <select
+        aria-label="Sort inbox items"
         value={sort}
         onChange={(e) => onSortChange(e.target.value as SortKey)}
         className={selectCls}
@@ -52,6 +53,7 @@ export function FilterBar({
         Filter
       </span>
       <select
+        aria-label="Filter inbox by run type"
         value={runType}
         onChange={(e) => onRunTypeChange(e.target.value)}
         className={selectCls}
@@ -62,6 +64,7 @@ export function FilterBar({
         <option value="manual">Manual</option>
       </select>
       <select
+        aria-label="Filter inbox by reversibility"
         value={reversibility}
         onChange={(e) => onReversibilityChange(e.target.value)}
         className={selectCls}
@@ -72,6 +75,7 @@ export function FilterBar({
         <option value="low">Irreversible</option>
       </select>
       <select
+        aria-label="Filter inbox by severity"
         value={severity}
         onChange={(e) => onSeverityChange(e.target.value)}
         className={selectCls}
