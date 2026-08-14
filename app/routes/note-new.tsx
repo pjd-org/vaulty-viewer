@@ -31,7 +31,7 @@ function NoteNewRoute() {
         <button
           type="button"
           onClick={() => void navigate({ to: '/notes' })}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1 bg-transparent text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           ← Back to notes
         </button>

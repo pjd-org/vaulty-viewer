@@ -174,14 +174,19 @@ export function ConfigAdminPanel() {
 
         <div className="grid gap-4 xl:grid-cols-2">
           <PanelBox title="Snapshot">
-            <pre className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)]">
+            <pre
+              tabIndex={0}
+              className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
               {JSON.stringify(admin.snapshot, null, 2)}
             </pre>
           </PanelBox>
 
           <PanelBox title="Preview / Result">
-            <pre className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)]">
-
+            <pre
+              tabIndex={0}
+              className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
               {JSON.stringify(admin.preview ?? admin.applyResult, null, 2)}
             </pre>
           </PanelBox>
@@ -229,7 +234,7 @@ export function ConfigAdminPanel() {
         </div>
 
         {admin.error && (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-[var(--text-danger)]">
             {admin.error}
           </p>
         )}
