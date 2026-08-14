@@ -1,0 +1,67 @@
+{
+  "name": "viewer-v3-release-verification",
+  "version": "1.0.0",
+  "description": "Durable 168-case release matrix runner for Viewer V3 (28 routes x 3 viewports x 2 themes). Task: viewer-v3-full-release-verification-2026-08-15.",
+  "baseUrl": "http://127.0.0.1:8080",
+  "pinnedCommits": {
+    "superRepo": "fb65cd0db4c9a3daa1444f5c9bcbf9068fc5537b",
+    "viewer": "482db8c2207aa0d1bace3d7443ec2f71ec214c81",
+    "api": "e87ecd52e57985629cc3d4247bdf1042a685c056",
+    "proxy": "de0cd6c87f5e1698434a17ddd7e028053a229200"
+  },
+  "viewports": [
+    { "width": 390, "height": 844 },
+    { "width": 768, "height": 1024 },
+    { "width": 1440, "height": 900 }
+  ],
+  "themes": ["light", "dark"],
+  "routes": [
+    { "path": "/", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "index dashboard" },
+    { "path": "/actions", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "actions" },
+    { "path": "/agent-shell", "auth": true, "expect": { "type": "text", "value": "Agent Shell" }, "note": "agent shell" },
+    { "path": "/archive", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "archive" },
+    { "path": "/automation", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "automation" },
+    { "path": "/avatar", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "avatar" },
+    { "path": "/bootstrap", "auth": true, "finalPaths": ["/onboarding/welcome"], "expect": { "type": "main", "minChars": 1 }, "note": "bootstrap status redirects to onboarding when bootstrap is pending" },
+    { "path": "/bubble", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "bubble" },
+    { "path": "/cod-status", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "cod status" },
+    { "path": "/config", "auth": true, "excludeFromGate": "Proxy owns /config/ for the Config control plane; the Viewer UI route is unreachable through the canonical release proxy.", "expect": { "type": "main", "minChars": 1 }, "note": "governance exclusion captured as six executed external-dependency cases" },
+    { "path": "/forgot-password", "auth": true, "expect": { "type": "input", "name": "email" }, "note": "public page; proxy gates unprefixed path so authenticated run renders it" },
+    { "path": "/genesis", "auth": true, "finalPaths": ["/onboarding/welcome"], "expect": { "type": "main", "minChars": 1 }, "note": "genesis redirects to onboarding when bootstrap is pending" },
+    { "path": "/goals", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "goals" },
+    { "path": "/graph", "auth": true, "expect": { "type": "aria-pressed" }, "note": "graph; Interactive/Sketch toggle buttons" },
+    { "path": "/health", "urlPath": "/_viewer/health", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "canonical health route; proxy /health is the proxy's own JSON endpoint, viewer page served at /_viewer/health" },
+    { "path": "/inbox", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "inbox" },
+    { "path": "/kanban", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "kanban" },
+    { "path": "/knowledge", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "knowledge" },
+    { "path": "/login", "auth": false, "expect": { "type": "input", "name": "email" }, "note": "anonymous; login form" },
+    { "path": "/note-new", "auth": true, "expect": { "type": "text", "value": "New Note" }, "note": "note composer" },
+    { "path": "/notes", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "notes list" },
+    { "path": "/portfolio", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "portfolio" },
+    { "path": "/primary-agent", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "primary agent" },
+    { "path": "/projects", "auth": true, "finalPaths": ["/work"], "expect": { "type": "main", "minChars": 1 }, "note": "projects is an alias for work" },
+    { "path": "/reset-password", "auth": true, "expect": { "type": "input", "name": "password" }, "note": "public page; proxy gates unprefixed path so authenticated run renders it" },
+    { "path": "/settings", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "settings; must render under authenticated fixture" },
+    { "path": "/timeline", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "timeline" },
+    { "path": "/work", "auth": true, "expect": { "type": "main", "minChars": 1 }, "note": "work" }
+  ],
+  "exclusions": {
+    "parameterized": [
+      { "path": "/note", "note": "requires a note id fixture" },
+      { "path": "/session/$id", "note": "requires a session id fixture" },
+      { "path": "/projects/$projectId", "note": "requires a project id fixture" },
+      { "path": "/project/$slug", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/automation", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/dependencies", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/knowledge", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/risks", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/settings", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/tasks", "note": "requires a project slug fixture" },
+      { "path": "/project/$slug/timeline", "note": "requires a project slug fixture" },
+      { "path": "/knowledge/search", "note": "requires search fixtures" },
+      { "path": "/knowledge/graph", "note": "requires knowledge graph fixtures" },
+      { "path": "/onboarding/*", "note": "bootstrap lifecycle; requires onboarding draft fixtures" },
+      { "path": "/oauth/*", "note": "OAuth consent flow; requires provider fixtures" }
+    ]
+  }
+}
