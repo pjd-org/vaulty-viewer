@@ -96,6 +96,7 @@ export function CODStatusOverlay({ onRequestClose }: CODStatusOverlayProps = {})
     <Dialog open onOpenChange={(open) => !open && closeOverlay()}>
       <DialogContent
         aria-label="COD status"
+        aria-modal="true"
         className="!max-w-[min(960px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
         <div className="max-h-[min(88vh,860px)] overflow-y-auto">

@@ -95,6 +95,7 @@ export function AvatarOverlay({ onRequestClose }: AvatarOverlayProps = {}) {
     <Dialog open onOpenChange={(open) => !open && closeOverlay()}>
       <DialogContent
         aria-label="Avatar"
+        aria-modal="true"
         className="!max-w-[min(980px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
         <div className="max-h-[min(90vh,920px)] overflow-y-auto">
