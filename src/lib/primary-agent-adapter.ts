@@ -138,10 +138,20 @@ async function readStreamResponse(
     if (!data || data === '[DONE]') return;
     try {
       const parsed = JSON.parse(data) as unknown;
-      if (!parsed || typeof parsed !== 'object' || !('kind' in parsed)) {
+      if (!parsed || typeof parsed !== 'object') {
         return;
       }
-      const event = parsed as ViewerStreamEvent;
+      const record = parsed as Record<string, unknown>;
+      // Tensura canonical stream emits a single { type: 'final', result } frame.
+      if (record.type === 'final' && typeof record.result === 'string') {
+        assistantText = record.result;
+        sawSummary = true;
+        return;
+      }
+      if (!('kind' in record)) {
+        return;
+      }
+      const event = record as ViewerStreamEvent;
       events.push(event);
       publishPrimaryAgentStreamEvent(threadId, event);
       if (event.kind === 'token' && event.nodeId === 'huey') {
