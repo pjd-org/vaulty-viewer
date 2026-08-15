@@ -4,6 +4,7 @@ public/
 .vinxi/
 .output/
 .playwright-cli/
+test-results/
 dist/
 output/
 .lamiliss/proof/
