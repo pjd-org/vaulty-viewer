@@ -38,7 +38,7 @@ export function ModeSwitcher({
       aria-label="Execution mode"
       className={cn(
         'flex items-center gap-1 p-1 rounded-xl',
-        'bg-white/5 border border-white/10 backdrop-blur-sm',
+        'bg-muted/40 border border-border backdrop-blur-sm',
         className
       )}
     >
@@ -54,14 +54,14 @@ export function ModeSwitcher({
             onClick={() => onChange(cfg.mode)}
             className={cn(
               'relative px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
               'disabled:pointer-events-none disabled:opacity-40',
               selected
                 ? [
-                    'bg-white/15 text-white border border-white/20',
+                    'bg-primary text-slate-950 border border-primary',
                     'shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
                   ]
-                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                : 'text-foreground hover:text-foreground hover:bg-muted'
             )}
           >
             {cfg.label}

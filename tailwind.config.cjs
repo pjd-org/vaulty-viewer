@@ -6,7 +6,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
     '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: ['media', 'class'],
+  darkMode: 'class',
   corePlugins: {
     preflight: false,
   },

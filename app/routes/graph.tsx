@@ -313,6 +313,7 @@ function GraphFlow({
         onNodeClick={onNodeClick}
         onPaneClick={() => onSelectPath('')}
         attributionPosition="bottom-left"
+        proOptions={{ hideAttribution: true }}
       >
         <Background
           color="color-mix(in_srgb,var(--text-secondary)_16%,transparent)"
@@ -390,6 +391,8 @@ function GraphRoute() {
   const { data, isLoading } = useKnowledgeGraph();
   const [selectedPath, setSelectedPath] = React.useState<string | null>(null);
   const [viewMode, setViewMode] = React.useState<GraphViewMode>('interactive');
+  const inactiveModeClass =
+    'text-[var(--text-primary)] hover:bg-[var(--surf-base)]';
   const nodeEntries = React.useMemo(
     () => Object.entries(data?.nodes ?? {}),
     [data]
@@ -434,8 +437,9 @@ function GraphRoute() {
               'cursor-pointer rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'interactive'
                 ? 'bg-[var(--n-900)] text-[var(--n-0)]'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--surf-base)]',
+                : inactiveModeClass,
             ].join(' ')}
+            aria-pressed={viewMode === 'interactive'}
           >
             Interactive
           </button>
@@ -446,8 +450,9 @@ function GraphRoute() {
               'cursor-pointer rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
               viewMode === 'sketch'
                 ? 'bg-[var(--n-900)] text-[var(--n-0)]'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--surf-base)]',
+                : inactiveModeClass,
             ].join(' ')}
+            aria-pressed={viewMode === 'sketch'}
           >
             Sketch
           </button>

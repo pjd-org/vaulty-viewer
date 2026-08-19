@@ -1,0 +1,39 @@
+{
+  "name": "vault-viewer",
+  "visualContract": "DESIGN.md",
+  "tokenSource": "../../packages/ui/tokens.css",
+  "sourceDirs": ["src", "app", "components"],
+  "routes": [
+    "/", "/actions", "/agent-shell", "/archive", "/automation", "/avatar",
+    "/bootstrap", "/bubble", "/cod-status", "/config", "/forgot-password",
+    "/genesis", "/goals", "/graph", "/health", "/inbox", "/kanban",
+    "/knowledge", "/login", "/note-new", "/notes", "/portfolio",
+    "/primary-agent", "/projects", "/reset-password", "/settings", "/timeline",
+    "/work"
+  ],
+  "breakpoints": [390, 768, 1440],
+  "variantBudgets": {
+    "default": 6,
+    "button": 6,
+    "link": 6,
+    "input": 4,
+    "select": 3,
+    "tab": 3,
+    "toggle": 3
+  },
+  "motion": false,
+  "policy": {
+    "exceptions": [
+      "@vault/ui",
+      "generated route tree"
+    ],
+    "rules": {
+      "button-name": { "enabled": true, "level": "warning" },
+      "unsafe-animation": { "enabled": true, "level": "warning" },
+      "reduced-motion": { "enabled": false },
+      "horizontal-overflow": { "enabled": true, "level": "error" },
+      "runtime-console": { "enabled": true, "level": "error" }
+    }
+  },
+  "outDir": ".lamiliss/out"
+}

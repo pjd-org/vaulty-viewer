@@ -459,7 +459,7 @@ function WorkRoute() {
                   onClick={() => setTaskFilter('all')}
                   className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                     taskFilter === 'all'
-                      ? 'border-primary bg-primary text-primary-foreground'
+                      ? 'border-primary bg-primary text-slate-950'
                       : 'border-border bg-card text-muted-foreground'
                   }`}
                 >

@@ -14,6 +14,7 @@ import {
 } from '../../src/lib/primary-agent-intents';
 import { useHydrated } from '../../src/hooks/useHydrated';
 import { useIsMobile } from '../hooks/use-mobile';
+import { useIsStacked } from '../hooks/use-is-stacked';
 import {
   PrimaryAgentContextRail,
   PrimaryAgentStreamRail,
@@ -232,6 +233,7 @@ function PrimaryAgentRouteInner({
 }: PrimaryAgentRouteInnerProps) {
   const thread = useThread();
   const isMobile = useIsMobile();
+  const isStacked = useIsStacked();
 
   /**
    * The composer primitives handle send internally via the runtime.
@@ -334,13 +336,13 @@ function PrimaryAgentRouteInner({
   );
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1320px] flex-col gap-5 px-4 pb-6 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1320px] flex-col gap-5 px-4 pb-6 sm:px-6 lg:px-8">
       <PrimaryAgentSplitSurface
-        isMobile={isMobile}
+        isMobile={isMobile || isStacked}
         leftPane={leftPane}
         rightPane={rightPane}
       />
-    </main>
+    </div>
   );
 }
 

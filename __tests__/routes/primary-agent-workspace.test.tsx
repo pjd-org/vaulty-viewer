@@ -15,12 +15,6 @@
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  AssistantRuntimeProvider,
-  useLocalRuntime,
-  type ChatModelAdapter,
-} from '@assistant-ui/react';
-import { TooltipProvider } from '@/app/components/ui/tooltip';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -61,29 +55,27 @@ afterEach(cleanup);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** A no-op model adapter — never actually sends messages in tests */
-const noopAdapter: ChatModelAdapter = {
-  run: () => new Promise(() => {}), // never resolves
-};
-
 function PrimaryAgentWorkspaceWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const runtime = useLocalRuntime(noopAdapter);
   return (
-    <TooltipProvider>
-      <AssistantRuntimeProvider runtime={runtime}>
-        {children}
-      </AssistantRuntimeProvider>
-    </TooltipProvider>
+    <PrimaryAgentAssistantProvider
+      threadId="test-thread"
+      onThreadIdChange={() => {}}
+      getIntent={() => null}
+      getContext={() => null}
+    >
+      {children}
+    </PrimaryAgentAssistantProvider>
   );
 }
 
 // ── Import component after mocks ──────────────────────────────────────────────
 
 import { PrimaryAgentWorkspace } from '../../app/components/primary-agent/PrimaryAgentWorkspace';
+import { PrimaryAgentAssistantProvider } from '../../app/components/primary-agent/PrimaryAgentAssistantProvider';
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 

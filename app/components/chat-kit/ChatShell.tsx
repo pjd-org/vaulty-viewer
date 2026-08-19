@@ -63,7 +63,7 @@ export function ChatShell({
             {sidebar}
           </aside>
         )}
-        <main className="min-h-0">{children}</main>
+        <div className="min-h-0">{children}</div>
       </div>
 
       {footer && (

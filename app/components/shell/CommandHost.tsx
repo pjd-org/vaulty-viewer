@@ -12,6 +12,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/app/components/ui/dialog';
 import { useUIStore } from '../../../src/store/ui';
 import {
@@ -64,6 +65,7 @@ export function CommandHost() {
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_24%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
         )}
       >
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
         <Command
           className="flex flex-col overflow-hidden rounded-[20px] !bg-transparent"
           shouldFilter

@@ -96,13 +96,14 @@ export function CODStatusOverlay({ onRequestClose }: CODStatusOverlayProps = {})
     <Dialog open onOpenChange={(open) => !open && closeOverlay()}>
       <DialogContent
         aria-label="COD status"
+        aria-modal="true"
         className="!max-w-[min(960px,calc(100vw-2rem))] !overflow-hidden !border !border-[var(--border-glass)] !bg-[var(--surf-overlay)] !p-0 !shadow-2xl"
       >
         <div className="max-h-[min(88vh,860px)] overflow-y-auto">
           <div className="border-b border-[var(--border-glass-soft)] px-6 py-5">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl">COD Status</DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-[var(--text-secondary)]">
+              <DialogDescription className="mt-1 text-sm text-[var(--text-primary)]">
                 Readiness, constraints, and the current working envelope for the
                 command center.
               </DialogDescription>

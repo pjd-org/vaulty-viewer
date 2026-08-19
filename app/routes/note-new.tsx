@@ -26,11 +26,12 @@ function NoteNewRoute() {
 
   return (
     <PageContainer className="max-w-3xl pb-12">
+      <h1 className="sr-only">New Note</h1>
       <nav className="mb-4">
         <button
           type="button"
           onClick={() => void navigate({ to: '/notes' })}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1 bg-transparent text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           ← Back to notes
         </button>

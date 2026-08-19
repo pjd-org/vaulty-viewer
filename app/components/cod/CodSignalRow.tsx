@@ -7,9 +7,9 @@ import { codActionBtnClass, codBadgeBaseClass } from './CodActionRow';
 // ---------------------------------------------------------------------------
 
 const VARIANT_COLOR: Record<string, string> = {
-  ok: 'text-success',
-  warn: 'text-warning',
-  bad: 'text-danger',
+  ok: 'text-emerald-800',
+  warn: 'text-amber-800',
+  bad: 'text-red-800',
 };
 
 interface CodSignalItem {

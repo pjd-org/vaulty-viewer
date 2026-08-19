@@ -145,12 +145,12 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
             />
           </label>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Button
               asChild
               variant="ghost"
               size="sm"
-              className="!rounded-full"
+              className="!rounded-full !bg-transparent !text-[var(--text-primary)] hover:!bg-[var(--surf-utility)]"
             >
               <Link
                 to="/health"

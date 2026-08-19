@@ -18,6 +18,51 @@ const DEFAULT_REQUEST = JSON.stringify(
 export function ConfigAdminPanel() {
   const admin = useConfigAdmin();
   const [requestText, setRequestText] = React.useState(DEFAULT_REQUEST);
+  const [primaryConfig, setPrimaryConfig] = React.useState({
+    provider: '',
+    model: '',
+    baseUrl: '',
+    chatModel: '',
+    apiKey: '',
+  });
+
+  React.useEffect(() => {
+    const fields = admin.snapshot?.fields ?? [];
+    const valueFor = (key: string) =>
+      fields.find((field) => field.key === key)?.value;
+    setPrimaryConfig((current) => ({
+      provider: current.provider || String(valueFor('LLM_PROVIDER') ?? ''),
+      model: current.model || String(valueFor('LLM_MODEL') ?? ''),
+      baseUrl: current.baseUrl || String(valueFor('OLLAMA_BASE_URL') ?? ''),
+      chatModel:
+        current.chatModel || String(valueFor('OLLAMA_CHAT_MODEL') ?? ''),
+      apiKey: current.apiKey,
+    }));
+  }, [admin.snapshot]);
+
+  const primaryRequest = React.useCallback(() => {
+    const changes: Record<string, string> = {};
+    for (const [key, value] of [
+      ['LLM_PROVIDER', primaryConfig.provider],
+      ['LLM_MODEL', primaryConfig.model],
+      ['OLLAMA_BASE_URL', primaryConfig.baseUrl],
+      ['OLLAMA_CHAT_MODEL', primaryConfig.chatModel],
+    ]) {
+      if (value.trim()) changes[key] = value;
+    }
+    if (primaryConfig.apiKey.trim()) changes.OLLAMA_API_KEY = primaryConfig.apiKey;
+
+    return { target: '.env', changes };
+  }, [primaryConfig]);
+
+  const runPrimaryPreview = React.useCallback(async () => {
+    await admin.previewMutation(primaryRequest());
+  }, [admin, primaryRequest]);
+
+  const runPrimaryApply = React.useCallback(async () => {
+    await admin.applyMutation(primaryRequest());
+    setPrimaryConfig((current) => ({ ...current, apiKey: '' }));
+  }, [admin, primaryRequest]);
   const statusTone =
     admin.status?.status === 'ok'
       ? 'mint'
@@ -25,6 +70,7 @@ export function ConfigAdminPanel() {
         ? 'sun'
         : !admin.status
           ? 'aqua'
+
           : 'neutral';
 
   const runPreview = React.useCallback(async () => {
@@ -49,6 +95,62 @@ export function ConfigAdminPanel() {
       className="overflow-hidden border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-4"
     >
       <div className="flex flex-col gap-4">
+        <PanelBox title="Primary LLM">
+          <p className="mb-3 text-xs text-[var(--text-secondary)]">
+            Updates the root environment used by Tensura. API keys are write-only.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ConfigField
+              label="Provider"
+              value={primaryConfig.provider}
+              onChange={(provider) =>
+                setPrimaryConfig((current) => ({ ...current, provider }))
+              }
+              placeholder="ollama-cloud"
+            />
+            <ConfigField
+              label="Model"
+              value={primaryConfig.model}
+              onChange={(model) =>
+                setPrimaryConfig((current) => ({ ...current, model }))
+              }
+              placeholder="glm-5.2:cloud"
+            />
+            <ConfigField
+              label="Ollama base URL"
+              value={primaryConfig.baseUrl}
+              onChange={(baseUrl) =>
+                setPrimaryConfig((current) => ({ ...current, baseUrl }))
+              }
+              placeholder="https://ollama.com/api"
+            />
+            <ConfigField
+              label="Ollama chat model"
+              value={primaryConfig.chatModel}
+              onChange={(chatModel) =>
+                setPrimaryConfig((current) => ({ ...current, chatModel }))
+              }
+              placeholder="glm-5.2:cloud"
+            />
+            <ConfigField
+              label="Ollama API key"
+              type="password"
+              value={primaryConfig.apiKey}
+              onChange={(apiKey) =>
+                setPrimaryConfig((current) => ({ ...current, apiKey }))
+              }
+              placeholder="Leave blank to keep existing key"
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <GlassButton type="button" tone="sky" onClick={() => void runPrimaryPreview()}>
+              Preview LLM update
+            </GlassButton>
+            <GlassButton type="button" tone="mint" onClick={() => void runPrimaryApply()}>
+              Apply LLM update
+            </GlassButton>
+          </div>
+        </PanelBox>
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
@@ -72,13 +174,19 @@ export function ConfigAdminPanel() {
 
         <div className="grid gap-4 xl:grid-cols-2">
           <PanelBox title="Snapshot">
-            <pre className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)]">
+            <pre
+              tabIndex={0}
+              className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
               {JSON.stringify(admin.snapshot, null, 2)}
             </pre>
           </PanelBox>
 
           <PanelBox title="Preview / Result">
-            <pre className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)]">
+            <pre
+              tabIndex={0}
+              className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
               {JSON.stringify(admin.preview ?? admin.applyResult, null, 2)}
             </pre>
           </PanelBox>
@@ -126,12 +234,38 @@ export function ConfigAdminPanel() {
         </div>
 
         {admin.error && (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-[var(--text-danger)]">
             {admin.error}
           </p>
         )}
       </div>
     </GlassCard>
+  );
+}
+function ConfigField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: React.HTMLInputTypeAttribute;
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-xs text-[var(--text-secondary)]">
+      <span className="font-semibold uppercase tracking-[0.14em]">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+      />
+    </label>
   );
 }
 

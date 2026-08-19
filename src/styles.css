@@ -1,6 +1,5 @@
 /* Design-system tokens — single source of truth */
 @import '@vault/ui/tokens.css';
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
 
 /* shadcn/ui CSS variable bridge — maps shadcn expected names to vault tokens.
@@ -124,34 +123,6 @@
 
   /* Fix: --vault-border-soft was referencing an undefined var; resolve directly */
   --vault-border-soft: var(--color-border-soft);
-}
-
-/* ── Force light theme — override tokens.css dark media query ───────────── */
-/* tokens.css redefines --color-* to dark values inside
-   @media (prefers-color-scheme: dark). This block overrides that with the
-   same specificity (media query + :root) but comes later in the cascade,
-   so the viewer always renders in light mode regardless of OS color scheme. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #f6f7fb;
-    --color-surface: #ffffff;
-    --color-surface-2: #f3f1f8;
-    --color-surface-3: #ece8f3;
-    --color-text: #17141f;
-    --color-text-2: #4a4558;
-    --color-text-3: #6b6478;
-    --color-border: rgba(191, 201, 218, 0.5);
-    --color-border-soft: #f0edf4;
-    --color-input-bg: #f3f1f8;
-    --color-chip-bg: #ece8f3;
-    --shadow-sm: 0 2px 8px rgba(100, 110, 140, 0.1);
-    --shadow-md: 0 6px 20px rgba(100, 110, 140, 0.14);
-    --shadow-lg: 0 16px 40px rgba(100, 110, 140, 0.18);
-    --vault-glow: rgba(79, 140, 255, 0.08);
-    --vault-surface-container-high: #e8e4f2;
-    --vault-surface-container-highest: #ddd8ec;
-    --vault-secondary-container: rgba(52, 199, 89, 0.07);
-  }
 }
 
 /* ── Genie utility classes ──────────────────────────────────────────────── */
@@ -329,7 +300,7 @@
 body {
   margin: 0;
   font-family: 'Urbanist', 'Inter', 'SF Pro Text', 'Segoe UI', sans-serif;
-  color: #1c2230;
+  color: var(--text-primary);
   background:
     radial-gradient(
       980px at 16% 10%,
@@ -349,6 +320,11 @@ body {
     linear-gradient(180deg, #eff3f9 0%, #dbe3ef 52%, #cdd7e6 100%);
   min-height: 100vh;
   position: relative;
+}
+
+.dark body {
+  color: var(--text-primary);
+  background: var(--surf-canvas);
 }
 
 /* Page glow effect */
@@ -606,6 +582,14 @@ img {
   background: linear-gradient(135deg, #11151d, #1c2230);
   color: #ffffff;
   border-color: rgba(17, 21, 29, 0.28);
+}
+
+.dark .tab {
+  color: var(--text-secondary);
+}
+
+.dark .tab.active {
+  color: var(--neutral-0);
 }
 
 .progress {

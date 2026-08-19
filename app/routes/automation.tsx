@@ -194,7 +194,7 @@ function SchedulerSection({
       <div className="flex items-center gap-2 text-sm">
         <span className="font-medium text-[var(--text-secondary)]">Scheduler</span>
         {scheduler.enabled ? (
-          <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold uppercase text-success">
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold uppercase text-emerald-800">
             enabled
           </span>
         ) : (

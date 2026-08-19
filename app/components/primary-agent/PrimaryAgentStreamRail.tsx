@@ -639,10 +639,10 @@ export function PrimaryAgentStreamRail({ threadId }: { threadId: string }) {
             >
               <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground">
                     Inspection table
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground">
                     Run registry, artifact refs, and terminal summaries
                   </p>
                 </div>

@@ -16,12 +16,12 @@ const variantClasses: Record<ChipVariant, string> = {
   primary:
     'bg-[linear-gradient(135deg,var(--n-950),var(--n-900))] text-[var(--n-0)] border border-[var(--border-glass-soft)] shadow-[var(--shadow-card)]',
   success:
-    'bg-[color-mix(in_srgb,var(--a-mint)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
+    'bg-[color-mix(in_srgb,var(--a-mint)_45%,transparent)] text-slate-950 border border-[var(--border-glass)]',
   warning:
     'bg-[color-mix(in_srgb,var(--a-sun)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
   danger:
     'bg-[color-mix(in_srgb,var(--a-rose)_45%,transparent)] text-[var(--text-primary)] border border-[var(--border-glass)]',
-  sky: '[background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_30%,transparent)] [color:color-mix(in_srgb,var(--a-sky)_80%,var(--n-950))] border',
+  sky: '[background:color-mix(in_srgb,var(--a-sky)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-sky)_30%,transparent)] text-[var(--text-info)] border',
   violet:
     '[background:color-mix(in_srgb,var(--a-violet)_12%,var(--surf-elevated))] [border-color:color-mix(in_srgb,var(--a-violet)_30%,transparent)] [color:color-mix(in_srgb,var(--a-violet)_80%,var(--n-950))] border',
   indigo:

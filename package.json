@@ -8,6 +8,7 @@
     "build": "vite build",
     "start": "node app/server-node.mjs",
     "test": "vitest --config vitest.unit.config.ts",
+    "release:verify": "node scripts/release-verification/run-matrix.mjs",
     "storybook": "storybook dev -p 6006 -c .storybook",
     "build-storybook": "storybook build -c .storybook",
     "storybook:mcp": "storybook dev -p 6006 -c .storybook",
@@ -80,6 +81,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@chromatic-com/storybook": "^5.1.2",
     "@storybook/addon-a11y": "^10.3.5",
     "@storybook/addon-designs": "^11.1.3",

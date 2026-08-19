@@ -97,8 +97,9 @@ const CODStatusOverlay = React.lazy(() =>
 const THEME_SCRIPT = [
   '(function(){try{',
   `var t=localStorage.getItem('${THEME_STORAGE_KEY}');`,
-  "if(t==='dark')",
-  "document.documentElement.classList.add('dark');",
+  "var d=t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);",
+  "if(d){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}",
+  "else if(t==='light'){document.documentElement.classList.add('light');}",
   '}catch(e){}})();',
 ].join('');
 
@@ -153,7 +154,8 @@ function RootComponent() {
 
   React.useEffect(() => {
     const root = document.documentElement;
-    const applyDark = (dark: boolean) => {
+    const applySystemTheme = (dark: boolean) => {
+      root.classList.remove('light');
       if (dark) {
         root.classList.add('dark');
         root.style.colorScheme = 'dark';
@@ -163,12 +165,15 @@ function RootComponent() {
       }
     };
     if (theme === 'dark') {
-      applyDark(true);
-      return () => applyDark(false);
+      root.classList.remove('light');
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
+      return;
     }
     if (theme === 'light') {
-      applyDark(false);
-      // No cleanup: this branch never adds .dark, so there is nothing to undo.
+      root.classList.remove('dark');
+      root.classList.add('light');
+      root.style.colorScheme = 'light';
       return;
     }
     // system — mirror OS preference.
@@ -177,8 +182,8 @@ function RootComponent() {
     // (useEffect errors propagate to window.onerror).
     if (!window.matchMedia) return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    applyDark(mq.matches);
-    const handler = (e: MediaQueryListEvent) => applyDark(e.matches);
+    applySystemTheme(mq.matches);
+    const handler = (e: MediaQueryListEvent) => applySystemTheme(e.matches);
     mq.addEventListener('change', handler);
     // Only remove the listener on cleanup — do NOT touch .dark here.
     // Removing .dark in cleanup causes a flicker when transitioning system→dark
@@ -230,28 +235,40 @@ function RootComponent() {
               />
             ) : (
               <div className="min-h-screen">
-              <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-[var(--surf-elevated)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-primary)] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent)]"
-              >
-                Skip to content
-              </a>
+              {!hideShell && (
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-[var(--surf-elevated)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-primary)] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--vault-accent)]"
+                >
+                  Skip to content
+                </a>
+              )}
               {hideShell ? (
                 <Outlet />
               ) : (
                 <React.Suspense
                   fallback={
                     <ViewerSidebarFallback>
-                      <div id="main-content" className="min-h-screen pb-10">
-                        <TopCommandBar />
+                      <TopCommandBar />
+                      <div
+                        id="main-content"
+                        role="main"
+                        tabIndex={-1}
+                        className="min-h-screen pb-10 focus:outline-none"
+                      >
                         <Outlet />
                       </div>
                     </ViewerSidebarFallback>
                   }
                 >
                   <LazyViewerSidebar>
-                    <div id="main-content" className="min-h-screen pb-10">
-                      <TopCommandBar />
+                    <TopCommandBar />
+                    <div
+                      id="main-content"
+                      role="main"
+                      tabIndex={-1}
+                      className="min-h-screen pb-10 focus:outline-none"
+                    >
                       <Outlet />
                     </div>
                   </LazyViewerSidebar>

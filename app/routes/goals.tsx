@@ -126,7 +126,7 @@ function GoalsRoute() {
         className={[
           'rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
           apiStatus === 'online'
-            ? 'bg-success/10 text-success'
+            ? 'bg-emerald-100 text-emerald-800'
             : 'bg-destructive/10 text-destructive',
         ].join(' ')}
       >

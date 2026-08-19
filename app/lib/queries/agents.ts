@@ -24,11 +24,13 @@ import {
 // Shared invoker
 // ---------------------------------------------------------------------------
 
-async function invokeAgent<T>(prompt: string, model: string): Promise<T> {
+async function invokeAgent<T>(prompt: string, _model: string): Promise<T> {
   const res = await apiFetch('/tensura/v1/supervisor/invoke', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: [prompt], model }),
+    // Tensura resolves the model server-side from Oxygen state; request-scoped
+    // model overrides are rejected by the external-runtime authority guard.
+    body: JSON.stringify({ messages: [prompt] }),
   });
 
   if (!res.ok) {

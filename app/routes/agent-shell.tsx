@@ -89,7 +89,7 @@ function AgentShellRoute() {
         <button
           type="button"
           onClick={handleNewThread}
-          className="w-full rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted,theme(colors.zinc.400)] hover:bg-white/5 transition-colors"
+          className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-muted transition-colors"
         >
           + New chat
         </button>
@@ -103,8 +103,11 @@ function AgentShellRoute() {
     </div>
   );
 
+  const pageHeading = <h1 className="sr-only">Agent Shell</h1>;
+
   return (
     <div className="h-[calc(100dvh-3.5rem)] min-h-0 px-4 pb-6">
+      {pageHeading}
       <ChatShell
         title="Agent Shell"
         subtitle="Run codex workflows with thread history, live tools, and execution state."

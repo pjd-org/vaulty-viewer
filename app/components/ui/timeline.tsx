@@ -296,13 +296,12 @@ export default function Timeline({
         isVertical ? 'flex-col' : 'flex-row',
         className
       )}
-      role="list"
-      aria-orientation={orientation}
       aria-label="Timeline"
       {...props}
     >
       <ul
         id="timeline-grid"
+        role="list"
         className={timelineLayoutVariants({ orientation })}
         style={
           isVertical

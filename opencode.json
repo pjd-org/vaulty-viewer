@@ -52,7 +52,7 @@
       "url": "http://localhost:8080/mcp",
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer {env:AUTH_MCP_API_KEY}"
+        "x-mcp-auth": "{env:AUTH_MCP_API_KEY}"
       }
     }
   },

@@ -44,6 +44,10 @@ function MomentumBar({ score }: { score: number }) {
           style={{ width: `${pct}%` }}
           data-testid="momentum-bar"
           aria-label={`Momentum ${score}/10`}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={10}
+          aria-valuenow={score}
         />
       </div>
   );
