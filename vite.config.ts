@@ -6,8 +6,8 @@ import path from 'node:path';
 export default defineConfig({
   base: '/_viewer/',
   ssr: {
-    // Bundle packages not present in the container's node_modules into SSR output.
-    noExternal: ['@radix-ui/react-collapsible'],
+    // Bundle packages with extensionless ESM subpath imports into SSR output.
+    noExternal: ['@radix-ui/react-collapsible', '@excalidraw/excalidraw', 'roughjs'],
     // Keep React external so there is exactly one copy at runtime.
     // The react/react-dom aliases below were inlining a second copy into
     // dist/server/server.js, causing `useState` to be null on SSR render.
@@ -32,6 +32,7 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(import.meta.dirname, '.'),
+      'roughjs/bin/rough': 'roughjs/bin/rough.js',
     },
   },
   server: {

@@ -72,6 +72,7 @@
     "react-hook-form": "^7.72.0",
     "react-resizable-panels": "^4.8.0",
     "remark-gfm": "^4.0.1",
+    "roughjs": "4.6.4",
     "sanitize-html": "^2.17.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",

@@ -13,6 +13,8 @@ const testResolve = {
     'react-dom': path.resolve(dirname, 'node_modules/react-dom'),
     'react/jsx-runtime': path.resolve(dirname, 'node_modules/react/jsx-runtime'),
     'react/jsx-dev-runtime': path.resolve(dirname, 'node_modules/react/jsx-dev-runtime'),
+    'roughjs/bin/rough': path.resolve(dirname, 'node_modules/roughjs/bin/rough.js'),
+    '@excalidraw/excalidraw': path.resolve(dirname, '__tests__/mocks/excalidraw.tsx'),
   },
 };
 
