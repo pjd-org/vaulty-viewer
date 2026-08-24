@@ -229,6 +229,8 @@ export interface HomeSurfacePayload {
     health: PressureSignal[];
   };
   contextTail: ContextCandidate[];
+  /** Low-friction, high-reversibility moves (V3 Immediate Interventions plane). */
+  immediateActions: Recommendation[];
   /** Raw task data preserved for downstream consumers (agent hooks, session logic) */
   tasks: NextAction[];
 }
@@ -648,6 +650,7 @@ export function buildHomeSurfacePayload(
       health: [],
     },
     contextTail: [],
+    immediateActions: [],
     tasks,
   };
 }

@@ -458,6 +458,7 @@ function FocusRoute() {
     bubble: surface?.snapshots?.bubble ?? [],
     health: surface?.snapshots?.health ?? [],
   };
+  const immediateActions = surface?.immediateActions ?? [];
   const taskCards = surface?.tasks ?? [];
   const featuredTask = taskCards[0];
   const backlogTasks = taskCards.slice(1);
@@ -904,45 +905,69 @@ function FocusRoute() {
               title="Immediate Interventions"
               subtitle="Prioritized follow-up cards."
             />
-            {pagedTasks.length > 0 ? (
+            {immediateActions.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
-                {pagedTasks.map((task, idx) =>
-                  idx < 2 ? (
-                    <HomeTaskCard
-                      key={task.id}
-                      task={task}
-                      onStart={handleExecute}
-                      onBacklog={handleDefer}
-                      mutating={
-                        pendingExecutePath === task.path ||
-                        pendingDeferPath === task.path
-                      }
-                      compact
-                    />
-                  ) : (
-                    <BacklogStripCard
-                      key={task.id}
-                      task={task}
-                      onStart={handleExecute}
-                      onBacklog={handleDefer}
-                      mutating={
-                        pendingExecutePath === task.path ||
-                        pendingDeferPath === task.path
-                      }
-                    />
-                  )
-                )}
+                {immediateActions.map((rec: Recommendation) => {
+                  const target = rec.taskPath ?? String(
+                    rec.mutationRef?.targetId ?? rec.id,
+                  );
+                  const mutating =
+                    pendingExecutePath === target ||
+                    pendingDeferPath === target;
+                  return (
+                    <article
+                      key={rec.id}
+                      className="relative overflow-hidden rounded-[20px] border border-border bg-card/85 p-4 pl-6 shadow-sm"
+                    >
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-y-0 left-0 w-1.5 rounded-l-[20px] bg-[var(--vault-accent)] opacity-70"
+                      />
+                      <p className="text-sm font-semibold text-foreground">
+                        {rec.title}
+                      </p>
+                      {rec.whyNow && (
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {rec.whyNow}
+                        </p>
+                      )}
+                      <div className="mt-3 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleExecute(target)}
+                          disabled={mutating || !rec.taskPath}
+                          className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 disabled:opacity-50"
+                        >
+                          {pendingExecutePath === target ? 'Executing…' : 'Execute'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDefer(target)}
+                          disabled={mutating}
+                          className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-semibold text-warning hover:bg-warning/20 disabled:opacity-50"
+                        >
+                          {pendingDeferPath === target ? 'Deferring…' : 'Defer'}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <EmptyState
-                title="No backlog candidates."
-                description="Additional surfaced tasks will appear here."
+                title="No low-friction interventions."
+                description="High-reversibility moves surface here when the queue produces them."
                 action={
                   <Link
-                    to="/projects"
+                    to="/actions"
+                    search={{
+                      sort: undefined,
+                      simulatableOnly: undefined,
+                      selectedId: undefined,
+                    }}
                     className="inline-flex rounded-full border border-[var(--border-glass-soft)] bg-[var(--surf-base)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surf-elevated)]"
                   >
-                    Open Projects
+                    Open Actions
                   </Link>
                 }
               />
