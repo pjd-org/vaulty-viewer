@@ -192,7 +192,7 @@ export function InboxItemCard({
           {/* ── row 3: why surfaced + reversibility chip ── */}
           {(detail?.whySurfaced || detail?.reversibility) && (
             <div className="mt-2 flex items-start gap-2 min-w-0">
-              {detail.whySurfaced && (
+              {detail.whySurfaced && detail.whySurfaced !== detail.summary && (
                 <p className="flex-1 min-w-0 text-[11px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
                   {detail.whySurfaced}
                 </p>
