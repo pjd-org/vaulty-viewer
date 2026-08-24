@@ -47,7 +47,7 @@ export function homeSearchParams(s: S): {
 
 /** `/inbox` — `view` is the live field name; V3 extra fields additive */
 export function inboxSearchParams(s: S): {
-  view?: 'queue' | 'workbench' | 'archive';
+  view?: 'signals' | 'queue' | 'workbench' | 'archive';
   rejectedTab?: 'user' | 'automated';
   sort?: 'newest' | 'oldest' | 'confidence' | 'itemCount';
   severity?: 'high' | 'medium' | 'low';
@@ -57,6 +57,7 @@ export function inboxSearchParams(s: S): {
 } {
   return {
     view: readEnumSearchParam(s.view, [
+      'signals',
       'queue',
       'workbench',
       'archive',

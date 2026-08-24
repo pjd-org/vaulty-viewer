@@ -76,7 +76,8 @@ export interface MutationRef {
     | 'defer_signal'
     | 'override_rejection'
     | 'reopen_signal'
-    | 'create_task';
+    | 'create_task'
+    | 'inspect_route';
   targetId: string;
 }
 
@@ -245,6 +246,8 @@ export interface InboxItem extends PressureSignal {
   rejectionType?: 'user' | 'automated';
   rejectionReason?: string;
   rejectionSource?: string;
+  /** True for runtime-composed signals (health/scheduler/MCP) — distinct from staged-run and note items. */
+  runtimeSignal?: boolean;
 }
 
 export interface ActionsSurfacePayload {
@@ -649,23 +652,71 @@ export function buildHomeSurfacePayload(
   };
 }
 
+function buildSignalItems(
+  signals: Array<Record<string, unknown>> | undefined
+): InboxItem[] {
+  return (signals ?? []).map((signal) => {
+    const severity =
+      signal.severity === 'high'
+        ? ('high' as const)
+        : signal.severity === 'low'
+          ? ('low' as const)
+          : ('medium' as const);
+    const kind = severity === 'high' ? ('failure' as const) : ('health' as const);
+    const why = String(
+      signal.whySurfaced ?? 'Surfaced by vault runtime monitoring.'
+    );
+    const route = String(signal.route ?? '/health');
+    return {
+      id: String(signal.id ?? `signal:${Math.random()}`),
+      kind,
+      title: String(signal.title ?? 'Runtime signal'),
+      summary: why,
+      severity,
+      surfacedBy: 'cod' as const,
+      sourceType: 'pipeline' as const,
+      sourceId: String(signal.source ?? 'vault'),
+      surfacedAt: String(signal.surfacedAt ?? nowIso()),
+      whySurfaced: `Source: ${String(signal.source ?? 'vault')}. Open ${route} for detail.`,
+      confidence: severity === 'high' ? 0.9 : 0.7,
+      reversibility: 'high' as const,
+      allowedActions: [
+        {
+          actionType: 'open_source',
+          label: 'Inspect',
+          mutationRef: {
+            domain: 'knowledge',
+            operation: 'inspect_route',
+            targetId: route,
+          },
+        },
+      ],
+      inboxBucket: (severity === 'high'
+        ? 'failure'
+        : 'needs_action') as InboxItem['inboxBucket'],
+      runtimeSignal: true,
+    };
+  });
+}
+
 function buildRunItems(runs: Array<Record<string, unknown>>): InboxItem[] {
   return runs.map((run, index) => {
     const runId = String(run.runId ?? `run-${index}`);
+    const runType = String(run.runType ?? 'unknown');
     const confidence =
       typeof run.confidence === 'number' ? run.confidence : 0.5;
+    const itemCount = Number(run.itemCount ?? 0);
     return {
       id: `signal:${runId}`,
       kind: confidence < 0.45 ? 'risk' : 'rejection',
-      title: String(run.action ?? run.runType ?? runId),
-      summary: `${Number(run.itemCount ?? 0)} staged item(s) awaiting review.`,
+      title: `Staged run · ${runType}`,
+      summary: `${itemCount} staged item${itemCount === 1 ? '' : 's'} awaiting review.`,
       severity: confidence < 0.45 ? 'high' : 'medium',
       surfacedBy: 'cod' as const,
       sourceType: 'note' as const,
       sourceId: runId,
       surfacedAt: nowIso(),
-      whySurfaced:
-        'This staged run needs operator review before promotion or rejection.',
+      whySurfaced: `Staged by the ${runType} extraction flow. Promote to canonical paths or reject to move it to inbox/rejected.`,
       confidence,
       reversibility: 'high' as const,
       allowedActions: [
@@ -773,11 +824,13 @@ function buildWorkbenchItems(workbenchNotes: InboxNote[]): InboxItem[] {
 }
 
 export function buildInboxSurfacePayload(args: {
+  signals: Array<Record<string, unknown>>;
   runs: Array<Record<string, unknown>>;
   workbenchNotes: InboxNote[];
   archiveNotes: InboxNote[];
 }): InboxItem[] {
   return [
+    ...buildSignalItems(args.signals),
     ...buildRunItems(args.runs),
     ...buildRejectedItems(args.archiveNotes),
     ...buildWorkbenchItems(args.workbenchNotes),
@@ -848,6 +901,24 @@ export function buildProjectSurfacePayload(args: {
   };
 }
 
+async function fetchInboxSurfaceSource() {
+  const res = await apiFetch('/api/v1/inbox');
+  throwIfAuthStatus(res.status, 'inbox');
+  if (!res.ok) throw new Error(`Failed to fetch inbox: ${res.status}`);
+  const body = await res.json();
+  const { notes, runs, signals } = validateInboxResponse(body);
+  const { workbenchNotes, archiveNotes } = splitInboxNotes(
+    notes as InboxNote[]
+  );
+
+  return {
+    signals: signals as Array<Record<string, unknown>>,
+    runs: runs as Array<Record<string, unknown>>,
+    workbenchNotes,
+    archiveNotes,
+  };
+}
+
 export async function fetchRichNextActions(max = 25): Promise<NextAction[]> {
   const res = await apiFetch(`/api/v1/tasks/next-actions?max=${max}`);
   throwIfAuthStatus(res.status, 'next actions');
@@ -889,23 +960,6 @@ export function useHomeSurface(initialData?: HomeSurfacePayload) {
     ...getHomeSurfaceQueryOptions(),
     initialData,
   });
-}
-
-async function fetchInboxSurfaceSource() {
-  const res = await apiFetch('/api/v1/inbox');
-  throwIfAuthStatus(res.status, 'inbox');
-  if (!res.ok) throw new Error(`Failed to fetch inbox: ${res.status}`);
-  const body = await res.json();
-  const { notes, runs } = validateInboxResponse(body);
-  const { workbenchNotes, archiveNotes } = splitInboxNotes(
-    notes as InboxNote[]
-  );
-
-  return {
-    runs: runs as Array<Record<string, unknown>>,
-    workbenchNotes,
-    archiveNotes,
-  };
 }
 
 export function getInboxSurfaceQueryOptions() {

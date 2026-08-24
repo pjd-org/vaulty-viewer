@@ -70,7 +70,9 @@ export interface UseInboxResult {
   workbenchNotes: InboxNote[];
   archiveNotes: InboxNote[];
   runs: InboxRun[];
+  signals: Array<Record<string, unknown>>;
   counts: {
+    signals: number;
     queue: number;
     workbench: number;
     archive: number;
@@ -135,6 +137,7 @@ export function useInbox(): UseInboxResult {
   interface InboxQueryData {
   notes: InboxNote[];
   runs: InboxRun[];
+  signals: Array<Record<string, unknown>>;
 }
 
   const inboxQuery = useQuery<InboxQueryData>({
@@ -164,14 +167,17 @@ export function useInbox(): UseInboxResult {
           structuredContent?: {
             notes?: InboxNote[];
             runs?: InboxRun[];
+            signals?: Array<Record<string, unknown>>;
           };
           notes?: InboxNote[];
           runs?: InboxRun[];
+          signals?: Array<Record<string, unknown>>;
           error?: string;
         };
         const structured = body?.structuredContent;
         const notes = structured?.notes ?? body?.notes;
         const runs = structured?.runs ?? body?.runs;
+        const signals = structured?.signals ?? body?.signals;
 
         // Surface API auth/transport failures instead of silently rendering
         // an empty inbox forever.
@@ -186,6 +192,7 @@ export function useInbox(): UseInboxResult {
         return {
           notes: Array.isArray(notes) ? notes : [],
           runs: Array.isArray(runs) ? runs : [],
+          signals: Array.isArray(signals) ? signals : [],
         };
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -384,12 +391,14 @@ export function useInbox(): UseInboxResult {
 
   const notes = inboxQuery.data?.notes || [];
   const runs = inboxQuery.data?.runs || [];
+  const signals = inboxQuery.data?.signals || [];
 
   const { workbenchNotes, archiveNotes } = splitInboxNotes(
     notes as InboxLogicNote[]
   );
 
   const counts = {
+    signals: signals.length,
     queue: runs.length,
     workbench: workbenchNotes.length,
     archive: archiveNotes.length,
@@ -413,6 +422,7 @@ export function useInbox(): UseInboxResult {
   return {
     notes,
     runs,
+    signals,
     workbenchNotes,
     archiveNotes,
     counts,

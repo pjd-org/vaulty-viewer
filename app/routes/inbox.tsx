@@ -21,7 +21,7 @@ import { useInboxConverterMutation } from '../lib/queries/agents';
 import { buildInboxSurfacePayload, type InboxItem } from '../lib/viewer-adapter';
 import type { InboxItemDisplay } from '../types/display';
 
-type InboxTab = 'queue' | 'workbench' | 'archive';
+type InboxTab = 'signals' | 'queue' | 'workbench' | 'archive';
 type SortKey = 'newest' | 'oldest' | 'confidence' | 'itemCount';
 
 interface RunItem {
@@ -87,7 +87,7 @@ export const Route = createFileRoute('/inbox')({
 });
 
 function InboxRoute() {
-  const { runs, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, rejectRun, actionState, counts } = useInbox();
+  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, rejectRun, actionState, counts } = useInbox();
   const navigate = useNavigate();
   const modals = useModals();
   const { mutate: convertTask } = useInboxConverterMutation();
@@ -96,6 +96,7 @@ function InboxRoute() {
   const surface = React.useMemo(
     () =>
       buildInboxSurfacePayload({
+        signals: signals as unknown as Array<Record<string, unknown>>,
         runs: runs as unknown as Array<Record<string, unknown>>,
         workbenchNotes: workbenchNotes as InboxNote[],
         archiveNotes: archiveNotes as InboxNote[],
@@ -105,7 +106,7 @@ function InboxRoute() {
 
   const { view, sort, severity, runType, reversibility, selectedId } =
     Route.useSearch();
-  const activeTab = view ?? 'queue';
+  const activeTab = view ?? 'signals';
   const currentSort: SortKey = sort ?? 'newest';
   const anyActionInFlight = Object.values(actionState).some(
     (s) => s === 'committing' || s === 'rejecting'
@@ -128,10 +129,14 @@ function InboxRoute() {
 
   const tabItems = React.useMemo(() => {
     return surface.filter((item) => {
+      if (activeTab === 'signals') {
+        return item.runtimeSignal === true;
+      }
       if (activeTab === 'queue') {
         return (
-          item.inboxBucket === 'needs_action' ||
-          item.inboxBucket === 'needs_approval'
+          item.runtimeSignal !== true &&
+          (item.inboxBucket === 'needs_action' ||
+            item.inboxBucket === 'needs_approval')
         );
       }
       if (activeTab === 'workbench') {
@@ -192,10 +197,15 @@ function InboxRoute() {
 
   const tabCounts = React.useMemo(
     () => ({
+      signals:
+        counts?.signals ??
+        surface.filter((i) => i.runtimeSignal === true).length,
       queue:
         counts?.queue ??
         surface.filter(
-          (i) => i.inboxBucket === 'needs_action' || i.inboxBucket === 'needs_approval'
+          (i) =>
+            i.runtimeSignal !== true &&
+            (i.inboxBucket === 'needs_action' || i.inboxBucket === 'needs_approval')
         ).length,
       workbench: counts?.workbench ?? surface.filter((i) => i.inboxBucket === 'deferred').length,
       archive: counts?.archive ?? surface.filter((i) => isArchiveBucket(i.inboxBucket)).length,
@@ -311,7 +321,7 @@ function InboxRoute() {
   return (
     <WorkspaceScaffold
       title="Inbox"
-      subtitle={`${surface.length} items · ${visibleItems.length} visible`}
+      subtitle={`${surface.length} items · ${visibleItems.length} shown${surface.length !== visibleItems.length ? ` · ${surface.length - visibleItems.length} hidden by tab/filters` : ''}`}
       primaryTitle="Review queue"
       primary={
         <div className="flex flex-col gap-4">
