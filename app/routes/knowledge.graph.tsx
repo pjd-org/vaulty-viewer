@@ -237,10 +237,6 @@ function KnowledgeGraphRoute() {
           )}
 
           {graphLoading && !graph && (
-            <div className="h-[600px] animate-pulse rounded-[22px] border border-white/10 bg-white/5" />
-          )}
-
-          {graphLoading && !graph && (
             <div className="h-[600px] animate-pulse rounded-[22px] border border-border bg-muted/20" />
           )}
 
@@ -267,7 +263,7 @@ function KnowledgeGraphRoute() {
                       y1={e.y1}
                       x2={e.x2}
                       y2={e.y2}
-                      stroke="color-mix(in_srgb,var(--text-inverse)_8%,transparent)"
+                      stroke="color-mix(in_srgb,var(--text-inverse)_25%,transparent)"
                       strokeWidth={1}
                     />
                   ))}

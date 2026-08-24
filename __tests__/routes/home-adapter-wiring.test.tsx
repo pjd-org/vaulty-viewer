@@ -468,15 +468,25 @@ describe('home adapter wiring', () => {
     ).toHaveLength(2);
   });
 
-  it('shows a pending indicator when verification phase is pending', () => {
-    mockVerificationPhase.current = 'pending';
+  it('renders real verification outcomes from the surface rail', () => {
     renderWithClient(<RouteComponent />);
-    expect(screen.getByText('Verifying…')).toBeTruthy();
+    // The mock surface carries a completed verification entry — the rail
+    // renders outcomes (title + summary + status chip), not the phase stub.
+    expect(
+      screen.getAllByText('Adapter verification completed.').length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('success')).toBeTruthy();
   });
 
-  it('shows a failed indicator when verification phase is failed', () => {
-    mockVerificationPhase.current = 'failed';
+  it('shows a pending indicator when verification phase is pending and no outcomes exist', () => {
+    mockVerificationPhase.current = 'pending';
+    mockUseHomeSurface.mockReturnValue({
+      data: { ...homeSurface, verificationRail: [] },
+      isLoading: false,
+      error: null,
+      isError: false,
+    });
     renderWithClient(<RouteComponent />);
-    expect(screen.getByText('Verification failed.')).toBeTruthy();
+    expect(screen.getByText('Verifying…')).toBeTruthy();
   });
 });
