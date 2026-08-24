@@ -6,6 +6,10 @@ import getApiBase, {
   apiFetch,
 } from '../utils/api';
 import { useHydrated } from './useHydrated';
+import {
+  splitInboxNotes,
+  type InboxNote as InboxLogicNote,
+} from '../lib/inbox-logic';
 
 export interface InboxNote {
   path: string;
@@ -381,17 +385,9 @@ export function useInbox(): UseInboxResult {
   const notes = inboxQuery.data?.notes || [];
   const runs = inboxQuery.data?.runs || [];
 
-  // Compute workbench/archive split
-  const workbenchNotes: InboxNote[] = [];
-  const archiveNotes: InboxNote[] = [];
-  notes.forEach((note) => {
-    const path = note.path || '';
-    if (path.startsWith('archive/') || path.startsWith('_archive/')) {
-      archiveNotes.push(note);
-    } else {
-      workbenchNotes.push(note);
-    }
-  });
+  const { workbenchNotes, archiveNotes } = splitInboxNotes(
+    notes as InboxLogicNote[]
+  );
 
   const counts = {
     queue: runs.length,
