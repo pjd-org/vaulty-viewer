@@ -654,12 +654,14 @@ function FocusRoute() {
         {(surface?.contextTail ?? []).length > 0 ? (
           <div className="flex flex-col gap-2">
             {(surface?.contextTail ?? []).map((item) => (
-              <p
+              <Link
                 key={item.id}
-                className="text-xs leading-relaxed text-muted-foreground"
+                to="/note"
+                search={{ p: item.sourceId }}
+                className="text-xs leading-relaxed text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
               >
                 {item.title}
-              </p>
+              </Link>
             ))}
           </div>
         ) : (
