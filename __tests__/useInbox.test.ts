@@ -55,6 +55,6 @@ describe('useInbox', () => {
     expect(result.current.workbenchNotes.map((note) => note.path)).toEqual([
       'inbox/extracted/workbench-item.md',
     ]);
-    expect(result.current.counts).toEqual({ queue: 0, workbench: 1, archive: 1 });
+    expect(result.current.counts).toEqual({ signals: 0, queue: 0, workbench: 1, archive: 1 });
   });
 });

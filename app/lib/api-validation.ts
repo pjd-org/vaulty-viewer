@@ -131,19 +131,22 @@ const InboxResponseSchema = z.object({
     .object({
       notes: z.array(z.unknown()).optional(),
       runs: z.array(z.unknown()).optional(),
+      signals: z.array(z.unknown()).optional(),
     })
     .optional(),
   notes: z.array(z.unknown()).optional(),
   runs: z.array(z.unknown()).optional(),
+  signals: z.array(z.unknown()).optional(),
 });
 
 /**
  * Validate an inbox API response body.
- * Returns { notes, runs } arrays.
+ * Returns { notes, runs, signals } arrays.
  */
 export function validateInboxResponse(body: unknown): {
   notes: unknown[];
   runs: unknown[];
+  signals: unknown[];
 } {
   const parsed = InboxResponseSchema.safeParse(body);
   if (!parsed.success) {
@@ -155,6 +158,7 @@ export function validateInboxResponse(body: unknown): {
   return {
     notes: structured?.notes ?? parsed.data.notes ?? [],
     runs: structured?.runs ?? parsed.data.runs ?? [],
+    signals: structured?.signals ?? parsed.data.signals ?? [],
   };
 }
 

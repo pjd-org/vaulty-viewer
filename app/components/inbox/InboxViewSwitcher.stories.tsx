@@ -3,15 +3,15 @@ import React, { useState } from 'react';
 import { fn } from 'storybook/test';
 import { InboxViewSwitcher } from './InboxViewSwitcher';
 
-type InboxTab = 'queue' | 'workbench' | 'archive';
+type InboxTab = 'signals' | 'queue' | 'workbench' | 'archive';
 
-function StatefulSwitcher({ initial = 'queue' as InboxTab }) {
+function StatefulSwitcher({ initial = 'signals' as InboxTab }) {
   const [view, setView] = useState<InboxTab>(initial);
   return (
     <InboxViewSwitcher
       value={view}
       onValueChange={setView}
-      counts={{ queue: 5, workbench: 2, archive: 14 }}
+      counts={{ signals: 3, queue: 5, workbench: 2, archive: 14 }}
     />
   );
 }
@@ -22,7 +22,7 @@ const meta = {
   parameters: { layout: 'padded' },
   args: {
     onValueChange: fn(),
-    counts: { queue: 5, workbench: 2, archive: 14 },
+    counts: { signals: 3, queue: 5, workbench: 2, archive: 14 },
   },
 } satisfies Meta<typeof InboxViewSwitcher>;
 
@@ -44,14 +44,14 @@ export const ArchiveActive: Story = {
 export const ZeroCounts: Story = {
   args: {
     value: 'queue',
-    counts: { queue: 0, workbench: 0, archive: 0 },
+    counts: { signals: 0, queue: 0, workbench: 0, archive: 0 },
   },
 };
 
 export const LargeCounts: Story = {
   args: {
     value: 'workbench',
-    counts: { queue: 143, workbench: 27, archive: 512 },
+    counts: { signals: 9, queue: 143, workbench: 27, archive: 512 },
   },
 };
 
