@@ -293,6 +293,27 @@ function KnowledgeGraphRoute() {
                     />
                   ))}
                 </g>
+                {/* Hub labels: nodes with the most backlinks get persistent
+                    titles so the canvas is not anonymous dots. */}
+                <g>
+                  {simNodes
+                    .filter((n) => n.radius >= 12)
+                    .map((n) => (
+                      <text
+                        key={`label-${n.id}`}
+                        x={n.x}
+                        y={n.y + n.radius + 10}
+                        textAnchor="middle"
+                        fontSize={9}
+                        fill="var(--text-inverse)"
+                        opacity={0.75}
+                        className="pointer-events-none select-none"
+                      >
+                        {n.title.slice(0, 14)}
+                        {n.title.length > 14 ? '…' : ''}
+                      </text>
+                    ))}
+                </g>
                 {tooltip && (
                   <g>
                     <rect
