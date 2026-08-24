@@ -131,6 +131,7 @@ function CodActionBar({
           className="cod-button cod-button--pill cod-button--primary"
           onClick={() => onStartSprint(getMaxSprintMin(status as 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN'))}
           disabled={busy}
+          aria-label={status === 'WARN' ? 'Start 25 minute sprint' : 'Start session'}
         >
           ⏱ {status === 'WARN' ? 'Start 25m Sprint' : 'Start Session'}
         </button>
@@ -139,6 +140,7 @@ function CodActionBar({
         className="cod-button cod-button--pill"
         onClick={onCheckin}
         disabled={busy}
+        aria-label="Check in"
       >
         ✏️ Check-in
       </button>
@@ -146,6 +148,7 @@ function CodActionBar({
         <button
           className="cod-button cod-button--pill cod-button--ghost"
           onClick={onOpenTasks}
+          aria-label="Open tasks"
         >
           📋 Open Tasks
         </button>
@@ -154,6 +157,7 @@ function CodActionBar({
         <button
           className="cod-button cod-button--pill cod-button--ghost"
           onClick={onOpenTasks}
+          aria-label="Open tasks"
         >
           Review blockers
         </button>
@@ -386,7 +390,12 @@ function CodAdvancedDrawer({
 function CODStatusBadge({ status, onClick }: { status: string; onClick: () => void }) {
   const label = status === 'PASS' ? '✓ PASS' : status === 'WARN' ? '⚡ WARN' : '✕ FAIL';
   return (
-    <button className={`cod-badge cod-badge--${status.toLowerCase()}`} onClick={onClick} title="Expand COD Status">
+    <button
+      className={`cod-badge cod-badge--${status.toLowerCase()}`}
+      onClick={onClick}
+      title="Expand COD Status"
+      aria-label={`Expand COD status: ${status}`}
+    >
       {label}
     </button>
   );

@@ -752,11 +752,45 @@ function FocusRoute() {
           title="Verification Rail"
           subtitle="Outcome verification for recent actions."
         />
-        {verification.phase === 'pending' && (
+        {(surface?.verificationRail ?? []).length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {(surface?.verificationRail ?? []).map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-start justify-between gap-3 rounded-[16px] border border-border bg-card/70 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {entry.entity?.title ?? entry.summary}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {entry.summary}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                    entry.status === 'success'
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : entry.status === 'warning'
+                        ? 'bg-amber-500/15 text-amber-400'
+                        : entry.status === 'failed'
+                          ? 'bg-rose-500/15 text-rose-400'
+                          : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {entry.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : verification.phase === 'pending' ? (
           <p className="text-sm text-primary">Verifying…</p>
-        )}
-        {verification.phase === 'failed' && (
+        ) : verification.phase === 'failed' ? (
           <p className="text-sm text-destructive">Verification failed.</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            No verified actions yet — outcomes appear here after execution.
+          </p>
         )}
       </section>
 
