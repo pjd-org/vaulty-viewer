@@ -18,6 +18,8 @@ import { defineCode } from '@prosekit/extensions/code';
 import { defineCodeBlock } from '@prosekit/extensions/code-block';
 import { defineBlockquote } from '@prosekit/extensions/blockquote';
 import { defineList } from '@prosekit/extensions/list';
+import { defineLink } from '@prosekit/extensions/link';
+import { definePlaceholder } from '@prosekit/extensions/placeholder';
 import { defineHardBreak } from '@prosekit/extensions/hard-break';
 import { defineHorizontalRule } from '@prosekit/extensions/horizontal-rule';
 
@@ -64,6 +66,8 @@ const EDITABLE_EXTENSION = union([
   defineCodeBlock(),
   defineBlockquote(),
   defineList(),
+  defineLink(),
+  definePlaceholder({ placeholder: 'Write something…' }),
   defineHardBreak(),
   defineHorizontalRule(),
   defineHistory(),

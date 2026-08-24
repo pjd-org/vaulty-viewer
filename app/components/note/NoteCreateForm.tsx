@@ -61,6 +61,7 @@ export function NoteCreateForm({
   const [body, setBody] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const slug = slugify(title);
 
@@ -98,6 +99,13 @@ export function NoteCreateForm({
       if (result.status === 'rejected') {
         setError(result.guardrail?.reason ?? 'Write was blocked by guardrail.');
         return;
+      }
+
+      if (!result.canonicalPath && result.stagePath) {
+        // Guardrailed flow: the write is staged, pending vault promotion.
+        setNotice(
+          'Saved — staged for vault review. It becomes canonical after the inbox-commit-poll promotes it.',
+        );
       }
 
       onCreated?.(result);
@@ -218,6 +226,14 @@ export function NoteCreateForm({
           <SecondaryButton onClick={onCancel} disabled={saving}>
             Cancel
           </SecondaryButton>
+        )}
+        {notice && (
+          <p
+            className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300"
+            role="status"
+          >
+            {notice}
+          </p>
         )}
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>

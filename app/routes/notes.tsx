@@ -316,9 +316,18 @@ function NotesRoute() {
       {isLoading ? (
         <RouteLoadingState label="Loading notes index..." />
       ) : error ? (
-        <p className="py-8 text-center text-sm text-red-300" role="alert">
-          {error.message}
-        </p>
+        <EmptyState
+          title={
+            error.message.includes('KnowledgeIndexNotBuilt')
+              ? 'Knowledge index not built'
+              : 'Could not load notes'
+          }
+          description={
+            error.message.includes('KnowledgeIndexNotBuilt')
+              ? 'The knowledge-graph pipeline has not run on the vault host yet. Run build-knowledge-graph, then retry.'
+              : error.message
+          }
+        />
       ) : (
         <NoteGrid notes={notes} page={page} onPage={setPage} />
       )}
