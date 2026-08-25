@@ -1387,8 +1387,17 @@ export function getKnowledgeSurfaceQueryOptions() {
         '/api/v1/knowledge/by-audience?audience=human'
       );
       throwIfAuthStatus(res.status, 'knowledge surface');
-      if (!res.ok)
-        throw new Error(`Failed to fetch knowledge surface: ${res.status}`);
+      if (!res.ok) {
+        // Surface the API's error code (e.g. KnowledgeIndexNotBuilt) so the
+        // route can render the infrastructure-specific guidance.
+        const errBody = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        const code = errBody?.error ? ` [${errBody.error}]` : '';
+        throw new Error(
+          `Failed to fetch knowledge surface: ${res.status}${code}`,
+        );
+      }
       const body = (await res.json()) as {
         audience: string;
         notes: KnowledgeNoteRef[];
