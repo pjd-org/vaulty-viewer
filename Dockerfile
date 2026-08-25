@@ -7,7 +7,8 @@ ENV npm_config_cache=/tmp/.npm
 ENV HOST=0.0.0.0
 ENV PORT=8000
 
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable pnpm
 
 # Copy manifests first so dependency install stays cached across source edits.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
