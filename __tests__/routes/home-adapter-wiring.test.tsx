@@ -310,7 +310,7 @@ const homeSurface: HomeSurfacePayload = {
   contextTail: [
     {
       id: 'context-tail-1',
-      contextType: 'spec',
+      contextType: 'note',
       title: 'Adapter context tail item',
       summary: 'Latest COD-selected context for the mission control view.',
       sourceId: 'note-2',
@@ -425,7 +425,7 @@ describe('home adapter wiring', () => {
       screen.getByText('Adapter decision one', { selector: 'h3' })
     ).toBeTruthy();
     expect(
-      screen.getByText('Adapter context tail item', { selector: 'p' })
+      screen.getByText('Adapter context tail item', { selector: 'a' })
     ).toBeTruthy();
   });
 
