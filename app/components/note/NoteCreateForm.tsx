@@ -8,7 +8,7 @@ import { createNote, type WriteNoteResult } from '../../lib/api/notes';
 
 const NOTE_TYPES = [
   { value: 'note', label: 'Note', path: 'notes/' },
-  { value: 'task', label: 'Task', path: 'notes/tasks/' },
+  { value: 'task', label: 'Task', path: 'notes/projects/<project>/tasks/' },
   { value: 'decision', label: 'Decision', path: 'notes/knowledge/decisions/' },
   { value: 'spec', label: 'Spec', path: 'notes/specs/' },
   { value: 'goal', label: 'Goal', path: 'notes/goals/' },
