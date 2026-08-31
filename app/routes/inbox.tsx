@@ -285,7 +285,7 @@ function InboxRoute() {
           setSearch({ selectedId: undefined });
         },
         onPromote:
-          run && run.runType !== 'signals_infer'
+          run && run.runType !== 'signals_infer' && run.runType !== 'transform'
             ? () => handleCommit(run.runId)
             : undefined,
         onReject: run
@@ -389,7 +389,8 @@ function InboxRoute() {
                     item.allowedActions.some((a) =>
                       ['approve', 'reopen', 'override'].includes(a.actionType)
                     ) ||
-                    (run && run.runType !== 'signals_infer');
+                    (run && run.runType !== 'signals_infer' &&
+                      run.runType !== 'transform');
                   const canReject =
                     item.allowedActions.some((a) =>
                       ['defer', 'approve'].includes(a.actionType)
