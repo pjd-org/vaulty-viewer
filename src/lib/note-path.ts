@@ -65,7 +65,9 @@ export function getNoteCollection(value: string) {
 function isTaskPath(value: string) {
   const normalized = toNoteSearchPath(value);
   return (
-    normalized.startsWith('tasks/') || normalized.startsWith('notes/tasks/')
+    normalized.startsWith('tasks/') ||
+    normalized.startsWith('notes/tasks/') ||
+    /^notes\/projects\/[^/]+\/tasks\//.test(normalized)
   );
 }
 
