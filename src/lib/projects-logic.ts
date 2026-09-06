@@ -14,6 +14,11 @@ export interface ProjectTaskCounts {
   todo: number;
 }
 
+const PROJECT_STATUSES: readonly ProjectStatus[] = ['active', 'at-risk', 'blocked', 'completed'];
+
+const isProjectStatus = (value: string): value is ProjectStatus =>
+  (PROJECT_STATUSES as readonly string[]).includes(value);
+
 /** A project note loaded directly from the vault (type: project). */
 export interface ProjectNote {
   path: string;
@@ -172,19 +177,19 @@ export function mergeProjectsWithNotes(
       notePath: note.path,
       horizon: note.horizon,
       domain: note.domain,
-      // If the project note is completed, respect that regardless of tasks
-      status: note.status === 'completed' ? 'completed' : p.status,
+      // Note status wins when explicit; fall back to task-derived status.
+      status: isProjectStatus(note.status) ? note.status : p.status,
     };
   });
 
   // Append note-only projects (no tasks yet)
   for (const note of notes) {
     if (derivedIds.has(note.id)) continue;
-    const noteStatus = note.status === 'completed' ? 'completed' : 'active';
+    const noteStatus = isProjectStatus(note.status) ? note.status : 'active';
     result.push({
       id: note.id,
       title: note.title,
-      status: noteStatus as ProjectStatus,
+      status: noteStatus,
       progress: 0,
       priority: note.priority,
       taskCounts: { total: 0, done: 0, inProgress: 0, blocked: 0, todo: 0 },

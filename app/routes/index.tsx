@@ -49,8 +49,11 @@ const noteSearch = (path: string) => ({ p: path });
 
 export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getHomeSurfaceQueryOptions());
+  loaderDeps: ({ search }) => ({ topicId: search.topicId }),
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(
+      getHomeSurfaceQueryOptions(deps?.topicId)
+    );
   },
   component: FocusRoute,
 });
@@ -348,12 +351,12 @@ function FocusRoute() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { q, collection, session, snapshot, detailId } = Route.useSearch();
+  const { q, collection, session, snapshot, detailId, topicId } = Route.useSearch();
   const {
     data: surface,
     isLoading: surfaceLoading,
     error: surfaceError,
-  } = useHomeSurface();
+  } = useHomeSurface(topicId);
   const { data: activeSession } = useActiveSession();
   const { data: recentSessions } = useRecentSessions();
   const [endingSession, setEndingSession] = useState(false);
