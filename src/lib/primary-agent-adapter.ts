@@ -41,12 +41,6 @@ type AgentServerRunPayload = {
   tool_results_degraded?: boolean;
 };
 
-export type PrimaryAgentContext = {
-  tasks?: unknown[];
-  notes?: unknown[];
-  inbox?: unknown[];
-};
-
 export type PrimaryAgentAdapterOptions = {
   /** Returns the current threadId (read from a ref — stable, never stale). */
   getThreadId: () => string;
@@ -55,10 +49,10 @@ export type PrimaryAgentAdapterOptions = {
    * Used to sync the resolved server-side threadId back to the parent route.
    */
   onThreadIdResolved?: (resolvedId: string) => void;
-  /** Returns the active intent id (read from a ref — stable, never stale). */
+  /** Returns an untrusted intent hint, never context authority. */
   getIntent?: () => string | null;
-  /** Returns the current vault context payload (read from a ref — stable, never stale). */
-  getContext?: () => PrimaryAgentContext | null;
+  /** Returns a topic locator; the server resolves authorized context. */
+  getTopicId?: () => string | null;
 };
 
 /**
@@ -68,7 +62,7 @@ export function buildPrimaryAgentRequestBody(
   threadId: string,
   messages: ChatModelRunOptions['messages'],
   intent?: string | null,
-  context?: PrimaryAgentContext | null,
+  topicId?: string | null,
   model?: string
 ): Record<string, unknown> {
   // The adapter sends the last user message as the prompt. The assistant-ui
@@ -86,14 +80,11 @@ export function buildPrimaryAgentRequestBody(
     mode: 'repo+spec',
     messages: [{ role: 'user', content: prompt }],
   };
-  if (intent) {
+  if (typeof intent === 'string' && intent) {
     body.intent = intent;
   }
-  if (
-    context &&
-    Object.values(context).some((v) => v && (v as unknown[]).length > 0)
-  ) {
-    body.context = context;
+  if (typeof topicId === 'string' && topicId) {
+    body.topic_id = topicId;
   }
   if (model) {
     body.model = model;
@@ -238,7 +229,7 @@ export function createPrimaryAgentModelAdapter(
     }: ChatModelRunOptions): Promise<ChatModelRunResult> {
       const threadId = opts.getThreadId();
       const intent = opts.getIntent?.() ?? null;
-      const context = opts.getContext?.() ?? null;
+      const topicId = opts.getTopicId?.() ?? null;
 
       resetPrimaryAgentStreamThread(threadId);
 
@@ -246,7 +237,7 @@ export function createPrimaryAgentModelAdapter(
         threadId,
         messages,
         intent,
-        context
+        topicId
       );
 
       let response = await postToPrimaryAgentStreamServer(
@@ -311,7 +302,7 @@ export function createPrimaryAgentModelAdapter(
             threadId,
             messages,
             intent,
-            context,
+            topicId,
             'gpt-4o-mini'
           );
           const [fallbackResp, fallbackPayload] = await postToAgentServer(

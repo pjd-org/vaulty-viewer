@@ -24,8 +24,7 @@ import {
 import { useThread } from '@assistant-ui/react';
 
 import { useWorkSurface, useHomeSurface } from '../lib/viewer-adapter';
-import type { PrimaryAgentContext } from '../../src/lib/primary-agent-adapter';
-import type { NextAction } from '../../src/lib/focus-logic';
+import { readStringSearchParam } from '../../src/lib/routes/search-params';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -119,10 +118,14 @@ export function primaryAgentReducer(
 // ---------------------------------------------------------------------------
 
 export const Route = createFileRoute('/primary-agent')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    topicId: readStringSearchParam(search.topicId),
+  }),
   component: PrimaryAgentRoute,
 });
 
 function PrimaryAgentRoute() {
+  const { topicId } = Route.useSearch();
   const hydrated = useHydrated();
   const [{ threads, threadId, activeIntent }, dispatch] = useReducer(
     primaryAgentReducer,
@@ -167,29 +170,12 @@ function PrimaryAgentRoute() {
   const activeIntentRef = useRef<string | null>(activeIntent);
   activeIntentRef.current = activeIntent;
 
-  const { data: workSurface } = useWorkSurface();
-  const { data: homeSurface } = useHomeSurface();
-
-  const contextRef = useRef<PrimaryAgentContext | null>(null);
-  const workTasks: NextAction[] = workSurface?.tasks ?? [];
-  const homeTasks: NextAction[] = homeSurface?.tasks ?? [];
-  const allTasks = workTasks.length > 0 ? workTasks : homeTasks;
-  const notes = [
-    ...(homeSurface?.snapshots?.knowledge ?? []),
-    ...(homeSurface?.contextTail ?? []),
-  ];
-  const inbox = homeSurface?.pressureBand ?? [];
-  contextRef.current =
-    allTasks.length > 0 || notes.length > 0 || inbox.length > 0
-      ? { tasks: allTasks, notes, inbox }
-      : null;
-
   return (
     <PrimaryAgentAssistantProvider
       threadId={threadId}
       onThreadIdChange={handleThreadIdChange}
       getIntent={() => activeIntentRef.current}
-      getContext={() => contextRef.current}
+      getTopicId={() => topicId ?? null}
     >
       <PrimaryAgentRouteInner
         threads={threads}

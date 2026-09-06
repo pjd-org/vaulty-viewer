@@ -35,6 +35,7 @@ export function homeSearchParams(s: S): {
   session?: string;
   snapshot?: string;
   detailId?: string;
+  topicId?: string;
 } {
   return {
     q: readStringSearchParam(s.q),
@@ -42,6 +43,7 @@ export function homeSearchParams(s: S): {
     session: readStringSearchParam(s.session),
     snapshot: readStringSearchParam(s.snapshot),
     detailId: readStringSearchParam(s.detailId),
+    topicId: readStringSearchParam(s.topicId),
   };
 }
 

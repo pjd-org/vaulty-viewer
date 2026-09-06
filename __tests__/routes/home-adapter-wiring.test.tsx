@@ -16,8 +16,12 @@ const mockUseHomeSurface = vi.hoisted(() => vi.fn());
 const mockUseWhatNowQuery = vi.hoisted(() => vi.fn());
 const mockUseUpNextQuery = vi.hoisted(() => vi.fn());
 const mockGetHomeSurfaceQueryOptions = vi.hoisted(() =>
-  vi.fn(() => ({
-    queryKey: ['viewer-adapter', 'home-surface'],
+  vi.fn((topicId?: string) => ({
+    queryKey: [
+      'viewer-adapter',
+      'home-surface',
+      ...(topicId ? [topicId] : []),
+    ],
     queryFn: vi.fn(),
   }))
 );
@@ -131,8 +135,9 @@ const mockUseActiveSession = vi.hoisted(() => vi.fn());
 const mockUseRecentSessions = vi.hoisted(() => vi.fn());
 
 vi.mock('../../app/lib/viewer-adapter', () => ({
-  getHomeSurfaceQueryOptions: () => mockGetHomeSurfaceQueryOptions(),
-  useHomeSurface: () => mockUseHomeSurface(),
+  getHomeSurfaceQueryOptions: (topicId?: string) =>
+    mockGetHomeSurfaceQueryOptions(topicId),
+  useHomeSurface: (topicId?: string) => mockUseHomeSurface(topicId),
   useActiveSession: () => mockUseActiveSession(),
   useRecentSessions: () => mockUseRecentSessions(),
 }));
@@ -384,6 +389,81 @@ describe('home adapter wiring', () => {
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface'],
     });
+  });
+
+  it('preserves an optional topic locator in validated home search', () => {
+    const topicId = 'topics/alpha beta?stage=1';
+    const validateSearch = Route.options.validateSearch as (
+      search: Record<string, unknown>
+    ) => Record<string, unknown>;
+
+    expect(validateSearch({ topicId })).toMatchObject({ topicId });
+  });
+
+  it('scopes the loader query cache key to the topic locator', async () => {
+    const topicId = 'topics/alpha beta?stage=1';
+    const loaderDeps = Route.options.loaderDeps as (
+      args: { search: { topicId?: string } }
+    ) => { topicId?: string };
+
+    expect(loaderDeps).toBeTypeOf('function');
+    const deps = loaderDeps({ search: { topicId } });
+    const loader = Route.options.loader as unknown as (args: {
+      context: {
+        queryClient: {
+          ensureQueryData: typeof mockEnsureQueryData;
+        };
+      };
+      deps: { topicId?: string };
+    }) => Promise<void>;
+    await loader({
+      context: {
+        queryClient: {
+          ensureQueryData: mockEnsureQueryData,
+        },
+      },
+      deps,
+    });
+
+    expect(mockGetHomeSurfaceQueryOptions).toHaveBeenCalledWith(topicId);
+    expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
+      queryKey: ['viewer-adapter', 'home-surface', topicId],
+    });
+  });
+
+  it('uses the topic locator for the rendered home query', () => {
+    const topicId = 'topics/alpha beta?stage=1';
+    mockRouteState.search = { topicId };
+
+    renderWithClient(<RouteComponent />);
+
+    expect(mockUseHomeSurface).toHaveBeenCalledWith(topicId);
+  });
+
+  it('URL-encodes the home topic locator and scopes its cache key', async () => {
+    const topicId = 'topics/alpha beta?stage=1';
+    mockApiFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ structuredContent: homeSurface }),
+    });
+    const actual = await vi.importActual<{
+      getHomeSurfaceQueryOptions: (topicId?: string) => {
+        queryKey: readonly unknown[];
+        queryFn: () => Promise<HomeSurfacePayload>;
+      };
+    }>('../../app/lib/viewer-adapter');
+
+    const options = actual.getHomeSurfaceQueryOptions(topicId);
+
+    expect.soft(options.queryKey).toEqual([
+      'viewer-adapter',
+      'home-surface',
+      topicId,
+    ]);
+    await options.queryFn();
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      '/api/v1/surfaces/home?max=25&topic_id=topics%2Falpha%20beta%3Fstage%3D1'
+    );
   });
 
   it('renders the home adapter surface from the route component', () => {

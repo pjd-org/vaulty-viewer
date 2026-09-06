@@ -931,11 +931,15 @@ export async function fetchRichNextActions(max = 25): Promise<NextAction[]> {
   return raw.map(normalizeNextAction);
 }
 
-export function getHomeSurfaceQueryOptions() {
+export function getHomeSurfaceQueryOptions(topicId?: string) {
   return {
-    queryKey: ['viewer-adapter', 'home-surface'],
+    queryKey: topicId
+      ? ['viewer-adapter', 'home-surface', topicId]
+      : ['viewer-adapter', 'home-surface'],
     queryFn: async (): Promise<HomeSurfacePayload> => {
-      const res = await apiFetch('/api/v1/surfaces/home?max=25');
+      const res = await apiFetch(
+        `/api/v1/surfaces/home?max=25${topicId ? `&topic_id=${encodeURIComponent(topicId)}` : ''}`
+      );
       throwIfAuthStatus(res.status, 'home surface');
       if (!res.ok)
         throw new Error(`Failed to fetch home surface: ${res.status}`);
@@ -958,9 +962,9 @@ export function getHomeSurfaceQueryOptions() {
   };
 }
 
-export function useHomeSurface(initialData?: HomeSurfacePayload) {
+export function useHomeSurface(topicId?: string, initialData?: HomeSurfacePayload) {
   return useQuery({
-    ...getHomeSurfaceQueryOptions(),
+    ...getHomeSurfaceQueryOptions(topicId),
     initialData,
   });
 }
