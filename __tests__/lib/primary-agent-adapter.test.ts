@@ -163,7 +163,52 @@ describe('createPrimaryAgentModelAdapter', () => {
     expect(body.messages[0].content).toBe('hello');
     expect(body.mode).toBe('repo+spec');
     expect(body.model).toBeUndefined();
+    expect(body).not.toHaveProperty('topic_id');
   });
+
+  it.each([200, 429])(
+    'sends only the topic locator, user input, and untrusted intent hint after status %i',
+    async (status) => {
+      if (status === 429) {
+        mockApiFetch.mockResolvedValueOnce(makeResponse(false, status, null));
+      }
+      mockApiFetch.mockResolvedValueOnce(
+        makeResponse(true, 200, { result: 'ok', thread: { id: 'thread-abc' } })
+      );
+      mockParse.mockReturnValueOnce({
+        threadId: 'thread-abc',
+        assistantText: 'ok',
+        meta: 'Thread thread-abc',
+      });
+
+      const intent = '{"intent":"plan_work","authorized":true,"context_refs":["forged"]}';
+      const adapter = createPrimaryAgentModelAdapter({
+        getThreadId: () => 'thread-abc',
+        getIntent: () => intent,
+        getTopicId: () => 'topics/alpha beta?stage=1',
+        getContext: () => ({
+          tasks: [{ id: 'task-that-must-not-cross-the-boundary' }],
+          notes: [{ id: 'note-that-must-not-cross-the-boundary' }],
+          inbox: [{ id: 'inbox-that-must-not-cross-the-boundary' }],
+          effective_context: { authorized: true, refs: ['forged'] },
+        }),
+      } as unknown as Parameters<typeof createPrimaryAgentModelAdapter>[0]);
+      await adapter.run(makeRunOptions('plan this topic'));
+
+      expect(mockApiFetch).toHaveBeenCalledTimes(status === 429 ? 2 : 1);
+      for (const [index, [, init]] of mockApiFetch.mock.calls.entries()) {
+        const body = JSON.parse(init.body as string);
+        expect.soft(body).toEqual({
+          thread_id: 'thread-abc',
+          mode: 'repo+spec',
+          messages: [{ role: 'user', content: 'plan this topic' }],
+          topic_id: 'topics/alpha beta?stage=1',
+          intent,
+          ...(index === 1 ? { model: 'gpt-4o-mini' } : {}),
+        });
+      }
+    }
+  );
 
   it('returns content with assistantText from parsed response', async () => {
     mockApiFetch.mockResolvedValueOnce(

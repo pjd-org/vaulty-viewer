@@ -21,10 +21,7 @@ import {
   useAui,
   Tools,
 } from '@assistant-ui/react';
-import {
-  createPrimaryAgentModelAdapter,
-  type PrimaryAgentContext,
-} from '../../../src/lib/primary-agent-adapter';
+import { createPrimaryAgentModelAdapter } from '../../../src/lib/primary-agent-adapter';
 import { createLocalStorageThreadHistoryAdapter } from '../../../src/lib/primary-agent-thread-history';
 import { primaryAgentToolkit } from '../../../src/lib/primary-agent-toolkit';
 import { TooltipProvider } from '../ui/tooltip';
@@ -34,7 +31,7 @@ interface PrimaryAgentAssistantProviderProps {
   threadId: string;
   onThreadIdChange: (id: string) => void;
   getIntent: () => string | null;
-  getContext: () => PrimaryAgentContext | null;
+  getTopicId?: () => string | null;
 }
 
 /**
@@ -51,21 +48,21 @@ export function PrimaryAgentAssistantProvider({
   threadId,
   onThreadIdChange,
   getIntent,
-  getContext,
+  getTopicId,
 }: PrimaryAgentAssistantProviderProps) {
   // Ref keeps onThreadIdChange stable across renders without recreating the model adapter.
   const onThreadIdChangeRef = useRef(onThreadIdChange);
   onThreadIdChangeRef.current = onThreadIdChange;
 
-  // Model adapter is stable — it reads threadId, intent, and context via refs.
+  // Model adapter is stable — it reads threadId, intent hint, and topic locator via refs.
   const threadIdRef = useRef(threadId);
   threadIdRef.current = threadId;
 
   const getIntentRef = useRef(getIntent);
   getIntentRef.current = getIntent;
 
-  const getContextRef = useRef(getContext);
-  getContextRef.current = getContext;
+  const getTopicIdRef = useRef(getTopicId);
+  getTopicIdRef.current = getTopicId;
 
   const modelAdapter = useMemo(
     () =>
@@ -74,7 +71,7 @@ export function PrimaryAgentAssistantProvider({
         onThreadIdResolved: (resolvedId) =>
           onThreadIdChangeRef.current(resolvedId),
         getIntent: () => getIntentRef.current(),
-        getContext: () => getContextRef.current(),
+        getTopicId: () => getTopicIdRef.current?.() ?? null,
       }),
     [] // stable — refs handle mutability
   );
