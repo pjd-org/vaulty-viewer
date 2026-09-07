@@ -17,7 +17,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Block direct pushes to main
-        if: github.event_name == 'push'
+        if: >-
+          github.event_name == 'push' &&
+          github.event.head_commit != null &&
+          github.event.head_commit.committer.name != 'GitHub'
         run: |
           echo "Direct pushes to main are not allowed. Use a PR from develop."
           exit 1
