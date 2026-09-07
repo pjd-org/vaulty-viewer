@@ -15,8 +15,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/viewer/package.json apps/viewer/package.json
 COPY packages/ui/package.json packages/ui/package.json
 
-RUN pnpm install --frozen-lockfile
-RUN pnpm dedupe
+# Filtered install: resolves only the viewer closure — an unfiltered install
+# would resolve the root importer's vaulty-omp workspace dep, whose manifest
+# is intentionally absent from this image's build context.
+RUN pnpm install --frozen-lockfile --filter ./apps/viewer... --filter ./packages/ui...
 
 FROM deps AS build
 
