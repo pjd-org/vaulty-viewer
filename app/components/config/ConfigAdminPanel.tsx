@@ -4,6 +4,29 @@ import { GlassBadge, GlassButton } from '@vault/ui/atoms';
 import { GlassCard } from '@vault/ui/molecules';
 import { useConfigAdmin } from '../../../src/hooks/useConfigAdmin';
 
+const CREDENTIAL_FIELDS = [
+  { key: 'OLLAMA_API_KEY', label: 'Ollama API key' },
+  { key: 'PROVIDER_TOKEN_OPENAI', label: 'OpenAI provider token' },
+  { key: 'PROVIDER_TOKEN_ANTHROPIC', label: 'Anthropic provider token' },
+  { key: 'PROVIDER_TOKEN_MISTRAL', label: 'Mistral provider token' },
+  { key: 'PROVIDER_TOKEN_OLLAMA_CLOUD', label: 'Ollama Cloud provider token' },
+  { key: 'ALADDIN_OPENAI_API_KEY', label: 'Aladdin OpenAI API key' },
+  { key: 'ALADDIN_MISTRAL_API_KEY', label: 'Aladdin Mistral API key' },
+  { key: 'ALADDIN_ANTHROPIC_API_KEY', label: 'Aladdin Anthropic API key' },
+] as const;
+
+const LLM_KEYS = new Set(['LLM_PROVIDER', 'LLM_MODEL']);
+const KNOWN_CREDENTIAL_KEYS = new Set(CREDENTIAL_FIELDS.map(({ key }) => key));
+
+type CredentialKey = (typeof CREDENTIAL_FIELDS)[number]['key'];
+
+function emptyCredentials(): Record<CredentialKey, string> {
+  return Object.fromEntries(CREDENTIAL_FIELDS.map(({ key }) => [key, ''])) as Record<
+    CredentialKey,
+    string
+  >;
+}
+
 const DEFAULT_REQUEST = JSON.stringify(
   {
     target: '.env',
@@ -23,34 +46,63 @@ export function ConfigAdminPanel() {
     model: '',
     baseUrl: '',
     chatModel: '',
-    apiKey: '',
+    credentials: emptyCredentials(),
   });
+  const touchedLlmFields = React.useRef({ provider: false, model: false });
 
   React.useEffect(() => {
     const fields = admin.snapshot?.fields ?? [];
-    const valueFor = (key: string) =>
-      fields.find((field) => field.key === key)?.value;
+    const valueFor = (key: string) => {
+      const field = fields.find((candidate) => candidate.key === key);
+      return field && !field.secret ? field.value : undefined;
+    };
     setPrimaryConfig((current) => ({
-      provider: current.provider || String(valueFor('LLM_PROVIDER') ?? ''),
-      model: current.model || String(valueFor('LLM_MODEL') ?? ''),
+      provider: touchedLlmFields.current.provider
+        ? current.provider
+        : String(valueFor('LLM_PROVIDER') ?? ''),
+      model: touchedLlmFields.current.model
+        ? current.model
+        : String(valueFor('LLM_MODEL') ?? ''),
       baseUrl: current.baseUrl || String(valueFor('OLLAMA_BASE_URL') ?? ''),
       chatModel:
         current.chatModel || String(valueFor('OLLAMA_CHAT_MODEL') ?? ''),
-      apiKey: current.apiKey,
+      credentials: current.credentials,
     }));
   }, [admin.snapshot]);
 
+  const primaryImpactNotes = React.useMemo(() => {
+    const fields = admin.snapshot?.fields ?? [];
+    return [...new Set(
+      fields
+        .filter((field) => field.key && LLM_KEYS.has(field.key))
+        .map((field) => field.impact?.note)
+        .filter((note): note is string => Boolean(note))
+    )];
+  }, [admin.snapshot]);
+
+  const displaySnapshot = React.useMemo(
+    () => redactSnapshot(admin.snapshot),
+    [admin.snapshot]
+  );
+
   const primaryRequest = React.useCallback(() => {
     const changes: Record<string, string> = {};
+    for (const [key, value, touched] of [
+      ['LLM_PROVIDER', primaryConfig.provider, touchedLlmFields.current.provider],
+      ['LLM_MODEL', primaryConfig.model, touchedLlmFields.current.model],
+    ] as const) {
+      if (touched && value.trim()) changes[key] = value;
+    }
     for (const [key, value] of [
-      ['LLM_PROVIDER', primaryConfig.provider],
-      ['LLM_MODEL', primaryConfig.model],
       ['OLLAMA_BASE_URL', primaryConfig.baseUrl],
       ['OLLAMA_CHAT_MODEL', primaryConfig.chatModel],
     ]) {
       if (value.trim()) changes[key] = value;
     }
-    if (primaryConfig.apiKey.trim()) changes.OLLAMA_API_KEY = primaryConfig.apiKey;
+    for (const { key } of CREDENTIAL_FIELDS) {
+      const value = primaryConfig.credentials[key];
+      if (value.trim()) changes[key] = value;
+    }
 
     return { target: '.env', changes };
   }, [primaryConfig]);
@@ -61,7 +113,7 @@ export function ConfigAdminPanel() {
 
   const runPrimaryApply = React.useCallback(async () => {
     await admin.applyMutation(primaryRequest());
-    setPrimaryConfig((current) => ({ ...current, apiKey: '' }));
+    setPrimaryConfig((current) => ({ ...current, credentials: emptyCredentials() }));
   }, [admin, primaryRequest]);
   const statusTone =
     admin.status?.status === 'ok'
@@ -99,21 +151,30 @@ export function ConfigAdminPanel() {
           <p className="mb-3 text-xs text-[var(--text-secondary)]">
             Updates the root environment used by Tensura. API keys are write-only.
           </p>
+          {primaryImpactNotes.length > 0 && (
+            <ul className="mb-3 space-y-1 text-xs text-[var(--text-secondary)]">
+              {primaryImpactNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             <ConfigField
               label="Provider"
               value={primaryConfig.provider}
-              onChange={(provider) =>
-                setPrimaryConfig((current) => ({ ...current, provider }))
-              }
+              onChange={(provider) => {
+                touchedLlmFields.current.provider = true;
+                setPrimaryConfig((current) => ({ ...current, provider }));
+              }}
               placeholder="ollama-cloud"
             />
             <ConfigField
               label="Model"
               value={primaryConfig.model}
-              onChange={(model) =>
-                setPrimaryConfig((current) => ({ ...current, model }))
-              }
+              onChange={(model) => {
+                touchedLlmFields.current.model = true;
+                setPrimaryConfig((current) => ({ ...current, model }));
+              }}
               placeholder="glm-5.2:cloud"
             />
             <ConfigField
@@ -132,15 +193,21 @@ export function ConfigAdminPanel() {
               }
               placeholder="glm-5.2:cloud"
             />
-            <ConfigField
-              label="Ollama API key"
-              type="password"
-              value={primaryConfig.apiKey}
-              onChange={(apiKey) =>
-                setPrimaryConfig((current) => ({ ...current, apiKey }))
-              }
-              placeholder="Leave blank to keep existing key"
-            />
+            {CREDENTIAL_FIELDS.map(({ key, label }) => (
+              <ConfigField
+                key={key}
+                label={label}
+                type="password"
+                value={primaryConfig.credentials[key]}
+                onChange={(value) =>
+                  setPrimaryConfig((current) => ({
+                    ...current,
+                    credentials: { ...current.credentials, [key]: value },
+                  }))
+                }
+                placeholder="Leave blank to keep existing key"
+              />
+            ))}
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <GlassButton type="button" tone="sky" onClick={() => void runPrimaryPreview()}>
@@ -178,7 +245,7 @@ export function ConfigAdminPanel() {
               tabIndex={0}
               className="overflow-auto rounded-xl bg-black/5 p-3 text-xs text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
             >
-              {JSON.stringify(admin.snapshot, null, 2)}
+              {JSON.stringify(displaySnapshot, null, 2)}
             </pre>
           </PanelBox>
 
@@ -288,5 +355,35 @@ function Stat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">{value}</p>
     </div>
+  );
+}
+
+function redactSnapshot(snapshot: ReturnType<typeof useConfigAdmin>['snapshot']) {
+  if (!snapshot) return snapshot;
+
+  const secretKeys = new Set([
+    ...KNOWN_CREDENTIAL_KEYS,
+    ...(snapshot.fields ?? [])
+      .filter((field) => field.secret && field.key)
+      .map((field) => field.key as string),
+  ]);
+  const fields = snapshot.fields?.map((field) =>
+    field.secret || (field.key && secretKeys.has(field.key))
+      ? { ...field, value: '[REDACTED]' }
+      : field
+  );
+
+  return redactValues({ ...snapshot, fields }, secretKeys);
+}
+
+function redactValues(value: unknown, secretKeys: Set<string>): unknown {
+  if (Array.isArray(value)) return value.map((entry) => redactValues(entry, secretKeys));
+  if (!value || typeof value !== 'object') return value;
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+      key,
+      secretKeys.has(key) ? '[REDACTED]' : redactValues(entry, secretKeys),
+    ])
   );
 }

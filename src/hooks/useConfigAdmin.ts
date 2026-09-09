@@ -3,12 +3,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiFetch, ForbiddenError, UnauthenticatedError } from '../utils/api';
 
+export type ConfigImpact = {
+  artifacts?: string[];
+  note?: string;
+  rebuild?: boolean;
+  restart?: string[];
+};
+
 export type ConfigDiffEntry = {
   key: string;
   oldValue?: unknown;
   newValue?: unknown;
   secret?: boolean;
-  impact?: { artifacts?: string[]; rebuild?: boolean; restart?: string[] };
+  impact?: ConfigImpact;
 };
 
 export type ConfigSnapshot = {
@@ -16,6 +23,7 @@ export type ConfigSnapshot = {
   config?: Record<string, unknown>;
   fields?: Array<{
     editable?: boolean;
+    impact?: ConfigImpact;
     secret?: boolean;
     key?: string;
     source?: string;
