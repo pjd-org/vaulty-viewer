@@ -357,7 +357,7 @@ describe('inbox adapter wiring', () => {
     expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
   });
 
-  it('keeps reject wired for queue items when the matching run is missing', () => {
+  it('does not expose reject for queue items; Reject is disabled at the boundary', () => {
     mockRouteState.search = {
       view: 'queue',
       rejectedTab: undefined,
@@ -367,11 +367,8 @@ describe('inbox adapter wiring', () => {
 
     render(<RouteComponent />);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Reject Proposal run' })
-    );
-
-    expect(mockRejectRun).toHaveBeenCalledWith('run-1');
+    expect(screen.queryByRole('button', { name: 'Reject Proposal run' })).toBeNull();
+    expect(mockRejectRun).not.toHaveBeenCalled();
   });
 
   it('uses WorkspaceScaffold with a right-rail aside panel', () => {

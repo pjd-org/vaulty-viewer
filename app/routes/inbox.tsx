@@ -87,7 +87,7 @@ export const Route = createFileRoute('/inbox')({
 });
 
 function InboxRoute() {
-  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, rejectRun, actionState, counts } = useInbox();
+  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, actionState, counts } = useInbox();
   const navigate = useNavigate();
   const modals = useModals();
   const { mutate: convertTask } = useInboxConverterMutation();
@@ -246,19 +246,6 @@ function InboxRoute() {
     [commitRun, refresh]
   );
 
-  const handleReject = React.useCallback(
-    async (runId: string) => {
-      try {
-        await rejectRun(runId);
-        toast(`Rejected run ${runId}`);
-        refresh();
-      } catch (err) {
-        toast.error((err as Error).message ?? 'Reject failed');
-      }
-    },
-    [rejectRun, refresh]
-  );
-
   const openItem = React.useCallback(
     (item: InboxItem) => {
       const run = runById.get(item.sourceId);
@@ -288,11 +275,6 @@ function InboxRoute() {
           run && run.runType !== 'signals_infer' && run.runType !== 'transform'
             ? () => handleCommit(run.runId)
             : undefined,
-        onReject: run
-          ? () => handleReject(run.runId)
-          : item.sourceId
-            ? () => handleReject(item.sourceId)
-            : undefined,
         convertPanel: run ? (
           <button
             type="button"
@@ -303,7 +285,7 @@ function InboxRoute() {
         ) : undefined,
       });
     },
-    [convertTask, handleCommit, handleReject, modals, noteByPath, runById, setSearch]
+    [convertTask, handleCommit, modals, noteByPath, runById, setSearch]
   );
 
   React.useEffect(() => {
@@ -391,12 +373,6 @@ function InboxRoute() {
                     ) ||
                     (run && run.runType !== 'signals_infer' &&
                       run.runType !== 'transform');
-                  const canReject =
-                    item.allowedActions.some((a) =>
-                      ['defer', 'approve'].includes(a.actionType)
-                    ) ||
-                    !!run ||
-                    !!item.sourceId;
                   const runActionId = run?.runId ?? item.sourceId;
                   const actionInflight =
                     !!runActionId &&
@@ -422,15 +398,6 @@ function InboxRoute() {
                       onPromote={
                         canPromote && run && run.runType !== 'signals_infer'
                           ? () => handleCommit(run.runId)
-                          : undefined
-                      }
-                      onReject={
-                        canReject
-                          ? run
-                            ? () => handleReject(run.runId)
-                            : item.sourceId
-                              ? () => handleReject(item.sourceId)
-                              : undefined
                           : undefined
                       }
                       actionInFlight={actionInflight}
