@@ -284,7 +284,6 @@ export function toInboxItemDisplay(item: {
   const isBlocked = item.status === 'blocked';
   const actions: InboxItemDisplay['actions'] = ['inspect'];
   if (!isBlocked) actions.push('promote');
-  actions.push('reject');
 
   const runId = item._run_id ?? null;
 
