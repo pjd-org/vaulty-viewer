@@ -97,12 +97,12 @@ describe('useHealthSurface', () => {
     expect(result.data).toBeUndefined();
   });
 
-  it('queryFn calls /api/v1/health/detailed', async () => {
+  it('queryFn calls /api/health', async () => {
     mockApiFetch.mockResolvedValueOnce(makeApiResponse(SAMPLE_RESPONSE));
     const queryFn = captureQueryFn();
     expect(queryFn).toBeDefined();
     await queryFn!();
-    expect(mockApiFetch).toHaveBeenCalledWith('/api/v1/health/detailed');
+    expect(mockApiFetch).toHaveBeenCalledWith('/api/health');
   });
 
   it('queryFn returns health payload with overall ok', async () => {

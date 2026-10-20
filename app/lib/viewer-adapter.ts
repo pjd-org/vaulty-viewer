@@ -1535,7 +1535,16 @@ export function useHealthSurface() {
   return useQuery({
     queryKey: ['health'],
     queryFn: async (): Promise<HealthSurfacePayload> => {
-      const res = await apiFetch('/api/v1/health/detailed');
+      // /api/v1/health/detailed was never routable: the API registers
+      // healthRoutes with NO prefix, so the route lives at /health/detailed,
+      // and nginx has no proxy block for it (the /api/ prefix is auth-gated).
+      // The viewer therefore always got 404 -> healthError -> "Offline" in the
+      // top bar regardless of actual service state.
+      //
+      // /api/health IS proxied publicly (nginx `location = /api/health`) and
+      // returns 200. It carries status/timestamp/uptime but not the MCP
+      // dependency probe, so the MCP row is absent rather than wrong.
+      const res = await apiFetch('/api/health');
       throwIfAuthStatus(res.status, 'health');
       if (!res.ok) throw new Error(`Failed to fetch health: ${res.status}`);
       const body = await res.json();
