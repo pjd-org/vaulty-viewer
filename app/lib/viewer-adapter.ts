@@ -255,6 +255,20 @@ export interface InboxItem extends PressureSignal {
 export interface ActionsSurfacePayload {
   recommendations: Recommendation[];
   verificationRail: VerificationOutcome[];
+  /**
+   * COD's human-state verdict, when the API forwards it. Carries the guardrail
+   * reason (e.g. HARD_STOP) so an empty lane can say WHY it is empty instead of
+   * looking like an outage or a genuine lack of work.
+   */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 // Bubble surface — behavioral control lane (pressure, momentum, rewards, energy)

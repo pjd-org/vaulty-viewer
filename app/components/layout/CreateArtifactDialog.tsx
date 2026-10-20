@@ -160,16 +160,16 @@ export function CreateArtifactDialog({
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2">
                 {ARTIFACTS.map((artifact) => (
                   <button
                     key={artifact.type}
                     type="button"
                     onClick={() => setSelectedType(artifact.type)}
-                    className="group flex min-h-[108px] flex-col justify-between rounded-3xl border border-[var(--border-glass)] bg-[var(--surf-elevated)] px-4 py-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--a-sky)_28%,var(--border-glass))] hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)]"
+                    className="group flex min-h-[108px] min-w-0 flex-col justify-between overflow-hidden rounded-3xl border border-[var(--border-glass)] bg-[var(--surf-elevated)] px-4 py-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--a-sky)_28%,var(--border-glass))] hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--a-sky)_28%,transparent)]"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold text-[var(--text-primary)]">
                           {artifact.label}
                         </p>

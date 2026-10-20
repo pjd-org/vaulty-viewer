@@ -52,6 +52,17 @@ function ActionsRoute() {
   const currentSort = sort ?? 'urgency';
   const allRecommendations = surface?.recommendations ?? [];
 
+  // COD short-circuits on guardrails (HARD_STOP) and returns an empty payload
+  // with the reason in meta.humanState.warnings. Surface it, so an empty lane
+  // reads as "paused" rather than "nothing to do" or "service down".
+  const guardrailReason = React.useMemo(() => {
+    const hs = surface?.meta?.humanState;
+    if (!hs) return undefined;
+    if (hs.status !== 'blocked') return undefined;
+    const first = Array.isArray(hs.warnings) ? hs.warnings[0] : undefined;
+    return typeof first === 'string' && first.trim() ? first.trim() : undefined;
+  }, [surface]);
+
   const recommendations = React.useMemo(() => {
     const base = allRecommendations;
     const filtered = simulatableOnly
@@ -287,8 +298,15 @@ function ActionsRoute() {
           />
         ) : recommendations.length === 0 ? (
           <EmptyState
-            title="No actions are surfaced right now."
-            description="Once the queue refreshes, this lane will rank the best next moves."
+            title={
+              guardrailReason
+                ? 'Work is paused by a guardrail.'
+                : 'No actions are surfaced right now.'
+            }
+            description={
+              guardrailReason ??
+              'Once the queue refreshes, this lane will rank the best next moves.'
+            }
             action={
               <Link
                 to="/work"
