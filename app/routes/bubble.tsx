@@ -20,6 +20,15 @@ import { getAuthFailureKind } from '../hooks/use-login-redirect';
 export const Route = createFileRoute('/bubble')({
   validateSearch: bubbleSearchParams,
   loader: async ({ context }) => {
+    // See routes/index.tsx: SSR has no service credential, so this call is a
+    // guaranteed 401 and used to turn the route into HTTP 500 for anonymous
+    // visitors. Skip it; the client refetches through the session-gated proxy.
+    if (
+      !process.env.VIEWER_INTERNAL_APP_API_KEY &&
+      !process.env.AUTH_MCP_API_KEY
+    ) {
+      return;
+    }
     await context.queryClient.ensureQueryData(getBubbleSurfaceQueryOptions());
   },
   component: BubbleRoute,

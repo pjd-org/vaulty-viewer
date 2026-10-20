@@ -51,9 +51,36 @@ export const Route = createFileRoute('/')({
   validateSearch: homeSearchParams,
   loaderDeps: ({ search }) => ({ topicId: search.topicId }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(
-      getHomeSurfaceQueryOptions(deps?.topicId)
-    );
+    // SSR cannot authenticate to the API: the viewer holds no service credential
+    // and never forwards the inbound session cookie. Calling ensureQueryData
+    // anyway guarantees a 401, which used to escape the loader and turn the route
+    // into HTTP 500 for every anonymous visitor.
+    //
+    // Skip the doomed call entirely. The client refetches through nginx (which
+    // does gate /api/ on the session), and the component's existing
+    // UnauthenticatedError effect handles the anonymous redirect. If a service
+    // credential is ever configured, SSR participates again automatically.
+    if (
+      !process.env.VIEWER_INTERNAL_APP_API_KEY &&
+      !process.env.AUTH_MCP_API_KEY
+    ) {
+      return;
+    }
+    try {
+      await context.queryClient.ensureQueryData(
+        getHomeSurfaceQueryOptions(deps?.topicId)
+      );
+    } catch (error) {
+      if (error instanceof UnauthenticatedError) {
+        // Credential is configured but rejected: keep the operator signal that
+        // the old 500 provided, so a broken service token is not silent.
+        console.warn(
+          '[viewer] home loader: 401 during SSR (credential-configured-but-rejected)'
+        );
+        return;
+      }
+      throw error;
+    }
   },
   component: FocusRoute,
 });

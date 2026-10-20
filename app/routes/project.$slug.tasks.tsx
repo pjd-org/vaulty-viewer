@@ -20,6 +20,15 @@ const STATUS_ORDER: Record<TaskStatus, number> = {
 export const Route = createFileRoute('/project/$slug/tasks')({
   validateSearch: projectSearchParams,
   loader: async ({ context }) => {
+    // See routes/index.tsx: SSR has no service credential, so these calls are
+    // guaranteed 401s and used to turn the route into HTTP 500 for anonymous
+    // visitors. Skip them; the client refetches through the session-gated proxy.
+    if (
+      !process.env.VIEWER_INTERNAL_APP_API_KEY &&
+      !process.env.AUTH_MCP_API_KEY
+    ) {
+      return;
+    }
     await context.queryClient.ensureQueryData(getAllTasksQueryOptions());
   },
   component: ProjectTasksRoute,

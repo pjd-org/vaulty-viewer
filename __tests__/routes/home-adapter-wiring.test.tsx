@@ -374,6 +374,10 @@ describe('home adapter wiring', () => {
   });
 
   it('preloads the home adapter surface in the route loader', async () => {
+    // SSR only participates when a service credential exists; otherwise the
+    // loader deliberately skips the guaranteed-401 call (see routes/index.tsx).
+    const prev = process.env.AUTH_MCP_API_KEY;
+    process.env.AUTH_MCP_API_KEY = 'test-credential';
     expect(typeof Route.options.loader).toBe('function');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -389,6 +393,29 @@ describe('home adapter wiring', () => {
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface'],
     });
+
+    if (prev === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prev;
+  });
+
+  it('skips the SSR prefetch when no service credential is configured', async () => {
+    const prev = process.env.AUTH_MCP_API_KEY;
+    const prevViewer = process.env.VIEWER_INTERNAL_APP_API_KEY;
+    delete process.env.AUTH_MCP_API_KEY;
+    delete process.env.VIEWER_INTERNAL_APP_API_KEY;
+    mockEnsureQueryData.mockClear();
+
+    await (Route.options.loader as any)?.({
+      context: { queryClient: { ensureQueryData: mockEnsureQueryData } },
+    } as never);
+
+    // No credential => no doomed API call => no 401 => no HTTP 500.
+    expect(mockEnsureQueryData).not.toHaveBeenCalled();
+
+    if (prev === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prev;
+    if (prevViewer === undefined) delete process.env.VIEWER_INTERNAL_APP_API_KEY;
+    else process.env.VIEWER_INTERNAL_APP_API_KEY = prevViewer;
   });
 
   it('preserves an optional topic locator in validated home search', () => {
@@ -408,6 +435,8 @@ describe('home adapter wiring', () => {
 
     expect(loaderDeps).toBeTypeOf('function');
     const deps = loaderDeps({ search: { topicId } });
+    const prevCred = process.env.AUTH_MCP_API_KEY;
+    process.env.AUTH_MCP_API_KEY = 'test-credential';
     const loader = Route.options.loader as unknown as (args: {
       context: {
         queryClient: {
@@ -429,6 +458,9 @@ describe('home adapter wiring', () => {
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface', topicId],
     });
+
+    if (prevCred === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prevCred;
   });
 
   it('uses the topic locator for the rendered home query', () => {
