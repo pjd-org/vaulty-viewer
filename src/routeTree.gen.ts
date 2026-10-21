@@ -28,6 +28,7 @@ import { Route as GraphRouteImport } from './../app/routes/graph'
 import { Route as GoalsRouteImport } from './../app/routes/goals'
 import { Route as GenesisRouteImport } from './../app/routes/genesis'
 import { Route as ForgotPasswordRouteImport } from './../app/routes/forgot-password'
+import { Route as ExplorerRouteImport } from './../app/routes/explorer'
 import { Route as ConfigRouteImport } from './../app/routes/config'
 import { Route as CodStatusRouteImport } from './../app/routes/cod-status'
 import { Route as BubbleRouteImport } from './../app/routes/bubble'
@@ -152,6 +153,11 @@ const GenesisRoute = GenesisRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorerRoute = ExplorerRouteImport.update({
+  id: '/explorer',
+  path: '/explorer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfigRoute = ConfigRouteImport.update({
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/explorer': typeof ExplorerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
@@ -370,6 +377,7 @@ export interface FileRoutesByTo {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/explorer': typeof ExplorerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/bubble': typeof BubbleRoute
   '/cod-status': typeof CodStatusRoute
   '/config': typeof ConfigRoute
+  '/explorer': typeof ExplorerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/genesis': typeof GenesisRoute
   '/goals': typeof GoalsRoute
@@ -475,6 +484,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/explorer'
     | '/forgot-password'
     | '/genesis'
     | '/goals'
@@ -526,6 +536,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/explorer'
     | '/forgot-password'
     | '/genesis'
     | '/goals'
@@ -577,6 +588,7 @@ export interface FileRouteTypes {
     | '/bubble'
     | '/cod-status'
     | '/config'
+    | '/explorer'
     | '/forgot-password'
     | '/genesis'
     | '/goals'
@@ -629,6 +641,7 @@ export interface RootRouteChildren {
   BubbleRoute: typeof BubbleRoute
   CodStatusRoute: typeof CodStatusRoute
   ConfigRoute: typeof ConfigRoute
+  ExplorerRoute: typeof ExplorerRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GenesisRoute: typeof GenesisRoute
   GoalsRoute: typeof GoalsRoute
@@ -793,6 +806,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorer': {
+      id: '/explorer'
+      path: '/explorer'
+      fullPath: '/explorer'
+      preLoaderRoute: typeof ExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/config': {
@@ -1069,6 +1089,7 @@ const rootRouteChildren: RootRouteChildren = {
   BubbleRoute: BubbleRoute,
   CodStatusRoute: CodStatusRoute,
   ConfigRoute: ConfigRoute,
+  ExplorerRoute: ExplorerRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GenesisRoute: GenesisRoute,
   GoalsRoute: GoalsRoute,
