@@ -473,7 +473,8 @@ function GraphRoute() {
         </div>
       }
       primary={
-        isLoading ? (
+        <AmbientSurface className="flex flex-col gap-4 rounded-2xl p-1">
+        {isLoading ? (
           <RouteLoadingState label="Loading graph topology..." />
         ) : data == null ? (
           <div data-testid="graph-empty-state" className="flex flex-col gap-2">
@@ -561,7 +562,8 @@ function GraphRoute() {
               )}
             </div>
           </div>
-        )
+        )}
+        </AmbientSurface>
       }
     />
   );

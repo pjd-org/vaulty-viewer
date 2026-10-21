@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useInbox } from '../../src/hooks/useInbox';
 import type { InboxNote } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
+import { AmbientSurface } from '../components/v2';
 import { useViewerV2 } from '../lib/design/viewer-v2-context';
 import { roleForSeverity } from '../lib/design/role-mapping';
 import { WorkspaceScaffold } from '../components/layout';
@@ -326,6 +327,7 @@ function InboxRoute() {
       subtitle={`${surface.length} items · ${visibleItems.length} shown${surface.length !== visibleItems.length ? ` · ${surface.length - visibleItems.length} hidden by tab/filters` : ''}`}
       primaryTitle="Review queue"
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
         <div className="flex flex-col gap-4">
           {loading && <div>Loading inbox…</div>}
           {!loading && error && (
@@ -450,6 +452,7 @@ function InboxRoute() {
             </>
           )}
         </div>
+        </AmbientSurface>
       }
       asideTitle="Detail"
       aside={null}
