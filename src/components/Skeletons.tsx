@@ -78,7 +78,7 @@ export function SkeletonVitals() {
  */
 export function SkeletonCardGrid({ count = 6 }: SkeletonCardGridProps) {
   return (
-    <div className="grid">
+    <div className="skeleton-card-grid">
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonCard key={i} />
       ))}

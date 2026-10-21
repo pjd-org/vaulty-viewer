@@ -1520,7 +1520,11 @@ img {
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
 }
 
-.grid {
+/* Renamed from `.grid`, which collided with Tailwind's `.grid` utility and
+   forced `repeat(auto-fill, minmax(280px, 1fr))` onto EVERY element using
+   className="grid" — including dialog content, which then laid out as three
+   ~310px columns instead of one. Scoped to its single consumer. */
+.skeleton-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
