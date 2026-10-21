@@ -41,6 +41,7 @@ import {
 } from '../lib/viewer-adapter';
 import { useMutationWithVerification } from '../hooks/use-mutation-with-verification';
 import { updateTaskStatus } from '../lib/api/tasks';
+import { AmbientSurface } from '../components/v2';
 import { CodSignalRow } from '../components/cod/CodSignalRow';
 import { CodActionRow } from '../components/cod/CodActionRow';
 import { SurfaceEntryGrid, type SurfaceEntryTile } from '../components/home/SurfaceEntryGrid';
@@ -1078,7 +1079,11 @@ function FocusRoute() {
         heroContent={undefined}
         primaryTitle="Today's Focus"
         primarySubtitle="Best move, pressure signals, and ranked recommendations."
-        primary={primaryContent}
+        primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {primaryContent}
+        </AmbientSurface>
+      }
         asideTitle="Snapshot Grid"
         asideSubtitle="Live module status"
         aside={asideContent}

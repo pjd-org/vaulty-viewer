@@ -21,6 +21,7 @@ import {
   type KanbanTask,
   type KanbanColumn,
 } from '../../src/lib/kanban-logic';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
 
@@ -503,6 +504,8 @@ function KanbanRoute() {
             : 'Drag cards to move tasks between columns.'
       }
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         <div className="flex flex-col gap-6">
           {/* Board columns — horizontally scrollable on narrow viewports */}
           <div
@@ -632,6 +635,8 @@ function KanbanRoute() {
             )}
           </div>
         </div>
+      }
+        </AmbientSurface>
       }
       asideTitle="Filters"
       asideSubtitle="Narrow the board view."

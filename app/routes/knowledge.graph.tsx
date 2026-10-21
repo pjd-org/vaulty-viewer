@@ -6,6 +6,7 @@ import {
   type GraphJson,
 } from '../lib/viewer-adapter';
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
 import { GlassCard } from '@vault/ui';
@@ -218,6 +219,8 @@ function KnowledgeGraphRoute() {
       primaryTitle="Graph"
       primarySubtitle="Click a node to inspect it. Node size reflects backlink count."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         <div className="flex flex-col gap-4">
           <KnowledgeHealthBanner
             health={health ?? null}
@@ -368,6 +371,8 @@ function KnowledgeGraphRoute() {
             </div>
           )}
         </div>
+      }
+        </AmbientSurface>
       }
       asideTitle="Selection"
       asideSubtitle="Click a node to inspect it here."

@@ -5,6 +5,7 @@ import {
   useNavigate,
 } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, GuardrailBanner } from '../components/ui';
 import { bubbleSearchParams } from '../../src/lib/routes/search-params';
@@ -266,6 +267,7 @@ function BubbleRoute() {
       primaryTitle="Bubble Workspace"
       primarySubtitle="Interpretation on the left, intervention on the right."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
         <div className="flex flex-col gap-4">
         <GuardrailBanner humanState={data?.meta?.humanState} />
         {isLoading ? (
@@ -298,6 +300,7 @@ function BubbleRoute() {
           <BubbleContent data={data} />
         )}
         </div>
+        </AmbientSurface>
       }
     />
   );

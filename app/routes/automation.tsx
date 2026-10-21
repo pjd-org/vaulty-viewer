@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { GlassSurface } from '@vault/ui';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { RouteLoadingState } from '../components/ui';
 import { automationSearchParams } from '../../src/lib/routes/search-params';
@@ -335,6 +336,8 @@ function AutomationRoute() {
       primaryTitle="Pipelines & Scheduler"
       primarySubtitle="Registered pipelines and scheduled jobs."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         isLoading ? (
           <RouteLoadingState label="Loading automation controls..." />
         ) : data == null ? (
@@ -370,6 +373,8 @@ function AutomationRoute() {
             </GlassSurface>
           </div>
         )
+      }
+        </AmbientSurface>
       }
       aside={selection ? <AutomationDetail selection={selection} /> : null}
     />

@@ -11,6 +11,7 @@ import {
   formatDuration,
   type SessionTask,
 } from '../../src/lib/focus-logic';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
 
 export const Route = createFileRoute('/session/$id')({
@@ -362,7 +363,11 @@ function SessionRoute() {
         },
       ]}
       primaryTitle="Tasks"
-      primary={primaryContent}
+      primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {primaryContent}
+        </AmbientSurface>
+      }
       asideTitle="Controls"
       aside={asideContent}
     />
