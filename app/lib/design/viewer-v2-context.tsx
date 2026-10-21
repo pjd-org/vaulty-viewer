@@ -224,27 +224,30 @@ export function ViewerV2Provider({
     document.head.appendChild(style);
   }, []);
 
-  // Drive the theme attribute the CSS keys off, AND keep the legacy `.dark`
-  // class in sync.
+  // Mirror the legacy theme controller onto data-v2-theme.
   //
-  // The Viewer has two theme systems: legacy CSS keys off `.dark`, V2 keys off
-  // data-v2-theme. If they disagree, one paints dark surfaces while the other
-  // keeps light text — measured 1.05:1, effectively invisible. Rather than
-  // redefining legacy tokens (which broke the sidebar in the opposite
-  // direction), V2 owns the switch and sets both, so they cannot diverge.
+  // The legacy store (src/store/ui.ts, `vault-theme`) already owns the `.dark`
+  // class and runs its own effect in __root. V2 must NOT set the class itself —
+  // two controllers writing it produced a state where data-v2-theme said dark
+  // while `.dark` was absent, so V2 variables applied but legacy surfaces
+  // stayed light (measured 1.05:1 text contrast).
+  //
+  // So V2 observes rather than controls: it reads whatever the legacy
+  // controller decided and labels it. One source of truth, no divergence
+  // possible.
   useEffect(() => {
     const root = document.documentElement;
-    root.setAttribute('data-v2-theme', preferences.theme);
-    if (preferences.theme === 'soft-dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-      root.style.colorScheme = 'dark';
-    } else {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      root.style.colorScheme = 'light';
-    }
-  }, [preferences.theme]);
+    const sync = () => {
+      root.setAttribute(
+        'data-v2-theme',
+        root.classList.contains('dark') ? 'soft-dark' : 'soft-light'
+      );
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Escape clears selection. Deliberately does not move focus: clearing a
   // selection must not yank the caret away from wherever the user is.
