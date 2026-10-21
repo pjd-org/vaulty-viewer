@@ -12,7 +12,10 @@
     "storybook": "storybook dev -p 6006 -c .storybook",
     "build-storybook": "storybook build -c .storybook",
     "storybook:mcp": "storybook dev -p 6006 -c .storybook",
-    "test-storybook": "vitest --config vitest.config.ts --project=storybook"
+    "test-storybook": "vitest --config vitest.config.ts --project=storybook",
+    "a11y:baseline": "node scripts/a11y-baseline.mjs",
+    "visual:baseline": "node scripts/visual-baseline.mjs",
+    "visual:update": "node scripts/visual-baseline.mjs --update"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.12.22",

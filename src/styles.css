@@ -20,7 +20,10 @@
     --muted-foreground: var(--color-text-2);
     --accent: var(--color-primary);
     --accent-foreground: var(--color-text-inverse);
-    --destructive: var(--color-danger);
+    /* Text use must use the TEXT token: --color-danger (#ff5a5f) is a fill and
+       only reaches 3.02:1 on surface, below the 4.5:1 AA floor for body text.
+       --color-danger-text (#c0152a) exists for exactly this. */
+    --destructive: var(--color-danger-text);
     --destructive-foreground: var(--color-text-inverse);
     --border: var(--color-border);
     --input: var(--color-input-bg);

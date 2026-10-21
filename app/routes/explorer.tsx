@@ -394,11 +394,13 @@ function ExplorerRoute() {
               role="tab"
               aria-selected={view === v}
               onClick={() => setView(v)}
+              // Use the canonical .tab styling: its active state is a dark
+              // gradient with white text. The hand-rolled
+              // bg-primary/text-primary-foreground pairing measured 3.21:1,
+              // below the 4.5:1 AA floor, because #4f8cff is a fill colour.
               className={[
-                'rounded-lg px-3 py-1.5 text-sm capitalize',
-                view === v
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/70',
+                'tab px-3 py-1.5 text-sm capitalize',
+                view === v ? 'active font-medium' : 'hover:text-foreground',
               ].join(' ')}
               data-testid={`explorer-tab-${v}`}
             >
