@@ -17,6 +17,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { WorkspaceScaffold } from '../components/layout';
 import { RouteLoadingState } from '../components/ui';
 import { GlassSurface } from '@vault/ui';
+import { AmbientSurface, SelectableCard } from '../components/v2';
+import { roleForProvenance } from '../lib/design/role-mapping';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
 import { apiFetch } from '../../src/utils/api';
 
 export const Route = createFileRoute('/explorer')({
@@ -369,6 +372,22 @@ function ExplorerRoute() {
     };
   }, [view, folder, search, statusFilter, tags, includeHistory, offset]);
 
+  const { select: selectAmbient } = useViewerV2();
+
+  // Mirror the selected record into shared ambient state. Provenance decides the
+  // role: staged/rejected/historical read as `source`, live records as `total`.
+  // Hover never reaches this — only an explicit selection does.
+  useEffect(() => {
+    if (!selected) {
+      selectAmbient(null);
+      return;
+    }
+    selectAmbient({
+      id: selected.path,
+      role: roleForProvenance(selected.state === 'historical' ? 'historical' : 'live'),
+    });
+  }, [selected, selectAmbient]);
+
   const navigateTo = useCallback((next: string) => {
     setFolder(next);
     setOffset(0);
@@ -526,6 +545,7 @@ function ExplorerRoute() {
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           {/* Listing */}
+          <AmbientSurface className="overflow-hidden rounded-2xl border border-border">
           <GlassSurface
             variant="canvas"
             radius="2xl"
@@ -640,6 +660,7 @@ function ExplorerRoute() {
               </div>
             ) : null}
           </GlassSurface>
+          </AmbientSurface>
 
           {/* Preview */}
           <div>

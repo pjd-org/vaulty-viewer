@@ -25,6 +25,7 @@ import React, {
   useState,
 } from 'react';
 
+import { buildViewerV2Css } from './v2-theme-css';
 import {
   DEFAULT_INFORMATION_LEVEL,
   INFORMATION_LEVELS,
@@ -209,6 +210,24 @@ export function ViewerV2Provider({
   useEffect(() => {
     writePreferences(preferences);
   }, [preferences]);
+
+  // Inject the Pressure Band custom properties once. Without this the theme
+  // variables do not exist and every `var(--pb-*)` resolves to nothing, which
+  // renders as a transparent ambient surface — present in the DOM but
+  // visually inert.
+  useEffect(() => {
+    const id = 'v2-theme-vars';
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = buildViewerV2Css();
+    document.head.appendChild(style);
+  }, []);
+
+  // Drive the theme attribute the CSS keys off.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-v2-theme', preferences.theme);
+  }, [preferences.theme]);
 
   // Escape clears selection. Deliberately does not move focus: clearing a
   // selection must not yank the caret away from wherever the user is.
