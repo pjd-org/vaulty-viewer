@@ -1677,6 +1677,12 @@ export interface WorkSurfacePayload {
   total: number;
   mode: 'cod' | 'local_fallback';
   warnings: string[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  humanState?: {
+    status?: string;
+    warnings?: string[];
+    durationCapMin?: number;
+  };
 }
 
 export function useWorkSurface(max = 20) {
@@ -1700,6 +1706,7 @@ export function useWorkSurface(max = 20) {
         warnings: Array.isArray(body?.warnings)
           ? (body.warnings as string[])
           : [],
+          ...(sc.humanState ? { humanState: sc.humanState } : {}),
       };
     },
     staleTime: 60_000,

@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { ProjectsWorkspace } from '../components/projects';
 import { WorkspaceScaffold } from '../components/layout';
+import { GuardrailBanner } from '../components/ui';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import {
   getAuthFailureKind,
@@ -411,7 +412,9 @@ function WorkRoute() {
       primaryTitle="Projects & Tasks"
       primarySubtitle="Projects list and ranked next actions."
       primary={
-        isLoading ? (
+        <div className="flex flex-col gap-4">
+        <GuardrailBanner humanState={data?.humanState} />
+        {isLoading ? (
           <RouteLoadingState label="Loading project lanes..." />
         ) : authFailureKind === 'forbidden' ? (
           <EmptyState
@@ -500,7 +503,8 @@ function WorkRoute() {
               onSelect={setSelectedTask}
             />
           </>
-        )
+        )}
+        </div>
       }
     />
   );
