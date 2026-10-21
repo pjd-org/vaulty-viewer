@@ -322,9 +322,31 @@ body {
   position: relative;
 }
 
+/* Dark mode keeps the pastel gradient from `body`, only darkening its base.
+   The previous rule replaced the whole background with var(--surf-canvas) —
+   rgba(15,15,19,0.94), a translucent GLASS SURFACE token — which painted an
+   opaque near-black layer over the body and hid the pastel glow drawn by
+   body::before / body::after. That is why dark mode read as flat black
+   instead of pastel cyberpunk. */
 .dark body {
   color: var(--text-primary);
-  background: var(--surf-canvas);
+  background:
+    radial-gradient(
+      980px at 16% 10%,
+      rgba(111, 179, 255, 0.16),
+      transparent 58%
+    ),
+    radial-gradient(
+      760px at 84% 12%,
+      rgba(192, 140, 255, 0.14),
+      transparent 52%
+    ),
+    radial-gradient(
+      760px at 82% 92%,
+      rgba(104, 211, 145, 0.10),
+      transparent 64%
+    ),
+    linear-gradient(180deg, #0f0f13 0%, #12121a 52%, #161622 100%);
 }
 
 /* Page glow effect */
