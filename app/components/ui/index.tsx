@@ -40,6 +40,8 @@ export { SegmentedControl } from './Controls';
 export type { SegmentedControlProps, SegmentOption } from './Controls';
 
 export { EmptyState } from './EmptyState';
+export { GuardrailBanner, guardrailReason } from './GuardrailBanner';
+export type { GuardrailHumanState } from './GuardrailBanner';
 export type { EmptyStateProps } from './EmptyState';
 
 export {

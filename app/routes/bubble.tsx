@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-router';
 
 import { WorkspaceScaffold } from '../components/layout';
-import { EmptyState } from '../components/ui';
+import { EmptyState, GuardrailBanner } from '../components/ui';
 import { bubbleSearchParams } from '../../src/lib/routes/search-params';
 import {
   getBubbleSurfaceQueryOptions,
@@ -266,7 +266,9 @@ function BubbleRoute() {
       primaryTitle="Bubble Workspace"
       primarySubtitle="Interpretation on the left, intervention on the right."
       primary={
-        isLoading ? (
+        <div className="flex flex-col gap-4">
+        <GuardrailBanner humanState={data?.meta?.humanState} />
+        {isLoading ? (
           <div className="flex flex-col gap-3" data-testid="bubble-loading-state">
             <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
             <div className="h-20 animate-pulse rounded-2xl border border-border bg-muted/40" />
@@ -294,7 +296,8 @@ function BubbleRoute() {
           </div>
         ) : (
           <BubbleContent data={data} />
-        )
+        )}
+        </div>
       }
     />
   );

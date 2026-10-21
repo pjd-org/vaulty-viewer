@@ -227,12 +227,22 @@ export interface HomeSurfacePayload {
     portfolio: PressureSignal[];
     bubble: PressureSignal[];
     health: PressureSignal[];
-  };
+};
   contextTail: ContextCandidate[];
   /** Low-friction, high-reversibility moves (V3 Immediate Interventions plane). */
   immediateActions: Recommendation[];
   /** Raw task data preserved for downstream consumers (agent hooks, session logic) */
   tasks: NextAction[];
+    /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+    meta?: {
+      mode?: string;
+      fetchedAt?: string;
+      humanState?: {
+        status?: string;
+        warnings?: string[];
+        durationCapMin?: number;
+      };
+    };
 }
 
 export interface InboxItem extends PressureSignal {
@@ -310,6 +320,16 @@ export interface BubbleSurfacePayload {
   energy: BubbleEnergy;
   rewards: BubbleRewards;
   signals: PressureSignal[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 // Timeline surface — domain event stream reader
@@ -355,6 +375,16 @@ export interface ProjectSurfacePayload {
   contextPanel: ContextCandidate[];
   timelineHints: AdapterEntityRef[];
   dependencyRiskSignals: PressureSignal[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 function clampScore(value: number, max = 10) {

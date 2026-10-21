@@ -11,7 +11,7 @@ import {
   type ProjectSummary,
 } from '../../../src/lib/projects-logic';
 import { SoftPanel } from '../layout';
-import { EmptyState } from '../ui';
+import { EmptyState, GuardrailBanner } from '../ui';
 import { SkeletonCard } from '../ui';
 import { BlockersRail, ProjectBoardSection, ProjectDetailHeader } from '.';
 import { getProjectQueryOptions } from '../../lib/api/projects';
@@ -182,6 +182,7 @@ export function ProjectDetailScene({
   return (
     <div className={detailGridClass}>
       <div className="flex flex-col gap-6">
+        <GuardrailBanner humanState={displaySurface?.meta?.humanState} />
         {projectHeader ? (
           <ProjectDetailHeader
             projectId={projectId}

@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/app/components/ui/badge';
 import {
   EmptyState,
+  GuardrailBanner,
   MetricCard,
   SurfaceChip,
   SurfaceLinkChip,
@@ -710,6 +711,7 @@ function FocusRoute() {
 
   const primaryContent = (
     <div className="flex flex-col gap-6">
+      <GuardrailBanner humanState={surface?.meta?.humanState} />
       {surfaceError && !surface ? (
         <EmptyState
           title="Home surface unavailable."

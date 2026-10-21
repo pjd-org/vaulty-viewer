@@ -345,8 +345,16 @@ function InboxRoute() {
 
               <InboxItemList
                 items={visibleItems}
-                emptyTitle="Nothing here"
-                emptyDescription="Try a different tab or clear the active filters."
+                emptyTitle={
+                  surface.length === 0
+                    ? 'No staged runs are visible here.'
+                    : 'Nothing here'
+                }
+                emptyDescription={
+                  surface.length === 0
+                    ? 'Staged runs are withheld from the HTTP inbox by design: this ingress has no agent identity to verify run ownership against, so it returns none rather than enumerate them for any read-scoped caller. Review them through MCP, which scopes the list to your verified agent identity.'
+                    : 'Try a different tab or clear the active filters.'
+                }
                 emptyAction={
                   <button
                     type="button"

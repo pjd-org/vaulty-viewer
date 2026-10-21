@@ -50,8 +50,10 @@ export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
 ] as const;
 
 export const VIEWER_STATUS_NAV: readonly ViewerRouteNavItem[] = [
+  // COD is reachable from the OVERLAYS group and from the top-bar status chip.
+  // A third sidebar entry pointing at /cod-status was the same destination
+  // wearing a different name.
   { label: 'Health', shortLabel: '♡', to: '/health', group: 'system' },
-  { label: 'COD Status', shortLabel: '⬡', to: '/cod-status', group: 'system' },
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [

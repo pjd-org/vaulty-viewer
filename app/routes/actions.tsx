@@ -5,6 +5,7 @@ import { WorkspaceScaffold } from '../components/layout';
 import { Badge } from '@/app/components/ui/badge';
 import {
   EmptyState,
+  GuardrailBanner,
   PrimaryButton,
   SecondaryButton,
   SurfaceSectionCard,
@@ -282,7 +283,9 @@ function ActionsRoute() {
       primaryTitle="Recommended Actions"
       primarySubtitle="Ranked by urgency, impact, confidence, and reversibility."
       primary={
-        isLoading && !surface ? (
+        <div className="flex flex-col gap-4">
+        <GuardrailBanner humanState={surface?.meta?.humanState} />
+        {isLoading && !surface ? (
           <div className="flex flex-col gap-3">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
@@ -300,12 +303,13 @@ function ActionsRoute() {
           <EmptyState
             title={
               guardrailReason
-                ? 'Work is paused by a guardrail.'
+                ? 'Task lanes are paused.'
                 : 'No actions are surfaced right now.'
             }
             description={
-              guardrailReason ??
-              'Once the queue refreshes, this lane will rank the best next moves.'
+              guardrailReason
+                ? 'The guardrail notice above explains why this lane is empty.'
+                : 'Once the queue refreshes, this lane will rank the best next moves.'
             }
             action={
               <Link
@@ -598,7 +602,8 @@ function ActionsRoute() {
               );
             })}
           </div>
-        )
+        )}
+        </div>
       }
     />
   );
