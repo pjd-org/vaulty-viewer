@@ -224,9 +224,26 @@ export function ViewerV2Provider({
     document.head.appendChild(style);
   }, []);
 
-  // Drive the theme attribute the CSS keys off.
+  // Drive the theme attribute the CSS keys off, AND keep the legacy `.dark`
+  // class in sync.
+  //
+  // The Viewer has two theme systems: legacy CSS keys off `.dark`, V2 keys off
+  // data-v2-theme. If they disagree, one paints dark surfaces while the other
+  // keeps light text — measured 1.05:1, effectively invisible. Rather than
+  // redefining legacy tokens (which broke the sidebar in the opposite
+  // direction), V2 owns the switch and sets both, so they cannot diverge.
   useEffect(() => {
-    document.documentElement.setAttribute('data-v2-theme', preferences.theme);
+    const root = document.documentElement;
+    root.setAttribute('data-v2-theme', preferences.theme);
+    if (preferences.theme === 'soft-dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      root.style.colorScheme = 'light';
+    }
   }, [preferences.theme]);
 
   // Escape clears selection. Deliberately does not move focus: clearing a

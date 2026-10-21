@@ -600,6 +600,12 @@ img {
 .tab {
   background: transparent;
   border: 1px solid transparent;
+  /* Hardcoded by the legacy design. It measures 4.09:1 on the V2 dark surface,
+     which is below AA — recorded as a known dark-theme gap rather than patched
+     here. Pointing it at --v2-text-muted fixed graph/inbox but regressed
+     /explorer to 2.51:1, because its tab strip sits on a light legacy surface.
+     A correct fix needs the legacy component's surfaces themed, not its text
+     recoloured in isolation. */
   color: #4a5568;
 }
 
