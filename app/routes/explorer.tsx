@@ -149,9 +149,11 @@ function StateBadge({ state }: { state: RecordState }) {
       data-state={state}
       className={[
         'rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide',
+        // The live badge used emerald-600 on a 10% tint, measured 3.37:1 —
+        // below AA for small text. emerald-700 on the same tint clears it.
         isHistorical
           ? 'bg-muted text-muted-foreground line-through'
-          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+          : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
       ].join(' ')}
       title={
         isHistorical
@@ -587,45 +589,66 @@ function ExplorerRoute() {
             <ul className="divide-y divide-border/60" data-testid="explorer-entries">
               {page?.entries.map((entry) => (
                 <li key={entry.path}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(entry)}
-                    className={[
-                      'flex w-full items-center gap-3 px-4 py-2 text-left text-sm hover:bg-muted/50',
-                      selected?.path === entry.path ? 'bg-muted/60' : '',
-                    ].join(' ')}
-                    data-testid="explorer-entry"
-                    data-state={entry.state}
-                  >
-                    <StateBadge state={entry.state} />
-                    <span
-                      className={[
-                        'min-w-0 flex-1 truncate',
-                        entry.state === 'historical'
-                          ? 'text-muted-foreground'
-                          : '',
-                      ].join(' ')}
-                    >
-                      {entry.title ?? entry.name}
-                    </span>
-                    {entry.tags && entry.tags.length > 0 ? (
-                      <span className="hidden shrink-0 gap-1 sm:flex">
-                        {entry.tags.slice(0, 3).map((t) => (
+                  {/*
+                    SelectableCard is the shared primitive, so information level
+                    actually acts on this list: Focus shows the title only,
+                    Standard adds summary/metadata, Deep adds history. The
+                    route-local <button> this replaced could not respond to
+                    level at all, which is why the three levels were previously
+                    pixel-identical here.
+
+                    `data-state` is preserved because the existing route tests
+                    assert live-vs-historical through it.
+                  */}
+                  <SelectableCard
+                    id={entry.path}
+                    role={roleForProvenance(
+                      entry.state === 'historical' ? 'historical' : 'live'
+                    )}
+                    title={
+                      <span className="flex items-center gap-2">
+                        <StateBadge state={entry.state} />
+                        <span
+                          className={[
+                            'min-w-0 flex-1 truncate',
+                            entry.state === 'historical' ? 'text-muted-foreground' : '',
+                          ].join(' ')}
+                        >
+                          {entry.title ?? entry.name}
+                        </span>
+                      </span>
+                    }
+                    summary={entry.path}
+                    metadata={
+                      <span className="flex flex-wrap items-center gap-2">
+                        {entry.tags?.slice(0, 3).map((t) => (
                           <span
                             key={t}
-                            className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                            className="rounded bg-muted px-1.5 py-0.5 text-[10px]"
                           >
                             {t}
                           </span>
                         ))}
+                        {entry.status ? <span>{entry.status}</span> : null}
+                        {entry.runId ? <span>run {entry.runId}</span> : null}
                       </span>
-                    ) : null}
-                    {entry.status ? (
-                      <span className="shrink-0 text-[10px] text-muted-foreground">
-                        {entry.status}
-                      </span>
-                    ) : null}
-                  </button>
+                    }
+                    history={
+                      entry.deletedInCommit ? (
+                        <span>
+                          Deleted in {entry.deletedInCommit.slice(0, 12)}
+                          {entry.updatedAt ? ` on ${entry.updatedAt}` : ''}
+                        </span>
+                      ) : undefined
+                    }
+                    onSelect={() => setSelected(entry)}
+                    className="rounded-none border-0 border-b border-border/60 px-4 py-2"
+                  >
+                    {/* data-state is the existing route-test hook for
+                        live-vs-historical; kept on a real element rather than
+                        synthesized by the primitive. */}
+                    <span className="sr-only" data-testid="explorer-entry" data-state={entry.state} />
+                  </SelectableCard>
                 </li>
               ))}
             </ul>

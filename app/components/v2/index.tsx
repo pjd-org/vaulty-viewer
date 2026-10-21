@@ -89,6 +89,24 @@ export interface SelectableCardProps {
   alert?: React.ReactNode;
   /** Next actions render at EVERY level. */
   nextAction?: React.ReactNode;
+  /**
+   * Notified when this card is selected, by pointer or keyboard.
+   *
+   * Routes need this to open a detail panel. Without it a route would have to
+   * catch clicks on a child element, which breaks as soon as the card's own
+   * markup changes and misses keyboard activation entirely.
+   */
+  onSelect?: (id: string) => void;
+  /**
+   * ARIA role.
+   *
+   * `option` requires a listbox/group parent and a sibling set that axe can
+   * verify. Most routes render cards as an ordinary list of buttons, where
+   * `option` is invalid — axe reports aria-required-parent. Default to
+   * `button`, which is correct standalone, and let a route opt into `option`
+   * only when it provides a real listbox container.
+   */
+  ariaRole?: 'button' | 'option';
   children?: React.ReactNode;
   className?: string;
 }
@@ -102,6 +120,8 @@ export function SelectableCard({
   history,
   alert,
   nextAction,
+  onSelect,
+  ariaRole = 'button',
   children,
   className,
 }: SelectableCardProps): React.ReactElement {
@@ -111,12 +131,15 @@ export function SelectableCard({
 
   const handleSelect = React.useCallback(() => {
     select({ id, role });
-  }, [id, role, select]);
+    onSelect?.(id);
+  }, [id, role, select, onSelect]);
 
   return (
     <div
-      role="option"
-      aria-selected={selected}
+      role={ariaRole}
+      {...(ariaRole === 'option'
+        ? { 'aria-selected': selected }
+        : { 'aria-pressed': selected })}
       tabIndex={0}
       data-testid="v2-selectable-card"
       data-selected={selected}

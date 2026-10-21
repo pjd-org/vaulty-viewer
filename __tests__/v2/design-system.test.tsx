@@ -256,12 +256,28 @@ describe('ambient surface', () => {
 });
 
 describe('selectable card', () => {
-  it('marks the selected card with aria-selected', () => {
+  it('marks the selected card with aria-pressed by default', () => {
+    // The default role is `button`, where aria-pressed is the correct state
+    // attribute. aria-selected only applies to option/row/tab roles, which
+    // require a listbox/grid/tablist parent.
     render(<Harness />);
     const card = screen.getAllByTestId('v2-selectable-card')[0]!;
-    expect(card.getAttribute('aria-selected')).toBe('false');
+    expect(card.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(card);
-    expect(card.getAttribute('aria-selected')).toBe('true');
+    expect(card.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('uses aria-selected when the route opts into option role', () => {
+    render(
+      <ViewerV2Provider initialPreferences={{ ...DEFAULT_PREFERENCES }}>
+        <ul role="listbox" aria-label="Records">
+          <SelectableCard id="x" role="total" ariaRole="option" title="X" />
+        </ul>
+      </ViewerV2Provider>
+    );
+    const card = screen.getByTestId('v2-selectable-card');
+    expect(card.getAttribute('role')).toBe('option');
+    expect(card.getAttribute('aria-selected')).toBe('false');
   });
 
   it('is keyboard-selectable with Enter and Space', () => {
@@ -271,7 +287,7 @@ describe('selectable card', () => {
 
     fireEvent.keyDown(card, { key: 'Enter' });
     expect(surface.getAttribute('data-ambient')).toBe('critical');
-    expect(card.getAttribute('aria-selected')).toBe('true');
+    expect(card.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('treats Space the same as Enter', () => {
