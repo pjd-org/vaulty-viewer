@@ -139,13 +139,31 @@ export interface ViewerV2ContextValue {
 
 const ViewerV2Context = createContext<ViewerV2ContextValue | null>(null);
 
+/**
+ * Read the design-system context.
+ *
+ * Degrades to inert defaults rather than throwing when no provider is present.
+ * A route must not crash because a wrapper is missing: the provider is mounted
+ * at the root, but routes are also rendered standalone in tests and in error
+ * boundaries, and a thrown error there would turn a missing theme into a blank
+ * screen. Defaults mean "no ambient, default level" — the route still works.
+ */
 export function useViewerV2(): ViewerV2ContextValue {
   const ctx = useContext(ViewerV2Context);
-  if (!ctx) {
-    throw new Error('useViewerV2 must be used within <ViewerV2Provider>');
-  }
-  return ctx;
+  if (ctx) return ctx;
+  return FALLBACK_CONTEXT;
 }
+
+const FALLBACK_CONTEXT: ViewerV2ContextValue = {
+  preferences: { ...DEFAULT_PREFERENCES },
+  setTheme: () => undefined,
+  setInformationLevel: () => undefined,
+  toggleInspector: () => undefined,
+  level: INFORMATION_LEVELS[DEFAULT_INFORMATION_LEVEL],
+  selection: null,
+  select: () => undefined,
+  clearSelection: () => undefined,
+};
 
 /** Information-level capabilities only, for components that do not need the rest. */
 export function useInformationLevel(): InformationLevelSpec {

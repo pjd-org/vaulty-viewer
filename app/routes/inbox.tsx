@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useInbox } from '../../src/hooks/useInbox';
 import type { InboxNote } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
+import { roleForSeverity } from '../lib/design/role-mapping';
 import { WorkspaceScaffold } from '../components/layout';
 import {
   FilterBar,
@@ -164,6 +166,24 @@ function InboxRoute() {
       return true;
     });
   }, [tabItems, severity, runType, reversibility]);
+
+  const { select } = useViewerV2();
+
+  // Mirror the open inbox item into the shared ambient state, using the item's
+  // own severity. roleForSeverity maps only what the domain already
+  // distinguishes; anything unknown falls to neutral rather than being guessed
+  // into an alarm colour.
+  React.useEffect(() => {
+    if (!selectedId) {
+      select(null);
+      return;
+    }
+    const item = (tabItems as InboxItem[]).find((entry) => entry.id === selectedId);
+    select({
+      id: selectedId,
+      role: item ? roleForSeverity(item.severity) : 'total',
+    });
+  }, [selectedId, tabItems, select]);
 
   const visibleItems = React.useMemo(() => {
     const copy = [...filteredItems];
