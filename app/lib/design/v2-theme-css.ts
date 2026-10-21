@@ -8,7 +8,7 @@
  * Applied by data attribute on <html>, so any route inherits it without
  * per-route imports.
  */
-import { themeCssBlock } from '../app/lib/design/pressure-band';
+import { themeCssBlock } from './pressure-band';
 
 export function buildViewerV2Css(): string {
   return `
