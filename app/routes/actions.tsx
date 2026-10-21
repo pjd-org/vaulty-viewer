@@ -1,6 +1,7 @@
 import React from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { Badge } from '@/app/components/ui/badge';
 import {
@@ -283,6 +284,7 @@ function ActionsRoute() {
       primaryTitle="Recommended Actions"
       primarySubtitle="Ranked by urgency, impact, confidence, and reversibility."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
         <div className="flex flex-col gap-4">
         <GuardrailBanner humanState={surface?.meta?.humanState} />
         {isLoading && !surface ? (
@@ -604,6 +606,7 @@ function ActionsRoute() {
           </div>
         )}
         </div>
+        </AmbientSurface>
       }
     />
   );

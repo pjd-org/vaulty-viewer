@@ -5,6 +5,7 @@ import {
   useNavigate,
 } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import { GlassCard } from '../components/ui/glass-card';
@@ -495,7 +496,8 @@ function TimelineRoute() {
       primaryTitle="Event Stream"
       primarySubtitle="Timeline list and filter controls."
       primary={
-        isLoading ? (
+        <AmbientSurface className="rounded-2xl p-1">
+        {isLoading ? (
           <RouteLoadingState label="Loading event stream..." />
         ) : authFailureKind === 'forbidden' ? (
           <EmptyState
@@ -547,7 +549,8 @@ function TimelineRoute() {
               once the runtime surface connects.
             </p>
           </div>
-        )
+        )}
+        </AmbientSurface>
       }
     />
   );
