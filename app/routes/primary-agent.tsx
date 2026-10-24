@@ -118,7 +118,7 @@ export function primaryAgentReducer(
 // ---------------------------------------------------------------------------
 
 export const Route = createFileRoute('/primary-agent')({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { topicId?: string } => ({
     topicId: readStringSearchParam(search.topicId),
   }),
   component: PrimaryAgentRoute,

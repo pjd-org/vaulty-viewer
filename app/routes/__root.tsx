@@ -127,7 +127,7 @@ function RootComponent() {
     select: (state) => state.location.pathname,
   });
   const search = useRouterState({
-    select: (state) => state.location.search,
+    select: (state) => state.location.searchStr,
   });
   const [navOverlay, setNavOverlay] = React.useState<NavOverlay | null>(null);
   const hideShell = isShellHiddenPath(pathname);

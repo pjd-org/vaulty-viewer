@@ -14,7 +14,7 @@ import {
 export interface InboxNote {
   path: string;
   title?: string;
-  status?: string;
+  status?: InboxLogicNote['status'];
   error?: string;
 }
 
