@@ -430,9 +430,6 @@ function FocusRoute() {
     actionId: 'home-defer',
   });
   const [pendingDeferPath, setPendingDeferPath] = useState<string | null>(null);
-  const [pendingExecutePath, setPendingExecutePath] = useState<string | null>(
-    null
-  );
 
   const handleDefer = useCallback(
     (taskPath: string) => {
@@ -444,21 +441,6 @@ function FocusRoute() {
     [deferMutation]
   );
 
-  const executeMutation = useMutationWithVerification<boolean, string>({
-    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
-    domain: 'work',
-    actionId: 'home-execute',
-  });
-
-  const handleExecute = useCallback(
-    (taskPath: string) => {
-      setPendingExecutePath(taskPath);
-      executeMutation.mutate(taskPath, {
-        onSettled: () => setPendingExecutePath(null),
-      });
-    },
-    [executeMutation]
-  );
 
   // Hard-redirect to /login on 401 — return null while in-flight (D3)
   useEffect(() => {
@@ -639,22 +621,6 @@ function FocusRoute() {
     [navigate]
   );
 
-  const handleSignalAct = useCallback(
-    (signal: PressureSignal) => {
-      if (signal.taskPath) {
-        handleExecute(signal.taskPath);
-      }
-    },
-    [handleExecute]
-  );
-
-  const handleRecExecute = useCallback(
-    (id: string) => {
-      const rec = visibleDecisionQueue.find((r) => r.id === id);
-      if (rec?.taskPath) handleExecute(rec.taskPath);
-    },
-    [visibleDecisionQueue, handleExecute]
-  );
 
   const handleRecDefer = useCallback(
     (id: string) => {
@@ -730,7 +696,6 @@ function FocusRoute() {
           <CodSignalRow
             signals={visiblePressureBand}
             onOpen={handleSignalOpen}
-            onAct={handleSignalAct}
           />
         ) : (
           <EmptyState
@@ -757,7 +722,6 @@ function FocusRoute() {
         {visibleDecisionQueue.length > 0 ? (
           <CodActionRow
             recommendations={visibleDecisionQueue}
-            onExecute={handleRecExecute}
             onSimulate={handleRecSimulate}
             onDefer={handleRecDefer}
           />
@@ -899,13 +863,11 @@ function FocusRoute() {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleExecute(featuredTask.path)}
-                      disabled={pendingExecutePath === featuredTask.path}
+                      disabled
+                      title="Execution requires fresh server authorization."
                       className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:bg-primary/20 disabled:opacity-50"
                     >
-                      {pendingExecutePath === featuredTask.path
-                        ? 'Starting…'
-                        : 'Start'}
+                      Start
                     </button>
                     <button
                       type="button"
@@ -946,9 +908,7 @@ function FocusRoute() {
                   const target = rec.taskPath ?? String(
                     rec.mutationRef?.targetId ?? rec.id,
                   );
-                  const mutating =
-                    pendingExecutePath === target ||
-                    pendingDeferPath === target;
+                  const mutating = pendingDeferPath === target;
                   return (
                     <article
                       key={rec.id}
@@ -969,11 +929,11 @@ function FocusRoute() {
                       <div className="mt-3 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleExecute(target)}
-                          disabled={mutating || !rec.taskPath}
+                          disabled
+                          title="Execution requires fresh server authorization."
                           className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 disabled:opacity-50"
                         >
-                          {pendingExecutePath === target ? 'Executing…' : 'Execute'}
+                          Execute
                         </button>
                         <button
                           type="button"

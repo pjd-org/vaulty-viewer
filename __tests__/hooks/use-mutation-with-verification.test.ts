@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 // Mocks before hook import
-vi.mock('../src/utils/api', () => ({ apiFetch: vi.fn() }));
+vi.mock('../../src/utils/api', () => ({
+  apiFetch: vi.fn().mockResolvedValue({ ok: true }),
+}));
 vi.mock('../src/lib/focus-logic', () => ({
   normalizeNextAction: (t: unknown) => t,
 }));
@@ -13,11 +15,15 @@ vi.mock('../src/lib/projects-logic', () => ({}));
 
 const mockInvalidateQueries = vi.fn();
 const mockUseMutation = vi.fn();
+const mockSetQueryData = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
   useMutation: (opts: unknown) => mockUseMutation(opts),
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  useQueryClient: () => ({
+    invalidateQueries: mockInvalidateQueries,
+    setQueryData: mockSetQueryData,
+  }),
 }));
 
 describe('useMutationWithVerification', () => {
@@ -77,7 +83,7 @@ describe('useMutationWithVerification', () => {
     expect(visible).toBe(true);
   });
 
-  it('onSuccess resolves verification and invalidates domain queries', async () => {
+  it('mutation acknowledgement stays pending without claiming verified improvement', async () => {
     const { useMutationWithVerification } =
       await import('../../app/hooks/use-mutation-with-verification');
     const { useUIStore } = await import('../../src/store/ui');
@@ -95,11 +101,22 @@ describe('useMutationWithVerification', () => {
     const capturedOpts = mockUseMutation.mock.calls[0]?.[0];
 
     await act(async () => {
-      await capturedOpts.onMutate?.();
-      await capturedOpts.onSuccess?.({ ok: true });
+      const context = await capturedOpts.onMutate?.();
+      await capturedOpts.onSuccess?.({ ok: true }, undefined, context);
     });
 
-    expect(useUIStore.getState().verification.phase).toBe('resolved');
+    expect(useUIStore.getState().verification.phase).toBe('pending');
+    const pendingOutcome = mockSetQueryData.mock.calls[0][1]([])[0];
+    const acknowledged = mockSetQueryData.mock.calls.at(-1)?.[1]([pendingOutcome]);
+    expect(acknowledged).toHaveLength(1);
+    expect(acknowledged[0]).toMatchObject({
+      id: pendingOutcome.id,
+      actionId: 'action-3',
+      status: 'pending',
+    });
+    expect(acknowledged[0].improved).toBeUndefined();
+    expect(acknowledged[0].resolvedAt).toBeUndefined();
+    expect(acknowledged[0].summary).toMatch(/awaiting verification/i);
     expect(mockInvalidateQueries).toHaveBeenCalled();
   });
 
@@ -121,8 +138,8 @@ describe('useMutationWithVerification', () => {
     const capturedOpts = mockUseMutation.mock.calls[0]?.[0];
 
     await act(async () => {
-      await capturedOpts.onMutate?.();
-      await capturedOpts.onError?.(new Error('fail'));
+      const context = await capturedOpts.onMutate?.();
+      await capturedOpts.onError?.(new Error('fail'), undefined, context);
     });
 
     expect(useUIStore.getState().verification.phase).toBe('failed');

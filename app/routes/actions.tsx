@@ -49,21 +49,35 @@ export const Route = createFileRoute('/actions')({
 
 function ActionsRoute() {
   const { sort, simulatableOnly, selectedId } = Route.useSearch();
-  const { data: surface, isLoading, error } = useActionsSurface();
+  const { data: surface, isLoading, isStale, error } = useActionsSurface();
   const navigate = useNavigate();
   const currentSort = sort ?? 'urgency';
   const allRecommendations = surface?.recommendations ?? [];
+  const availability =
+    surface?.meta?.humanState?.status === 'blocked' ||
+    surface?.meta?.availability === 'paused'
+      ? 'paused'
+      : isLoading
+        ? 'loading'
+        : error
+          ? surface ? 'stale' : 'error'
+          : surface && isStale
+            ? 'stale'
+            : surface?.meta?.availability ??
+              (surface
+                ? allRecommendations.length ? 'ready' : 'empty'
+                : 'unavailable');
+  const countsComputed = availability === 'ready' || availability === 'empty';
+  const availabilityMessage = {
+    ready: 'Action recommendations are ready.',
+    empty: 'No actions are surfaced right now.',
+    paused: 'Task lanes are paused.',
+    unavailable: 'Action recommendations are unavailable.',
+    error: 'Action recommendations could not be loaded.',
+    stale: 'Action recommendations are stale.',
+    loading: 'Loading action recommendations…',
+  }[availability];
 
-  // COD short-circuits on guardrails (HARD_STOP) and returns an empty payload
-  // with the reason in meta.humanState.warnings. Surface it, so an empty lane
-  // reads as "paused" rather than "nothing to do" or "service down".
-  const guardrailReason = React.useMemo(() => {
-    const hs = surface?.meta?.humanState;
-    if (!hs) return undefined;
-    if (hs.status !== 'blocked') return undefined;
-    const first = Array.isArray(hs.warnings) ? hs.warnings[0] : undefined;
-    return typeof first === 'string' && first.trim() ? first.trim() : undefined;
-  }, [surface]);
 
   const recommendations = React.useMemo(() => {
     const base = allRecommendations;
@@ -119,25 +133,15 @@ function ActionsRoute() {
     setSimulationData(null);
   }, [selected?.id]);
 
-  const executeMutation = useMutationWithVerification<boolean, string>({
-    mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'in-progress'),
-    domain: 'work',
-    actionId: selected?.id ?? '',
-    projectId: selected?.projectId,
-  });
 
   const deferMutation = useMutationWithVerification<boolean, string>({
     mutationFn: (taskPath: string) => updateTaskStatus(taskPath, 'backlog'),
     domain: 'work',
     actionId: selected?.id ?? '',
     projectId: selected?.projectId,
+    surfaceScope: 'actions',
   });
 
-  const handleExecute = React.useCallback(() => {
-    if (!selected?.taskPath) return;
-    setVerificationPhase('pending', selected.id);
-    executeMutation.mutate(selected.taskPath);
-  }, [selected, executeMutation, setVerificationPhase]);
 
   const handleDefer = React.useCallback(() => {
     if (!selected?.taskPath) return;
@@ -233,7 +237,7 @@ function ActionsRoute() {
             variant="muted"
             className="mb-1 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em]"
           >
-            Showing {recommendations.length} of {allRecommendations.length}
+            Showing {countsComputed ? recommendations.length : '—'} of {countsComputed ? allRecommendations.length : '—'}
           </Badge>
           <p className="font-medium text-foreground">
             Selected: {selected?.title ?? 'None'}
@@ -241,8 +245,7 @@ function ActionsRoute() {
         </div>
       </div>
       <p className="mt-2 px-1 text-xs text-[var(--text-tertiary)]">
-        Rank by impact or urgency, then expand a row to execute, simulate, or
-        defer.
+        Rank by impact or urgency, then inspect, simulate, or defer.
       </p>
     </div>
   );
@@ -250,27 +253,29 @@ function ActionsRoute() {
   const summaryItems = [
     {
       label: 'Recommended',
-      value: String(recommendations.length),
-      detail: 'Live adapter-ranked actions',
+      value: countsComputed ? String(recommendations.length) : '—',
+      detail: countsComputed ? 'Adapter-ranked recommendations' : 'Uncomputed',
     },
     {
       label: 'High impact',
-      value: String(
+      value: countsComputed ? String(
         recommendations.filter((item) => item.scoreBreakdown.impact >= 7).length
-      ),
+      ) : '—',
       detail: 'Strong leverage right now',
     },
     {
       label: 'Low friction',
-      value: String(
+      value: countsComputed ? String(
         recommendations.filter((item) => item.reversibility === 'high').length
-      ),
+      ) : '—',
       detail: 'Safe quick-command candidates',
     },
     {
       label: 'Verification',
-      value: surface?.verificationRail.length ? 'Active' : 'Ready',
-      detail: 'Feedback loop reserved for mutation outcomes',
+      value: surface?.verificationRail[0]?.status ??
+        (verificationPhase === 'pending' ? 'pending' :
+          verificationPhase === 'failed' ? 'failed' : 'Unverified'),
+      detail: 'Recorded verification lifecycle',
     },
   ];
 
@@ -278,7 +283,7 @@ function ActionsRoute() {
     <WorkspaceScaffold
       title="Actions"
       subtitle="Execution console for COD-ranked interventions."
-      statusLine={`${recommendations.length} action${recommendations.length === 1 ? '' : 's'} ranked · sort: ${currentSort}`}
+      statusLine={`Recommendations: ${availability} · sort: ${currentSort}`}
       actions={toolbar}
       summaryItems={summaryItems}
       primaryTitle="Recommended Actions"
@@ -296,23 +301,12 @@ function ActionsRoute() {
               />
             ))}
           </div>
-        ) : error && !surface ? (
-          <EmptyState
-            title="Action recommendations are temporarily unavailable."
-            description="The shell is intact. Retry once the task service responds again."
-          />
         ) : recommendations.length === 0 ? (
           <EmptyState
-            title={
-              guardrailReason
-                ? 'Task lanes are paused.'
-                : 'No actions are surfaced right now.'
-            }
-            description={
-              guardrailReason
-                ? 'The guardrail notice above explains why this lane is empty.'
-                : 'Once the queue refreshes, this lane will rank the best next moves.'
-            }
+            title={availabilityMessage}
+            description={countsComputed
+              ? 'Once the queue refreshes, this lane will rank the best next moves.'
+              : 'Recommendations are uncomputed. Read-only inspection does not authorize execution.'}
             action={
               <Link
                 to="/work"
@@ -324,6 +318,7 @@ function ActionsRoute() {
           />
         ) : (
           <div className="flex flex-col gap-3">
+            <p role="status" className="text-sm text-muted-foreground">{availabilityMessage}</p>
             {recommendations.map((item) => {
               const isExpanded = item.id === selectedId;
               return (
@@ -403,11 +398,11 @@ function ActionsRoute() {
                       <div className="flex flex-wrap gap-2">
                         <PrimaryButton
                           type="button"
-                          onClick={handleExecute}
-                          disabled={!item.taskPath || executeMutation.isPending}
+                          disabled
+                          title="Execution requires fresh server authorization."
                           className="rounded-full px-3 py-2 text-xs uppercase tracking-[0.18em]"
                         >
-                          {executeMutation.isPending ? 'Starting…' : 'Execute'}
+                          Execute
                         </PrimaryButton>
                         <SecondaryButton
                           type="button"
@@ -439,6 +434,9 @@ function ActionsRoute() {
                           </Link>
                         )}
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        Execution requires fresh server authorization; cached and local rankings cannot authorize execution.
+                      </p>
 
                       {/* Score breakdown */}
                       <SurfaceSectionCard
@@ -539,7 +537,7 @@ function ActionsRoute() {
                           </div>
                         ) : (
                           <p className="text-sm text-muted-foreground">
-                            Ready for post-action verification.
+                            No verification evidence recorded.
                           </p>
                         )}
                       </SurfaceSectionCard>

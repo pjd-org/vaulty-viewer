@@ -1,10 +1,11 @@
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
+import { CodActionRow } from '../../app/components/cod/CodActionRow';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
@@ -14,6 +15,10 @@ const mockNavigate = vi.hoisted(() => vi.fn());
 const mockEnsureQueryData = vi.hoisted(() => vi.fn());
 const mockUseHomeSurface = vi.hoisted(() => vi.fn());
 const mockUseWhatNowQuery = vi.hoisted(() => vi.fn());
+const mockUpdateTaskStatus = vi.hoisted(() => vi.fn().mockResolvedValue(true));
+vi.mock('../../app/lib/api/tasks', () => ({
+  updateTaskStatus: (...args: unknown[]) => mockUpdateTaskStatus(...args),
+}));
 const mockUseUpNextQuery = vi.hoisted(() => vi.fn());
 const mockGetHomeSurfaceQueryOptions = vi.hoisted(() =>
   vi.fn((topicId?: string) => ({
@@ -371,6 +376,7 @@ describe('home adapter wiring', () => {
       isError: false,
     });
     mockApiFetch.mockClear();
+    mockUpdateTaskStatus.mockClear();
   });
 
   it('preloads the home adapter surface in the route loader', async () => {
@@ -579,6 +585,49 @@ describe('home adapter wiring', () => {
       screen.getAllByLabelText('Portfolio — Cross-project pressure summary')
     ).toHaveLength(2);
   });
+  it('keeps cached/local recommendation execution and Start fail-closed', () => {
+    const recommendation = {
+      ...homeSurface.decisionQueue[0], taskPath: 'notes/tasks/task-1.md',
+    };
+    mockUseHomeSurface.mockReturnValue({
+      data: {
+        ...homeSurface,
+        meta: { mode: 'local', executionAuthorized: true },
+        decisionQueue: [recommendation],
+        immediateActions: [{ ...recommendation, id: 'immediate-1' }],
+        tasks: [{
+          id: 'top', path: 'notes/tasks/top.md', title: 'Top task', score: 8,
+          priority: 8, effortScore: 3, focusCost: 2, estimatedTimeMin: 25,
+          status: 'todo', tags: [],
+        }],
+      },
+      isLoading: false, error: null, isError: false,
+    });
+    renderWithClient(<RouteComponent />);
+    const start = screen.getByRole('button', { name: 'Start', exact: true });
+    const execute = screen.getByRole('button', { name: 'Execute', exact: true });
+    expect((start as HTMLButtonElement).disabled).toBe(true);
+    expect((execute as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(start);
+    fireEvent.click(execute);
+    expect(mockUpdateTaskStatus).not.toHaveBeenCalled();
+  });
+
+  it('Simulate never invokes the execution callback', () => {
+    const onExecute = vi.fn();
+    const onSimulate = vi.fn();
+    render(
+      <CodActionRow
+        recommendations={homeSurface.decisionQueue}
+        onExecute={onExecute}
+        onSimulate={onSimulate}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate' }));
+    expect(onExecute).not.toHaveBeenCalled();
+    expect(onSimulate).toHaveBeenCalledWith('decision-1');
+  });
+
 
   it('renders real verification outcomes from the surface rail', () => {
     renderWithClient(<RouteComponent />);

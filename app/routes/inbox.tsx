@@ -60,8 +60,10 @@ function inboxItemToDisplay(
   run?: Run
 ): InboxItemDisplay {
   const source =
-    item.rejectionType === 'user'
-      ? 'manual'
+    item.runtimeSignal
+      ? item.sourceId
+      : item.rejectionType === 'user'
+        ? 'manual'
       : note?.source === 'extracted'
         ? 'agent'
         : run
@@ -74,13 +76,15 @@ function inboxItemToDisplay(
   return {
     title: item.title,
     originLabel: source,
-    isBlocked: item.severity === 'high' || item.severity === 'critical',
+    isBlocked: (note?.status ?? item.status) === 'blocked',
     ageLabel: '',
     contextSnippet: item.summary ?? '',
-    actions: item.severity === 'high' || item.severity === 'critical'
-      ? ['inspect', 'reject']
-      : ['inspect', 'promote', 'reject'],
-    runId: run?.runId ?? null,
+    actions: item.runtimeSignal
+      ? ['inspect']
+      : (note?.status ?? item.status) === 'blocked'
+        ? ['inspect', 'reject']
+        : ['inspect', 'promote', 'reject'],
+    runId: run?.runId ?? item.runId ?? null,
   };
 }
 
@@ -104,7 +108,7 @@ function InboxRoute() {
         workbenchNotes: workbenchNotes as InboxNote[],
         archiveNotes: archiveNotes as InboxNote[],
       }),
-    [runs, workbenchNotes, archiveNotes]
+    [signals, runs, workbenchNotes, archiveNotes]
   );
 
   const { view, sort, severity, runType, reversibility, selectedId } =
@@ -156,8 +160,10 @@ function InboxRoute() {
     return tabItems.filter((item) => {
       if (severity && item.severity !== severity) return false;
       if (runType) {
-        const src = item.rejectionType === 'user'
-          ? 'manual'
+        const src = item.runtimeSignal
+          ? item.sourceId
+          : item.rejectionType === 'user'
+            ? 'manual'
           : item.inboxBucket === 'deferred' || item.inboxBucket === 'rejected_automated'
             ? 'agent'
             : 'manual';
@@ -273,12 +279,13 @@ function InboxRoute() {
       const note = noteByPath.get(item.sourceId);
       const display = inboxItemToDisplay(item, note, run);
       const detail: InboxItemDetail = {
+        ...item,
         summary: item.summary ?? undefined,
         whySurfaced: item.whySurfaced,
         severity: item.severity,
         inboxBucket: item.inboxBucket,
         rejectionReason: item.rejectionReason,
-        runId: run?.runId,
+        runId: run?.runId ?? item.runId,
         runAction: run?.action,
         sourceId: item.sourceId,
         reversibility: item.reversibility ?? null,
@@ -414,12 +421,13 @@ function InboxRoute() {
                       key={item.id}
                       item={inboxItemToDisplay(item, note, run)}
                       detail={{
+                        ...item,
                         summary: item.summary ?? undefined,
                         whySurfaced: item.whySurfaced,
                         severity: item.severity,
                         inboxBucket: item.inboxBucket,
                         rejectionReason: item.rejectionReason,
-                        runId: run?.runId,
+                        runId: run?.runId ?? item.runId,
                         runAction: run?.action,
                         sourceId: item.sourceId,
                         reversibility: item.reversibility ?? null,

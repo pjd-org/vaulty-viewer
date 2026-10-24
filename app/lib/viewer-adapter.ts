@@ -103,7 +103,19 @@ export interface ScoreBreakdown {
   bubbleEffect?: number;
 }
 
-export interface PressureSignal {
+export interface RuntimeSignalMetadata {
+  jobId?: string;
+  pipelineId?: string | null;
+  runId?: string | null;
+  trigger?: string | null;
+  status?: string | null;
+  failedAt?: string | null;
+  observedAt?: string;
+  error?: unknown;
+  errors?: unknown;
+}
+
+export interface PressureSignal extends RuntimeSignalMetadata {
   id: string;
   kind:
     | 'failure'
@@ -119,7 +131,7 @@ export interface PressureSignal {
   title: string;
   summary: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  surfacedBy: 'cod';
+  surfacedBy?: 'cod';
   sourceType: AdapterEntityType;
   sourceId: string;
   projectId?: string;
@@ -273,6 +285,9 @@ export interface ActionsSurfacePayload {
   meta?: {
     mode?: string;
     fetchedAt?: string;
+    availability?: 'ready' | 'empty' | 'paused' | 'unavailable' | 'error' | 'stale';
+    /** Read-side metadata only; never a fresh execution authorization. */
+    executionAuthorized?: boolean;
     humanState?: {
       status?: string;
       warnings?: string[];
@@ -704,12 +719,13 @@ function buildSignalItems(
 ): InboxItem[] {
   return (signals ?? []).map((signal) => {
     const severity =
-      signal.severity === 'high'
-        ? ('high' as const)
-        : signal.severity === 'low'
-          ? ('low' as const)
-          : ('medium' as const);
-    const kind = severity === 'high' ? ('failure' as const) : ('health' as const);
+      signal.severity === 'critical' || signal.severity === 'high' ||
+      signal.severity === 'medium' || signal.severity === 'low'
+        ? signal.severity
+        : 'medium';
+    const kind = severity === 'high' || severity === 'critical'
+      ? ('failure' as const)
+      : ('health' as const);
     const why = String(
       signal.whySurfaced ?? 'Surfaced by vault runtime monitoring.'
     );
@@ -720,13 +736,23 @@ function buildSignalItems(
       title: String(signal.title ?? 'Runtime signal'),
       summary: why,
       severity,
-      surfacedBy: 'cod' as const,
-      sourceType: 'pipeline' as const,
+      sourceType: signal.jobId
+        ? 'schedule' as const
+        : signal.pipelineId
+          ? 'pipeline' as const
+          : 'health_check' as const,
       sourceId: String(signal.source ?? 'vault'),
-      surfacedAt: String(signal.surfacedAt ?? nowIso()),
-      whySurfaced: `Source: ${String(signal.source ?? 'vault')}. Open ${route} for detail.`,
-      confidence: severity === 'high' ? 0.9 : 0.7,
-      reversibility: 'high' as const,
+      surfacedAt: String(signal.surfacedAt ?? signal.observedAt ?? ''),
+      whySurfaced: why,
+      jobId: signal.jobId as string | undefined,
+      pipelineId: signal.pipelineId as string | null | undefined,
+      runId: signal.runId as string | null | undefined,
+      trigger: signal.trigger as string | null | undefined,
+      status: signal.status as string | null | undefined,
+      failedAt: signal.failedAt as string | null | undefined,
+      observedAt: signal.observedAt as string | undefined,
+      error: signal.error,
+      errors: signal.errors,
       allowedActions: [
         {
           actionType: 'open_source',
@@ -738,7 +764,7 @@ function buildSignalItems(
           },
         },
       ],
-      inboxBucket: (severity === 'high'
+      inboxBucket: (severity === 'high' || severity === 'critical'
         ? 'failure'
         : 'needs_action') as InboxItem['inboxBucket'],
       runtimeSignal: true,
