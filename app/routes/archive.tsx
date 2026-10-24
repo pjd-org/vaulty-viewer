@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { GlassSurface } from '@vault/ui';
 
+import { AmbientSurface } from '../components/v2';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
+import { roleForSeverity } from '../lib/design/role-mapping';
 import { WorkspaceScaffold } from '../components/layout';
 import { RouteLoadingState } from '../components/ui';
 import { archiveSearchParams } from '../../src/lib/routes/search-params';
@@ -211,6 +214,21 @@ function ArchiveRoute() {
   const { data, isLoading } = useArchiveSurface();
   const [selectedItem, setSelectedItem] = useState<InboxItem | null>(null);
 
+  const { select: selectAmbient } = useViewerV2();
+
+  // Mirror route selection into shared ambient state. Selection only — hover
+  // never reaches this, per the ambient-focus decision.
+  React.useEffect(() => {
+    if (!selectedItem) {
+      selectAmbient(null);
+      return;
+    }
+    selectAmbient({
+      id: String((selectedItem as { id?: string }).id ?? ''),
+      role: roleForSeverity((selectedItem as { severity?: string }).severity),
+    });
+  }, [selectedItem, selectAmbient]);
+
   // Clear selection if the selected item is no longer present after a data refresh
   useEffect(() => {
     if (!selectedItem || !data) return;
@@ -252,7 +270,8 @@ function ArchiveRoute() {
       primaryTitle="Archive"
       primarySubtitle="Rejected and deferred inbox items."
       primary={
-        isLoading ? (
+        <AmbientSurface className="rounded-2xl p-1">
+        {isLoading ? (
           <RouteLoadingState label="Loading archive queues..." />
         ) : data == null || data.total === 0 ? (
           <div data-testid="archive-empty-state" className="flex flex-col gap-2">
@@ -269,7 +288,8 @@ function ArchiveRoute() {
             selectedId={selectedItem?.id ?? null}
             onSelect={setSelectedItem}
           />
-        )
+        )}
+        </AmbientSurface>
       }
     />
   );

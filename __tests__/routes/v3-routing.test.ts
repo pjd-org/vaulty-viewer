@@ -24,6 +24,8 @@ describe('viewer V3 routing canon', () => {
       '/timeline',
       '/settings',
       '/archive',
+      // Archives + rejected records. Read-only reviewer surface.
+      '/explorer',
     ]);
   });
 

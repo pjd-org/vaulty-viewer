@@ -26,13 +26,11 @@ const REVERSIBILITY_STYLES: Record<string, React.CSSProperties> = {
 
 function RecommendationCard({
   rec,
-  onExecute,
   onSimulate,
   onDefer,
   accentColor,
 }: {
   rec: Recommendation;
-  onExecute?: (id: string) => void;
   onSimulate?: (id: string) => void;
   onDefer?: (id: string) => void;
   accentColor?: string;
@@ -80,10 +78,10 @@ function RecommendationCard({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        {onExecute && (
+        {onSimulate && (
           <button
             type="button"
-            onClick={() => onExecute(rec.id)}
+            onClick={() => onSimulate(rec.id)}
             className={codActionBtnClass}
             style={{
               border: '1px solid color-mix(in srgb, var(--a-lilac) 50%, transparent)',
@@ -151,7 +149,6 @@ interface CodActionRowProps {
 
 export function CodActionRow({
   recommendations,
-  onExecute,
   onSimulate,
   onDefer,
   actions,
@@ -167,7 +164,6 @@ export function CodActionRow({
             <RecommendationCard
               key={rec.id}
               rec={rec}
-              onExecute={onExecute}
               onSimulate={onSimulate}
               onDefer={onDefer}
               accentColor={accentColor}

@@ -5,6 +5,7 @@ import {
   useNavigate,
 } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import { GlassCard } from '../components/ui/glass-card';
@@ -31,6 +32,15 @@ import { GlassSurface } from '@vault/ui';
 export const Route = createFileRoute('/timeline')({
   validateSearch: timelineSearchParams,
   loader: async ({ context }) => {
+    // See routes/index.tsx: SSR has no service credential, so this call is a
+    // guaranteed 401 and used to turn the route into HTTP 500 for anonymous
+    // visitors. Skip it; the client refetches through the session-gated proxy.
+    if (
+      !process.env.VIEWER_INTERNAL_APP_API_KEY &&
+      !process.env.AUTH_MCP_API_KEY
+    ) {
+      return;
+    }
     await context.queryClient.ensureQueryData(getTimelineSurfaceQueryOptions());
   },
   component: TimelineRoute,
@@ -486,7 +496,8 @@ function TimelineRoute() {
       primaryTitle="Event Stream"
       primarySubtitle="Timeline list and filter controls."
       primary={
-        isLoading ? (
+        <AmbientSurface className="rounded-2xl p-1">
+        {isLoading ? (
           <RouteLoadingState label="Loading event stream..." />
         ) : authFailureKind === 'forbidden' ? (
           <EmptyState
@@ -538,7 +549,8 @@ function TimelineRoute() {
               once the runtime surface connects.
             </p>
           </div>
-        )
+        )}
+        </AmbientSurface>
       }
     />
   );

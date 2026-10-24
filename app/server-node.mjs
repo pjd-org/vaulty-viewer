@@ -101,7 +101,13 @@ const httpServer = createServer(async (req, res) => {
       const ext = extname(attempted).toLowerCase();
       const mime = MIME[ext] ?? 'application/octet-stream';
       // Content-hashed assets are safe to cache indefinitely.
-      const isHashed = /\.[a-f0-9]{8,}\./.test(rel);
+      //
+      // Vite emits `<name>-<hash>.<ext>` with a base64url hash
+      // (e.g. AvatarOverlay-CWdp2ng_.js, styles-It_KhNg7.css). The previous
+      // pattern expected a dot-separated lowercase-hex hash, which matched
+      // NONE of the real build output — so every hashed asset was served
+      // no-cache and the immutable path was dead code.
+      const isHashed = /-[A-Za-z0-9_-]{8,}\.[a-z0-9]+$/.test(rel);
       res.writeHead(200, {
         'Content-Type': mime,
         'Cache-Control': isHashed

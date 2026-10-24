@@ -66,8 +66,10 @@ function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
     note?.frontmatter?.createdAt ??
     null) as string | null | undefined;
   const source =
-    item.rejectionType === 'user'
-      ? 'manual'
+    item.runtimeSignal
+      ? undefined
+      : item.rejectionType === 'user'
+        ? 'manual'
       : note?.source === 'extracted'
         ? 'agent'
         : run
@@ -80,14 +82,10 @@ function inboxItemToDisplay(item: InboxItem, note?: InboxNote, run?: Run) {
   return toInboxItemDisplay({
     title: item.title,
     _source: source,
-    _run_id: run?.runId,
+    _run_id: run?.runId ?? item.runId,
     description: item.summary,
     createdAt: createdAt ?? item.surfacedAt,
-    status:
-      note?.status ??
-      (item.severity === 'high' || item.severity === 'critical'
-        ? 'blocked'
-        : undefined),
+    status: note?.status ?? item.status,
   });
 }
 

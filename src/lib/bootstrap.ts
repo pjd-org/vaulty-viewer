@@ -42,6 +42,7 @@ export type BootstrapStatus = {
     etag: string;
     updatedAt: string;
   } | null;
+  preflight: BootstrapPreflightRecord | null;
   genesisJob: GenesisJob | null;
   reset?: {
     reason: string;
@@ -144,7 +145,6 @@ export type GenesisJob = {
     status: number;
     title: string;
     type: string;
-    [key: string]: unknown;
   };
   reportId: string;
   planHash: string;

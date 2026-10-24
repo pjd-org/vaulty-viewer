@@ -95,12 +95,11 @@ async function callWriteNoteUnified(
       }
     })();
     const message =
-      (parsed &&
-        typeof parsed === 'object' &&
+      (typeof parsed === 'object' &&
         parsed !== null &&
         'message' in parsed &&
-        typeof (parsed as { message?: unknown }).message === 'string' &&
-        (parsed as { message: string }).message.trim()) ||
+        typeof parsed.message === 'string' &&
+        parsed.message.trim()) ||
       raw.trim() ||
       `write_note_unified failed (${res.status})`;
     throw new Error(message);

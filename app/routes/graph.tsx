@@ -16,6 +16,8 @@ import { graphSearchParams } from '../../src/lib/routes/search-params';
 import { useKnowledgeGraph, type GraphJson } from '../lib/viewer-adapter';
 import { RouteLoadingState } from '../components/ui';
 import { WorkspaceScaffold } from '../components/layout';
+import { AmbientSurface } from '../components/v2';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
 import { GlassSurface } from '@vault/ui';
 
 export const Route = createFileRoute('/graph')({
@@ -390,6 +392,18 @@ function GraphRoute() {
   const { focus, selectedId } = useSearch({ from: Route.id });
   const { data, isLoading } = useKnowledgeGraph();
   const [selectedPath, setSelectedPath] = React.useState<string | null>(null);
+  const { select } = useViewerV2();
+
+  // Mirror graph selection into the shared ambient state. Selection, not hover:
+  // the graph already distinguishes the two, and the decision requires the
+  // workspace to follow the selected node only.
+  React.useEffect(() => {
+    if (!selectedPath) {
+      select(null);
+      return;
+    }
+    select({ id: selectedPath, role: 'total' });
+  }, [selectedPath, select]);
   const [viewMode, setViewMode] = React.useState<GraphViewMode>('interactive');
   const inactiveModeClass =
     'text-[var(--text-primary)] hover:bg-[var(--surf-base)]';
@@ -459,7 +473,8 @@ function GraphRoute() {
         </div>
       }
       primary={
-        isLoading ? (
+        <AmbientSurface className="flex flex-col gap-4 rounded-2xl p-1">
+        {isLoading ? (
           <RouteLoadingState label="Loading graph topology..." />
         ) : data == null ? (
           <div data-testid="graph-empty-state" className="flex flex-col gap-2">
@@ -547,7 +562,8 @@ function GraphRoute() {
               )}
             </div>
           </div>
-        )
+        )}
+        </AmbientSurface>
       }
     />
   );

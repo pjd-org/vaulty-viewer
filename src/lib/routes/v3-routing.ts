@@ -29,6 +29,7 @@ export const VIEWER_TOP_LEVEL_PATHS = [
   '/timeline',
   '/settings',
   '/archive',
+  '/explorer',
 ] as const;
 
 /** Primary destinations — shown at the top of the rail, grouped by intent. */
@@ -44,14 +45,18 @@ export const VIEWER_SECONDARY_NAV: readonly ViewerRouteNavItem[] = [
   { label: 'Knowledge', shortLabel: '◈', to: '/knowledge', group: 'knowledge' },
   { label: 'Notes', shortLabel: '◻', to: '/notes', group: 'knowledge' },
   { label: 'Graph', shortLabel: '⬡', to: '/graph', group: 'knowledge' },
+  // Archives and rejected records. Read-only reviewer surface.
+  { label: 'Explorer', shortLabel: '⌗', to: '/explorer', group: 'knowledge' },
   { label: 'Actions', shortLabel: '⚡', to: '/actions', group: 'system' },
   { label: 'Portfolio', shortLabel: '▣', to: '/portfolio', group: 'system' },
   { label: 'Bubble', shortLabel: '◉', to: '/bubble', group: 'system' },
 ] as const;
 
 export const VIEWER_STATUS_NAV: readonly ViewerRouteNavItem[] = [
+  // COD is reachable from the OVERLAYS group and from the top-bar status chip.
+  // A third sidebar entry pointing at /cod-status was the same destination
+  // wearing a different name.
   { label: 'Health', shortLabel: '♡', to: '/health', group: 'system' },
-  { label: 'COD Status', shortLabel: '⬡', to: '/cod-status', group: 'system' },
 ] as const;
 
 export const VIEWER_UTILITY_NAV: readonly ViewerRouteNavItem[] = [

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import { portfolioSearchParams } from '../../src/lib/routes/search-params';
@@ -271,6 +272,8 @@ function PortfolioRoute() {
       primaryTitle="Projects Under Pressure"
       primarySubtitle="Project-scoped signals from the COD pressure band."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         isLoading ? (
           <RouteLoadingState label="Loading pressure signals..." />
         ) : data == null || data.total === 0 ? (
@@ -293,6 +296,8 @@ function PortfolioRoute() {
             onSelect={setSelectedItem}
           />
         )
+      }
+        </AmbientSurface>
       }
     />
   );

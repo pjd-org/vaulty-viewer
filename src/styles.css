@@ -20,7 +20,10 @@
     --muted-foreground: var(--color-text-2);
     --accent: var(--color-primary);
     --accent-foreground: var(--color-text-inverse);
-    --destructive: var(--color-danger);
+    /* Text use must use the TEXT token: --color-danger (#ff5a5f) is a fill and
+       only reaches 3.02:1 on surface, below the 4.5:1 AA floor for body text.
+       --color-danger-text (#c0152a) exists for exactly this. */
+    --destructive: var(--color-danger-text);
     --destructive-foreground: var(--color-text-inverse);
     --border: var(--color-border);
     --input: var(--color-input-bg);
@@ -322,9 +325,31 @@ body {
   position: relative;
 }
 
+/* Dark mode keeps the pastel gradient from `body`, only darkening its base.
+   The previous rule replaced the whole background with var(--surf-canvas) —
+   rgba(15,15,19,0.94), a translucent GLASS SURFACE token — which painted an
+   opaque near-black layer over the body and hid the pastel glow drawn by
+   body::before / body::after. That is why dark mode read as flat black
+   instead of pastel cyberpunk. */
 .dark body {
   color: var(--text-primary);
-  background: var(--surf-canvas);
+  background:
+    radial-gradient(
+      980px at 16% 10%,
+      rgba(111, 179, 255, 0.16),
+      transparent 58%
+    ),
+    radial-gradient(
+      760px at 84% 12%,
+      rgba(192, 140, 255, 0.14),
+      transparent 52%
+    ),
+    radial-gradient(
+      760px at 82% 92%,
+      rgba(104, 211, 145, 0.10),
+      transparent 64%
+    ),
+    linear-gradient(180deg, #0f0f13 0%, #12121a 52%, #161622 100%);
 }
 
 /* Page glow effect */
@@ -575,6 +600,12 @@ img {
 .tab {
   background: transparent;
   border: 1px solid transparent;
+  /* Hardcoded by the legacy design. It measures 4.09:1 on the V2 dark surface,
+     which is below AA — recorded as a known dark-theme gap rather than patched
+     here. Pointing it at --v2-text-muted fixed graph/inbox but regressed
+     /explorer to 2.51:1, because its tab strip sits on a light legacy surface.
+     A correct fix needs the legacy component's surfaces themed, not its text
+     recoloured in isolation. */
   color: #4a5568;
 }
 
@@ -1520,7 +1551,11 @@ img {
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
 }
 
-.grid {
+/* Renamed from `.grid`, which collided with Tailwind's `.grid` utility and
+   forced `repeat(auto-fill, minmax(280px, 1fr))` onto EVERY element using
+   className="grid" — including dialog content, which then laid out as three
+   ~310px columns instead of one. Scoped to its single consumer. */
+.skeleton-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;

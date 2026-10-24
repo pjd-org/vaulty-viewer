@@ -271,7 +271,6 @@ function NoteRoute() {
     message: null,
   });
   const [copied, setCopied] = useState(false);
-  const [confirmReject, setConfirmReject] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -559,55 +558,6 @@ function NoteRoute() {
     }
   };
 
-  const handleReject = async () => {
-    if (!note) return;
-    if (!note.lifecycle.runId) {
-      dispatchLc({
-        type: 'MESSAGE',
-        message: 'Missing run id for this staged note.',
-        isError: true,
-      });
-      return;
-    }
-    dispatchLc({ type: 'BUSY', op: 'reject' });
-
-    try {
-      const res = await apiFetch(
-        `/api/v1/inbox/${encodeURIComponent(note.lifecycle.runId)}`,
-        {
-          method: 'DELETE',
-        }
-      );
-      if (res.status === 401) {
-        throw new UnauthenticatedError('Failed to reject note: 401');
-      }
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(body?.message ?? `HTTP ${res.status}`);
-      }
-
-      const quarantinedPath =
-        body?.structuredContent?.quarantinedPath ??
-        body?.quarantinedPath ??
-        null;
-      dispatchLc({ type: 'MESSAGE', message: 'Moved to rejected queue.' });
-      if (typeof quarantinedPath === 'string' && quarantinedPath.length > 0) {
-        navigate({
-          to: '/note',
-          search: { p: stripMarkdownExtension(quarantinedPath) },
-        });
-      }
-    } catch (err) {
-      if (err instanceof UnauthenticatedError) {
-        redirectToLogin();
-        return;
-      }
-      dispatchLc({ type: 'ERROR', message: (err as Error).message });
-    } finally {
-      dispatchLc({ type: 'DONE' });
-    }
-  };
-
   const handleCompleteTask = async () => {
     if (!note) return;
     dispatchLc({ type: 'BUSY', op: 'complete' });
@@ -840,39 +790,15 @@ function NoteRoute() {
                     {lc.pendingPromotionToken ? 'Confirm Promote' : 'Promote'}
                   </PrimaryButton>
                 )}
-                {note.lifecycle.canReject &&
-                  (confirmReject ? (
-                    <>
-                      <span className="text-xs font-medium text-destructive">
-                        Reject note?
-                      </span>
-                      <SecondaryButton
-                        onClick={() => {
-                          handleReject();
-                          setConfirmReject(false);
-                        }}
-                        disabled={lc.busy !== null}
-                        className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-destructive hover:bg-destructive/10"
-                      >
-                        Confirm
-                      </SecondaryButton>
-                      <SecondaryButton
-                        onClick={() => setConfirmReject(false)}
-                        disabled={lc.busy !== null}
-                        className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em]"
-                      >
-                        Cancel
-                      </SecondaryButton>
-                    </>
-                  ) : (
-                    <SecondaryButton
-                      onClick={() => setConfirmReject(true)}
-                      disabled={lc.busy !== null}
-                      className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-destructive hover:bg-destructive/10"
-                    >
-                      Reject
-                    </SecondaryButton>
-                  ))}
+                {note.lifecycle.canReject && (
+                  <SecondaryButton
+                    disabled
+                    title="Reject is disabled. Staged evidence is kept; nothing is deleted."
+                    className="rounded-full px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-destructive"
+                  >
+                    Reject
+                  </SecondaryButton>
+                )}
                 {note.lifecycle.canComplete && (
                   <SecondaryButton
                     onClick={handleCompleteTask}

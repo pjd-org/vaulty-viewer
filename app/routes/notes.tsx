@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout/WorkspaceScaffold';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import { KnowledgeNoteCard } from '../../src/components/KnowledgeNoteCard';
@@ -340,7 +341,11 @@ function NotesRoute() {
       subtitle="Browse and search vault notes."
       summaryItems={summaryItems}
       primaryTitle={searchEnabled ? `Results for "${q}"` : 'Notes'}
-      primary={primaryContent}
+      primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {primaryContent}
+        </AmbientSurface>
+      }
     />
   );
 }

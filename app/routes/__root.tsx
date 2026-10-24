@@ -16,6 +16,7 @@ import {
   dehydrate,
   type DehydratedState,
 } from '@tanstack/react-query';
+import { ViewerV2Provider } from '../lib/design/viewer-v2-context';
 import {
   TopCommandBar,
   PageFrame,
@@ -126,7 +127,7 @@ function RootComponent() {
     select: (state) => state.location.pathname,
   });
   const search = useRouterState({
-    select: (state) => state.location.search,
+    select: (state) => state.location.searchStr,
   });
   const [navOverlay, setNavOverlay] = React.useState<NavOverlay | null>(null);
   const hideShell = isShellHiddenPath(pathname);
@@ -226,6 +227,10 @@ function RootComponent() {
     <MotionConfig reducedMotion="user">
       <RootDocument dehydratedState={dehydratedState}>
         <QueryClientProvider client={queryClient}>
+          {/* Viewer V2 mounted at the root so every route inherits the theme,
+              selection/ambient state, and information level. A route that had
+              to opt in individually would drift. */}
+          <ViewerV2Provider>
           <ModalProvider>
             {bootstrapGate.loading || bootstrapGate.redirectTo || authTransitionRequested ? (
               <BootstrapTransitionScreen
@@ -297,6 +302,7 @@ function RootComponent() {
               </div>
             )}
           </ModalProvider>
+          </ViewerV2Provider>
         </QueryClientProvider>
         <Toaster />
       </RootDocument>

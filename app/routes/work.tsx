@@ -2,7 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
 import { ProjectsWorkspace } from '../components/projects';
+import { AmbientSurface } from '../components/v2';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
+import { roleForSeverity } from '../lib/design/role-mapping';
 import { WorkspaceScaffold } from '../components/layout';
+import { GuardrailBanner } from '../components/ui';
 import { EmptyState, RouteLoadingState } from '../components/ui';
 import {
   getAuthFailureKind,
@@ -331,6 +335,21 @@ function TaskDetail({ task }: { task: NextAction }) {
 function WorkRoute() {
   const { data, isLoading, error } = useWorkSurface();
   const [selectedTask, setSelectedTask] = useState<NextAction | null>(null);
+
+  const { select: selectAmbient } = useViewerV2();
+
+  // Mirror route selection into shared ambient state. Selection only — hover
+  // never reaches this, per the ambient-focus decision.
+  React.useEffect(() => {
+    if (!selectedTask) {
+      selectAmbient(null);
+      return;
+    }
+    selectAmbient({
+      id: String((selectedTask as { id?: string }).id ?? ''),
+      role: roleForSeverity((selectedTask as { severity?: string }).severity),
+    });
+  }, [selectedTask, selectAmbient]);
   const [taskFilter, setTaskFilter] = useState<'all' | 'ready' | 'blocked'>(
     'all'
   );
@@ -411,7 +430,10 @@ function WorkRoute() {
       primaryTitle="Projects & Tasks"
       primarySubtitle="Projects list and ranked next actions."
       primary={
-        isLoading ? (
+        <AmbientSurface className="rounded-2xl p-1">
+        <div className="flex flex-col gap-4">
+        <GuardrailBanner humanState={data?.humanState} />
+        {isLoading ? (
           <RouteLoadingState label="Loading project lanes..." />
         ) : authFailureKind === 'forbidden' ? (
           <EmptyState
@@ -500,7 +522,9 @@ function WorkRoute() {
               onSelect={setSelectedTask}
             />
           </>
-        )
+        )}
+        </div>
+        </AmbientSurface>
       }
     />
   );

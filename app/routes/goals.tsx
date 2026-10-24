@@ -10,6 +10,7 @@ import {
   computeSummary,
 } from '../../src/lib/goals-logic';
 import { dispatchNavOverlay } from '../../src/lib/nav-overlays';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
 import { SegmentedControl } from '../components/ui/Controls';
@@ -144,6 +145,8 @@ function GoalsRoute() {
       primaryTitle="Goal List"
       primarySubtitle={`Showing ${sortedGoals.length} of ${goals.length} goals.`}
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         <div className="flex flex-col gap-4">
           {error && (
             <GlassSurface variant="base" radius="xl" shadow="sm" border="default" className="flex items-center justify-between p-4 text-sm text-warning"
@@ -193,6 +196,8 @@ function GoalsRoute() {
             </div>
           )}
         </div>
+      }
+        </AmbientSurface>
       }
       asideTitle="Quick Actions"
       asideSubtitle="Navigate and manage goals."
