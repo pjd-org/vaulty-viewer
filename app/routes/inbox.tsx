@@ -5,6 +5,9 @@ import { toast } from 'sonner';
 import { useInbox } from '../../src/hooks/useInbox';
 import type { InboxNote } from '../../src/lib/inbox-logic';
 import { inboxSearchParams } from '../../src/lib/routes/search-params';
+import { AmbientSurface } from '../components/v2';
+import { useViewerV2 } from '../lib/design/viewer-v2-context';
+import { roleForSeverity } from '../lib/design/role-mapping';
 import { WorkspaceScaffold } from '../components/layout';
 import {
   FilterBar,
@@ -57,8 +60,10 @@ function inboxItemToDisplay(
   run?: Run
 ): InboxItemDisplay {
   const source =
-    item.rejectionType === 'user'
-      ? 'manual'
+    item.runtimeSignal
+      ? item.sourceId
+      : item.rejectionType === 'user'
+        ? 'manual'
       : note?.source === 'extracted'
         ? 'agent'
         : run
@@ -71,13 +76,15 @@ function inboxItemToDisplay(
   return {
     title: item.title,
     originLabel: source,
-    isBlocked: item.severity === 'high' || item.severity === 'critical',
+    isBlocked: (note?.status ?? item.status) === 'blocked',
     ageLabel: '',
     contextSnippet: item.summary ?? '',
-    actions: item.severity === 'high' || item.severity === 'critical'
-      ? ['inspect', 'reject']
-      : ['inspect', 'promote', 'reject'],
-    runId: run?.runId ?? null,
+    actions: item.runtimeSignal
+      ? ['inspect']
+      : (note?.status ?? item.status) === 'blocked'
+        ? ['inspect', 'reject']
+        : ['inspect', 'promote', 'reject'],
+    runId: run?.runId ?? item.runId ?? null,
   };
 }
 
@@ -87,7 +94,7 @@ export const Route = createFileRoute('/inbox')({
 });
 
 function InboxRoute() {
-  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, rejectRun, actionState, counts } = useInbox();
+  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, actionState, counts } = useInbox();
   const navigate = useNavigate();
   const modals = useModals();
   const { mutate: convertTask } = useInboxConverterMutation();
@@ -101,7 +108,7 @@ function InboxRoute() {
         workbenchNotes: workbenchNotes as InboxNote[],
         archiveNotes: archiveNotes as InboxNote[],
       }),
-    [runs, workbenchNotes, archiveNotes]
+    [signals, runs, workbenchNotes, archiveNotes]
   );
 
   const { view, sort, severity, runType, reversibility, selectedId } =
@@ -153,8 +160,10 @@ function InboxRoute() {
     return tabItems.filter((item) => {
       if (severity && item.severity !== severity) return false;
       if (runType) {
-        const src = item.rejectionType === 'user'
-          ? 'manual'
+        const src = item.runtimeSignal
+          ? item.sourceId
+          : item.rejectionType === 'user'
+            ? 'manual'
           : item.inboxBucket === 'deferred' || item.inboxBucket === 'rejected_automated'
             ? 'agent'
             : 'manual';
@@ -164,6 +173,24 @@ function InboxRoute() {
       return true;
     });
   }, [tabItems, severity, runType, reversibility]);
+
+  const { select } = useViewerV2();
+
+  // Mirror the open inbox item into the shared ambient state, using the item's
+  // own severity. roleForSeverity maps only what the domain already
+  // distinguishes; anything unknown falls to neutral rather than being guessed
+  // into an alarm colour.
+  React.useEffect(() => {
+    if (!selectedId) {
+      select(null);
+      return;
+    }
+    const item = (tabItems as InboxItem[]).find((entry) => entry.id === selectedId);
+    select({
+      id: selectedId,
+      role: item ? roleForSeverity(item.severity) : 'total',
+    });
+  }, [selectedId, tabItems, select]);
 
   const visibleItems = React.useMemo(() => {
     const copy = [...filteredItems];
@@ -246,31 +273,19 @@ function InboxRoute() {
     [commitRun, refresh]
   );
 
-  const handleReject = React.useCallback(
-    async (runId: string) => {
-      try {
-        await rejectRun(runId);
-        toast(`Rejected run ${runId}`);
-        refresh();
-      } catch (err) {
-        toast.error((err as Error).message ?? 'Reject failed');
-      }
-    },
-    [rejectRun, refresh]
-  );
-
   const openItem = React.useCallback(
     (item: InboxItem) => {
       const run = runById.get(item.sourceId);
       const note = noteByPath.get(item.sourceId);
       const display = inboxItemToDisplay(item, note, run);
       const detail: InboxItemDetail = {
+        ...item,
         summary: item.summary ?? undefined,
         whySurfaced: item.whySurfaced,
         severity: item.severity,
         inboxBucket: item.inboxBucket,
         rejectionReason: item.rejectionReason,
-        runId: run?.runId,
+        runId: run?.runId ?? item.runId,
         runAction: run?.action,
         sourceId: item.sourceId,
         reversibility: item.reversibility ?? null,
@@ -288,11 +303,6 @@ function InboxRoute() {
           run && run.runType !== 'signals_infer' && run.runType !== 'transform'
             ? () => handleCommit(run.runId)
             : undefined,
-        onReject: run
-          ? () => handleReject(run.runId)
-          : item.sourceId
-            ? () => handleReject(item.sourceId)
-            : undefined,
         convertPanel: run ? (
           <button
             type="button"
@@ -303,7 +313,7 @@ function InboxRoute() {
         ) : undefined,
       });
     },
-    [convertTask, handleCommit, handleReject, modals, noteByPath, runById, setSearch]
+    [convertTask, handleCommit, modals, noteByPath, runById, setSearch]
   );
 
   React.useEffect(() => {
@@ -324,6 +334,7 @@ function InboxRoute() {
       subtitle={`${surface.length} items · ${visibleItems.length} shown${surface.length !== visibleItems.length ? ` · ${surface.length - visibleItems.length} hidden by tab/filters` : ''}`}
       primaryTitle="Review queue"
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
         <div className="flex flex-col gap-4">
           {loading && <div>Loading inbox…</div>}
           {!loading && error && (
@@ -363,8 +374,16 @@ function InboxRoute() {
 
               <InboxItemList
                 items={visibleItems}
-                emptyTitle="Nothing here"
-                emptyDescription="Try a different tab or clear the active filters."
+                emptyTitle={
+                  surface.length === 0
+                    ? 'No staged runs are visible here.'
+                    : 'Nothing here'
+                }
+                emptyDescription={
+                  surface.length === 0
+                    ? 'Staged runs are withheld from the HTTP inbox by design: this ingress has no agent identity to verify run ownership against, so it returns none rather than enumerate them for any read-scoped caller. Review them through MCP, which scopes the list to your verified agent identity.'
+                    : 'Try a different tab or clear the active filters.'
+                }
                 emptyAction={
                   <button
                     type="button"
@@ -391,12 +410,6 @@ function InboxRoute() {
                     ) ||
                     (run && run.runType !== 'signals_infer' &&
                       run.runType !== 'transform');
-                  const canReject =
-                    item.allowedActions.some((a) =>
-                      ['defer', 'approve'].includes(a.actionType)
-                    ) ||
-                    !!run ||
-                    !!item.sourceId;
                   const runActionId = run?.runId ?? item.sourceId;
                   const actionInflight =
                     !!runActionId &&
@@ -408,12 +421,13 @@ function InboxRoute() {
                       key={item.id}
                       item={inboxItemToDisplay(item, note, run)}
                       detail={{
+                        ...item,
                         summary: item.summary ?? undefined,
                         whySurfaced: item.whySurfaced,
                         severity: item.severity,
                         inboxBucket: item.inboxBucket,
                         rejectionReason: item.rejectionReason,
-                        runId: run?.runId,
+                        runId: run?.runId ?? item.runId,
                         runAction: run?.action,
                         sourceId: item.sourceId,
                         reversibility: item.reversibility ?? null,
@@ -422,15 +436,6 @@ function InboxRoute() {
                       onPromote={
                         canPromote && run && run.runType !== 'signals_infer'
                           ? () => handleCommit(run.runId)
-                          : undefined
-                      }
-                      onReject={
-                        canReject
-                          ? run
-                            ? () => handleReject(run.runId)
-                            : item.sourceId
-                              ? () => handleReject(item.sourceId)
-                              : undefined
                           : undefined
                       }
                       actionInFlight={actionInflight}
@@ -455,6 +460,7 @@ function InboxRoute() {
             </>
           )}
         </div>
+        </AmbientSurface>
       }
       asideTitle="Detail"
       aside={null}

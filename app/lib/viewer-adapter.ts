@@ -103,7 +103,19 @@ export interface ScoreBreakdown {
   bubbleEffect?: number;
 }
 
-export interface PressureSignal {
+export interface RuntimeSignalMetadata {
+  jobId?: string;
+  pipelineId?: string | null;
+  runId?: string | null;
+  trigger?: string | null;
+  status?: string | null;
+  failedAt?: string | null;
+  observedAt?: string;
+  error?: unknown;
+  errors?: unknown;
+}
+
+export interface PressureSignal extends RuntimeSignalMetadata {
   id: string;
   kind:
     | 'failure'
@@ -119,7 +131,7 @@ export interface PressureSignal {
   title: string;
   summary: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  surfacedBy: 'cod';
+  surfacedBy?: 'cod';
   sourceType: AdapterEntityType;
   sourceId: string;
   projectId?: string;
@@ -227,12 +239,22 @@ export interface HomeSurfacePayload {
     portfolio: PressureSignal[];
     bubble: PressureSignal[];
     health: PressureSignal[];
-  };
+};
   contextTail: ContextCandidate[];
   /** Low-friction, high-reversibility moves (V3 Immediate Interventions plane). */
   immediateActions: Recommendation[];
   /** Raw task data preserved for downstream consumers (agent hooks, session logic) */
   tasks: NextAction[];
+    /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+    meta?: {
+      mode?: string;
+      fetchedAt?: string;
+      humanState?: {
+        status?: string;
+        warnings?: string[];
+        durationCapMin?: number;
+      };
+    };
 }
 
 export interface InboxItem extends PressureSignal {
@@ -255,6 +277,23 @@ export interface InboxItem extends PressureSignal {
 export interface ActionsSurfacePayload {
   recommendations: Recommendation[];
   verificationRail: VerificationOutcome[];
+  /**
+   * COD's human-state verdict, when the API forwards it. Carries the guardrail
+   * reason (e.g. HARD_STOP) so an empty lane can say WHY it is empty instead of
+   * looking like an outage or a genuine lack of work.
+   */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    availability?: 'ready' | 'empty' | 'paused' | 'unavailable' | 'error' | 'stale';
+    /** Read-side metadata only; never a fresh execution authorization. */
+    executionAuthorized?: boolean;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 // Bubble surface — behavioral control lane (pressure, momentum, rewards, energy)
@@ -296,6 +335,16 @@ export interface BubbleSurfacePayload {
   energy: BubbleEnergy;
   rewards: BubbleRewards;
   signals: PressureSignal[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 // Timeline surface — domain event stream reader
@@ -341,6 +390,16 @@ export interface ProjectSurfacePayload {
   contextPanel: ContextCandidate[];
   timelineHints: AdapterEntityRef[];
   dependencyRiskSignals: PressureSignal[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  meta?: {
+    mode?: string;
+    fetchedAt?: string;
+    humanState?: {
+      status?: string;
+      warnings?: string[];
+      durationCapMin?: number;
+    };
+  };
 }
 
 function clampScore(value: number, max = 10) {
@@ -660,12 +719,13 @@ function buildSignalItems(
 ): InboxItem[] {
   return (signals ?? []).map((signal) => {
     const severity =
-      signal.severity === 'high'
-        ? ('high' as const)
-        : signal.severity === 'low'
-          ? ('low' as const)
-          : ('medium' as const);
-    const kind = severity === 'high' ? ('failure' as const) : ('health' as const);
+      signal.severity === 'critical' || signal.severity === 'high' ||
+      signal.severity === 'medium' || signal.severity === 'low'
+        ? signal.severity
+        : 'medium';
+    const kind = severity === 'high' || severity === 'critical'
+      ? ('failure' as const)
+      : ('health' as const);
     const why = String(
       signal.whySurfaced ?? 'Surfaced by vault runtime monitoring.'
     );
@@ -676,13 +736,23 @@ function buildSignalItems(
       title: String(signal.title ?? 'Runtime signal'),
       summary: why,
       severity,
-      surfacedBy: 'cod' as const,
-      sourceType: 'pipeline' as const,
+      sourceType: signal.jobId
+        ? 'schedule' as const
+        : signal.pipelineId
+          ? 'pipeline' as const
+          : 'health_check' as const,
       sourceId: String(signal.source ?? 'vault'),
-      surfacedAt: String(signal.surfacedAt ?? nowIso()),
-      whySurfaced: `Source: ${String(signal.source ?? 'vault')}. Open ${route} for detail.`,
-      confidence: severity === 'high' ? 0.9 : 0.7,
-      reversibility: 'high' as const,
+      surfacedAt: String(signal.surfacedAt ?? signal.observedAt ?? ''),
+      whySurfaced: why,
+      jobId: signal.jobId as string | undefined,
+      pipelineId: signal.pipelineId as string | null | undefined,
+      runId: signal.runId as string | null | undefined,
+      trigger: signal.trigger as string | null | undefined,
+      status: signal.status as string | null | undefined,
+      failedAt: signal.failedAt as string | null | undefined,
+      observedAt: signal.observedAt as string | undefined,
+      error: signal.error,
+      errors: signal.errors,
       allowedActions: [
         {
           actionType: 'open_source',
@@ -694,7 +764,7 @@ function buildSignalItems(
           },
         },
       ],
-      inboxBucket: (severity === 'high'
+      inboxBucket: (severity === 'high' || severity === 'critical'
         ? 'failure'
         : 'needs_action') as InboxItem['inboxBucket'],
       runtimeSignal: true,
@@ -1535,7 +1605,16 @@ export function useHealthSurface() {
   return useQuery({
     queryKey: ['health'],
     queryFn: async (): Promise<HealthSurfacePayload> => {
-      const res = await apiFetch('/api/v1/health/detailed');
+      // /api/v1/health/detailed was never routable: the API registers
+      // healthRoutes with NO prefix, so the route lives at /health/detailed,
+      // and nginx has no proxy block for it (the /api/ prefix is auth-gated).
+      // The viewer therefore always got 404 -> healthError -> "Offline" in the
+      // top bar regardless of actual service state.
+      //
+      // /api/health IS proxied publicly (nginx `location = /api/health`) and
+      // returns 200. It carries status/timestamp/uptime but not the MCP
+      // dependency probe, so the MCP row is absent rather than wrong.
+      const res = await apiFetch('/api/health');
       throwIfAuthStatus(res.status, 'health');
       if (!res.ok) throw new Error(`Failed to fetch health: ${res.status}`);
       const body = await res.json();
@@ -1624,6 +1703,12 @@ export interface WorkSurfacePayload {
   total: number;
   mode: 'cod' | 'local_fallback';
   warnings: string[];
+  /** COD verdict; carries the guardrail reason when task lanes are suppressed. */
+  humanState?: {
+    status?: string;
+    warnings?: string[];
+    durationCapMin?: number;
+  };
 }
 
 export function useWorkSurface(max = 20) {
@@ -1647,6 +1732,7 @@ export function useWorkSurface(max = 20) {
         warnings: Array.isArray(body?.warnings)
           ? (body.warnings as string[])
           : [],
+          ...(sc.humanState ? { humanState: sc.humanState } : {}),
       };
     },
     staleTime: 60_000,

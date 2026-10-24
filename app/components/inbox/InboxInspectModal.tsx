@@ -4,6 +4,7 @@ import type { ModalProps } from 'react-easy-modals';
 import { useBeforeClose } from 'react-easy-modals';
 import { cn } from '@/src/lib/utils';
 import type { InboxItemDisplay } from '../../types/display';
+import type { RuntimeSignalMetadata } from '../../lib/viewer-adapter';
 import { PrimaryButton, SoftChip } from '../ui';
 import {
   Modal,
@@ -17,7 +18,7 @@ import {
 
 export type InboxInspectCloseValue = 'promote' | 'reject' | undefined;
 
-export interface InboxItemDetail {
+export interface InboxItemDetail extends RuntimeSignalMetadata {
   summary?: string;
   whySurfaced?: string | null;
   severity?: string | null;
@@ -27,6 +28,7 @@ export interface InboxItemDetail {
   runAction?: string | null;
   sourceId?: string | null;
   reversibility?: 'low' | 'medium' | 'high' | null;
+  runtimeSignal?: boolean;
 }
 
 export interface InboxInspectModalOwnProps {
@@ -293,10 +295,46 @@ export function InboxInspectModal({
                 </MetaRow>
               </div>
             )}
+            {detail?.runtimeSignal && (
+              <>
+                {!detail.runId && <MetaRow label="Run" mono>Unknown</MetaRow>}
+                {([
+                  ['Job', detail.jobId],
+                  ['Pipeline', detail.pipelineId],
+                  ['Trigger', detail.trigger],
+                  ['Status', detail.status],
+                  ['Failed at', detail.failedAt],
+                  ['Observed at', detail.observedAt],
+                ] as const).map(([label, value]) => (
+                  <MetaRow key={label} label={label} mono>
+                    {value ?? 'Unknown'}
+                  </MetaRow>
+                ))}
+                {detail.error != null && (
+                  <MetaRow label="Error">
+                    {typeof detail.error === 'string' ? detail.error : JSON.stringify(detail.error)}
+                  </MetaRow>
+                )}
+                {detail.errors != null && (
+                  <MetaRow label="Errors">
+                    {typeof detail.errors === 'string' ? detail.errors : JSON.stringify(detail.errors)}
+                  </MetaRow>
+                )}
+              </>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2 pt-0.5">
-            {detail?.sourceId && (
+            {detail?.runtimeSignal ? (
+              <Link
+                to={detail.jobId ? '/automation' : '/health'}
+                search={{ tab: undefined, subtab: undefined, selectedId: undefined, autoRefresh: undefined }}
+                onClick={() => requestClose(undefined)}
+                className="text-sm text-[var(--text-info)]"
+              >
+                Inspect runtime source
+              </Link>
+            ) : detail?.sourceId && (
               <Link
                 to="/note"
                 search={{ p: detail.sourceId.replace(/\.md$/i, '') }}

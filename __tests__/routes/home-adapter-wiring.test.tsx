@@ -1,10 +1,11 @@
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 import type { HomeSurfacePayload } from '../../app/lib/viewer-adapter';
+import { CodActionRow } from '../../app/components/cod/CodActionRow';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
@@ -14,6 +15,10 @@ const mockNavigate = vi.hoisted(() => vi.fn());
 const mockEnsureQueryData = vi.hoisted(() => vi.fn());
 const mockUseHomeSurface = vi.hoisted(() => vi.fn());
 const mockUseWhatNowQuery = vi.hoisted(() => vi.fn());
+const mockUpdateTaskStatus = vi.hoisted(() => vi.fn().mockResolvedValue(true));
+vi.mock('../../app/lib/api/tasks', () => ({
+  updateTaskStatus: (...args: unknown[]) => mockUpdateTaskStatus(...args),
+}));
 const mockUseUpNextQuery = vi.hoisted(() => vi.fn());
 const mockGetHomeSurfaceQueryOptions = vi.hoisted(() =>
   vi.fn((topicId?: string) => ({
@@ -371,9 +376,14 @@ describe('home adapter wiring', () => {
       isError: false,
     });
     mockApiFetch.mockClear();
+    mockUpdateTaskStatus.mockClear();
   });
 
   it('preloads the home adapter surface in the route loader', async () => {
+    // SSR only participates when a service credential exists; otherwise the
+    // loader deliberately skips the guaranteed-401 call (see routes/index.tsx).
+    const prev = process.env.AUTH_MCP_API_KEY;
+    process.env.AUTH_MCP_API_KEY = 'test-credential';
     expect(typeof Route.options.loader).toBe('function');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -389,6 +399,29 @@ describe('home adapter wiring', () => {
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface'],
     });
+
+    if (prev === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prev;
+  });
+
+  it('skips the SSR prefetch when no service credential is configured', async () => {
+    const prev = process.env.AUTH_MCP_API_KEY;
+    const prevViewer = process.env.VIEWER_INTERNAL_APP_API_KEY;
+    delete process.env.AUTH_MCP_API_KEY;
+    delete process.env.VIEWER_INTERNAL_APP_API_KEY;
+    mockEnsureQueryData.mockClear();
+
+    await (Route.options.loader as any)?.({
+      context: { queryClient: { ensureQueryData: mockEnsureQueryData } },
+    } as never);
+
+    // No credential => no doomed API call => no 401 => no HTTP 500.
+    expect(mockEnsureQueryData).not.toHaveBeenCalled();
+
+    if (prev === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prev;
+    if (prevViewer === undefined) delete process.env.VIEWER_INTERNAL_APP_API_KEY;
+    else process.env.VIEWER_INTERNAL_APP_API_KEY = prevViewer;
   });
 
   it('preserves an optional topic locator in validated home search', () => {
@@ -408,6 +441,8 @@ describe('home adapter wiring', () => {
 
     expect(loaderDeps).toBeTypeOf('function');
     const deps = loaderDeps({ search: { topicId } });
+    const prevCred = process.env.AUTH_MCP_API_KEY;
+    process.env.AUTH_MCP_API_KEY = 'test-credential';
     const loader = Route.options.loader as unknown as (args: {
       context: {
         queryClient: {
@@ -429,6 +464,9 @@ describe('home adapter wiring', () => {
     expect(mockEnsureQueryData.mock.calls[0]?.[0]).toMatchObject({
       queryKey: ['viewer-adapter', 'home-surface', topicId],
     });
+
+    if (prevCred === undefined) delete process.env.AUTH_MCP_API_KEY;
+    else process.env.AUTH_MCP_API_KEY = prevCred;
   });
 
   it('uses the topic locator for the rendered home query', () => {
@@ -547,6 +585,49 @@ describe('home adapter wiring', () => {
       screen.getAllByLabelText('Portfolio — Cross-project pressure summary')
     ).toHaveLength(2);
   });
+  it('keeps cached/local recommendation execution and Start fail-closed', () => {
+    const recommendation = {
+      ...homeSurface.decisionQueue[0], taskPath: 'notes/tasks/task-1.md',
+    };
+    mockUseHomeSurface.mockReturnValue({
+      data: {
+        ...homeSurface,
+        meta: { mode: 'local', executionAuthorized: true },
+        decisionQueue: [recommendation],
+        immediateActions: [{ ...recommendation, id: 'immediate-1' }],
+        tasks: [{
+          id: 'top', path: 'notes/tasks/top.md', title: 'Top task', score: 8,
+          priority: 8, effortScore: 3, focusCost: 2, estimatedTimeMin: 25,
+          status: 'todo', tags: [],
+        }],
+      },
+      isLoading: false, error: null, isError: false,
+    });
+    renderWithClient(<RouteComponent />);
+    const start = screen.getByRole('button', { name: 'Start', exact: true });
+    const execute = screen.getByRole('button', { name: 'Execute', exact: true });
+    expect((start as HTMLButtonElement).disabled).toBe(true);
+    expect((execute as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(start);
+    fireEvent.click(execute);
+    expect(mockUpdateTaskStatus).not.toHaveBeenCalled();
+  });
+
+  it('Simulate never invokes the execution callback', () => {
+    const onExecute = vi.fn();
+    const onSimulate = vi.fn();
+    render(
+      <CodActionRow
+        recommendations={homeSurface.decisionQueue}
+        onExecute={onExecute}
+        onSimulate={onSimulate}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Simulate' }));
+    expect(onExecute).not.toHaveBeenCalled();
+    expect(onSimulate).toHaveBeenCalledWith('decision-1');
+  });
+
 
   it('renders real verification outcomes from the surface rail', () => {
     renderWithClient(<RouteComponent />);

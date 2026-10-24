@@ -1,5 +1,6 @@
 import React from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import {
@@ -106,6 +107,8 @@ function KnowledgeRoute() {
       primaryTitle="Workspace"
       primarySubtitle="Note library"
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         <div className="flex flex-col gap-5">
           <div className="rounded-2xl border border-[var(--border-glass-soft)] bg-[var(--surf-utility)] p-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -257,6 +260,8 @@ function KnowledgeRoute() {
 
           <KnowledgeWorkspaceSurface />
         </div>
+      }
+        </AmbientSurface>
       }
     />
   );

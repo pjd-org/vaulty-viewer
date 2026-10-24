@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { Activity, Heart, PanelLeft, Search } from 'lucide-react';
+import { Activity, Heart, Moon, PanelLeft, Search, Sun } from 'lucide-react';
 import { GlassBadge, GlassSurface } from '@vault/ui';
 import { Button } from '@/app/components/ui';
 import { useIsMobile } from '../../hooks/use-mobile';
@@ -21,6 +21,9 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
   const accent = accentColor ?? 'var(--a-sky)';
   const isMobile = useIsMobile();
   const [createOpen, setCreateOpen] = React.useState(false);
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
+  const isDark = theme === 'dark';
   const { data: healthData, isLoading: healthLoading, error: healthError } =
     useHealthSurface();
   const {
@@ -178,6 +181,23 @@ export function TopCommandBar({ scopeEcho, accentColor }: TopCommandBarProps) {
               <GlassBadge tone={codTone} size="sm" className="shrink-0">
                 {codStatus}
               </GlassBadge>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="!rounded-full"
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+              aria-pressed={isDark}
+              title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            >
+              {isDark ? (
+                <Sun className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Moon className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span className="sr-only sm:not-sr-only">Theme</span>
             </Button>
 
             <Button

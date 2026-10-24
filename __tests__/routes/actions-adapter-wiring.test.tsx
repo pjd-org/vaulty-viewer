@@ -76,6 +76,8 @@ vi.mock('../../app/components/layout', () => ({
     asideTitle,
     asideSubtitle,
     aside,
+    summaryItems,
+    statusLine,
   }: {
     title: string;
     subtitle?: string;
@@ -86,11 +88,23 @@ vi.mock('../../app/components/layout', () => ({
     asideTitle: string;
     asideSubtitle?: string;
     aside: React.ReactNode;
+    summaryItems?: { label: string; value: string; detail?: string }[];
+    statusLine?: string;
   }) => (
     <section>
       <h1>{title}</h1>
       {subtitle ? <p>{subtitle}</p> : null}
       <div data-testid="actions-toolbar">{actions}</div>
+      <p data-testid="actions-status">{statusLine}</p>
+      <dl>
+        {summaryItems?.map((item) => (
+          <div key={item.label} data-testid={`summary-${item.label}`}>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+            <span>{item.detail}</span>
+          </div>
+        ))}
+      </dl>
       <div>
         <h2>{primaryTitle}</h2>
         {primarySubtitle ? <p>{primarySubtitle}</p> : null}
@@ -352,14 +366,126 @@ describe('actions adapter wiring', () => {
     expect(screen.getByText('Verification failed.')).toBeTruthy();
   });
 
-  it('Execute button sets verification phase to pending', () => {
+  it.each([
+    undefined,
+    { availability: 'ready', executionAuthorized: false },
+    { availability: 'ready', executionAuthorized: true },
+    { availability: 'stale', executionAuthorized: true },
+    { availability: 'ready', executionAuthorized: true, mode: 'local' },
+  ])('never authorizes Execute from recommendation read metadata %j', (meta) => {
+    mockUseActionsSurface.mockReturnValue({
+      data: { ...actionsSurface, meta },
+      isLoading: false,
+      error: null,
+    });
     renderWithClient(<RouteComponent />);
-    fireEvent.click(screen.getByRole('button', { name: 'Execute' }));
-    expect(mockSetVerificationPhase).toHaveBeenCalledWith(
-      'pending',
-      'action-1'
-    );
+    const execute = screen.getByRole('button', { name: 'Execute' });
+    expect((execute as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(execute);
+    expect(mockSetVerificationPhase).not.toHaveBeenCalled();
+    expect(mockUpdateTaskStatus).not.toHaveBeenCalled();
+    expect(screen.getByText(/fresh server authorization/i)).toBeTruthy();
   });
+
+  it.each([
+    ['ready', 'Action recommendations are ready.', '1'],
+    ['empty', 'No actions are surfaced right now.', '0'],
+    ['paused', 'Task lanes are paused.', '—'],
+    ['unavailable', 'Action recommendations are unavailable.', '—'],
+    ['error', 'Action recommendations could not be loaded.', '—'],
+    ['stale', 'Action recommendations are stale.', '—'],
+  ])('distinguishes %s availability without inventing counts', (availability, message, count) => {
+    mockUseActionsSurface.mockReturnValue({
+      data: {
+        ...actionsSurface,
+        recommendations: availability === 'ready' ? actionsSurface.recommendations : [],
+        verificationRail: [],
+        meta: { availability, executionAuthorized: false },
+      },
+      isLoading: false,
+      error: null,
+    });
+    renderWithClient(<RouteComponent />);
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(within(screen.getByTestId('summary-Recommended')).getByText(count)).toBeTruthy();
+    expect(within(screen.getByTestId('summary-Verification')).queryByText('Ready')).toBeNull();
+  });
+
+  it.each([
+    { isLoading: true, error: null, data: undefined },
+    { isLoading: false, error: new Error('offline'), data: undefined },
+    { isLoading: false, error: new Error('refresh failed'), data: actionsSurface },
+  ])('does not report zero computed actions on loading or fetch errors', (query) => {
+    mockUseActionsSurface.mockReturnValue(query);
+    renderWithClient(<RouteComponent />);
+    for (const label of ['Recommended', 'High impact', 'Low friction']) {
+      expect(within(screen.getByTestId(`summary-${label}`)).getByText('—')).toBeTruthy();
+    }
+    expect(screen.getByTestId('actions-status').textContent).not.toMatch(/0 actions ranked/);
+  });
+
+  it('gives a blocked human state precedence over ready read metadata', () => {
+    mockUseActionsSurface.mockReturnValue({
+      data: {
+        ...actionsSurface,
+        meta: {
+          availability: 'ready',
+          executionAuthorized: true,
+          humanState: { status: 'blocked', warnings: ['HARD_STOP'] },
+        },
+      },
+      isLoading: false,
+      isStale: true,
+      error: null,
+    });
+    renderWithClient(<RouteComponent />);
+    expect(screen.getByText('Task lanes are paused.')).toBeTruthy();
+    expect(within(screen.getByTestId('summary-Recommended')).getByText('—')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Execute' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('marks expired query cache stale even when its last read metadata was ready', () => {
+    mockUseActionsSurface.mockReturnValue({
+      data: { ...actionsSurface, meta: { availability: 'ready', executionAuthorized: true } },
+      isLoading: false,
+      isStale: true,
+      error: null,
+    });
+    renderWithClient(<RouteComponent />);
+    expect(screen.getByText('Action recommendations are stale.')).toBeTruthy();
+    expect(within(screen.getByTestId('summary-Recommended')).getByText('—')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Execute' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('does not label absent verification evidence ready', () => {
+    mockUseActionsSurface.mockReturnValue({
+      data: { ...actionsSurface, verificationRail: [] },
+      isLoading: false,
+      error: null,
+    });
+    renderWithClient(<RouteComponent />);
+    expect(within(screen.getByTestId('summary-Verification')).getByText('Unverified')).toBeTruthy();
+    expect(screen.getByText('No verification evidence recorded.')).toBeTruthy();
+    expect(screen.queryByText('Ready for post-action verification.')).toBeNull();
+  });
+
+  it.each(['pending', 'success', 'warning', 'failed'] as const)(
+    'reports stored %s verification lifecycle',
+    (status) => {
+      mockUseActionsSurface.mockReturnValue({
+        data: {
+          ...actionsSurface,
+          verificationRail: [{ ...actionsSurface.verificationRail[0], status }],
+        },
+        isLoading: false,
+        error: null,
+      });
+      renderWithClient(<RouteComponent />);
+      expect(
+        within(screen.getByTestId('summary-Verification')).getByText(status, { exact: false })
+      ).toBeTruthy();
+    }
+  );
 
   it('Simulate button fetches task metrics for simulation preview', () => {
     renderWithClient(<RouteComponent />);

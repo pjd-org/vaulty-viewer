@@ -14,7 +14,7 @@ import {
 export interface InboxNote {
   path: string;
   title?: string;
-  status?: string;
+  status?: InboxLogicNote['status'];
   error?: string;
 }
 
@@ -98,7 +98,7 @@ export interface UseInboxResult {
  *   apiStatus   — 'online' | 'offline' | 'unknown'
  *   refresh     — re-fetch the inbox
  *   commitRun   — (runId) => Promise — commit a run
- *   rejectRun   — (runId) => Promise — reject/delete a run
+ *   rejectRun   — (runId) => Promise — always refuses; Reject is disabled, nothing is deleted
  *   actionState — { [runId]: 'committing' | 'rejecting' | 'error' }
  */
 export function useInbox(): UseInboxResult {
@@ -311,52 +311,6 @@ export function useInbox(): UseInboxResult {
     },
   });
 
-  const rejectMutation = useMutation({
-    mutationFn: async (
-      runId: string
-    ): Promise<InboxMutationResult> => {
-      const res = await apiFetch(
-        `/api/v1/inbox/${encodeURIComponent(runId)}`,
-        {
-          method: 'DELETE',
-        }
-      );
-      // Parse body before mutating state — same reason as commitRun above.
-      const body = (await res.json().catch(() => ({}))) as InboxMutationResult;
-      if (!res.ok) {
-        throw new Error(body?.message ?? `Reject failed: ${res.status}`);
-      }
-      return body;
-    },
-    onSuccess: async (
-      body: InboxMutationResult,
-      runId: string
-    ) => {
-      void body;
-      clearPendingConfirmation(runId);
-      // Prune actionState: same reason as commitRun above.
-      setActionState((prev) => {
-        const next = { ...prev };
-        delete next[runId];
-        return next;
-      });
-
-      queryClient.setQueryData<InboxQueryData>(queryKey, (current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          runs: (current.runs || []).filter((r) => r.runId !== runId),
-        };
-      });
-
-      await queryClient.invalidateQueries({ queryKey: ['inbox'] });
-    },
-    onError: (errorObj: unknown, runId: string) => {
-      void errorObj;
-      setActionState((prev) => ({ ...prev, [runId]: 'error' }));
-    },
-  });
-
   const commitRun = useCallback(
     async (runId: string): Promise<InboxMutationResult> => {
       const pending = pendingConfirmations[runId];
@@ -381,12 +335,10 @@ export function useInbox(): UseInboxResult {
   );
 
   const rejectRun = useCallback(
-    async (runId: string): Promise<InboxMutationResult> => {
-      clearPendingConfirmation(runId);
-      setActionState((prev) => ({ ...prev, [runId]: 'rejecting' }));
-      return rejectMutation.mutateAsync(runId);
+    async (_runId: string): Promise<InboxMutationResult> => {
+      throw new Error('Reject is disabled; staged evidence is kept and nothing is deleted.');
     },
-    [clearPendingConfirmation, rejectMutation]
+    []
   );
 
   const notes = inboxQuery.data?.notes || [];

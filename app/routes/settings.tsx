@@ -2,6 +2,7 @@ import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { GlassSurface } from '@vault/ui';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { ThemeSelector } from '../components/settings/ThemeSelector';
 import { DensitySelector } from '../components/settings/DensitySelector';
@@ -42,6 +43,7 @@ function SettingsRoute() {
       primaryTitle="Settings Workspace"
       primarySubtitle="Preference groups and control forms."
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
         <div className="flex flex-col gap-6">
           <GlassSurface as="section" variant="canvas" radius="2xl" shadow="sm" border="default" className="p-4">
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
@@ -72,6 +74,7 @@ function SettingsRoute() {
           </GlassSurface>
           <ConfigAdminPanel />
         </div>
+        </AmbientSurface>
       }
       asideTitle="Preview Panel"
       asideSubtitle="How changes affect the shell."

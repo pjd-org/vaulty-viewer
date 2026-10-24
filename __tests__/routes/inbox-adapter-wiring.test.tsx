@@ -11,7 +11,7 @@ import { createLazyRouteComponentMock } from './lazyRouteComponentMock';
 
 const mockRouteState = vi.hoisted(() => ({
   search: {
-    view: 'archive' as 'queue' | 'workbench' | 'archive' | undefined,
+    view: 'archive' as 'signals' | 'queue' | 'workbench' | 'archive' | undefined,
     rejectedTab: undefined as 'user' | 'automated' | undefined,
     selectedId: undefined as string | undefined,
     severity: undefined as 'high' | 'medium' | 'low' | undefined,
@@ -23,6 +23,7 @@ const mockRefresh = vi.hoisted(() => vi.fn());
 const mockCommitRun = vi.hoisted(() => vi.fn());
 const mockRejectRun = vi.hoisted(() => vi.fn());
 const mockUseInbox = vi.hoisted(() => vi.fn());
+const mockOpenModal = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-router', () => ({
   lazyRouteComponent: createLazyRouteComponentMock(),
@@ -35,7 +36,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('react-easy-modals', () => ({
   useModals: () => ({
-    open: vi.fn(),
+    open: mockOpenModal,
     stack: [],
   }),
 }));
@@ -96,7 +97,7 @@ vi.mock('../../app/components/inbox/InboxItemCard', () => ({
     onReject,
     detail,
   }: {
-    item: { title: string };
+    item: { title: string; originLabel: string; isBlocked: boolean };
     isExpanded?: boolean;
     onToggle?: () => void;
     onInspect: () => void;
@@ -106,6 +107,8 @@ vi.mock('../../app/components/inbox/InboxItemCard', () => ({
   }) => (
     <article>
       <span>{item.title}</span>
+      <span>{item.originLabel}</span>
+      {item.isBlocked && <span>Blocked</span>}
       <button type="button" onClick={onToggle ?? onInspect}>
         {`Inspect ${item.title}`}
       </button>
@@ -214,7 +217,9 @@ describe('inbox adapter wiring', () => {
       severity: undefined,
     };
     mockRejectRun.mockReset();
+    mockOpenModal.mockReset();
     mockUseInbox.mockReturnValue({
+      signals: [],
       runs: [
         {
           runId: 'run-1',
@@ -331,6 +336,64 @@ describe('inbox adapter wiring', () => {
       },
     ]);
   });
+  it('renders runtime severity without manual or Blocked labels and preserves inspect evidence', () => {
+    mockRouteState.search.view = 'signals';
+    const runtimeItem = {
+      id: 'signal:scheduler-job-nightly',
+      title: 'Nightly failed',
+      summary: 'Runner failure',
+      kind: 'failure',
+      severity: 'high',
+      surfacedBy: 'runtime',
+      sourceType: 'schedule',
+      sourceId: 'vault:scheduler',
+      surfacedAt: '2026-10-24T03:00:00.000Z',
+      whySurfaced: 'Runner failure',
+      allowedActions: [{ actionType: 'open_source', label: 'Inspect' }],
+      inboxBucket: 'failure',
+      runtimeSignal: true,
+      jobId: 'nightly',
+      pipelineId: null,
+      runId: 'run-9',
+      trigger: 'schedule',
+      status: 'failed',
+      failedAt: null,
+      observedAt: '2026-10-24T03:00:00.000Z',
+      error: 'Runner unavailable',
+      errors: ['No runner connected'],
+    };
+    mockBuildInboxSurfacePayload.mockReturnValue([runtimeItem]);
+    render(<RouteComponent />);
+    const card = screen.getByText('Nightly failed').closest('article')!;
+    expect(within(card).queryByText(/^manual$/i)).toBeNull();
+    expect(within(card).queryByText('Blocked')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Inspect Nightly failed' }));
+    expect(mockOpenModal.mock.calls.at(-1)?.[1].detail).toMatchObject({
+      jobId: 'nightly', pipelineId: null, runId: 'run-9',
+      trigger: 'schedule', status: 'failed', failedAt: null,
+      observedAt: runtimeItem.observedAt, error: runtimeItem.error, errors: runtimeItem.errors,
+    });
+    expect(mockCommitRun).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds runtime signals when only the refreshed signals change', () => {
+    mockRouteState.search.view = 'signals';
+    mockBuildInboxSurfacePayload.mockImplementation(({ signals }) => signals);
+    const query = mockUseInbox();
+    mockUseInbox.mockReturnValue({ ...query, signals: [] });
+    const { rerender } = render(<RouteComponent />);
+    mockUseInbox.mockReturnValue({
+      ...query,
+      signals: [{
+        id: 'signal:new', title: 'New runtime failure', runtimeSignal: true,
+        severity: 'high', status: 'failed', sourceId: 'vault:scheduler',
+        surfacedAt: '2026-10-24T03:00:00.000Z', allowedActions: [],
+      }],
+    });
+    rerender(<RouteComponent />);
+    expect(screen.getByText('New runtime failure')).toBeTruthy();
+  });
+
 
   it('renders archive content and counts from the adapter surface', () => {
     render(<RouteComponent />);
@@ -357,7 +420,7 @@ describe('inbox adapter wiring', () => {
     expect(screen.getByText('Policy rejected proposal')).toBeTruthy();
   });
 
-  it('keeps reject wired for queue items when the matching run is missing', () => {
+  it('does not expose reject for queue items; Reject is disabled at the boundary', () => {
     mockRouteState.search = {
       view: 'queue',
       rejectedTab: undefined,
@@ -367,11 +430,8 @@ describe('inbox adapter wiring', () => {
 
     render(<RouteComponent />);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Reject Proposal run' })
-    );
-
-    expect(mockRejectRun).toHaveBeenCalledWith('run-1');
+    expect(screen.queryByRole('button', { name: 'Reject Proposal run' })).toBeNull();
+    expect(mockRejectRun).not.toHaveBeenCalled();
   });
 
   it('uses WorkspaceScaffold with a right-rail aside panel', () => {

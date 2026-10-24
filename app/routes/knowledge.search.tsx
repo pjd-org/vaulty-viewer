@@ -8,6 +8,7 @@ import {
 } from '../lib/viewer-adapter';
 import KnowledgeNoteCard from '../../src/components/KnowledgeNoteCard';
 import KnowledgeHealthBanner from '../../src/components/KnowledgeHealthBanner';
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
 import { EmptyState } from '../components/ui';
 import { GlassCard } from '../components/ui/glass-card';
@@ -146,6 +147,8 @@ function KnowledgeSearchRoute() {
           : 'Enter a query to search your knowledge base.'
       }
       primary={
+        <AmbientSurface className="rounded-2xl p-1">
+        {
         <div className="flex flex-col gap-4">
           <KnowledgeHealthBanner health={health ?? null} loading={false} />
 
@@ -194,6 +197,8 @@ function KnowledgeSearchRoute() {
             </div>
           )}
         </div>
+      }
+        </AmbientSurface>
       }
       asideTitle="Search Tips"
       asideSubtitle="How to get the best results."

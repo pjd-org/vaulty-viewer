@@ -5,8 +5,9 @@ import {
   useNavigate,
 } from '@tanstack/react-router';
 
+import { AmbientSurface } from '../components/v2';
 import { WorkspaceScaffold } from '../components/layout';
-import { EmptyState } from '../components/ui';
+import { EmptyState, GuardrailBanner } from '../components/ui';
 import { bubbleSearchParams } from '../../src/lib/routes/search-params';
 import {
   getBubbleSurfaceQueryOptions,
@@ -20,6 +21,15 @@ import { getAuthFailureKind } from '../hooks/use-login-redirect';
 export const Route = createFileRoute('/bubble')({
   validateSearch: bubbleSearchParams,
   loader: async ({ context }) => {
+    // See routes/index.tsx: SSR has no service credential, so this call is a
+    // guaranteed 401 and used to turn the route into HTTP 500 for anonymous
+    // visitors. Skip it; the client refetches through the session-gated proxy.
+    if (
+      !process.env.VIEWER_INTERNAL_APP_API_KEY &&
+      !process.env.AUTH_MCP_API_KEY
+    ) {
+      return;
+    }
     await context.queryClient.ensureQueryData(getBubbleSurfaceQueryOptions());
   },
   component: BubbleRoute,
@@ -257,7 +267,10 @@ function BubbleRoute() {
       primaryTitle="Bubble Workspace"
       primarySubtitle="Interpretation on the left, intervention on the right."
       primary={
-        isLoading ? (
+        <AmbientSurface className="rounded-2xl p-1">
+        <div className="flex flex-col gap-4">
+        <GuardrailBanner humanState={data?.meta?.humanState} />
+        {isLoading ? (
           <div className="flex flex-col gap-3" data-testid="bubble-loading-state">
             <div className="h-16 animate-pulse rounded-2xl border border-border bg-muted/40" />
             <div className="h-20 animate-pulse rounded-2xl border border-border bg-muted/40" />
@@ -285,7 +298,9 @@ function BubbleRoute() {
           </div>
         ) : (
           <BubbleContent data={data} />
-        )
+        )}
+        </div>
+        </AmbientSurface>
       }
     />
   );
