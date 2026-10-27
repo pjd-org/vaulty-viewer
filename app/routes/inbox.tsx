@@ -447,12 +447,12 @@ function InboxRoute() {
                 items={visibleItems}
                 emptyTitle={
                   surface.length === 0
-                    ? 'No staged runs are visible here.'
+                    ? 'No inbox items returned for this session.'
                     : 'Nothing here'
                 }
                 emptyDescription={
                   surface.length === 0
-                    ? 'Staged runs are withheld from the HTTP inbox by design: this ingress has no agent identity to verify run ownership against, so it returns none rather than enumerate them for any read-scoped caller. Review them through MCP, which scopes the list to your verified agent identity.'
+                    ? 'The Inbox shows only items authorized by the API for this session. Missing draft runs are not proof of an empty vault; verified reviewer ownership is required.'
                     : 'Try a different tab or clear the active filters.'
                 }
                 emptyAction={
