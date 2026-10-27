@@ -472,3 +472,39 @@ describe('inbox adapter wiring', () => {
     expect(within(primary).queryByTestId('inline-detail')).toBeNull();
   });
 });
+
+
+describe('inbox draft visibility and human confirmation', () => {
+  afterEach(() => cleanup());
+
+  it('surfaces returned drafts even when Archive is the selected tab', () => {
+    mockRouteState.search.view = 'archive';
+    render(<RouteComponent />);
+    const panel = screen.getByTestId('inbox-drafts');
+    expect(within(panel).getByText('Workbench note')).toBeTruthy();
+    const link = screen.getByTestId('inbox-draft-review');
+    expect(link.getAttribute('href')).toBe(
+      '/note?p=inbox%2Fextracted%2Fworkbench-note.md'
+    );
+  });
+
+  it('requires a separate user click to confirm an armed run promotion', () => {
+    mockCommitRun.mockReset();
+    mockRouteState.search.view = 'queue';
+    const initial = mockUseInbox();
+    mockUseInbox.mockReturnValue({
+      ...initial,
+      pendingConfirmations: {
+        'run-1': {
+          token: 'server-issued-test-token',
+          expiresAt: '2099-01-01T00:00:00Z',
+        },
+      },
+    });
+    render(<RouteComponent />);
+    expect(mockCommitRun).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm promotion' }));
+    expect(mockCommitRun).toHaveBeenCalledTimes(1);
+    expect(mockCommitRun).toHaveBeenCalledWith('run-1');
+  });
+});
