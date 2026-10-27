@@ -368,7 +368,9 @@ function InboxRoute() {
                       const promotable = note.path.startsWith('inbox/extracted/') &&
                         typeof fm._run_id === 'string' &&
                         typeof fm._target_path === 'string' &&
-                        fm._action == null;
+                        fm._action == null &&
+                        fm._run_type !== 'signals_infer' &&
+                        fm._run_type !== 'transform';
                       return (
                         <li key={note.path} className="flex flex-wrap items-center justify-between gap-3 py-2">
                           <div className="min-w-0">
