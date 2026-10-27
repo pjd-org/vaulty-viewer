@@ -94,7 +94,7 @@ export const Route = createFileRoute('/inbox')({
 });
 
 function InboxRoute() {
-  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, actionState, counts } = useInbox();
+  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, actionState, pendingConfirmations, counts } = useInbox();
   const navigate = useNavigate();
   const modals = useModals();
   const { mutate: convertTask } = useInboxConverterMutation();
@@ -110,6 +110,10 @@ function InboxRoute() {
       }),
     [signals, runs, workbenchNotes, archiveNotes]
   );
+
+  // These are the draft notes the authenticated inbox endpoint actually
+  // returned. Never fall back to a global read-scoped list for staging.
+  const drafts = workbenchNotes.filter((note) => note.path.startsWith('inbox/'));
 
   const { view, sort, severity, runType, reversibility, selectedId } =
     Route.useSearch();
@@ -263,9 +267,17 @@ function InboxRoute() {
     async (runId: string) => {
       try {
         const result = await commitRun(runId);
+        const status = result?.structuredContent?.status ?? result?.status;
+        if (status === 'pending_confirmation') {
+          toast('Promotion armed. Review the run, then explicitly confirm it below.');
+          return;
+        }
         const committed = result?.structuredContent?.committed ?? 0;
-        toast(`Committed ${committed} item${committed !== 1 ? 's' : ''} from ${runId}`);
-        refresh();
+        const failed = result?.structuredContent?.failed ?? 0;
+        if (failed > 0) toast.error(`Promotion completed with ${failed} failure(s). Inspect the receipt.`);
+        else if (committed > 0) toast.success(`Committed ${committed} item(s) from ${runId}`);
+        else toast('No items were committed. Check the run status.');
+        await refresh();
       } catch (err) {
         toast.error((err as Error).message ?? 'Commit failed');
       }
