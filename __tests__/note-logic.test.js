@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -7,6 +7,7 @@ import {
   getLifecycleContext,
   toApiNotePath,
   toNoteHref,
+  isConfirmedItemPromotion,
 } from '../src/lib/note-path.ts';
 import { renderNoteMarkdown } from '../src/lib/note-markdown.ts';
 
@@ -100,7 +101,8 @@ describe('note-path and note-markdown', () => {
       _run_id: 'run-1',
       _target_path: 'notes/tasks/viewer/demo.md',
     });
-    expect(rejected.canPromote).toBe(true);
+    expect(rejected.canPromote).toBe(false);
+    expect(rejected.isStaged).toBe(false);
     expect(rejected.canReject).toBe(false);
 
     const canonicalTask = getLifecycleContext('notes/tasks/viewer/demo.md', {
@@ -131,9 +133,22 @@ describe('note-path and note-markdown', () => {
     }
   });
 
+  it('requires an explicit successful receipt for the exact promoted item', () => {
+    const path = 'inbox/extracted/run-1/demo.md';
+    const receipt = { status: 'committed', path, committed: 1, failed: 0, rejected: 0 };
+    expect(isConfirmedItemPromotion({ structuredContent: receipt }, path)).toBe(true);
+    for (const body of [
+      {}, { status: 'committed' }, { ...receipt, path: 'other.md' },
+      { ...receipt, committed: 0 }, { ...receipt, failed: 1 },
+      { ...receipt, rejected: 1 }, { ...receipt, status: 'pending_confirmation' },
+    ]) expect(isConfirmedItemPromotion(body, path)).toBe(false);
+  });
+
   it('targets the reviewed item, not its entire staging run', () => {
     const cwd = process.cwd();
-    const root = cwd.endsWith('/apps/viewer') ? cwd : resolve(cwd, 'apps/viewer');
+    const root = existsSync(resolve(cwd, 'app/routes/note.tsx'))
+      ? cwd
+      : cwd.endsWith('/apps/viewer') ? cwd : resolve(cwd, 'apps/viewer');
     const source = readFileSync(resolve(root, 'app/routes/note.tsx'), 'utf8');
     expect(source).toContain("'/api/v1/inbox/item/commit'");
     expect(source).toContain('path: note.path');
@@ -142,9 +157,11 @@ describe('note-path and note-markdown', () => {
 
   it('keeps the note route in a reader-first responsive layout with related notes', () => {
     const cwd = process.cwd();
-    const viewerRoot = cwd.endsWith('/apps/viewer')
+    const viewerRoot = existsSync(resolve(cwd, 'app/routes/note.tsx'))
       ? cwd
-      : resolve(cwd, 'apps/viewer');
+      : cwd.endsWith('/apps/viewer')
+        ? cwd
+        : resolve(cwd, 'apps/viewer');
     const source = readFileSync(
       resolve(viewerRoot, 'app/routes/note.tsx'),
       'utf8'

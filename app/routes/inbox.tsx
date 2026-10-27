@@ -94,7 +94,7 @@ export const Route = createFileRoute('/inbox')({
 });
 
 function InboxRoute() {
-  const { runs, signals, workbenchNotes, archiveNotes, loading, error, refresh, commitRun, actionState, pendingConfirmations, counts } = useInbox();
+  const { runs, signals, workbenchNotes, archiveNotes, stagedDrafts, stagedVisible, loading, error, refresh, commitItem, actionState, pendingItemConfirmations, counts } = useInbox();
   const navigate = useNavigate();
   const modals = useModals();
   const { mutate: convertTask } = useInboxConverterMutation();
@@ -111,9 +111,7 @@ function InboxRoute() {
     [signals, runs, workbenchNotes, archiveNotes]
   );
 
-  // These are the draft notes the authenticated inbox endpoint actually
-  // returned. Never fall back to a global read-scoped list for staging.
-  const drafts = workbenchNotes.filter((note) => note.path.startsWith('inbox/'));
+  const drafts = stagedDrafts;
 
   const { view, sort, severity, runType, reversibility, selectedId } =
     Route.useSearch();
@@ -263,26 +261,26 @@ function InboxRoute() {
     [navigate, activeTab, currentSort, severity, runType, reversibility, selectedId]
   );
 
-  const handleCommit = React.useCallback(
-    async (runId: string) => {
+  const handleCommitItem = React.useCallback(
+    async (stagedPath: string) => {
       try {
-        const result = await commitRun(runId);
+        const result = await commitItem(stagedPath);
         const status = result?.structuredContent?.status ?? result?.status;
         if (status === 'pending_confirmation') {
-          toast('Promotion armed. Review the run, then explicitly confirm it below.');
+          toast('Promotion armed. Confirm the item below to promote exactly this draft.');
           return;
         }
         const committed = result?.structuredContent?.committed ?? 0;
         const failed = result?.structuredContent?.failed ?? 0;
-        if (failed > 0) toast.error(`Promotion completed with ${failed} failure(s). Inspect the receipt.`);
-        else if (committed > 0) toast.success(`Committed ${committed} item(s) from ${runId}`);
-        else toast('No items were committed. Check the run status.');
+        if (failed > 0) toast.error(`Promotion failed for ${stagedPath}. Inspect the receipt.`);
+        else if (committed === 1) toast.success(`Promoted ${stagedPath}`);
+        else toast.error('Promotion not confirmed: no receipt for this item.');
         await refresh();
       } catch (err) {
-        toast.error((err as Error).message ?? 'Commit failed');
+        toast.error((err as Error).message ?? 'Promotion failed');
       }
     },
-    [commitRun, refresh]
+    [commitItem, refresh]
   );
 
   const openItem = React.useCallback(
@@ -311,10 +309,6 @@ function InboxRoute() {
         onClose: () => {
           setSearch({ selectedId: undefined });
         },
-        onPromote:
-          run && run.runType !== 'signals_infer' && run.runType !== 'transform'
-            ? () => handleCommit(run.runId)
-            : undefined,
         convertPanel: run ? (
           <button
             type="button"
@@ -325,7 +319,7 @@ function InboxRoute() {
         ) : undefined,
       });
     },
-    [convertTask, handleCommit, modals, noteByPath, runById, setSearch]
+    [convertTask, modals, noteByPath, runById, setSearch]
   );
 
   React.useEffect(() => {
@@ -354,62 +348,88 @@ function InboxRoute() {
           )}
           {!loading && !error && (
             <>
-              <section data-testid="inbox-drafts" aria-label="Drafts awaiting review"
+              <section data-testid="inbox-drafts" aria-label="Staged drafts awaiting review"
                 className="rounded-xl border border-border bg-background/50 p-4">
                 <h2 className="text-sm font-semibold">Drafts · {drafts.length}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Inspect staged Markdown, frontmatter and destination before promoting.
-                  Promotion uses the note's existing two-step authorization flow.
+                  Staged items the API has authorized for this principal. Promotion is
+                  per item: the first click arms a server-issued confirmation, the second
+                  promotes exactly that draft.
                 </p>
+                {!stagedVisible && (
+                  <p data-testid="inbox-drafts-denied" className="mt-2 text-xs text-destructive">
+                    Staged review is unavailable for this session. Missing drafts are not
+                    proof of an empty vault.
+                  </p>
+                )}
                 {drafts.length > 0 ? (
                   <ul className="mt-3 divide-y divide-border">
-                    {drafts.map((note) => {
-                      const fm = note.frontmatter ?? {};
-                      const promotable = note.path.startsWith('inbox/extracted/') &&
-                        typeof fm._run_id === 'string' &&
-                        typeof fm._target_path === 'string' &&
-                        fm._action == null &&
-                        fm._run_type !== 'signals_infer' &&
-                        fm._run_type !== 'transform';
-                      return (
-                        <li key={note.path} className="flex flex-wrap items-center justify-between gap-3 py-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium">{note.title || note.path.split('/').pop()}</p>
-                            <p className="break-all font-mono text-xs text-muted-foreground">{note.path}</p>
-                            {typeof fm._target_path === 'string' ? (
-                              <p className="text-xs text-muted-foreground">Target: {fm._target_path}</p>
-                            ) : null}
+                    {drafts.map((draft) => (
+                      <li key={draft.path} className="flex flex-wrap items-center justify-between gap-3 py-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">
+                            {draft.title || draft.path.split('/').pop()}
+                          </p>
+                          <p className="break-all font-mono text-xs text-muted-foreground">
+                            {draft.path}
+                          </p>
+                          {draft.targetPath ? (
                             <p className="text-xs text-muted-foreground">
-                              {typeof fm.type === 'string' ? fm.type : 'note'} · {note.status ?? 'staged'}
+                              Target: {draft.targetPath}
                             </p>
-                          </div>
-                          <a href={`/note?p=${encodeURIComponent(note.path)}`}
-                            className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
-                            data-testid="inbox-draft-review">
-                            {promotable ? 'Review & promote' : 'Inspect draft'}
+                          ) : null}
+                          <p className="text-xs text-muted-foreground">
+                            {draft.runType ?? 'note'}
+                            {draft.status ? ` · ${draft.status}` : ''}
+                          </p>
+                          {!draft.reviewable && draft.blockedReason ? (
+                            <p className="text-xs text-destructive">{draft.blockedReason}</p>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`/note?p=${encodeURIComponent(draft.path)}`}
+                            className="rounded-lg border border-border px-3 py-2 text-xs hover:bg-muted"
+                            data-testid="inbox-draft-review"
+                          >
+                            Inspect
                           </a>
-                        </li>
-                      );
-                    })}
+                          {draft.reviewable ? (
+                            <button
+                              type="button"
+                              disabled={anyActionInFlight}
+                              onClick={() => void handleCommitItem(draft.path)}
+                              className="rounded-lg border border-border px-3 py-2 text-xs font-medium disabled:opacity-40"
+                              data-testid="inbox-draft-promote"
+                            >
+                              {pendingItemConfirmations[draft.path]?.token
+                                ? 'Confirm'
+                                : 'Promote'}
+                            </button>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
                   </ul>
                 ) : (
                   <p className="mt-3 text-xs text-muted-foreground">
-                    No draft notes were returned for this session. This does not mean the vault has no drafts;
-                    staged-run visibility requires verified review authority.
+                    No staged drafts were returned for this principal. This does not mean
+                    the vault has no drafts; staged visibility requires verified ownership
+                    or an owner-granted review delegation.
                   </p>
                 )}
               </section>
-              {Object.entries(pendingConfirmations ?? {})
+              {Object.entries(pendingItemConfirmations ?? {})
                 .filter(([, pending]) => Boolean(pending?.token))
-                .map(([runId, pending]) => (
-                  <section key={runId} data-testid="inbox-promotion-confirmation"
+                .map(([stagedPath, pending]) => (
+                  <section key={stagedPath} data-testid="inbox-item-promotion-confirmation"
                     className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
                     <p className="text-sm">
-                      Run <code>{runId}</code> awaits explicit confirmation.
+                      <code className="break-all">{stagedPath}</code> awaits explicit confirmation.
                       {pending?.expiresAt ? ` Expires ${pending.expiresAt}.` : ''}
                     </p>
                     <button type="button" disabled={anyActionInFlight}
-                      onClick={() => void handleCommit(runId)}
+                      onClick={() => void handleCommitItem(stagedPath)}
                       className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40">
                       Confirm promotion
                     </button>
@@ -477,12 +497,6 @@ function InboxRoute() {
                 renderItem={(item) => {
                   const run = runById.get(item.sourceId);
                   const note = noteByPath.get(item.sourceId);
-                  const canPromote =
-                    item.allowedActions.some((a) =>
-                      ['approve', 'reopen', 'override'].includes(a.actionType)
-                    ) ||
-                    (run && run.runType !== 'signals_infer' &&
-                      run.runType !== 'transform');
                   const runActionId = run?.runId ?? item.sourceId;
                   const actionInflight =
                     !!runActionId &&
@@ -506,11 +520,6 @@ function InboxRoute() {
                         reversibility: item.reversibility ?? null,
                       }}
                       onInspect={() => openItem(item)}
-                      onPromote={
-                        canPromote && run && run.runType !== 'signals_infer'
-                          ? () => handleCommit(run.runId)
-                          : undefined
-                      }
                       actionInFlight={actionInflight}
                       convertPanel={
                         run ? (

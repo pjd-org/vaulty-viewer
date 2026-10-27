@@ -10,6 +10,7 @@ import { buildAuthTransitionPath } from '../../src/lib/auth-transition';
 import {
   formatNoteLabel,
   getLifecycleContext,
+  isConfirmedItemPromotion,
   getNoteCollection,
   stripMarkdownExtension,
   toApiNotePath,
@@ -309,13 +310,21 @@ function NoteRoute() {
 
       try {
         const response = await apiFetch(`/api/v1/notes/${encodedPath}`);
-        throwIfUnauthorized(response, `Note not found: ${requestedPath}`);
+        throwIfUnauthorized(response, `Note unavailable: ${requestedPath}`);
         if (!response.ok) {
-          throw new Error(`Note not found: ${requestedPath}`);
+          throw new Error(response.status === 404
+            ? `Note not found: ${requestedPath}`
+            : response.status === 403
+              ? `Access denied (403): ${requestedPath}`
+              : `Note unavailable (${response.status}): ${requestedPath}`);
         }
 
         const result = await response.json();
         const structured = result.structuredContent || {};
+        if (!result?.structuredContent || typeof result.structuredContent !== 'object' ||
+            typeof result.structuredContent.content !== 'string') {
+          throw new Error(`Note unavailable: invalid response for ${requestedPath}`);
+        }
         const frontmatter = (structured.frontmatter || {}) as Record<
           string,
           unknown
@@ -522,9 +531,13 @@ function NoteRoute() {
 
       const status = body?.structuredContent?.status ?? body?.status;
       if (status === 'pending_confirmation') {
+        const token = body?.structuredContent?.token ?? body?.token;
+        if (typeof token !== 'string' || !token.trim()) {
+          throw new Error('Promotion confirmation unavailable: missing token.');
+        }
         dispatchLc({
           type: 'PROMOTION_PENDING',
-          token: body?.structuredContent?.token ?? body?.token ?? '',
+          token,
           expiresAt:
             body?.structuredContent?.expiresAt ?? body?.expiresAt ?? null,
           message:
@@ -534,6 +547,10 @@ function NoteRoute() {
         });
         return;
       }
+      if (!lc.pendingPromotionToken || !isConfirmedItemPromotion(body, note.path)) {
+        throw new Error('Promotion not confirmed: no successful receipt for this item.');
+      }
+
 
       dispatchLc({ type: 'PROMOTION_CLEAR' });
       dispatchLc({
@@ -880,7 +897,7 @@ function NoteRoute() {
             {!loading && error && (
               <div className="flex flex-col items-center justify-center py-16">
                 <h2 className="mb-1 text-lg font-semibold text-foreground">
-                  Note not found
+                  Note unavailable
                 </h2>
                 <p className="mb-4 text-sm text-muted-foreground">{error}</p>
                 <div className="flex gap-3">

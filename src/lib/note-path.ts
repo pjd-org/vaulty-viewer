@@ -86,7 +86,7 @@ export function getLifecycleContext(
     isTaskPath(notePath) ||
     getNoteCollection(notePath) === 'tasks';
   const noteStatus = readStringValue(frontmatter.status);
-  const isStaged = (source === 'extracted' || source === 'rejected') && !!runId;
+  const isStaged = source === 'extracted' && !!runId;
 
   return {
     source,
@@ -110,4 +110,17 @@ export function getLifecycleContext(
     targetPath: readStringValue(frontmatter._target_path),
     reviewStatus: readStringValue(frontmatter.review_status),
   };
+}
+
+export function isConfirmedItemPromotion(body: unknown, path: string): boolean {
+  if (!body || typeof body !== 'object') return false;
+  const outer = body as Record<string, unknown>;
+  const value = outer.structuredContent ?? outer;
+  if (!value || typeof value !== 'object') return false;
+  const receipt = value as Record<string, unknown>;
+  return receipt.status === 'committed' &&
+    receipt.path === path &&
+    receipt.committed === 1 &&
+    receipt.failed === 0 &&
+    receipt.rejected === 0;
 }

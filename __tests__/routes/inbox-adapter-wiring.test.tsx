@@ -21,6 +21,7 @@ const mockRouteState = vi.hoisted(() => ({
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockRefresh = vi.hoisted(() => vi.fn());
 const mockCommitRun = vi.hoisted(() => vi.fn());
+const mockCommitItem = vi.hoisted(() => vi.fn());
 const mockRejectRun = vi.hoisted(() => vi.fn());
 const mockUseInbox = vi.hoisted(() => vi.fn());
 const mockOpenModal = vi.hoisted(() => vi.fn());
@@ -237,6 +238,12 @@ describe('inbox adapter wiring', () => {
           tags: [],
           source: 'extracted',
         },
+        {
+          path: 'inbox/ordinary-note.md',
+          title: 'Ordinary inbox note',
+          tags: [],
+          source: 'inbox',
+        },
       ],
       archiveNotes: [
         {
@@ -258,11 +265,38 @@ describe('inbox adapter wiring', () => {
         },
       ],
       counts: { queue: 1, workbench: 1, archive: 2 },
+      stagedDrafts: [
+        {
+          path: 'inbox/extracted/workbench-note.md',
+          runId: 'run-1',
+          title: 'Workbench note',
+          status: 'draft',
+          targetPath: 'notes/projects/viewer/tasks/workbench-note.md',
+          runType: 'conversation',
+          ownerIds: ['agent:owner'],
+          reviewable: true,
+          blockedReason: null,
+        },
+        {
+          path: 'inbox/extracted/blocked-note.md',
+          runId: 'run-2',
+          title: 'Blocked draft',
+          status: 'draft',
+          targetPath: null,
+          runType: 'conversation',
+          ownerIds: ['agent:owner'],
+          reviewable: false,
+          blockedReason: 'Staged item has no canonical target.',
+        },
+      ],
+      stagedVisible: true,
       loading: false,
       error: null,
       apiStatus: 'online',
       refresh: mockRefresh,
       commitRun: mockCommitRun,
+      commitItem: mockCommitItem,
+      pendingItemConfirmations: {},
       rejectRun: mockRejectRun,
       actionState: {},
       pendingConfirmations: {},
@@ -477,34 +511,145 @@ describe('inbox adapter wiring', () => {
 describe('inbox draft visibility and human confirmation', () => {
   afterEach(() => cleanup());
 
-  it('surfaces returned drafts even when Archive is the selected tab', () => {
+  beforeEach(() => {
+    mockUseInbox.mockReturnValue({
+      signals: [],
+      runs: [
+        {
+          runId: 'run-1',
+          runType: 'extract',
+          action: 'Proposal run',
+          itemCount: 1,
+          confidence: 0.7,
+          items: [],
+        },
+      ],
+      workbenchNotes: [
+        {
+          path: 'inbox/ordinary-note.md',
+          title: 'Ordinary inbox note',
+          tags: [],
+          source: 'inbox',
+        },
+      ],
+      archiveNotes: [],
+      counts: { queue: 1, workbench: 1, archive: 0 },
+      stagedDrafts: [
+        {
+          path: 'inbox/extracted/workbench-note.md',
+          runId: 'run-1',
+          title: 'Workbench note',
+          status: 'draft',
+          targetPath: 'notes/projects/viewer/tasks/workbench-note.md',
+          runType: 'conversation',
+          ownerIds: ['agent:owner'],
+          reviewable: true,
+          blockedReason: null,
+        },
+        {
+          path: 'inbox/extracted/blocked-note.md',
+          runId: 'run-2',
+          title: 'Blocked draft',
+          status: 'draft',
+          targetPath: null,
+          runType: 'conversation',
+          ownerIds: ['agent:owner'],
+          reviewable: false,
+          blockedReason: 'Staged item has no canonical target.',
+        },
+      ],
+      stagedVisible: true,
+      loading: false,
+      error: null,
+      apiStatus: 'online',
+      refresh: mockRefresh,
+      commitRun: mockCommitRun,
+      commitItem: mockCommitItem,
+      pendingItemConfirmations: {},
+      rejectRun: mockRejectRun,
+      actionState: {},
+      pendingConfirmations: {},
+    });
+    mockBuildInboxSurfacePayload.mockImplementation(() => []);
+  });
+
+  it('surfaces authorized drafts even when Archive is the selected tab', () => {
     mockRouteState.search.view = 'archive';
     render(<RouteComponent />);
     const panel = screen.getByTestId('inbox-drafts');
     expect(within(panel).getByText('Workbench note')).toBeTruthy();
-    const link = screen.getByTestId('inbox-draft-review');
+    const link = within(panel).getAllByTestId('inbox-draft-review')[0];
     expect(link.getAttribute('href')).toBe(
       '/note?p=inbox%2Fextracted%2Fworkbench-note.md'
     );
   });
 
-  it('requires a separate user click to confirm an armed run promotion', () => {
-    mockCommitRun.mockReset();
-    mockRouteState.search.view = 'queue';
+  it('does not fabricate a staged status for a draft', () => {
+    mockRouteState.search.view = 'archive';
+    render(<RouteComponent />);
+    const panel = screen.getByTestId('inbox-drafts');
+    expect(within(panel).queryByText(/note · staged/i)).toBeNull();
+    expect(within(panel).getAllByText(/conversation · draft/).length).toBe(2);
+  });
+
+  it('does not present an ordinary inbox note as a staged draft', () => {
+    mockRouteState.search.view = 'archive';
+    render(<RouteComponent />);
+    const panel = screen.getByTestId('inbox-drafts');
+    expect(within(panel).queryByText('Ordinary inbox note')).toBeNull();
+    expect(within(panel).getByText('Workbench note')).toBeTruthy();
+  });
+
+  it('withholds promotion and shows the server reason for a non-reviewable draft', () => {
+    mockRouteState.search.view = 'archive';
+    render(<RouteComponent />);
+    const panel = screen.getByTestId('inbox-drafts');
+    expect(within(panel).getByText('Staged item has no canonical target.')).toBeTruthy();
+    expect(within(panel).getAllByTestId('inbox-draft-promote')).toHaveLength(1);
+  });
+
+  it('shows an explicit denied state when staged visibility is unavailable', () => {
+    mockRouteState.search.view = 'archive';
+    mockUseInbox.mockReturnValue({
+      ...mockUseInbox(),
+      stagedDrafts: [],
+      stagedVisible: false,
+    });
+    render(<RouteComponent />);
+    expect(screen.getByTestId('inbox-drafts-denied').textContent).toContain(
+      'unavailable'
+    );
+  });
+
+  it('requires a separate user click to confirm an armed item promotion', () => {
+    mockCommitItem.mockReset();
+    mockRouteState.search.view = 'archive';
     const initial = mockUseInbox();
     mockUseInbox.mockReturnValue({
       ...initial,
-      pendingConfirmations: {
-        'run-1': {
+      pendingItemConfirmations: {
+        'inbox/extracted/workbench-note.md': {
           token: 'server-issued-test-token',
           expiresAt: '2099-01-01T00:00:00Z',
         },
       },
     });
     render(<RouteComponent />);
-    expect(mockCommitRun).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm promotion' }));
-    expect(mockCommitRun).toHaveBeenCalledTimes(1);
-    expect(mockCommitRun).toHaveBeenCalledWith('run-1');
+    expect(mockCommitItem).not.toHaveBeenCalled();
+    const confirm = screen.getAllByRole('button', { name: 'Confirm' });
+    expect(confirm).toHaveLength(1);
+    fireEvent.click(confirm[0]);
+    expect(mockCommitItem).toHaveBeenCalledTimes(1);
+    expect(mockCommitItem).toHaveBeenCalledWith('inbox/extracted/workbench-note.md');
+  });
+
+  it('arms promotion on the first click and promotes only that item', () => {
+    mockCommitItem.mockReset();
+    mockCommitItem.mockResolvedValue({ status: 'pending_confirmation' });
+    mockRouteState.search.view = 'archive';
+    render(<RouteComponent />);
+    fireEvent.click(screen.getByRole('button', { name: 'Promote' }));
+    expect(mockCommitItem).toHaveBeenCalledTimes(1);
+    expect(mockCommitItem).toHaveBeenCalledWith('inbox/extracted/workbench-note.md');
   });
 });
