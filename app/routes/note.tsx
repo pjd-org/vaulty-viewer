@@ -502,16 +502,16 @@ function NoteRoute() {
     dispatchLc({ type: 'BUSY', op: 'promote' });
 
     try {
-      const res = await apiFetch(
-        `/api/v1/inbox/${encodeURIComponent(note.lifecycle.runId)}/commit`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: lc.pendingPromotionToken || undefined,
-          }),
-        }
-      );
+      // The operator is reviewing one note, never silently commit siblings.
+      // The API binds the confirmation token to the exact staged path.
+      const res = await apiFetch('/api/v1/inbox/item/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          path: note.path,
+          token: lc.pendingPromotionToken || undefined,
+        }),
+      });
       if (res.status === 401) {
         throw new UnauthenticatedError('Failed to promote note: 401');
       }
