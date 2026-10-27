@@ -18,14 +18,14 @@ export function buildVaultDirectoryPage(
   paths: unknown[],
   params: { folder: string; search: string; offset: number; limit: number }
 ): VaultDirectoryPage {
-  const folder = params.folder.replace(/^\\/+|\\/+$/g, '');
+  const folder = params.folder.replace(/^\/+|\/+$/g, '');
   const prefix = folder ? `${folder}/` : '';
   const needle = params.search.trim().toLowerCase();
   const folders = new Set<string>();
   const entries: VaultDirectoryPage['entries'] = [];
 
   for (const path of paths) {
-    if (typeof path !== 'string' || !/\\.mdx?$/i.test(path)) continue;
+    if (typeof path !== 'string' || !/\.mdx?$/i.test(path)) continue;
     // The read-scoped inventory is NOT a staging-review authorization.
     if (path.startsWith('inbox/') || path.startsWith('archive/')) continue;
     if (needle && !path.toLowerCase().includes(needle)) continue;
@@ -38,7 +38,7 @@ export function buildVaultDirectoryPage(
     } else {
       entries.push({
         path,
-        name: relative.replace(/\\.mdx?$/i, ''),
+        name: relative.replace(/\.mdx?$/i, ''),
         folder,
         state: 'live',
       });
