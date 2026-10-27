@@ -1,5 +1,5 @@
 /**
- * /explorer — Archives and Rejected, READ-ONLY.
+ * /explorer — Vault notes, Archives and Rejected, READ-ONLY.
  *
  * Two views, one component. The distinction that matters most is
  * live vs historical: a deleted record recovered from Git is shown differently
@@ -21,6 +21,7 @@ import { AmbientSurface, SelectableCard } from '../components/v2';
 import { roleForProvenance } from '../lib/design/role-mapping';
 import { useViewerV2 } from '../lib/design/viewer-v2-context';
 import { apiFetch } from '../../src/utils/api';
+import { buildVaultDirectoryPage } from '../lib/vault-inventory';
 
 export const Route = createFileRoute('/explorer')({
   component: ExplorerRoute,
@@ -30,7 +31,7 @@ export const Route = createFileRoute('/explorer')({
 // Types — mirror the API contract
 // ---------------------------------------------------------------------------
 
-type ExplorerView = 'archives' | 'rejected';
+type ExplorerView = 'vault' | 'archives' | 'rejected';
 type RecordState = 'live' | 'historical';
 
 interface ExplorerEntry {
@@ -84,7 +85,20 @@ async function fetchPage(params: {
   tags: string[];
   history: boolean;
   offset: number;
-}): Promise<ExplorerPage> {
+ }): Promise<ExplorerPage> {
+  if (params.view === 'vault') {
+    const res = await apiFetch('/api/v1/notes?pattern=**%2F*.%7Bmd%2Cmdx%7D');
+    if (res.status === 403) throw new ExplorerDenied('read');
+    if (res.status === 401) throw new Error('Sign in to browse vault notes');
+    if (!res.ok) throw new Error(`Vault inventory failed: ${res.status}`);
+    const body = (await res.json()) as { structuredContent?: { notes?: unknown }; notes?: unknown };
+    const notes = body.structuredContent?.notes ?? body.notes;
+    if (!Array.isArray(notes)) throw new Error('Vault inventory response is unavailable');
+    return buildVaultDirectoryPage(notes, {
+      folder: params.folder, search: params.search,
+      offset: params.offset, limit: PAGE_SIZE,
+    });
+  }
   const qs = new URLSearchParams();
   if (params.folder) qs.set('folder', params.folder);
   if (params.search) qs.set('search', params.search);
@@ -104,6 +118,28 @@ async function fetchPreview(
   view: ExplorerView,
   path: string
 ): Promise<ExplorerPreview> {
+  if (view === 'vault') {
+    const res = await apiFetch(`/api/v1/notes/${encodeURIComponent(path)}`);
+    if (res.status === 403) throw new ExplorerDenied('read');
+    if (res.status === 401) throw new Error('Sign in to preview the note');
+    if (!res.ok) throw new Error(`Note preview failed: ${res.status}`);
+    const body = (await res.json()) as {
+      structuredContent?: { content?: unknown; frontmatter?: unknown };
+    };
+    const note = body.structuredContent;
+    if (!note || typeof note.content !== 'string') {
+      throw new Error('Note preview response is unavailable');
+    }
+    const frontmatter =
+      note.frontmatter && typeof note.frontmatter === 'object' &&
+      !Array.isArray(note.frontmatter)
+        ? note.frontmatter as Record<string, unknown>
+        : {};
+    return {
+      view, path, state: 'live', markdown: note.content, frontmatter,
+      title: typeof frontmatter.title === 'string' ? frontmatter.title : undefined,
+    };
+  }
   const qs = new URLSearchParams({ path });
   const res = await apiFetch(`/api/v1/explorer/${view}/preview?${qs.toString()}`);
   if (res.status === 403) throw new ExplorerDenied();
@@ -112,8 +148,8 @@ async function fetchPreview(
 }
 
 class ExplorerDenied extends Error {
-  constructor() {
-    super('Explorer requires reviewer access');
+  constructor(scope: 'read' | 'review' = 'review') {
+    super(`Explorer requires ${scope} access`);
     this.name = 'ExplorerDenied';
   }
 }
@@ -131,6 +167,7 @@ function leaf(pathValue: string): string {
 /** Parent folder, '' when already at the view root. */
 function parentOf(folder: string, viewRoot: string): string | null {
   if (!folder || folder === viewRoot) return null;
+  if (!viewRoot && !folder.includes('/')) return '';
   const idx = folder.lastIndexOf('/');
   const parent = idx > 0 ? folder.slice(0, idx) : viewRoot;
   return parent.length < viewRoot.length ? viewRoot : parent;
@@ -324,7 +361,7 @@ function ExplorerRoute() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const viewRoot = view === 'archives' ? 'archive' : 'inbox/rejected';
+  const viewRoot = view === 'vault' ? '' : view === 'archives' ? 'archive' : 'inbox/rejected';
 
   const tags = useMemo(
     () =>
@@ -338,6 +375,7 @@ function ExplorerRoute() {
   // Reset navigation when the view changes — folder paths are view-specific.
   useEffect(() => {
     setFolder('');
+    setPage(null);
     setOffset(0);
     setSelected(null);
   }, [view]);
@@ -345,6 +383,7 @@ function ExplorerRoute() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setPage(null);
     setError(null);
     setDenied(false);
 
@@ -401,14 +440,14 @@ function ExplorerRoute() {
   return (
     <WorkspaceScaffold
       title="Explorer"
-      subtitle="Archives and rejected records. Read-only."
+      subtitle="Browse readable vault notes, archives and rejected records. Read-only."
       primaryTitle="Records"
-      primarySubtitle="Folders, filters, and deleted history"
+      primarySubtitle="Filesystem inventory and reviewer records"
       primary={
       <div className="flex flex-col gap-4" data-testid="explorer-root">
         {/* View switch */}
         <div className="flex items-center gap-2" role="tablist">
-          {(['archives', 'rejected'] as const).map((v) => (
+          {(['vault', 'archives', 'rejected'] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -446,6 +485,8 @@ function ExplorerRoute() {
             className="min-w-[14rem] flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
             data-testid="explorer-search"
           />
+          {view !== 'vault' ? (
+            <>
           <input
             type="text"
             value={tagsInput}
@@ -480,6 +521,10 @@ function ExplorerRoute() {
             />
             Include deleted (Git history)
           </label>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">Path search · Markdown / MDX</span>
+          )}
         </div>
 
         {/* Breadcrumb */}
@@ -490,14 +535,14 @@ function ExplorerRoute() {
             className="rounded px-1.5 py-0.5 hover:bg-muted"
             data-testid="explorer-breadcrumb-root"
           >
-            {viewRoot}
+            {viewRoot || 'vault'}
           </button>
           {(page?.folder ?? folder)
             .replace(viewRoot, '')
             .split('/')
             .filter(Boolean)
             .map((segment, i, all) => {
-              const target = `${viewRoot}/${all.slice(0, i + 1).join('/')}`;
+              const target = [viewRoot, ...all.slice(0, i + 1)].filter(Boolean).join('/');
               return (
                 <React.Fragment key={target}>
                   <span>/</span>
@@ -511,7 +556,7 @@ function ExplorerRoute() {
                 </React.Fragment>
               );
             })}
-          {parent ? (
+          {parent !== null ? (
             <button
               type="button"
               onClick={() => navigateTo(parent)}
@@ -532,8 +577,7 @@ function ExplorerRoute() {
             className="p-6 text-sm"
             data-testid="explorer-denied"
           >
-            Explorer requires reviewer access. Ask for the{' '}
-            <code className="font-mono">review</code> scope.
+            Explorer requires <code className="font-mono">{view === 'vault' ? 'read' : 'review'}</code> access.
           </GlassSurface>
         ) : null}
 

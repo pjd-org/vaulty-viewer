@@ -113,6 +113,33 @@ describe('note-path and note-markdown', () => {
     expect(canonicalTask.reviewStatus).toBe('needs_changes');
   });
 
+  it('does not advertise item promotion for executor-owned or action-driven staged notes', () => {
+    const base = {
+      _run_id: 'run-1',
+      _target_path: 'notes/tasks/viewer/demo.md',
+    };
+    for (const extra of [
+      { _action: 'create' },
+      { _run_type: 'signals_infer' },
+      { _run_type: 'transform' },
+      { _target_path: '' },
+    ]) {
+      const note = getLifecycleContext('inbox/extracted/run-1/demo.md', {
+        ...base, ...extra,
+      });
+      expect(note.canPromote).toBe(false);
+    }
+  });
+
+  it('targets the reviewed item, not its entire staging run', () => {
+    const cwd = process.cwd();
+    const root = cwd.endsWith('/apps/viewer') ? cwd : resolve(cwd, 'apps/viewer');
+    const source = readFileSync(resolve(root, 'app/routes/note.tsx'), 'utf8');
+    expect(source).toContain("'/api/v1/inbox/item/commit'");
+    expect(source).toContain('path: note.path');
+    expect(source).not.toContain('/api/v1/inbox/${encodeURIComponent(note.lifecycle.runId)}/commit');
+  });
+
   it('keeps the note route in a reader-first responsive layout with related notes', () => {
     const cwd = process.cwd();
     const viewerRoot = cwd.endsWith('/apps/viewer')

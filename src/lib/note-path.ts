@@ -93,7 +93,12 @@ export function getLifecycleContext(
     isTask,
     isCanonicalTask: source === 'canonical' && isTask,
     isStaged,
-    canPromote: isStaged,
+    canPromote:
+      isStaged &&
+      !!readStringValue(frontmatter._target_path) &&
+      frontmatter._action == null &&
+      frontmatter._run_type !== 'signals_infer' &&
+      frontmatter._run_type !== 'transform',
     canReject: source === 'extracted' && !!runId,
     canComplete:
       source === 'canonical' &&
