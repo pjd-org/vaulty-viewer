@@ -485,6 +485,8 @@ function ExplorerRoute() {
             className="min-w-[14rem] flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
             data-testid="explorer-search"
           />
+          {view !== 'vault' ? (
+            <>
           <input
             type="text"
             value={tagsInput}
@@ -519,6 +521,10 @@ function ExplorerRoute() {
             />
             Include deleted (Git history)
           </label>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">Path search · Markdown / MDX</span>
+          )}
         </div>
 
         {/* Breadcrumb */}
@@ -529,14 +535,14 @@ function ExplorerRoute() {
             className="rounded px-1.5 py-0.5 hover:bg-muted"
             data-testid="explorer-breadcrumb-root"
           >
-            {viewRoot}
+            {viewRoot || 'vault'}
           </button>
           {(page?.folder ?? folder)
             .replace(viewRoot, '')
             .split('/')
             .filter(Boolean)
             .map((segment, i, all) => {
-              const target = `${viewRoot}/${all.slice(0, i + 1).join('/')}`;
+              const target = [viewRoot, ...all.slice(0, i + 1)].filter(Boolean).join('/');
               return (
                 <React.Fragment key={target}>
                   <span>/</span>
@@ -550,7 +556,7 @@ function ExplorerRoute() {
                 </React.Fragment>
               );
             })}
-          {parent ? (
+          {parent !== null ? (
             <button
               type="button"
               onClick={() => navigateTo(parent)}
@@ -571,8 +577,7 @@ function ExplorerRoute() {
             className="p-6 text-sm"
             data-testid="explorer-denied"
           >
-            Explorer requires reviewer access. Ask for the{' '}
-            <code className="font-mono">review</code> scope.
+            Explorer requires <code className="font-mono">{view === 'vault' ? 'read' : 'review'}</code> access.
           </GlassSurface>
         ) : null}
 
