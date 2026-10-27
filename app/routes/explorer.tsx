@@ -1,5 +1,5 @@
 /**
- * /explorer — Archives and Rejected, READ-ONLY.
+ * /explorer — Vault notes, Archives and Rejected, READ-ONLY.
  *
  * Two views, one component. The distinction that matters most is
  * live vs historical: a deleted record recovered from Git is shown differently
