@@ -21,6 +21,7 @@ import { AmbientSurface, SelectableCard } from '../components/v2';
 import { roleForProvenance } from '../lib/design/role-mapping';
 import { useViewerV2 } from '../lib/design/viewer-v2-context';
 import { apiFetch } from '../../src/utils/api';
+import { buildVaultDirectoryPage } from '../lib/vault-inventory';
 
 export const Route = createFileRoute('/explorer')({
   component: ExplorerRoute,
@@ -30,7 +31,7 @@ export const Route = createFileRoute('/explorer')({
 // Types — mirror the API contract
 // ---------------------------------------------------------------------------
 
-type ExplorerView = 'archives' | 'rejected';
+type ExplorerView = 'vault' | 'archives' | 'rejected';
 type RecordState = 'live' | 'historical';
 
 interface ExplorerEntry {
@@ -84,7 +85,20 @@ async function fetchPage(params: {
   tags: string[];
   history: boolean;
   offset: number;
-}): Promise<ExplorerPage> {
+ }): Promise<ExplorerPage> {
+  if (params.view === 'vault') {
+    const res = await apiFetch('/api/v1/notes?pattern=**%2F*.%7Bmd%2Cmdx%7D');
+    if (res.status === 403) throw new ExplorerDenied('read');
+    if (res.status === 401) throw new Error('Sign in to browse vault notes');
+    if (!res.ok) throw new Error(`Vault inventory failed: ${res.status}`);
+    const body = (await res.json()) as { structuredContent?: { notes?: unknown }; notes?: unknown };
+    const notes = body.structuredContent?.notes ?? body.notes;
+    if (!Array.isArray(notes)) throw new Error('Vault inventory response is unavailable');
+    return buildVaultDirectoryPage(notes, {
+      folder: params.folder, search: params.search,
+      offset: params.offset, limit: PAGE_SIZE,
+    });
+  }
   const qs = new URLSearchParams();
   if (params.folder) qs.set('folder', params.folder);
   if (params.search) qs.set('search', params.search);
@@ -112,8 +126,8 @@ async function fetchPreview(
 }
 
 class ExplorerDenied extends Error {
-  constructor() {
-    super('Explorer requires reviewer access');
+  constructor(scope: 'read' | 'review' = 'review') {
+    super(`Explorer requires ${scope} access`);
     this.name = 'ExplorerDenied';
   }
 }
@@ -131,6 +145,7 @@ function leaf(pathValue: string): string {
 /** Parent folder, '' when already at the view root. */
 function parentOf(folder: string, viewRoot: string): string | null {
   if (!folder || folder === viewRoot) return null;
+  if (!viewRoot && !folder.includes('/')) return '';
   const idx = folder.lastIndexOf('/');
   const parent = idx > 0 ? folder.slice(0, idx) : viewRoot;
   return parent.length < viewRoot.length ? viewRoot : parent;
