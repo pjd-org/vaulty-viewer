@@ -289,3 +289,69 @@ describe('explorer — pagination', () => {
     });
   });
 });
+
+
+describe('explorer — Vault filesystem view', () => {
+  it('fetches unindexed notes from the API and navigates through the directory tree', async () => {
+    apiFetch.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/v1/notes?')) {
+        return jsonResponse({
+          structuredContent: {
+            notes: [
+              'notes/core/Avatar.md',
+              'tasks/pantha/importer.mdx',
+              'inbox/extracted/run-1/draft.md',
+              'archive/legacy/old.md',
+            ],
+          },
+        });
+      }
+      if (url.startsWith('/api/v1/notes/')) {
+        return jsonResponse({
+          structuredContent: {
+            content: '<img src=x onerror=alert(1)>',
+            frontmatter: { title: 'Importer', type: 'task' },
+          },
+        });
+      }
+      return jsonResponse(page());
+    });
+
+    render(<ExplorerComponent />);
+    fireEvent.click(screen.getByTestId('explorer-tab-vault'));
+    await waitFor(() => {
+      const folders = screen.getAllByTestId('explorer-folder');
+      expect(folders.map((n) => n.textContent).join(' ')).toContain('notes');
+      expect(folders.map((n) => n.textContent).join(' ')).toContain('tasks');
+      expect(folders.map((n) => n.textContent).join(' ')).not.toContain('archive');
+      expect(folders.map((n) => n.textContent).join(' ')).not.toContain('inbox');
+    });
+
+    fireEvent.click(screen.getAllByTestId('explorer-folder').find((n) =>
+      n.textContent?.includes('tasks')
+    )!);
+    await waitFor(() => expect(screen.getAllByTestId('explorer-folder')[0]?.textContent).toContain('pantha'));
+    fireEvent.click(screen.getAllByTestId('explorer-folder')[0]!);
+    await waitFor(() => expect(screen.getByTestId('explorer-entry')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('explorer-entry'));
+    await waitFor(() => expect(screen.getByTestId('explorer-preview-body')).toBeTruthy());
+    expect(screen.getByTestId('explorer-preview-body').querySelector('img')).toBeNull();
+    expect(apiFetch.mock.calls.some(([url]) => String(url).includes(
+      'tasks%2Fpantha%2Fimporter.mdx'
+    ))).toBe(true);
+  });
+
+  it('does not show an empty vault on read-scope denial', async () => {
+    apiFetch.mockImplementation(async (url: string) =>
+      url.startsWith('/api/v1/notes?')
+        ? jsonResponse({ error: 'Forbidden' }, 403)
+        : jsonResponse(page())
+    );
+    render(<ExplorerComponent />);
+    fireEvent.click(screen.getByTestId('explorer-tab-vault'));
+    await waitFor(() => {
+      expect(screen.getByTestId('explorer-denied').textContent).toContain('read');
+    });
+    expect(screen.queryByTestId('explorer-empty')).toBeNull();
+  });
+});
