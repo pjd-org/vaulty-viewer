@@ -354,6 +354,65 @@ function InboxRoute() {
           )}
           {!loading && !error && (
             <>
+              <section data-testid="inbox-drafts" aria-label="Drafts awaiting review"
+                className="rounded-xl border border-border bg-background/50 p-4">
+                <h2 className="text-sm font-semibold">Drafts · {drafts.length}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Inspect staged Markdown, frontmatter and destination before promoting.
+                  Promotion uses the note's existing two-step authorization flow.
+                </p>
+                {drafts.length > 0 ? (
+                  <ul className="mt-3 divide-y divide-border">
+                    {drafts.map((note) => {
+                      const fm = note.frontmatter ?? {};
+                      const promotable = note.path.startsWith('inbox/extracted/') &&
+                        typeof fm._run_id === 'string' &&
+                        typeof fm._target_path === 'string' &&
+                        fm._action == null;
+                      return (
+                        <li key={note.path} className="flex flex-wrap items-center justify-between gap-3 py-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium">{note.title || note.path.split('/').pop()}</p>
+                            <p className="break-all font-mono text-xs text-muted-foreground">{note.path}</p>
+                            {typeof fm._target_path === 'string' ? (
+                              <p className="text-xs text-muted-foreground">Target: {fm._target_path}</p>
+                            ) : null}
+                            <p className="text-xs text-muted-foreground">
+                              {typeof fm.type === 'string' ? fm.type : 'note'} · {note.status ?? 'staged'}
+                            </p>
+                          </div>
+                          <a href={`/note?p=${encodeURIComponent(note.path)}`}
+                            className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+                            data-testid="inbox-draft-review">
+                            {promotable ? 'Review & promote' : 'Inspect draft'}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    No draft notes were returned for this session. This does not mean the vault has no drafts;
+                    staged-run visibility requires verified review authority.
+                  </p>
+                )}
+              </section>
+              {Object.entries(pendingConfirmations ?? {})
+                .filter(([, pending]) => Boolean(pending?.token))
+                .map(([runId, pending]) => (
+                  <section key={runId} data-testid="inbox-promotion-confirmation"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
+                    <p className="text-sm">
+                      Run <code>{runId}</code> awaits explicit confirmation.
+                      {pending?.expiresAt ? ` Expires ${pending.expiresAt}.` : ''}
+                    </p>
+                    <button type="button" disabled={anyActionInFlight}
+                      onClick={() => void handleCommit(runId)}
+                      className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40">
+                      Confirm promotion
+                    </button>
+                  </section>
+                ))}
               <InboxViewSwitcher
                 value={activeTab}
                 onValueChange={(v) => setSearch({ view: v })}
