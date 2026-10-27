@@ -118,6 +118,28 @@ async function fetchPreview(
   view: ExplorerView,
   path: string
 ): Promise<ExplorerPreview> {
+  if (view === 'vault') {
+    const res = await apiFetch(`/api/v1/notes/${encodeURIComponent(path)}`);
+    if (res.status === 403) throw new ExplorerDenied('read');
+    if (res.status === 401) throw new Error('Sign in to preview the note');
+    if (!res.ok) throw new Error(`Note preview failed: ${res.status}`);
+    const body = (await res.json()) as {
+      structuredContent?: { content?: unknown; frontmatter?: unknown };
+    };
+    const note = body.structuredContent;
+    if (!note || typeof note.content !== 'string') {
+      throw new Error('Note preview response is unavailable');
+    }
+    const frontmatter =
+      note.frontmatter && typeof note.frontmatter === 'object' &&
+      !Array.isArray(note.frontmatter)
+        ? note.frontmatter as Record<string, unknown>
+        : {};
+    return {
+      view, path, state: 'live', markdown: note.content, frontmatter,
+      title: typeof frontmatter.title === 'string' ? frontmatter.title : undefined,
+    };
+  }
   const qs = new URLSearchParams({ path });
   const res = await apiFetch(`/api/v1/explorer/${view}/preview?${qs.toString()}`);
   if (res.status === 403) throw new ExplorerDenied();
@@ -339,7 +361,7 @@ function ExplorerRoute() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const viewRoot = view === 'archives' ? 'archive' : 'inbox/rejected';
+  const viewRoot = view === 'vault' ? '' : view === 'archives' ? 'archive' : 'inbox/rejected';
 
   const tags = useMemo(
     () =>
@@ -353,6 +375,7 @@ function ExplorerRoute() {
   // Reset navigation when the view changes — folder paths are view-specific.
   useEffect(() => {
     setFolder('');
+    setPage(null);
     setOffset(0);
     setSelected(null);
   }, [view]);
@@ -360,6 +383,7 @@ function ExplorerRoute() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setPage(null);
     setError(null);
     setDenied(false);
 
@@ -416,14 +440,14 @@ function ExplorerRoute() {
   return (
     <WorkspaceScaffold
       title="Explorer"
-      subtitle="Archives and rejected records. Read-only."
+      subtitle="Browse readable vault notes, archives and rejected records. Read-only."
       primaryTitle="Records"
-      primarySubtitle="Folders, filters, and deleted history"
+      primarySubtitle="Filesystem inventory and reviewer records"
       primary={
       <div className="flex flex-col gap-4" data-testid="explorer-root">
         {/* View switch */}
         <div className="flex items-center gap-2" role="tablist">
-          {(['archives', 'rejected'] as const).map((v) => (
+          {(['vault', 'archives', 'rejected'] as const).map((v) => (
             <button
               key={v}
               type="button"
