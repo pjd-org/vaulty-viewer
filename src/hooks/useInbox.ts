@@ -15,6 +15,8 @@ export interface InboxNote {
   path: string;
   title?: string;
   status?: InboxLogicNote['status'];
+  frontmatter?: Record<string, unknown>;
+  tags?: string[];
   error?: string;
 }
 
